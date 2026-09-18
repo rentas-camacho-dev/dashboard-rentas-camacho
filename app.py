@@ -13,7 +13,7 @@ st.title("🏠 Portafolio de Inversión Familiar - Camacho")
 st.markdown("Dashboard en vivo conectado a Google Cloud BigQuery (`rentascamacho.rentas_cortas`)")
 
 # 2. Conexión nativa a BigQuery
-conn = st.connection("bigquery", type="bigquery")
+conn = st.connection("bigquery")
 
 # 3. Cargar datos principales desde la vista maestra
 @st.cache_data(ttl=600)
