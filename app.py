@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
@@ -9,14 +10,14 @@ from google.oauth2 import service_account
 # ============================================================
 
 st.set_page_config(
-    page_title="FinQuery - Vista Nueva",
-    page_icon="📊",
+    page_title="FinQuery - Resumen",
+    page_icon="🏠",
     layout="wide"
 )
 
 
 # ============================================================
-# CONEXIÓN A BIGQUERY
+# BIGQUERY
 # ============================================================
 
 credentials = service_account.Credentials.from_service_account_info(
@@ -42,35 +43,56 @@ def cargar_datos():
 
     query = """
         SELECT
-            ID_Movimiento,
             Fecha,
+            Tipo,
+            Tipo_de_Activo,
+            Nombre_Tipo,
+            Propiedad,
             Nombre_Propiedad,
+            Propietario,
+            Estado,
+            Ciudad,
+            Categoria,
+            Nombre_Categoria,
+            Subcategoria,
+            Nombre_Subcategoria,
+            Detalle,
+            ID_Clave,
+            Clave,
+            ID_Proveedor,
+            Proveedor,
+            Cuenta,
+            Nombre_Cuenta,
+            Observaciones,
             Nombre_Socio,
+            Porcentaje,
+            Valor,
             Valor_Repartido,
             Ingreso,
-            Gasto,
-            Nombre_Categoria,
-            Nombre_Subcategoria,
-            Nombre_Cuenta
+            Gasto
 
         FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
     """
 
     df = client.query(query).to_dataframe()
 
-    df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
+    df["Fecha"] = pd.to_datetime(
+        df["Fecha"],
+        errors="coerce"
+    )
 
-    df["Ingreso"] = pd.to_numeric(
-        df["Ingreso"], errors="coerce"
-    ).fillna(0)
+    for columna in [
+        "Porcentaje",
+        "Valor",
+        "Valor_Repartido",
+        "Ingreso",
+        "Gasto"
+    ]:
 
-    df["Gasto"] = pd.to_numeric(
-        df["Gasto"], errors="coerce"
-    ).fillna(0)
-
-    df["Valor_Repartido"] = pd.to_numeric(
-        df["Valor_Repartido"], errors="coerce"
-    ).fillna(0)
+        df[columna] = pd.to_numeric(
+            df[columna],
+            errors="coerce"
+        ).fillna(0)
 
     return df
 
@@ -94,10 +116,10 @@ except Exception as e:
 # TÍTULO
 # ============================================================
 
-st.title("📊 FinQuery")
+st.title("🏠 Resumen por Apartamento")
 
-st.caption(
-    "Vista financiera del portafolio · Datos conectados directamente a BigQuery"
+st.markdown(
+    "### Ingresos y Gastos"
 )
 
 
@@ -105,51 +127,35 @@ st.caption(
 # FILTROS
 # ============================================================
 
-st.sidebar.header("Filtros")
-
-# Socios
-socios = sorted(
-    df["Nombre_Socio"]
-    .dropna()
-    .astype(str)
-    .unique()
-)
-
-socios_seleccionados = st.sidebar.multiselect(
-    "Socio",
-    socios,
-    default=socios
-)
+col_filtro1, col_filtro2 = st.columns([1, 1])
 
 
-# Propiedades
-propiedades = sorted(
-    df["Nombre_Propiedad"]
-    .dropna()
-    .astype(str)
-    .unique()
-)
+with col_filtro1:
 
-propiedades_seleccionadas = st.sidebar.multiselect(
-    "Propiedad",
-    propiedades,
-    default=propiedades
-)
+    ciudades = sorted(
+        df["Ciudad"]
+        .dropna()
+        .astype(str)
+        .unique()
+    )
+
+    ciudad = st.selectbox(
+        "Ciudad",
+        ["Todas"] + ciudades
+    )
 
 
-# Categorías
-categorias = sorted(
-    df["Nombre_Categoria"]
-    .dropna()
-    .astype(str)
-    .unique()
-)
+with col_filtro2:
 
-categorias_seleccionadas = st.sidebar.multiselect(
-    "Categoría",
-    categorias,
-    default=categorias
-)
+    fecha_min = df["Fecha"].min()
+    fecha_max = df["Fecha"].max()
+
+    rango_fecha = st.date_input(
+        "Fecha",
+        value=(fecha_min.date(), fecha_max.date()),
+        min_value=fecha_min.date(),
+        max_value=fecha_max.date()
+    )
 
 
 # ============================================================
@@ -158,35 +164,35 @@ categorias_seleccionadas = st.sidebar.multiselect(
 
 df_filtrado = df.copy()
 
-if socios_seleccionados:
+
+# Ciudad
+if ciudad != "Todas":
 
     df_filtrado = df_filtrado[
-        df_filtrado["Nombre_Socio"]
-        .astype(str)
-        .isin(socios_seleccionados)
+        df_filtrado["Ciudad"].astype(str) == ciudad
     ]
 
 
-if propiedades_seleccionadas:
+# Fecha
+if isinstance(rango_fecha, tuple) and len(rango_fecha) == 2:
+
+    fecha_inicio = pd.Timestamp(rango_fecha[0])
+
+    fecha_fin = (
+        pd.Timestamp(rango_fecha[1])
+        + pd.Timedelta(days=1)
+        - pd.Timedelta(seconds=1)
+    )
 
     df_filtrado = df_filtrado[
-        df_filtrado["Nombre_Propiedad"]
-        .astype(str)
-        .isin(propiedades_seleccionadas)
-    ]
-
-
-if categorias_seleccionadas:
-
-    df_filtrado = df_filtrado[
-        df_filtrado["Nombre_Categoria"]
-        .astype(str)
-        .isin(categorias_seleccionadas)
+        (df_filtrado["Fecha"] >= fecha_inicio)
+        &
+        (df_filtrado["Fecha"] <= fecha_fin)
     ]
 
 
 # ============================================================
-# CÁLCULOS
+# KPIs
 # ============================================================
 
 ingreso_total = df_filtrado["Ingreso"].sum()
@@ -202,38 +208,34 @@ rentabilidad = (
 )
 
 
-# ============================================================
-# KPI
-# ============================================================
-
-col1, col2, col3, col4 = st.columns(4)
+k1, k2, k3, k4 = st.columns(4)
 
 
-with col1:
+with k1:
 
     st.metric(
         "Ingreso Total",
-        f"${ingreso_total:,.0f}"
+        f"$ {ingreso_total:,.0f}"
     )
 
 
-with col2:
+with k2:
 
     st.metric(
         "Gasto",
-        f"${gasto_total:,.0f}"
+        f"$ {gasto_total:,.0f}"
     )
 
 
-with col3:
+with k3:
 
     st.metric(
         "Flujo",
-        f"${flujo_total:,.0f}"
+        f"$ {flujo_total:,.0f}"
     )
 
 
-with col4:
+with k4:
 
     st.metric(
         "Rentabilidad",
@@ -245,88 +247,168 @@ st.divider()
 
 
 # ============================================================
-# RESUMEN POR PROPIEDAD
+# TABLA POR PROPIEDAD
 # ============================================================
 
-st.subheader("🏠 Resumen por propiedad")
+col_tabla, col_grafico = st.columns([1.25, 0.75])
 
 
-df_propiedades = (
-    df_filtrado
-    .groupby("Nombre_Propiedad", dropna=False)
-    .agg(
-        Ingreso=("Ingreso", "sum"),
-        Gasto=("Gasto", "sum")
+with col_tabla:
+
+    st.subheader("🏠 Propiedad")
+
+    resumen = (
+        df_filtrado
+        .groupby("Nombre_Propiedad", dropna=False)
+        .agg(
+            Ingreso=("Ingreso", "sum"),
+            Gasto=("Gasto", "sum")
+        )
+        .reset_index()
     )
-    .reset_index()
-)
 
+    resumen["Flujo"] = (
+        resumen["Ingreso"]
+        - resumen["Gasto"]
+    )
 
-df_propiedades["Flujo"] = (
-    df_propiedades["Ingreso"]
-    - df_propiedades["Gasto"]
-)
+    resumen["%"] = resumen.apply(
+        lambda x:
+            x["Flujo"] / x["Ingreso"]
+            if x["Ingreso"] != 0
+            else 0,
+        axis=1
+    )
 
+    resumen = resumen.sort_values(
+        "Ingreso",
+        ascending=False
+    )
 
-df_propiedades["%"] = df_propiedades.apply(
-    lambda row:
-        row["Flujo"] / row["Ingreso"]
-        if row["Ingreso"] != 0
-        else 0,
-    axis=1
-)
-
-
-# Ordenar por ingreso
-df_propiedades = df_propiedades.sort_values(
-    "Ingreso",
-    ascending=False
-)
-
-
-# ============================================================
-# FORMATO PARA MOSTRAR
-# ============================================================
-
-tabla = df_propiedades.copy()
-
-tabla["Ingreso"] = tabla["Ingreso"].apply(
-    lambda x: f"${x:,.0f}"
-)
-
-tabla["Gasto"] = tabla["Gasto"].apply(
-    lambda x: f"${x:,.0f}"
-)
-
-tabla["Flujo"] = tabla["Flujo"].apply(
-    lambda x: f"${x:,.0f}"
-)
-
-tabla["%"] = tabla["%"].apply(
-    lambda x: f"{x:.1%}"
-)
-
-
-tabla = tabla.rename(
-    columns={
-        "Nombre_Propiedad": "Propiedad"
-    }
-)
-
-
-st.dataframe(
-    tabla[
-        [
-            "Propiedad",
-            "Ingreso",
-            "Gasto",
-            "Flujo",
-            "%"
+    # Fila TOTAL
+    total = pd.DataFrame({
+        "Nombre_Propiedad": ["Total"],
+        "Ingreso": [resumen["Ingreso"].sum()],
+        "Gasto": [resumen["Gasto"].sum()],
+        "Flujo": [resumen["Flujo"].sum()],
+        "%": [
+            resumen["Flujo"].sum()
+            / resumen["Ingreso"].sum()
+            if resumen["Ingreso"].sum() != 0
+            else 0
         ]
-    ],
-    use_container_width=True,
-    hide_index=True
-)
+    })
+
+    resumen_mostrar = pd.concat(
+        [resumen, total],
+        ignore_index=True
+    )
+
+    resumen_mostrar = resumen_mostrar.rename(
+        columns={
+            "Nombre_Propiedad": "Propiedad"
+        }
+    )
+
+    resumen_mostrar["Ingreso"] = resumen_mostrar[
+        "Ingreso"
+    ].apply(
+        lambda x: f"$ {x:,.0f}"
+    )
+
+    resumen_mostrar["Gasto"] = resumen_mostrar[
+        "Gasto"
+    ].apply(
+        lambda x: f"$ {x:,.0f}"
+    )
+
+    resumen_mostrar["Flujo"] = resumen_mostrar[
+        "Flujo"
+    ].apply(
+        lambda x: f"$ {x:,.0f}"
+    )
+
+    resumen_mostrar["%"] = resumen_mostrar[
+        "%"
+    ].apply(
+        lambda x: f"{x:.1%}"
+    )
+
+    st.dataframe(
+        resumen_mostrar[
+            [
+                "Propiedad",
+                "Ingreso",
+                "Gasto",
+                "Flujo",
+                "%"
+            ]
+        ],
+        use_container_width=True,
+        hide_index=True,
+        height=390
+    )
+
+
+# ============================================================
+# GASTOS POR SUBCATEGORÍA
+# ============================================================
+
+with col_grafico:
+
+    st.subheader("💸 Gastos por Subcategoría")
+
+    gastos = (
+        df_filtrado[
+            df_filtrado["Gasto"] > 0
+        ]
+        .groupby("Nombre_Subcategoria")["Gasto"]
+        .sum()
+        .reset_index()
+        .sort_values(
+            "Gasto",
+            ascending=False
+        )
+    )
+
+    if len(gastos) > 0:
+
+        fig = px.pie(
+            gastos,
+            names="Nombre_Subcategoria",
+            values="Gasto",
+            hole=0.48
+        )
+
+        fig.update_traces(
+            textinfo="percent",
+            hovertemplate=(
+                "<b>%{label}</b><br>"
+                "$ %{value:,.0f}"
+                "<extra></extra>"
+            )
+        )
+
+        fig.update_layout(
+            margin=dict(
+                l=10,
+                r=10,
+                t=10,
+                b=10
+            ),
+            legend_title=""
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
+
+    else:
+
+        st.info(
+            "No hay gastos para los filtros seleccionados."
+        )
 
 
 # ============================================================
@@ -334,5 +416,5 @@ st.dataframe(
 # ============================================================
 
 st.caption(
-    f"Registros utilizados: {len(df_filtrado):,}"
+    f"Movimientos incluidos: {len(df_filtrado):,}"
 )
