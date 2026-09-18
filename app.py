@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -26,93 +25,80 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-    /* Fondo general */
-    .stApp {
-        background: #F7F9FC;
-    }
+.stApp {
+    background-color: #F7F9FC;
+}
 
-    /* Sidebar */
-    section[data-testid="stSidebar"] {
-        background: #FFFFFF;
-        border-right: 1px solid #E8EDF4;
-    }
+section[data-testid="stSidebar"] {
+    background-color: #FFFFFF;
+    border-right: 1px solid #E6EAF0;
+}
 
-    section[data-testid="stSidebar"] > div {
-        padding-top: 1rem;
-    }
+.main-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #172B4D;
+    margin-bottom: 2px;
+}
 
-    /* Título */
-    .main-title {
-        font-size: 32px;
-        font-weight: 700;
-        color: #14213D;
-        margin-bottom: 0px;
-    }
+.subtitle {
+    font-size: 15px;
+    color: #718096;
+    margin-bottom: 20px;
+}
 
-    .subtitle {
-        color: #718096;
-        font-size: 15px;
-        margin-top: -5px;
-        margin-bottom: 20px;
-    }
+.kpi-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 20px 22px;
+    min-height: 125px;
+    border: 1px solid #E5EAF1;
+    box-shadow: 0px 4px 14px rgba(20, 40, 70, 0.06);
+}
 
-    /* Tarjetas KPI */
-    .kpi-card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px 22px;
-        min-height: 135px;
-        border: 1px solid #E8EDF4;
-        box-shadow: 0 3px 12px rgba(30, 50, 80, 0.05);
-    }
+.kpi-title {
+    font-size: 14px;
+    color: #667085;
+    margin-bottom: 8px;
+}
 
-    .kpi-title {
-        font-size: 14px;
-        color: #667085;
-        margin-bottom: 5px;
-    }
+.kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #172B4D;
+}
 
-    .kpi-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: #172B4D;
-    }
+.kpi-sub {
+    font-size: 12px;
+    color: #98A2B3;
+    margin-top: 7px;
+}
 
-    .kpi-sub {
-        font-size: 12px;
-        color: #98A2B3;
-        margin-top: 5px;
-    }
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #172B4D;
+}
 
-    /* Contenedores */
-    .section-card {
-        background: white;
-        border-radius: 18px;
-        padding: 20px;
-        border: 1px solid #E8EDF4;
-        box-shadow: 0 3px 12px rgba(30, 50, 80, 0.04);
-    }
+.section-subtitle {
+    font-size: 13px;
+    color: #718096;
+    margin-bottom: 12px;
+}
 
-    /* Headers */
-    h1, h2, h3 {
-        color: #14213D !important;
-    }
+.info-card {
+    background: #FFFFFF;
+    border: 1px solid #E5EAF1;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0px 4px 14px rgba(20, 40, 70, 0.05);
+}
 
-    /* Ocultar menú */
-    #MainMenu {
-        visibility: hidden;
-    }
-
-    footer {
-        visibility: hidden;
-    }
-
-    /* Botones */
-    .stButton > button {
-        border-radius: 10px;
-        border: 1px solid #DDE5EF;
-        background: white;
-    }
+.stButton > button {
+    border-radius: 10px;
+    border: 1px solid #DCE3EC;
+    background-color: white;
+}
 
 </style>
 """, unsafe_allow_html=True)
@@ -231,10 +217,10 @@ with st.sidebar:
     st.markdown(
         """
         <div style="
-            font-size:26px;
+            font-size:27px;
             font-weight:700;
             color:#172B4D;
-            margin-bottom:5px;
+            margin-top:5px;
         ">
             FinQuery
         </div>
@@ -242,7 +228,8 @@ with st.sidebar:
         <div style="
             font-size:13px;
             color:#718096;
-            margin-bottom:30px;
+            margin-top:4px;
+            margin-bottom:28px;
         ">
             Rentas Cortas - Camacho
         </div>
@@ -250,24 +237,34 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    st.markdown("### 🏠 Airbnb")
+    st.markdown(
+        "### 🏠 Airbnb"
+    )
 
-    st.caption("Vista exclusiva de ingresos y gastos Airbnb")
+    st.caption(
+        "Vista exclusiva de ingresos y gastos Airbnb"
+    )
 
     st.divider()
 
-    st.markdown("**Filtros**")
+    st.markdown(
+        "**Datos conectados a BigQuery**"
+    )
+
+    st.caption(
+        "Movimientos_Operativos_Reparto"
+    )
 
 
 # ============================================================
 # ENCABEZADO
 # ============================================================
 
-col_titulo, col_actualizar = st.columns(
+titulo, boton = st.columns(
     [4, 1]
 )
 
-with col_titulo:
+with titulo:
 
     st.markdown(
         '<div class="main-title">Rentas Cortas - Airbnb</div>',
@@ -275,12 +272,14 @@ with col_titulo:
     )
 
     st.markdown(
-        '<div class="subtitle">Resumen de ingresos y gastos operativos</div>',
+        '<div class="subtitle">'
+        'Resumen de ingresos y gastos operativos'
+        '</div>',
         unsafe_allow_html=True
     )
 
 
-with col_actualizar:
+with boton:
 
     if st.button(
         "🔄 Actualizar",
@@ -375,7 +374,7 @@ with f4:
 
 
 # ============================================================
-# FILTRAR
+# APLICAR FILTROS
 # ============================================================
 
 df_filtrado = df.copy()
@@ -406,7 +405,9 @@ if socio != "Todos":
 
 if isinstance(rango, tuple) and len(rango) == 2:
 
-    fecha_inicio = pd.Timestamp(rango[0])
+    fecha_inicio = pd.Timestamp(
+        rango[0]
+    )
 
     fecha_fin = (
         pd.Timestamp(rango[1])
@@ -429,7 +430,10 @@ ingreso_total = df_filtrado["Ingreso"].sum()
 
 gasto_total = df_filtrado["Gasto"].sum()
 
-flujo_total = ingreso_total - gasto_total
+flujo_total = (
+    ingreso_total
+    - gasto_total
+)
 
 rentabilidad = (
     flujo_total / ingreso_total
@@ -439,7 +443,7 @@ rentabilidad = (
 
 
 # ============================================================
-# KPI CARDS
+# KPI 1 - INGRESO
 # ============================================================
 
 k1, k2, k3, k4 = st.columns(4)
@@ -468,10 +472,14 @@ with k1:
             </div>
 
         </div>
-        """,
+        """.replace("\n", ""),
         unsafe_allow_html=True
     )
 
+
+# ============================================================
+# KPI 2 - GASTO
+# ============================================================
 
 with k2:
 
@@ -496,10 +504,14 @@ with k2:
             </div>
 
         </div>
-        """,
+        """.replace("\n", ""),
         unsafe_allow_html=True
     )
 
+
+# ============================================================
+# KPI 3 - FLUJO
+# ============================================================
 
 with k3:
 
@@ -523,10 +535,14 @@ with k3:
             </div>
 
         </div>
-        """,
+        """.replace("\n", ""),
         unsafe_allow_html=True
     )
 
+
+# ============================================================
+# KPI 4 - RENTABILIDAD
+# ============================================================
 
 with k4:
 
@@ -551,7 +567,7 @@ with k4:
             </div>
 
         </div>
-        """,
+        """.replace("\n", ""),
         unsafe_allow_html=True
     )
 
@@ -560,7 +576,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 
 # ============================================================
-# RESUMEN POR PROPIEDAD + GASTOS
+# TABLA + DONUT
 # ============================================================
 
 col_tabla, col_dona = st.columns(
@@ -569,35 +585,32 @@ col_tabla, col_dona = st.columns(
 
 
 # ============================================================
-# TABLA PROPIEDADES
+# DESEMPEÑO POR PROPIEDAD
 # ============================================================
 
 with col_tabla:
 
     st.markdown(
-        """
-        <div style="
-            font-size:20px;
-            font-weight:700;
-            color:#172B4D;
-        ">
-            🏠 Desempeño por Propiedad
-        </div>
-
-        <div style="
-            color:#718096;
-            font-size:13px;
-            margin-bottom:10px;
-        ">
-            Ingresos, gastos y flujo por propiedad Airbnb
-        </div>
-        """,
+        '<div class="section-title">'
+        '🏠 Desempeño por Propiedad'
+        '</div>',
         unsafe_allow_html=True
     )
 
+    st.markdown(
+        '<div class="section-subtitle">'
+        'Ingresos, gastos y flujo por propiedad Airbnb'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
     resumen = (
         df_filtrado
-        .groupby("Nombre_Propiedad", dropna=False)
+        .groupby(
+            "Nombre_Propiedad",
+            dropna=False
+        )
         .agg(
             Ingreso=("Ingreso", "sum"),
             Gasto=("Gasto", "sum")
@@ -605,10 +618,12 @@ with col_tabla:
         .reset_index()
     )
 
+
     resumen["Flujo"] = (
         resumen["Ingreso"]
         - resumen["Gasto"]
     )
+
 
     resumen["%"] = resumen.apply(
         lambda x:
@@ -618,47 +633,59 @@ with col_tabla:
         axis=1
     )
 
+
     resumen = resumen.sort_values(
         "Ingreso",
         ascending=False
     )
 
 
-    # Total
-    total_ingreso = resumen["Ingreso"].sum()
-    total_gasto = resumen["Gasto"].sum()
-    total_flujo = resumen["Flujo"].sum()
-
-    total_rentabilidad = (
-        total_flujo / total_ingreso
-        if total_ingreso != 0
-        else 0
-    )
-
+    # --------------------------------------------------------
+    # FORMATO
+    # --------------------------------------------------------
 
     resumen_display = resumen.copy()
 
-    resumen_display["Ingreso"] = resumen_display[
-        "Ingreso"
-    ].apply(lambda x: f"$ {x/1000000:.1f} M"
-            if abs(x) >= 1000000
-            else f"$ {x/1000:.0f} mil")
 
-    resumen_display["Gasto"] = resumen_display[
-        "Gasto"
-    ].apply(lambda x: f"$ {x/1000000:.1f} M"
-            if abs(x) >= 1000000
-            else f"$ {x/1000:.0f} mil")
+    def formato_dinero(valor):
 
-    resumen_display["Flujo"] = resumen_display[
-        "Flujo"
-    ].apply(lambda x: f"$ {x/1000000:.1f} M"
-            if abs(x) >= 1000000
-            else f"$ {x/1000:.0f} mil")
+        if abs(valor) >= 1_000_000:
 
-    resumen_display["%"] = resumen_display[
-        "%"
-    ].apply(lambda x: f"{x:.1%}")
+            return f"$ {valor / 1_000_000:.1f} M"
+
+        elif abs(valor) >= 1_000:
+
+            return f"$ {valor / 1_000:.0f} mil"
+
+        else:
+
+            return f"$ {valor:,.0f}"
+
+
+    resumen_display["Ingreso"] = (
+        resumen_display["Ingreso"]
+        .apply(formato_dinero)
+    )
+
+
+    resumen_display["Gasto"] = (
+        resumen_display["Gasto"]
+        .apply(formato_dinero)
+    )
+
+
+    resumen_display["Flujo"] = (
+        resumen_display["Flujo"]
+        .apply(formato_dinero)
+    )
+
+
+    resumen_display["%"] = (
+        resumen_display["%"]
+        .apply(
+            lambda x: f"{x:.1%}"
+        )
+    )
 
 
     resumen_display = resumen_display.rename(
@@ -680,57 +707,80 @@ with col_tabla:
         ],
         use_container_width=True,
         hide_index=True,
-        height=370
+        height=350
+    )
+
+
+    # --------------------------------------------------------
+    # TOTAL
+    # --------------------------------------------------------
+
+    total_ingreso = resumen["Ingreso"].sum()
+    total_gasto = resumen["Gasto"].sum()
+    total_flujo = resumen["Flujo"].sum()
+
+
+    total_rentabilidad = (
+        total_flujo / total_ingreso
+        if total_ingreso != 0
+        else 0
     )
 
 
     st.markdown(
         f"""
         <div style="
-            background:#F3F6FA;
+            background:#F0F4F8;
             border-radius:10px;
             padding:12px 15px;
-            margin-top:5px;
             display:flex;
             justify-content:space-between;
-            font-weight:600;
             color:#172B4D;
+            font-weight:700;
+            font-size:13px;
         ">
+
             <span>Total</span>
-            <span>$ {total_ingreso/1000000:.1f} M</span>
-            <span>$ {total_gasto/1000000:.1f} M</span>
-            <span>$ {total_flujo/1000000:.1f} M</span>
-            <span>{total_rentabilidad:.1%}</span>
+
+            <span>
+                $ {total_ingreso / 1_000_000:.1f} M
+            </span>
+
+            <span>
+                $ {total_gasto / 1_000_000:.1f} M
+            </span>
+
+            <span>
+                $ {total_flujo / 1_000_000:.1f} M
+            </span>
+
+            <span>
+                {total_rentabilidad:.1%}
+            </span>
+
         </div>
-        """,
+        """.replace("\n", ""),
         unsafe_allow_html=True
     )
 
 
 # ============================================================
-# DONUT DE GASTOS
+# DONUT GASTOS
 # ============================================================
 
 with col_dona:
 
     st.markdown(
-        """
-        <div style="
-            font-size:20px;
-            font-weight:700;
-            color:#172B4D;
-        ">
-            💸 Gastos por Subcategoría
-        </div>
+        '<div class="section-title">'
+        '💸 Gastos por Subcategoría'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
-        <div style="
-            color:#718096;
-            font-size:13px;
-            margin-bottom:5px;
-        ">
-            Distribución de los gastos operativos Airbnb
-        </div>
-        """,
+    st.markdown(
+        '<div class="section-subtitle">'
+        'Distribución de los gastos operativos Airbnb'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -739,7 +789,9 @@ with col_dona:
         df_filtrado[
             df_filtrado["Gasto"] > 0
         ]
-        .groupby("Nombre_Subcategoria")["Gasto"]
+        .groupby(
+            "Nombre_Subcategoria"
+        )["Gasto"]
         .sum()
         .reset_index()
         .sort_values(
@@ -755,7 +807,7 @@ with col_dona:
             gastos,
             names="Nombre_Subcategoria",
             values="Gasto",
-            hole=0.58
+            hole=0.55
         )
 
 
@@ -774,15 +826,15 @@ with col_dona:
             margin=dict(
                 l=0,
                 r=0,
-                t=10,
+                t=0,
                 b=0
             ),
-            showlegend=True,
             legend=dict(
                 orientation="v",
-                x=1.0,
+                x=1,
                 y=0.5
-            )
+            ),
+            showlegend=True
         )
 
 
@@ -798,7 +850,7 @@ with col_dona:
     else:
 
         st.info(
-            "No hay gastos para este filtro."
+            "No hay gastos para los filtros seleccionados."
         )
 
 
@@ -809,28 +861,22 @@ with col_dona:
 st.markdown("<br>", unsafe_allow_html=True)
 
 st.markdown(
-    """
-    <div style="
-        font-size:20px;
-        font-weight:700;
-        color:#172B4D;
-    ">
-        📊 Ingresos Mensuales
-    </div>
+    '<div class="section-title">'
+    '📊 Ingresos Mensuales'
+    '</div>',
+    unsafe_allow_html=True
+)
 
-    <div style="
-        color:#718096;
-        font-size:13px;
-        margin-bottom:5px;
-    ">
-        Evolución de ingresos Airbnb
-    </div>
-    """,
+st.markdown(
+    '<div class="section-subtitle">'
+    'Evolución de ingresos Airbnb'
+    '</div>',
     unsafe_allow_html=True
 )
 
 
 df_mensual = df_filtrado.copy()
+
 
 df_mensual["Mes"] = (
     df_mensual["Fecha"]
@@ -865,7 +911,7 @@ if not mensual.empty:
 
 
     fig_mensual.update_layout(
-        height=330,
+        height=320,
         margin=dict(
             l=20,
             r=20,
@@ -899,7 +945,7 @@ if not mensual.empty:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-col_ytd, col_info = st.columns(
+col_ytd, col_ytd_info = st.columns(
     [3, 1]
 )
 
@@ -907,23 +953,16 @@ col_ytd, col_info = st.columns(
 with col_ytd:
 
     st.markdown(
-        """
-        <div style="
-            font-size:20px;
-            font-weight:700;
-            color:#172B4D;
-        ">
-            📈 Ingresos YTD
-        </div>
+        '<div class="section-title">'
+        '📈 Ingresos YTD'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
-        <div style="
-            color:#718096;
-            font-size:13px;
-            margin-bottom:5px;
-        ">
-            Evolución acumulada de ingresos Airbnb
-        </div>
-        """,
+    st.markdown(
+        '<div class="section-subtitle">'
+        'Ingresos acumulados durante el año'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -969,7 +1008,7 @@ with col_ytd:
 
 
         fig_ytd.update_layout(
-            height=330,
+            height=320,
             margin=dict(
                 l=20,
                 r=20,
@@ -1020,10 +1059,10 @@ with col_ytd:
 
 
 # ============================================================
-# RESUMEN LATERAL YTD
+# TARJETA YTD
 # ============================================================
 
-with col_info:
+with col_ytd_info:
 
     if not ytd_mensual.empty:
 
@@ -1033,44 +1072,52 @@ with col_info:
 
         año_actual = años[-1]
 
-        valor_ytd = ytd_mensual[
+
+        datos_año = ytd_mensual[
             ytd_mensual["Año"] == año_actual
-        ]["Ingreso"].iloc[-1]
+        ]
 
 
-        st.markdown(
-            f"""
-            <div class="section-card"
-                 style="margin-top:35px;">
+        if not datos_año.empty:
 
-                <div style="
-                    color:#718096;
-                    font-size:13px;
-                ">
-                    YTD {año_actual}
+            valor_ytd = datos_año[
+                "Acumulado"
+            ].iloc[-1]
+
+
+            st.markdown(
+                f"""
+                <div class="info-card"
+                     style="margin-top:35px;">
+
+                    <div style="
+                        color:#718096;
+                        font-size:13px;
+                    ">
+                        YTD {año_actual}
+                    </div>
+
+                    <div style="
+                        font-size:28px;
+                        font-weight:700;
+                        color:#172B4D;
+                        margin-top:7px;
+                    ">
+                        $ {valor_ytd / 1_000_000:.1f} M
+                    </div>
+
+                    <div style="
+                        color:#168A52;
+                        font-size:13px;
+                        margin-top:10px;
+                    ">
+                        Ingreso acumulado
+                    </div>
+
                 </div>
-
-                <div style="
-                    font-size:28px;
-                    font-weight:700;
-                    color:#172B4D;
-                    margin-top:5px;
-                ">
-                    $ {valor_ytd/1000000:.1f} M
-                </div>
-
-                <div style="
-                    color:#168A52;
-                    font-size:13px;
-                    margin-top:10px;
-                ">
-                    Ingreso acumulado
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+                """.replace("\n", ""),
+                unsafe_allow_html=True
+            )
 
 
 # ============================================================
