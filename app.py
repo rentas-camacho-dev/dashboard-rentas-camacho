@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
@@ -10,14 +12,114 @@ from google.oauth2 import service_account
 # ============================================================
 
 st.set_page_config(
-    page_title="FinQuery - Resumen",
+    page_title="FinQuery - Rentas Cortas Airbnb",
     page_icon="🏠",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 
 # ============================================================
-# BIGQUERY
+# ESTILO
+# ============================================================
+
+st.markdown("""
+<style>
+
+    /* Fondo general */
+    .stApp {
+        background: #F7F9FC;
+    }
+
+    /* Sidebar */
+    section[data-testid="stSidebar"] {
+        background: #FFFFFF;
+        border-right: 1px solid #E8EDF4;
+    }
+
+    section[data-testid="stSidebar"] > div {
+        padding-top: 1rem;
+    }
+
+    /* Título */
+    .main-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #14213D;
+        margin-bottom: 0px;
+    }
+
+    .subtitle {
+        color: #718096;
+        font-size: 15px;
+        margin-top: -5px;
+        margin-bottom: 20px;
+    }
+
+    /* Tarjetas KPI */
+    .kpi-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px 22px;
+        min-height: 135px;
+        border: 1px solid #E8EDF4;
+        box-shadow: 0 3px 12px rgba(30, 50, 80, 0.05);
+    }
+
+    .kpi-title {
+        font-size: 14px;
+        color: #667085;
+        margin-bottom: 5px;
+    }
+
+    .kpi-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #172B4D;
+    }
+
+    .kpi-sub {
+        font-size: 12px;
+        color: #98A2B3;
+        margin-top: 5px;
+    }
+
+    /* Contenedores */
+    .section-card {
+        background: white;
+        border-radius: 18px;
+        padding: 20px;
+        border: 1px solid #E8EDF4;
+        box-shadow: 0 3px 12px rgba(30, 50, 80, 0.04);
+    }
+
+    /* Headers */
+    h1, h2, h3 {
+        color: #14213D !important;
+    }
+
+    /* Ocultar menú */
+    #MainMenu {
+        visibility: hidden;
+    }
+
+    footer {
+        visibility: hidden;
+    }
+
+    /* Botones */
+    .stButton > button {
+        border-radius: 10px;
+        border: 1px solid #DDE5EF;
+        background: white;
+    }
+
+</style>
+""", unsafe_allow_html=True)
+
+
+# ============================================================
+# CONEXIÓN BIGQUERY
 # ============================================================
 
 credentials = service_account.Credentials.from_service_account_info(
@@ -72,6 +174,8 @@ def cargar_datos():
             Gasto
 
         FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
+
+        WHERE LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
     """
 
     df = client.query(query).to_dataframe()
@@ -112,25 +216,95 @@ except Exception as e:
     st.stop()
 
 
+if df.empty:
+
+    st.warning("No se encontraron movimientos de Airbnb.")
+    st.stop()
+
+
 # ============================================================
-# TÍTULO
+# SIDEBAR
 # ============================================================
 
-st.title("🏠 Resumen por Apartamento")
+with st.sidebar:
 
-st.markdown(
-    "### Ingresos y Gastos"
+    st.markdown(
+        """
+        <div style="
+            font-size:26px;
+            font-weight:700;
+            color:#172B4D;
+            margin-bottom:5px;
+        ">
+            FinQuery
+        </div>
+
+        <div style="
+            font-size:13px;
+            color:#718096;
+            margin-bottom:30px;
+        ">
+            Rentas Cortas - Camacho
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown("### 🏠 Airbnb")
+
+    st.caption("Vista exclusiva de ingresos y gastos Airbnb")
+
+    st.divider()
+
+    st.markdown("**Filtros**")
+
+
+# ============================================================
+# ENCABEZADO
+# ============================================================
+
+col_titulo, col_actualizar = st.columns(
+    [4, 1]
 )
+
+with col_titulo:
+
+    st.markdown(
+        '<div class="main-title">Rentas Cortas - Airbnb</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="subtitle">Resumen de ingresos y gastos operativos</div>',
+        unsafe_allow_html=True
+    )
+
+
+with col_actualizar:
+
+    if st.button(
+        "🔄 Actualizar",
+        use_container_width=True
+    ):
+
+        st.cache_data.clear()
+        st.rerun()
 
 
 # ============================================================
 # FILTROS
 # ============================================================
 
-col_filtro1, col_filtro2 = st.columns([1, 1])
+f1, f2, f3, f4 = st.columns(
+    [1, 1, 1, 1.35]
+)
 
 
-with col_filtro1:
+# ------------------------------------------------------------
+# CIUDAD
+# ------------------------------------------------------------
+
+with f1:
 
     ciudades = sorted(
         df["Ciudad"]
@@ -145,27 +319,68 @@ with col_filtro1:
     )
 
 
-with col_filtro2:
+# ------------------------------------------------------------
+# PROPIEDAD
+# ------------------------------------------------------------
 
-    fecha_min = df["Fecha"].min()
-    fecha_max = df["Fecha"].max()
+with f2:
 
-    rango_fecha = st.date_input(
+    propiedades = sorted(
+        df["Nombre_Propiedad"]
+        .dropna()
+        .astype(str)
+        .unique()
+    )
+
+    propiedad = st.selectbox(
+        "Propiedad",
+        ["Todas"] + propiedades
+    )
+
+
+# ------------------------------------------------------------
+# SOCIO
+# ------------------------------------------------------------
+
+with f3:
+
+    socios = sorted(
+        df["Nombre_Socio"]
+        .dropna()
+        .astype(str)
+        .unique()
+    )
+
+    socio = st.selectbox(
+        "Socio",
+        ["Todos"] + socios
+    )
+
+
+# ------------------------------------------------------------
+# FECHA
+# ------------------------------------------------------------
+
+with f4:
+
+    fecha_min = df["Fecha"].min().date()
+    fecha_max = df["Fecha"].max().date()
+
+    rango = st.date_input(
         "Fecha",
-        value=(fecha_min.date(), fecha_max.date()),
-        min_value=fecha_min.date(),
-        max_value=fecha_max.date()
+        value=(fecha_min, fecha_max),
+        min_value=fecha_min,
+        max_value=fecha_max
     )
 
 
 # ============================================================
-# APLICAR FILTROS
+# FILTRAR
 # ============================================================
 
 df_filtrado = df.copy()
 
 
-# Ciudad
 if ciudad != "Todas":
 
     df_filtrado = df_filtrado[
@@ -173,13 +388,28 @@ if ciudad != "Todas":
     ]
 
 
-# Fecha
-if isinstance(rango_fecha, tuple) and len(rango_fecha) == 2:
+if propiedad != "Todas":
 
-    fecha_inicio = pd.Timestamp(rango_fecha[0])
+    df_filtrado = df_filtrado[
+        df_filtrado["Nombre_Propiedad"].astype(str)
+        == propiedad
+    ]
+
+
+if socio != "Todos":
+
+    df_filtrado = df_filtrado[
+        df_filtrado["Nombre_Socio"].astype(str)
+        == socio
+    ]
+
+
+if isinstance(rango, tuple) and len(rango) == 2:
+
+    fecha_inicio = pd.Timestamp(rango[0])
 
     fecha_fin = (
-        pd.Timestamp(rango_fecha[1])
+        pd.Timestamp(rango[1])
         + pd.Timedelta(days=1)
         - pd.Timedelta(seconds=1)
     )
@@ -192,7 +422,7 @@ if isinstance(rango_fecha, tuple) and len(rango_fecha) == 2:
 
 
 # ============================================================
-# KPIs
+# INDICADORES
 # ============================================================
 
 ingreso_total = df_filtrado["Ingreso"].sum()
@@ -208,54 +438,162 @@ rentabilidad = (
 )
 
 
+# ============================================================
+# KPI CARDS
+# ============================================================
+
 k1, k2, k3, k4 = st.columns(4)
 
 
 with k1:
 
-    st.metric(
-        "Ingreso Total",
-        f"$ {ingreso_total:,.0f}"
+    st.markdown(
+        f"""
+        <div class="kpi-card"
+             style="border-left:5px solid #20A464;">
+
+            <div class="kpi-title">
+                💰 Ingreso Total
+            </div>
+
+            <div class="kpi-value"
+                 style="color:#168A52;">
+
+                $ {ingreso_total:,.0f}
+
+            </div>
+
+            <div class="kpi-sub">
+                Ingresos Airbnb
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 
 with k2:
 
-    st.metric(
-        "Gasto",
-        f"$ {gasto_total:,.0f}"
+    st.markdown(
+        f"""
+        <div class="kpi-card"
+             style="border-left:5px solid #F04438;">
+
+            <div class="kpi-title">
+                💸 Gasto
+            </div>
+
+            <div class="kpi-value"
+                 style="color:#E53935;">
+
+                $ {gasto_total:,.0f}
+
+            </div>
+
+            <div class="kpi-sub">
+                Gastos operativos Airbnb
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 
 with k3:
 
-    st.metric(
-        "Flujo",
-        f"$ {flujo_total:,.0f}"
+    st.markdown(
+        f"""
+        <div class="kpi-card"
+             style="border-left:5px solid #3B82F6;">
+
+            <div class="kpi-title">
+                📈 Flujo
+            </div>
+
+            <div class="kpi-value">
+
+                $ {flujo_total:,.0f}
+
+            </div>
+
+            <div class="kpi-sub">
+                Ingreso - Gasto
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 
 with k4:
 
-    st.metric(
-        "Rentabilidad",
-        f"{rentabilidad:.1%}"
+    st.markdown(
+        f"""
+        <div class="kpi-card"
+             style="border-left:5px solid #8B5CF6;">
+
+            <div class="kpi-title">
+                📊 Rentabilidad
+            </div>
+
+            <div class="kpi-value"
+                 style="color:#7C3AED;">
+
+                {rentabilidad:.1%}
+
+            </div>
+
+            <div class="kpi-sub">
+                Flujo / Ingreso
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 
-st.divider()
+st.markdown("<br>", unsafe_allow_html=True)
 
 
 # ============================================================
-# TABLA POR PROPIEDAD
+# RESUMEN POR PROPIEDAD + GASTOS
 # ============================================================
 
-col_tabla, col_grafico = st.columns([1.25, 0.75])
+col_tabla, col_dona = st.columns(
+    [1.25, 0.75]
+)
 
+
+# ============================================================
+# TABLA PROPIEDADES
+# ============================================================
 
 with col_tabla:
 
-    st.subheader("🏠 Propiedad")
+    st.markdown(
+        """
+        <div style="
+            font-size:20px;
+            font-weight:700;
+            color:#172B4D;
+        ">
+            🏠 Desempeño por Propiedad
+        </div>
+
+        <div style="
+            color:#718096;
+            font-size:13px;
+            margin-bottom:10px;
+        ">
+            Ingresos, gastos y flujo por propiedad Airbnb
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     resumen = (
         df_filtrado
@@ -285,57 +623,53 @@ with col_tabla:
         ascending=False
     )
 
-    # Fila TOTAL
-    total = pd.DataFrame({
-        "Nombre_Propiedad": ["Total"],
-        "Ingreso": [resumen["Ingreso"].sum()],
-        "Gasto": [resumen["Gasto"].sum()],
-        "Flujo": [resumen["Flujo"].sum()],
-        "%": [
-            resumen["Flujo"].sum()
-            / resumen["Ingreso"].sum()
-            if resumen["Ingreso"].sum() != 0
-            else 0
-        ]
-    })
 
-    resumen_mostrar = pd.concat(
-        [resumen, total],
-        ignore_index=True
+    # Total
+    total_ingreso = resumen["Ingreso"].sum()
+    total_gasto = resumen["Gasto"].sum()
+    total_flujo = resumen["Flujo"].sum()
+
+    total_rentabilidad = (
+        total_flujo / total_ingreso
+        if total_ingreso != 0
+        else 0
     )
 
-    resumen_mostrar = resumen_mostrar.rename(
+
+    resumen_display = resumen.copy()
+
+    resumen_display["Ingreso"] = resumen_display[
+        "Ingreso"
+    ].apply(lambda x: f"$ {x/1000000:.1f} M"
+            if abs(x) >= 1000000
+            else f"$ {x/1000:.0f} mil")
+
+    resumen_display["Gasto"] = resumen_display[
+        "Gasto"
+    ].apply(lambda x: f"$ {x/1000000:.1f} M"
+            if abs(x) >= 1000000
+            else f"$ {x/1000:.0f} mil")
+
+    resumen_display["Flujo"] = resumen_display[
+        "Flujo"
+    ].apply(lambda x: f"$ {x/1000000:.1f} M"
+            if abs(x) >= 1000000
+            else f"$ {x/1000:.0f} mil")
+
+    resumen_display["%"] = resumen_display[
+        "%"
+    ].apply(lambda x: f"{x:.1%}")
+
+
+    resumen_display = resumen_display.rename(
         columns={
             "Nombre_Propiedad": "Propiedad"
         }
     )
 
-    resumen_mostrar["Ingreso"] = resumen_mostrar[
-        "Ingreso"
-    ].apply(
-        lambda x: f"$ {x:,.0f}"
-    )
-
-    resumen_mostrar["Gasto"] = resumen_mostrar[
-        "Gasto"
-    ].apply(
-        lambda x: f"$ {x:,.0f}"
-    )
-
-    resumen_mostrar["Flujo"] = resumen_mostrar[
-        "Flujo"
-    ].apply(
-        lambda x: f"$ {x:,.0f}"
-    )
-
-    resumen_mostrar["%"] = resumen_mostrar[
-        "%"
-    ].apply(
-        lambda x: f"{x:.1%}"
-    )
 
     st.dataframe(
-        resumen_mostrar[
+        resumen_display[
             [
                 "Propiedad",
                 "Ingreso",
@@ -346,17 +680,60 @@ with col_tabla:
         ],
         use_container_width=True,
         hide_index=True,
-        height=390
+        height=370
+    )
+
+
+    st.markdown(
+        f"""
+        <div style="
+            background:#F3F6FA;
+            border-radius:10px;
+            padding:12px 15px;
+            margin-top:5px;
+            display:flex;
+            justify-content:space-between;
+            font-weight:600;
+            color:#172B4D;
+        ">
+            <span>Total</span>
+            <span>$ {total_ingreso/1000000:.1f} M</span>
+            <span>$ {total_gasto/1000000:.1f} M</span>
+            <span>$ {total_flujo/1000000:.1f} M</span>
+            <span>{total_rentabilidad:.1%}</span>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 
 # ============================================================
-# GASTOS POR SUBCATEGORÍA
+# DONUT DE GASTOS
 # ============================================================
 
-with col_grafico:
+with col_dona:
 
-    st.subheader("💸 Gastos por Subcategoría")
+    st.markdown(
+        """
+        <div style="
+            font-size:20px;
+            font-weight:700;
+            color:#172B4D;
+        ">
+            💸 Gastos por Subcategoría
+        </div>
+
+        <div style="
+            color:#718096;
+            font-size:13px;
+            margin-bottom:5px;
+        ">
+            Distribución de los gastos operativos Airbnb
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 
     gastos = (
         df_filtrado[
@@ -371,50 +748,338 @@ with col_grafico:
         )
     )
 
-    if len(gastos) > 0:
 
-        fig = px.pie(
+    if not gastos.empty:
+
+        fig_dona = px.pie(
             gastos,
             names="Nombre_Subcategoria",
             values="Gasto",
-            hole=0.48
+            hole=0.58
         )
 
-        fig.update_traces(
+
+        fig_dona.update_traces(
             textinfo="percent",
-            hovertemplate=(
+            textposition="inside",
+            hovertemplate=
                 "<b>%{label}</b><br>"
                 "$ %{value:,.0f}"
                 "<extra></extra>"
+        )
+
+
+        fig_dona.update_layout(
+            height=390,
+            margin=dict(
+                l=0,
+                r=0,
+                t=10,
+                b=0
+            ),
+            showlegend=True,
+            legend=dict(
+                orientation="v",
+                x=1.0,
+                y=0.5
             )
         )
 
-        fig.update_layout(
-            margin=dict(
-                l=10,
-                r=10,
-                t=10,
-                b=10
-            ),
-            legend_title=""
-        )
 
         st.plotly_chart(
-            fig,
-            use_container_width=True
+            fig_dona,
+            use_container_width=True,
+            config={
+                "displayModeBar": False
+            }
         )
+
 
     else:
 
         st.info(
-            "No hay gastos para los filtros seleccionados."
+            "No hay gastos para este filtro."
         )
 
 
 # ============================================================
-# INFORMACIÓN
+# INGRESOS MENSUALES
 # ============================================================
 
+st.markdown("<br>", unsafe_allow_html=True)
+
+st.markdown(
+    """
+    <div style="
+        font-size:20px;
+        font-weight:700;
+        color:#172B4D;
+    ">
+        📊 Ingresos Mensuales
+    </div>
+
+    <div style="
+        color:#718096;
+        font-size:13px;
+        margin-bottom:5px;
+    ">
+        Evolución de ingresos Airbnb
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
+df_mensual = df_filtrado.copy()
+
+df_mensual["Mes"] = (
+    df_mensual["Fecha"]
+    .dt.to_period("M")
+    .dt.to_timestamp()
+)
+
+
+mensual = (
+    df_mensual
+    .groupby("Mes")["Ingreso"]
+    .sum()
+    .reset_index()
+)
+
+
+if not mensual.empty:
+
+    fig_mensual = px.bar(
+        mensual,
+        x="Mes",
+        y="Ingreso"
+    )
+
+
+    fig_mensual.update_traces(
+        hovertemplate=
+            "<b>%{x|%b %Y}</b><br>"
+            "$ %{y:,.0f}"
+            "<extra></extra>"
+    )
+
+
+    fig_mensual.update_layout(
+        height=330,
+        margin=dict(
+            l=20,
+            r=20,
+            t=10,
+            b=20
+        ),
+        xaxis_title="",
+        yaxis_title="",
+        hovermode="x unified"
+    )
+
+
+    fig_mensual.update_xaxes(
+        dtick="M1",
+        tickformat="%b"
+    )
+
+
+    st.plotly_chart(
+        fig_mensual,
+        use_container_width=True,
+        config={
+            "displayModeBar": False
+        }
+    )
+
+
+# ============================================================
+# INGRESOS YTD
+# ============================================================
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+col_ytd, col_info = st.columns(
+    [3, 1]
+)
+
+
+with col_ytd:
+
+    st.markdown(
+        """
+        <div style="
+            font-size:20px;
+            font-weight:700;
+            color:#172B4D;
+        ">
+            📈 Ingresos YTD
+        </div>
+
+        <div style="
+            color:#718096;
+            font-size:13px;
+            margin-bottom:5px;
+        ">
+            Evolución acumulada de ingresos Airbnb
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+    ytd = df_filtrado.copy()
+
+    ytd["Año"] = ytd["Fecha"].dt.year
+
+    ytd["Mes"] = ytd["Fecha"].dt.month
+
+
+    ytd_mensual = (
+        ytd
+        .groupby(
+            ["Año", "Mes"]
+        )["Ingreso"]
+        .sum()
+        .reset_index()
+    )
+
+
+    ytd_mensual = ytd_mensual.sort_values(
+        ["Año", "Mes"]
+    )
+
+
+    ytd_mensual["Acumulado"] = (
+        ytd_mensual
+        .groupby("Año")["Ingreso"]
+        .cumsum()
+    )
+
+
+    if not ytd_mensual.empty:
+
+        fig_ytd = px.line(
+            ytd_mensual,
+            x="Mes",
+            y="Acumulado",
+            color="Año",
+            markers=True
+        )
+
+
+        fig_ytd.update_layout(
+            height=330,
+            margin=dict(
+                l=20,
+                r=20,
+                t=10,
+                b=20
+            ),
+            xaxis_title="",
+            yaxis_title="",
+            hovermode="x unified"
+        )
+
+
+        fig_ytd.update_xaxes(
+            tickmode="array",
+            tickvals=list(range(1, 13)),
+            ticktext=[
+                "Ene",
+                "Feb",
+                "Mar",
+                "Abr",
+                "May",
+                "Jun",
+                "Jul",
+                "Ago",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dic"
+            ]
+        )
+
+
+        fig_ytd.update_traces(
+            hovertemplate=
+                "<b>%{x}</b><br>"
+                "$ %{y:,.0f}"
+                "<extra></extra>"
+        )
+
+
+        st.plotly_chart(
+            fig_ytd,
+            use_container_width=True,
+            config={
+                "displayModeBar": False
+            }
+        )
+
+
+# ============================================================
+# RESUMEN LATERAL YTD
+# ============================================================
+
+with col_info:
+
+    if not ytd_mensual.empty:
+
+        años = sorted(
+            ytd_mensual["Año"].unique()
+        )
+
+        año_actual = años[-1]
+
+        valor_ytd = ytd_mensual[
+            ytd_mensual["Año"] == año_actual
+        ]["Ingreso"].iloc[-1]
+
+
+        st.markdown(
+            f"""
+            <div class="section-card"
+                 style="margin-top:35px;">
+
+                <div style="
+                    color:#718096;
+                    font-size:13px;
+                ">
+                    YTD {año_actual}
+                </div>
+
+                <div style="
+                    font-size:28px;
+                    font-weight:700;
+                    color:#172B4D;
+                    margin-top:5px;
+                ">
+                    $ {valor_ytd/1000000:.1f} M
+                </div>
+
+                <div style="
+                    color:#168A52;
+                    font-size:13px;
+                    margin-top:10px;
+                ">
+                    Ingreso acumulado
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+
+# ============================================================
+# PIE
+# ============================================================
+
+st.markdown("<br>", unsafe_allow_html=True)
+
 st.caption(
-    f"Movimientos incluidos: {len(df_filtrado):,}"
+    f"🏠 Airbnb · {len(df_filtrado):,} movimientos · "
+    f"Fuente: Movimientos_Operativos_Reparto"
 )
