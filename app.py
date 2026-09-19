@@ -24,7 +24,8 @@ st.set_page_config(
 # ESTILO GENERAL
 # ============================================================
 
-st.markdown("""
+st.markdown(
+"""
 <style>
 
 /* ==========================================================
@@ -54,7 +55,7 @@ div[data-testid="stVerticalBlock"] {
 
 
 /* ==========================================================
-   TITULOS DE SECCIÓN
+   TÍTULOS DE SECCIÓN
    ========================================================== */
 
 .section-title {
@@ -62,7 +63,6 @@ div[data-testid="stVerticalBlock"] {
     font-size: 19px;
     font-weight: 800;
     line-height: 1.25;
-
     margin-top: 10px;
     margin-bottom: 7px;
 }
@@ -71,7 +71,6 @@ div[data-testid="stVerticalBlock"] {
     color: #6B778C;
     font-size: 11px;
     line-height: 1.35;
-
     margin-top: 0;
     margin-bottom: 10px;
 }
@@ -143,7 +142,9 @@ hr {
 }
 
 </style>
-""", unsafe_allow_html=True)
+""",
+unsafe_allow_html=True
+)
 
 
 # ============================================================
@@ -216,7 +217,7 @@ with st.spinner("Cargando información de Airbnb..."):
 
 
 # ============================================================
-# PREPARACIÓN DE DATOS
+# PREPARACIÓN
 # ============================================================
 
 df["Fecha"] = pd.to_datetime(
@@ -312,35 +313,32 @@ def bandera(porcentaje):
 # ============================================================
 
 st.markdown(
-    """
-    <div style="
-        margin-top: 8px;
-        margin-bottom: 24px;
-    ">
+"""
+<div style="margin-top:8px;margin-bottom:24px;">
 
-        <h1 style="
-            color:#172B4D;
-            font-size:30px;
-            font-weight:800;
-            margin:0;
-            padding:0;
-            line-height:1.2;
-        ">
-            🏠 Rentas Cortas — Airbnb
-        </h1>
+<h1 style="
+color:#172B4D;
+font-size:30px;
+font-weight:800;
+margin:0;
+padding:0;
+line-height:1.2;
+">
+🏠 Rentas Cortas — Airbnb
+</h1>
 
-        <div style="
-            color:#6B778C;
-            font-size:13px;
-            margin-top:7px;
-            line-height:1.4;
-        ">
-            Ingresos, gastos y rentabilidad de tus propiedades
-        </div>
+<div style="
+color:#6B778C;
+font-size:13px;
+margin-top:7px;
+line-height:1.4;
+">
+Ingresos, gastos y rentabilidad de tus propiedades
+</div>
 
-    </div>
-    """,
-    unsafe_allow_html=True
+</div>
+""",
+unsafe_allow_html=True
 )
 
 
@@ -352,6 +350,7 @@ st.markdown(
     '<div class="section-title">🔎 Filtros</div>',
     unsafe_allow_html=True
 )
+
 
 f1, f2, f3, f4 = st.columns(
     4,
@@ -475,7 +474,7 @@ if socio_seleccionado:
 
 
 # ============================================================
-# FILTRO DE FECHA
+# FILTRO FECHA
 # ============================================================
 
 df_filtrado = df_base.copy()
@@ -630,7 +629,7 @@ if (
 
 
 # ============================================================
-# KPI CARDS
+# KPIs
 # ============================================================
 
 k1, k2, k3, k4 = st.columns(
@@ -692,8 +691,7 @@ with k4:
 
 
 # ============================================================
-# TABLA + DISTRIBUCIÓN DE GASTOS
-# MISMA ALTURA
+# TABLA + GASTOS
 # ============================================================
 
 col_tabla, col_gastos = st.columns(
@@ -852,10 +850,6 @@ style="width:{ancho}%;">
 """
 
 
-        # ----------------------------------------------------
-        # TOTAL
-        # ----------------------------------------------------
-
         total_ingreso = (
             resumen["Ingreso"].sum()
         )
@@ -885,10 +879,6 @@ style="width:{ancho}%;">
             100
         )
 
-
-        # ====================================================
-        # HTML TABLA
-        # ====================================================
 
         tabla_html = f"""
 
@@ -1379,7 +1369,7 @@ with col_gastos:
 
 
         # ====================================================
-        # TARJETA ÚNICA DE GASTOS
+        # TARJETA ÚNICA
         # ====================================================
 
         with st.container(
@@ -1661,7 +1651,7 @@ if años_disponibles:
 
 
     # ========================================================
-    # DATOS AÑO ACTUAL
+    # DATOS AÑO SELECCIONADO
     # ========================================================
 
     datos_año = df_base[
@@ -1683,7 +1673,7 @@ if años_disponibles:
 
 
     # ========================================================
-    # MES DE CORTE
+    # MES CORTE
     # ========================================================
 
     if not datos_año.empty:
@@ -1785,7 +1775,7 @@ if años_disponibles:
 
 
     # ========================================================
-    # GRÁFICA INGRESOS
+    # GRÁFICA ANUAL
     # ========================================================
 
     fig_anual = go.Figure()
