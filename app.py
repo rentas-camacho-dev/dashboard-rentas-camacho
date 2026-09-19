@@ -37,24 +37,24 @@ st.markdown("""
     .subtitle {
         font-size: 15px;
         color: #6B778C;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
     }
 
     .section-title {
         font-size: 21px;
         font-weight: 700;
         color: #172B4D;
-        margin-top: 25px;
-        margin-bottom: 12px;
+        margin-top: 20px;
+        margin-bottom: 10px;
     }
 
     .kpi-card {
         background-color: white;
-        padding: 20px 22px;
+        padding: 18px 20px;
         border-radius: 14px;
         border: 1px solid #E6E9EF;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        min-height: 120px;
+        min-height: 110px;
     }
 
     .kpi-title {
@@ -64,7 +64,7 @@ st.markdown("""
     }
 
     .kpi-value {
-        font-size: 28px;
+        font-size: 27px;
         font-weight: 700;
         color: #172B4D;
     }
@@ -128,7 +128,7 @@ st.markdown(
 
 
 # ============================================================
-# CONSULTA
+# CONSULTA BIGQUERY
 # ============================================================
 
 query = """
@@ -190,8 +190,6 @@ for columna in columnas_numericas:
         errors="coerce"
     ).fillna(0)
 
-
-# Eliminar fechas inválidas
 df = df.dropna(subset=["Fecha"])
 
 
@@ -207,7 +205,10 @@ st.markdown(
 col1, col2, col3, col4 = st.columns(4)
 
 
+# ------------------------------------------------------------
 # CIUDAD
+# ------------------------------------------------------------
+
 with col1:
 
     ciudades = sorted(
@@ -223,7 +224,10 @@ with col1:
     )
 
 
+# ------------------------------------------------------------
 # PROPIEDAD
+# ------------------------------------------------------------
+
 with col2:
 
     propiedades = sorted(
@@ -239,7 +243,10 @@ with col2:
     )
 
 
+# ------------------------------------------------------------
 # SOCIO
+# ------------------------------------------------------------
+
 with col3:
 
     socios = sorted(
@@ -255,7 +262,10 @@ with col3:
     )
 
 
+# ------------------------------------------------------------
 # FECHA
+# ------------------------------------------------------------
+
 with col4:
 
     fecha_min = df["Fecha"].min().date()
@@ -277,26 +287,29 @@ df_graficos = df.copy()
 
 
 if ciudad_seleccionada:
+
     df_graficos = df_graficos[
-        df_graficos["Ciudad"].astype(str).isin(
-            ciudad_seleccionada
-        )
+        df_graficos["Ciudad"]
+        .astype(str)
+        .isin(ciudad_seleccionada)
     ]
 
 
 if propiedad_seleccionada:
+
     df_graficos = df_graficos[
-        df_graficos["Nombre_Propiedad"].astype(str).isin(
-            propiedad_seleccionada
-        )
+        df_graficos["Nombre_Propiedad"]
+        .astype(str)
+        .isin(propiedad_seleccionada)
     ]
 
 
 if socio_seleccionado:
+
     df_graficos = df_graficos[
-        df_graficos["Nombre_Socio"].astype(str).isin(
-            socio_seleccionado
-        )
+        df_graficos["Nombre_Socio"]
+        .astype(str)
+        .isin(socio_seleccionado)
     ]
 
 
@@ -306,10 +319,15 @@ if socio_seleccionado:
 
 df_filtrado = df_graficos.copy()
 
+
 if isinstance(rango_fecha, tuple) and len(rango_fecha) == 2:
 
     fecha_inicio = pd.Timestamp(rango_fecha[0])
-    fecha_fin = pd.Timestamp(rango_fecha[1]) + pd.Timedelta(days=1)
+
+    fecha_fin = (
+        pd.Timestamp(rango_fecha[1])
+        + pd.Timedelta(days=1)
+    )
 
     df_filtrado = df_filtrado[
         (df_filtrado["Fecha"] >= fecha_inicio) &
@@ -318,26 +336,44 @@ if isinstance(rango_fecha, tuple) and len(rango_fecha) == 2:
 
 
 # ============================================================
-# KPIs
+# FORMATO MONEDA
 # ============================================================
-
-ingreso_total = df_filtrado["Ingreso"].sum()
-gasto_total = df_filtrado["Gasto"].sum()
-flujo_total = ingreso_total - gasto_total
-
-if ingreso_total != 0:
-    rentabilidad = flujo_total / ingreso_total
-else:
-    rentabilidad = 0
-
 
 def formato_moneda(valor):
 
     return f"${valor:,.0f}".replace(",", ".")
 
 
+# ============================================================
+# KPIs PRINCIPALES
+# ============================================================
+
+ingreso_total = df_filtrado["Ingreso"].sum()
+gasto_total = df_filtrado["Gasto"].sum()
+
+flujo_total = (
+    ingreso_total -
+    gasto_total
+)
+
+if ingreso_total != 0:
+
+    rentabilidad = (
+        flujo_total /
+        ingreso_total
+    )
+
+else:
+
+    rentabilidad = 0
+
+
 k1, k2, k3, k4 = st.columns(4)
 
+
+# ------------------------------------------------------------
+# INGRESO
+# ------------------------------------------------------------
 
 with k1:
 
@@ -354,6 +390,10 @@ with k1:
     )
 
 
+# ------------------------------------------------------------
+# GASTO
+# ------------------------------------------------------------
+
 with k2:
 
     st.markdown(
@@ -369,6 +409,10 @@ with k2:
     )
 
 
+# ------------------------------------------------------------
+# FLUJO
+# ------------------------------------------------------------
+
 with k3:
 
     st.markdown(
@@ -383,6 +427,10 @@ with k3:
         unsafe_allow_html=True
     )
 
+
+# ------------------------------------------------------------
+# RENTABILIDAD
+# ------------------------------------------------------------
 
 with k4:
 
@@ -412,7 +460,10 @@ if not df_filtrado.empty:
 
     resumen_propiedad = (
         df_filtrado
-        .groupby("Nombre_Propiedad", dropna=False)
+        .groupby(
+            "Nombre_Propiedad",
+            dropna=False
+        )
         .agg(
             Ingreso=("Ingreso", "sum"),
             Gasto=("Gasto", "sum")
@@ -427,33 +478,43 @@ if not df_filtrado.empty:
 
     resumen_propiedad["%"] = resumen_propiedad.apply(
         lambda row:
-            row["Flujo"] / row["Ingreso"]
+            (
+                row["Flujo"] /
+                row["Ingreso"]
+            )
             if row["Ingreso"] != 0
             else 0,
         axis=1
     )
 
-    resumen_propiedad = resumen_propiedad.sort_values(
-        "Ingreso",
-        ascending=False
+    resumen_propiedad = (
+        resumen_propiedad
+        .sort_values(
+            "Ingreso",
+            ascending=False
+        )
     )
 
     resumen_mostrar = resumen_propiedad.copy()
 
-    resumen_mostrar["Ingreso"] = resumen_mostrar["Ingreso"].apply(
-        formato_moneda
+    resumen_mostrar["Ingreso"] = (
+        resumen_mostrar["Ingreso"]
+        .apply(formato_moneda)
     )
 
-    resumen_mostrar["Gasto"] = resumen_mostrar["Gasto"].apply(
-        formato_moneda
+    resumen_mostrar["Gasto"] = (
+        resumen_mostrar["Gasto"]
+        .apply(formato_moneda)
     )
 
-    resumen_mostrar["Flujo"] = resumen_mostrar["Flujo"].apply(
-        formato_moneda
+    resumen_mostrar["Flujo"] = (
+        resumen_mostrar["Flujo"]
+        .apply(formato_moneda)
     )
 
-    resumen_mostrar["%"] = resumen_mostrar["%"].apply(
-        lambda x: f"{x:.1%}"
+    resumen_mostrar["%"] = (
+        resumen_mostrar["%"]
+        .apply(lambda x: f"{x:.1%}")
     )
 
     st.dataframe(
@@ -464,7 +525,9 @@ if not df_filtrado.empty:
 
 else:
 
-    st.info("No hay datos para los filtros seleccionados.")
+    st.info(
+        "No hay datos para los filtros seleccionados."
+    )
 
 
 # ============================================================
@@ -482,7 +545,9 @@ if not df_filtrado.empty:
         df_filtrado[
             df_filtrado["Gasto"] > 0
         ]
-        .groupby("Nombre_Subcategoria")["Gasto"]
+        .groupby(
+            "Nombre_Subcategoria"
+        )["Gasto"]
         .sum()
         .reset_index()
         .sort_values(
@@ -493,39 +558,36 @@ if not df_filtrado.empty:
 
     if not gastos_subcategoria.empty:
 
-        fig_gastos = go.Figure(
-            data=[
-                go.Pie(
-                    labels=gastos_subcategoria[
-                        "Nombre_Subcategoria"
-                    ],
-                    values=gastos_subcategoria[
-                        "Gasto"
-                    ],
-                    hole=0.58,
-                    textinfo="percent",
-                    hovertemplate=
-                    "<b>%{label}</b><br>"
-                    "$%{value:,.0f}<br>"
-                    "%{percent}"
-                    "<extra></extra>"
-                )
-            ]
+        fig_gastos = go.Figure()
+
+        fig_gastos.add_trace(
+            go.Pie(
+                labels=gastos_subcategoria[
+                    "Nombre_Subcategoria"
+                ],
+                values=gastos_subcategoria[
+                    "Gasto"
+                ],
+                hole=0.58,
+                textinfo="percent",
+                hovertemplate=
+                "<b>%{label}</b><br>"
+                "$%{value:,.0f}<br>"
+                "%{percent}"
+                "<extra></extra>"
+            )
         )
 
         fig_gastos.update_layout(
-            height=420,
+            height=350,
             margin=dict(
-                l=10,
-                r=10,
-                t=20,
-                b=10
+                l=5,
+                r=5,
+                t=10,
+                b=5
             ),
             template="plotly_white",
-            showlegend=True,
-            legend=dict(
-                orientation="v"
-            )
+            showlegend=True
         )
 
         st.plotly_chart(
@@ -538,7 +600,9 @@ if not df_filtrado.empty:
 
     else:
 
-        st.info("No hay gastos para mostrar.")
+        st.info(
+            "No hay gastos para mostrar."
+        )
 
 
 # ============================================================
@@ -566,19 +630,26 @@ años_disponibles = sorted(
 
 if not años_disponibles:
 
-    st.warning("No hay años disponibles para analizar.")
+    st.warning(
+        "No hay años disponibles para analizar."
+    )
 
 else:
 
     año_actual_sistema = pd.Timestamp.now().year
 
     if año_actual_sistema in años_disponibles:
+
         año_default = año_actual_sistema
+
     else:
+
         año_default = años_disponibles[0]
 
-    indice_default = años_disponibles.index(
-        año_default
+    indice_default = (
+        años_disponibles.index(
+            año_default
+        )
     )
 
     año_seleccionado = st.selectbox(
@@ -587,11 +658,14 @@ else:
         index=indice_default
     )
 
-    año_anterior = año_seleccionado - 1
+    año_anterior = (
+        año_seleccionado -
+        1
+    )
 
 
     # ========================================================
-    # DATOS POR AÑO
+    # DATOS AÑOS
     # ========================================================
 
     datos_año = df_graficos[
@@ -606,25 +680,22 @@ else:
 
 
     # ========================================================
-    # YTD VS LYTD
+    # FECHA DE CORTE
     # ========================================================
-
-    st.markdown(
-        f"#### Ingresos YTD — {año_seleccionado} vs {año_anterior}"
-    )
-
 
     if not datos_año.empty:
 
-        fecha_corte_anual = datos_año["Fecha"].max()
+        fecha_corte_anual = (
+            datos_año["Fecha"].max()
+        )
 
-        mes_corte_anual = fecha_corte_anual.month
-        dia_corte_anual = fecha_corte_anual.day
+        mes_corte_anual = (
+            fecha_corte_anual.month
+        )
 
     else:
 
         mes_corte_anual = 12
-        dia_corte_anual = 31
 
 
     # ========================================================
@@ -665,7 +736,7 @@ else:
 
 
     # ========================================================
-    # TABLA DE COMPARACIÓN
+    # COMPARACIÓN MES A MES
     # ========================================================
 
     comparacion_mensual = []
@@ -706,13 +777,13 @@ else:
 
 
     # ========================================================
-    # GRÁFICO COMBINADO
+    # GRÁFICA 1 — AÑO ACTUAL BARRAS / ANTERIOR LÍNEA
     # ========================================================
 
     fig_mensual = go.Figure()
 
 
-    # AÑO SELECCIONADO → BARRAS
+    # AÑO SELECCIONADO = BARRAS
     fig_mensual.add_trace(
         go.Bar(
             x=df_comparacion["Mes"],
@@ -721,12 +792,17 @@ else:
             ],
             name=str(año_seleccionado),
             marker_color="#2E7D32",
-            opacity=0.85
+            opacity=0.85,
+            hovertemplate=
+            f"<b>{año_seleccionado}</b><br>"
+            "%{x}<br>"
+            "$%{y:,.0f}"
+            "<extra></extra>"
         )
     )
 
 
-    # AÑO ANTERIOR → LÍNEA
+    # AÑO ANTERIOR = LÍNEA
     fig_mensual.add_trace(
         go.Scatter(
             x=df_comparacion["Mes"],
@@ -740,19 +816,24 @@ else:
                 width=3
             ),
             marker=dict(
-                size=7
-            )
+                size=6
+            ),
+            hovertemplate=
+            f"<b>{año_anterior}</b><br>"
+            "%{x}<br>"
+            "$%{y:,.0f}"
+            "<extra></extra>"
         )
     )
 
 
     fig_mensual.update_layout(
-        height=430,
+        height=330,
         margin=dict(
-            l=10,
-            r=10,
-            t=25,
-            b=10
+            l=5,
+            r=5,
+            t=10,
+            b=5
         ),
         template="plotly_white",
         hovermode="x unified",
@@ -760,92 +841,38 @@ else:
         legend=dict(
             orientation="h",
             yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
+            y=1.01,
+            xanchor="center",
+            x=0.5
         ),
 
         xaxis=dict(
-            title="Mes",
+            title=None,
             showgrid=False
         ),
 
         yaxis=dict(
-            title="Ingresos",
+            title=None,
             tickformat=",.0f",
             gridcolor="#EAEAEA"
         ),
 
-        bargap=0.25
+        bargap=0.18
     )
-
-
-    st.plotly_chart(
-        fig_mensual,
-        use_container_width=True,
-        config={
-            "displayModeBar": False
-        }
-    )
-
-
-    # ========================================================
-    # TABLA YTD
-    # ========================================================
-
-    total_actual = df_comparacion[
-        str(año_seleccionado)
-    ].sum()
-
-    total_anterior = df_comparacion[
-        str(año_anterior)
-    ].sum()
-
-    col_ytd1, col_ytd2, col_ytd3 = st.columns(3)
-
-
-    with col_ytd1:
-
-        st.metric(
-            f"Ingresos {año_seleccionado}",
-            formato_moneda(total_actual)
-        )
-
-
-    with col_ytd2:
-
-        st.metric(
-            f"Ingresos {año_anterior}",
-            formato_moneda(total_anterior)
-        )
-
-
-    with col_ytd3:
-
-        diferencia = (
-            total_actual -
-            total_anterior
-        )
-
-        st.metric(
-            "Diferencia",
-            formato_moneda(diferencia)
-        )
 
 
     # ========================================================
     # PROMEDIO MENSUAL POR PROPIEDAD
     # ========================================================
 
-    st.markdown(
-        f"#### Promedio mensual de ingresos por propiedad — {año_seleccionado}"
-    )
-
-
     datos_promedio = df_graficos[
         df_graficos["Fecha"].dt.year ==
         año_seleccionado
     ].copy()
+
+
+    grafico_promedio = None
+    promedio_propiedad = None
 
 
     if not datos_promedio.empty:
@@ -873,30 +900,44 @@ else:
         )
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # MESES TRANSCURRIDOS
-        # ====================================================
+        # ----------------------------------------------------
 
         promedio_propiedad["Meses"] = (
+
             (
                 promedio_propiedad["Fecha_Fin"].dt.year
                 -
                 promedio_propiedad["Fecha_Inicio"].dt.year
-            ) * 12
+            )
+            * 12
+
             +
+
             (
                 promedio_propiedad["Fecha_Fin"].dt.month
                 -
                 promedio_propiedad["Fecha_Inicio"].dt.month
             )
+
             + 1
+
         )
 
 
-        promedio_propiedad["Promedio_Mensual"] = (
+        # ----------------------------------------------------
+        # PROMEDIO MENSUAL
+        # ----------------------------------------------------
+
+        promedio_propiedad[
+            "Promedio_Mensual"
+        ] = (
+
             promedio_propiedad["Ingreso"]
             /
             promedio_propiedad["Meses"]
+
         )
 
 
@@ -910,7 +951,7 @@ else:
 
 
         # ====================================================
-        # GRÁFICO PROMEDIO
+        # GRÁFICA PROMEDIO
         # ====================================================
 
         grafico_promedio = go.Figure()
@@ -937,30 +978,54 @@ else:
 
 
         grafico_promedio.update_layout(
-            height=430,
+            height=330,
             margin=dict(
-                l=10,
-                r=10,
-                t=25,
-                b=10
+                l=5,
+                r=5,
+                t=10,
+                b=5
             ),
             template="plotly_white",
 
             xaxis=dict(
-                title="Propiedad",
+                title=None,
                 showgrid=False
             ),
 
             yaxis=dict(
-                title="Ingreso promedio mensual",
+                title=None,
                 tickformat=",.0f",
                 gridcolor="#EAEAEA"
             )
         )
 
 
+    # ========================================================
+    # GRÁFICAS LADO A LADO
+    # ========================================================
+
+    st.markdown(
+        f"#### 📊 Comparación anual y desempeño por propiedad"
+    )
+
+    grafico1, grafico2 = st.columns(
+        [1, 1],
+        gap="medium"
+    )
+
+
+    # --------------------------------------------------------
+    # GRÁFICA INGRESOS
+    # --------------------------------------------------------
+
+    with grafico1:
+
+        st.markdown(
+            f"**Ingresos {año_seleccionado} vs {año_anterior}**"
+        )
+
         st.plotly_chart(
-            grafico_promedio,
+            fig_mensual,
             use_container_width=True,
             config={
                 "displayModeBar": False
@@ -968,9 +1033,113 @@ else:
         )
 
 
-        # ====================================================
-        # TABLA PROMEDIO
-        # ====================================================
+    # --------------------------------------------------------
+    # GRÁFICA PROMEDIO
+    # --------------------------------------------------------
+
+    with grafico2:
+
+        st.markdown(
+            f"**Promedio mensual por propiedad — {año_seleccionado}**"
+        )
+
+        if grafico_promedio is not None:
+
+            st.plotly_chart(
+                grafico_promedio,
+                use_container_width=True,
+                config={
+                    "displayModeBar": False
+                }
+            )
+
+        else:
+
+            st.info(
+                f"No hay datos para {año_seleccionado} con los filtros seleccionados."
+            )
+
+
+    # ========================================================
+    # KPIs YTD
+    # ========================================================
+
+    total_actual = (
+        df_comparacion[
+            str(año_seleccionado)
+        ].sum()
+    )
+
+    total_anterior = (
+        df_comparacion[
+            str(año_anterior)
+        ].sum()
+    )
+
+    diferencia = (
+        total_actual -
+        total_anterior
+    )
+
+
+    st.markdown(
+        "#### 💰 Resumen YTD"
+    )
+
+    col_ytd1, col_ytd2, col_ytd3 = st.columns(3)
+
+
+    # --------------------------------------------------------
+    # TOTAL ACTUAL
+    # --------------------------------------------------------
+
+    with col_ytd1:
+
+        st.metric(
+            f"Ingresos {año_seleccionado}",
+            formato_moneda(
+                total_actual
+            )
+        )
+
+
+    # --------------------------------------------------------
+    # TOTAL ANTERIOR
+    # --------------------------------------------------------
+
+    with col_ytd2:
+
+        st.metric(
+            f"Ingresos {año_anterior}",
+            formato_moneda(
+                total_anterior
+            )
+        )
+
+
+    # --------------------------------------------------------
+    # DIFERENCIA
+    # --------------------------------------------------------
+
+    with col_ytd3:
+
+        st.metric(
+            "Diferencia",
+            formato_moneda(
+                diferencia
+            )
+        )
+
+
+    # ========================================================
+    # TABLA PROMEDIO POR PROPIEDAD
+    # ========================================================
+
+    if promedio_propiedad is not None:
+
+        st.markdown(
+            f"#### 🏠 Detalle promedio mensual por propiedad — {año_seleccionado}"
+        )
 
         tabla_promedio = promedio_propiedad[
             [
@@ -986,10 +1155,13 @@ else:
             columns={
                 "Nombre_Propiedad":
                     "Propiedad",
+
                 "Ingreso":
                     "Ingreso Total",
+
                 "Meses":
                     "Meses con datos",
+
                 "Promedio_Mensual":
                     "Promedio Mensual"
             }
@@ -998,19 +1170,21 @@ else:
 
         tabla_promedio[
             "Ingreso Total"
-        ] = tabla_promedio[
-            "Ingreso Total"
-        ].apply(
-            formato_moneda
+        ] = (
+            tabla_promedio[
+                "Ingreso Total"
+            ]
+            .apply(formato_moneda)
         )
 
 
         tabla_promedio[
             "Promedio Mensual"
-        ] = tabla_promedio[
-            "Promedio Mensual"
-        ].apply(
-            formato_moneda
+        ] = (
+            tabla_promedio[
+                "Promedio Mensual"
+            ]
+            .apply(formato_moneda)
         )
 
 
@@ -1018,11 +1192,4 @@ else:
             tabla_promedio,
             use_container_width=True,
             hide_index=True
-        )
-
-
-    else:
-
-        st.info(
-            f"No hay datos para {año_seleccionado} con los filtros seleccionados."
         )
