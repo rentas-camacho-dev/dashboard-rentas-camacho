@@ -45,28 +45,28 @@ st.markdown("""
 
 
 /* ============================================================
-   QUITAR ESPACIOS EXCESIVOS
+   ESPACIADO GENERAL
    ============================================================ */
 
 div[data-testid="stVerticalBlock"] {
-    gap: 0.30rem;
+    gap: 0.45rem;
 }
 
 
 /* ============================================================
-   TITULO
+   TITULO PRINCIPAL
    ============================================================ */
 
 .dashboard-header {
     padding-top: 5px;
-    padding-bottom: 10px;
+    padding-bottom: 14px;
 }
 
 .dashboard-title {
     color: #172B4D;
     font-size: 30px;
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1.15;
     margin: 0;
 }
 
@@ -78,23 +78,24 @@ div[data-testid="stVerticalBlock"] {
 
 
 /* ============================================================
-   TITULOS DE SECCION
+   TITULOS DE SECCIÓN
    ============================================================ */
 
 .section-title {
     color: #172B4D;
     font-size: 19px;
     font-weight: 800;
-    line-height: 1.15;
-    margin-top: 7px;
-    margin-bottom: 2px;
+    line-height: 1.25;
+    margin-top: 14px;
+    margin-bottom: 6px;
 }
 
 .section-subtitle {
     color: #6B778C;
     font-size: 11px;
-    line-height: 1.2;
-    margin-bottom: 7px;
+    line-height: 1.3;
+    margin-top: 0;
+    margin-bottom: 10px;
 }
 
 
@@ -155,7 +156,7 @@ div[data-testid="stPlotlyChart"] {
 
 
 /* ============================================================
-   SEPARADOR
+   SEPARADORES
    ============================================================ */
 
 hr {
@@ -206,7 +207,7 @@ WHERE LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
 
 
 # ============================================================
-# CONEXIÓN
+# CONEXIÓN BIGQUERY
 # ============================================================
 
 @st.cache_data(ttl=300, show_spinner=False)
@@ -229,7 +230,7 @@ def cargar_datos():
 
 
 # ============================================================
-# CARGA
+# CARGAR DATOS
 # ============================================================
 
 with st.spinner("Cargando información de Airbnb..."):
@@ -338,20 +339,20 @@ def bandera(porcentaje):
 
 
 # ============================================================
-# ENCABEZADO
+# ENCABEZADO PRINCIPAL
 # ============================================================
 
 st.html("""
 <div style="
     padding-top:5px;
-    padding-bottom:10px;
+    padding-bottom:14px;
 ">
 
     <div style="
         color:#172B4D;
         font-size:30px;
         font-weight:800;
-        line-height:1.1;
+        line-height:1.15;
     ">
         🏠 Rentas Cortas — Airbnb
     </div>
@@ -359,7 +360,8 @@ st.html("""
     <div style="
         color:#6B778C;
         font-size:13px;
-        margin-top:5px;
+        line-height:1.3;
+        margin-top:6px;
     ">
         Ingresos, gastos y rentabilidad de tus propiedades
     </div>
@@ -644,7 +646,7 @@ if (
 
 
 # ============================================================
-# KPIs
+# TARJETAS KPI
 # ============================================================
 
 k1, k2, k3, k4 = st.columns(
@@ -716,7 +718,7 @@ col_tabla, col_gastos = st.columns(
 
 
 # ============================================================
-# TABLA DE PROPIEDADES
+# RESUMEN POR PROPIEDAD
 # ============================================================
 
 with col_tabla:
@@ -1364,7 +1366,7 @@ with col_gastos:
 
 
         # ====================================================
-        # UNA SOLA TARJETA
+        # UNA SOLA TARJETA DE GASTOS
         # ====================================================
 
         with st.container(
@@ -1635,7 +1637,7 @@ if años_disponibles:
 
 
     # ========================================================
-    # DATOS DEL AÑO
+    # DATOS AÑO ACTUAL
     # ========================================================
 
     datos_año = df_base[
@@ -1644,6 +1646,10 @@ if años_disponibles:
         año_seleccionado
     ].copy()
 
+
+    # ========================================================
+    # DATOS AÑO ANTERIOR
+    # ========================================================
 
     datos_año_anterior = df_base[
         df_base["Fecha"].dt.year
@@ -1751,7 +1757,7 @@ if años_disponibles:
 
 
     # ========================================================
-    # GRAFICA INGRESOS
+    # GRÁFICA INGRESOS
     # ========================================================
 
     fig_anual = go.Figure()
@@ -1779,7 +1785,7 @@ if años_disponibles:
     )
 
 
-    # AÑO ANTERIOR = LINEA
+    # AÑO ANTERIOR = LÍNEA
 
     fig_anual.add_trace(
         go.Scatter(
