@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import streamlit.components.v1 as components
+import html
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -11,9 +13,10 @@ from google.oauth2 import service_account
 # ============================================================
 
 st.set_page_config(
-    page_title="Rentas Cortas - Airbnb",
+    page_title="Rentas Cortas — Airbnb",
     page_icon="🏠",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 
@@ -24,71 +27,98 @@ st.set_page_config(
 st.markdown("""
 <style>
 
+    /* ========================================================
+       GENERAL
+    ======================================================== */
+
     .stApp {
         background-color: #F5F7FA;
     }
 
     .block-container {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
+        max-width: 100%;
+        padding-top: 0.75rem;
+        padding-bottom: 0.8rem;
+        padding-left: 1.15rem;
+        padding-right: 1.15rem;
     }
 
+    header[data-testid="stHeader"] {
+        background: transparent;
+    }
+
+
+    /* ========================================================
+       TÍTULOS
+    ======================================================== */
+
     .main-title {
-        font-size: 31px;
-        font-weight: 700;
+        font-size: 30px;
+        font-weight: 750;
         color: #172B4D;
-        margin-bottom: 2px;
+        line-height: 1.1;
+        margin-bottom: 3px;
     }
 
     .subtitle {
         font-size: 14px;
         color: #6B778C;
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
 
     .section-title {
-        font-size: 20px;
-        font-weight: 700;
+        font-size: 19px;
+        font-weight: 750;
         color: #172B4D;
-        margin-top: 14px;
-        margin-bottom: 8px;
+        margin-top: 11px;
+        margin-bottom: 7px;
     }
 
-    .mini-title {
-        font-size: 17px;
-        font-weight: 700;
-        color: #172B4D;
-        margin-bottom: 5px;
-    }
-
-    .mini-subtitle {
+    .section-subtitle {
         font-size: 12px;
         color: #6B778C;
+        margin-top: -4px;
         margin-bottom: 8px;
     }
+
+
+    /* ========================================================
+       FILTROS
+    ======================================================== */
+
+    .filter-box {
+        background: white;
+        border: 1px solid #E4E8ED;
+        border-radius: 14px;
+        padding: 7px 10px 2px 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.025);
+        margin-bottom: 10px;
+    }
+
 
     /* ========================================================
        KPIs
     ======================================================== */
 
     .kpi-card {
-        background-color: white;
-        padding: 16px 20px;
-        border-radius: 13px;
-        border: 1px solid #E6E9EF;
-        box-shadow: 0 2px 7px rgba(0,0,0,0.04);
-        min-height: 102px;
+        background: white;
+        border: 1px solid #E3E7EC;
+        border-radius: 14px;
+        padding: 16px 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.035);
+        min-height: 105px;
     }
 
     .kpi-title {
-        font-size: 13px;
+        font-size: 12px;
         color: #6B778C;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
     }
 
     .kpi-value {
-        font-size: 26px;
-        font-weight: 700;
+        font-size: 27px;
+        font-weight: 750;
+        line-height: 1.15;
     }
 
     .kpi-green {
@@ -107,21 +137,90 @@ st.markdown("""
         color: #6554C0;
     }
 
+
     /* ========================================================
-       TABLA
+       MINI METRICS
     ======================================================== */
 
-    div[data-testid="stDataFrame"] {
-        background-color: white;
+    .mini-card {
+        background: white;
+        border: 1px solid #E4E8ED;
         border-radius: 12px;
+        padding: 11px 14px;
+        min-height: 70px;
     }
 
+    .mini-label {
+        color: #6B778C;
+        font-size: 11px;
+        margin-bottom: 3px;
+    }
+
+    .mini-value {
+        color: #172B4D;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+
     /* ========================================================
-       SELECTBOX
+       SELECTORES
     ======================================================== */
 
     div[data-baseweb="select"] {
         border-radius: 8px;
+    }
+
+    div[data-baseweb="input"] {
+        border-radius: 8px;
+    }
+
+    label {
+        font-size: 12px !important;
+        color: #344563 !important;
+    }
+
+
+    /* ========================================================
+       DOWNLOAD BUTTON
+    ======================================================== */
+
+    .stDownloadButton button {
+        border-radius: 8px;
+        border: 1px solid #D7DEE7;
+        background: white;
+        color: #172B4D;
+        font-size: 12px;
+        padding: 5px 11px;
+    }
+
+
+    /* ========================================================
+       DATAFRAME DETALLE
+    ======================================================== */
+
+    div[data-testid="stDataFrame"] {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+
+    /* ========================================================
+       BOTONES STREAMLIT
+    ======================================================== */
+
+    .stButton button {
+        border-radius: 8px;
+    }
+
+
+    /* ========================================================
+       SEPARACIÓN
+    ======================================================== */
+
+    hr {
+        border-color: #E6E9EF;
+        margin: 8px 0;
     }
 
 </style>
@@ -129,43 +228,10 @@ st.markdown("""
 
 
 # ============================================================
-# CONEXIÓN BIGQUERY
+# BIGQUERY
 # ============================================================
 
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"],
-    scopes=[
-        "https://www.googleapis.com/auth/cloud-platform",
-        "https://www.googleapis.com/auth/drive.readonly"
-    ]
-)
-
-client = bigquery.Client(
-    credentials=credentials,
-    project="rentascamacho"
-)
-
-
-# ============================================================
-# TÍTULO
-# ============================================================
-
-st.markdown(
-    '<div class="main-title">🏠 Rentas Cortas — Airbnb</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    '<div class="subtitle">Análisis de ingresos, gastos y rentabilidad de las propiedades Airbnb</div>',
-    unsafe_allow_html=True
-)
-
-
-# ============================================================
-# CONSULTA BIGQUERY
-# ============================================================
-
-query = """
+QUERY = """
 SELECT
     Fecha,
     Tipo,
@@ -198,11 +264,39 @@ FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
 WHERE LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
 """
 
-df = client.query(query).to_dataframe()
+
+@st.cache_data(ttl=300, show_spinner=False)
+def cargar_datos():
+
+    credentials = (
+        service_account.Credentials
+        .from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes=[
+                "https://www.googleapis.com/auth/cloud-platform",
+                "https://www.googleapis.com/auth/drive.readonly"
+            ]
+        )
+    )
+
+    client = bigquery.Client(
+        credentials=credentials,
+        project="rentascamacho"
+    )
+
+    datos = client.query(
+        QUERY
+    ).to_dataframe()
+
+    return datos
+
+
+with st.spinner("Cargando información de Airbnb..."):
+    df = cargar_datos()
 
 
 # ============================================================
-# PREPARACIÓN DE DATOS
+# PREPARACIÓN
 # ============================================================
 
 df["Fecha"] = pd.to_datetime(
@@ -219,6 +313,7 @@ columnas_numericas = [
 ]
 
 for columna in columnas_numericas:
+
     df[columna] = pd.to_numeric(
         df[columna],
         errors="coerce"
@@ -249,19 +344,27 @@ def formato_compacto(valor):
     valor_abs = abs(valor)
 
     if valor_abs >= 1_000_000_000:
-        return f"{signo}$ {valor_abs / 1_000_000_000:.1f} B"
 
-    elif valor_abs >= 1_000_000:
-        return f"{signo}$ {valor_abs / 1_000_000:.1f} M"
-
-    elif valor_abs >= 1_000:
-        return f"{signo}$ {valor_abs / 1_000:.0f} mil"
-
-    else:
         return (
-            f"{signo}$ {valor_abs:,.0f}"
-            .replace(",", ".")
+            f"{signo}$ {valor_abs / 1_000_000_000:.1f} B"
         )
+
+    if valor_abs >= 1_000_000:
+
+        return (
+            f"{signo}$ {valor_abs / 1_000_000:.1f} M"
+        )
+
+    if valor_abs >= 1_000:
+
+        return (
+            f"{signo}$ {valor_abs / 1_000:.0f} mil"
+        )
+
+    return (
+        f"{signo}${valor_abs:,.0f}"
+        .replace(",", ".")
+    )
 
 
 def estado_porcentaje(porcentaje):
@@ -269,11 +372,85 @@ def estado_porcentaje(porcentaje):
     if porcentaje >= 0.80:
         return "🏆"
 
-    elif porcentaje >= 0.50:
+    if porcentaje >= 0.50:
         return "⚡"
 
-    else:
-        return "🚩"
+    return "🚩"
+
+
+def color_delta(valor):
+
+    if valor > 0:
+        return "#00875A"
+
+    if valor < 0:
+        return "#DE350B"
+
+    return "#6B778C"
+
+
+def porcentaje_cambio(actual, anterior):
+
+    if anterior == 0:
+        return None
+
+    return (
+        (actual - anterior)
+        / abs(anterior)
+    )
+
+
+# ============================================================
+# ENCABEZADO
+# ============================================================
+
+fecha_max_global = df["Fecha"].max()
+
+fecha_texto = (
+    fecha_max_global
+    .strftime("%d %b %Y")
+    if not pd.isna(fecha_max_global)
+    else "—"
+)
+
+header_col1, header_col2 = st.columns(
+    [2.4, 1]
+)
+
+with header_col1:
+
+    st.markdown(
+        '<div class="main-title">🏠 Rentas Cortas — Airbnb</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="subtitle">Ingresos, gastos y rentabilidad de tus propiedades</div>',
+        unsafe_allow_html=True
+    )
+
+
+with header_col2:
+
+    st.markdown(
+        f"""
+        <div style="
+            text-align:right;
+            padding-top:5px;
+            font-size:11px;
+            color:#6B778C;">
+            Último dato disponible
+        </div>
+        <div style="
+            text-align:right;
+            color:#172B4D;
+            font-size:13px;
+            font-weight:600;">
+            📅 {fecha_texto}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # ============================================================
@@ -285,12 +462,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-col1, col2, col3, col4 = st.columns(4)
 
+col1, col2, col3, col4 = st.columns(
+    [1, 1, 1, 1]
+)
 
-# ------------------------------------------------------------
-# CIUDAD
-# ------------------------------------------------------------
 
 with col1:
 
@@ -303,13 +479,10 @@ with col1:
 
     ciudad_seleccionada = st.multiselect(
         "Ciudad",
-        ciudades
+        ciudades,
+        placeholder="Todas"
     )
 
-
-# ------------------------------------------------------------
-# PROPIEDAD
-# ------------------------------------------------------------
 
 with col2:
 
@@ -322,13 +495,10 @@ with col2:
 
     propiedad_seleccionada = st.multiselect(
         "Propiedad",
-        propiedades
+        propiedades,
+        placeholder="Todas"
     )
 
-
-# ------------------------------------------------------------
-# SOCIO
-# ------------------------------------------------------------
 
 with col3:
 
@@ -341,13 +511,10 @@ with col3:
 
     socio_seleccionado = st.multiselect(
         "Socio",
-        socios
+        socios,
+        placeholder="Todos"
     )
 
-
-# ------------------------------------------------------------
-# FECHA
-# ------------------------------------------------------------
 
 with col4:
 
@@ -356,7 +523,10 @@ with col4:
 
     rango_fecha = st.date_input(
         "Fecha",
-        value=(fecha_min, fecha_max),
+        value=(
+            fecha_min,
+            fecha_max
+        ),
         min_value=fecha_min,
         max_value=fecha_max
     )
@@ -374,34 +544,43 @@ if ciudad_seleccionada:
     df_graficos = df_graficos[
         df_graficos["Ciudad"]
         .astype(str)
-        .isin(ciudad_seleccionada)
+        .isin(
+            ciudad_seleccionada
+        )
     ]
 
 
 if propiedad_seleccionada:
 
     df_graficos = df_graficos[
-        df_graficos["Nombre_Propiedad"]
+        df_graficos[
+            "Nombre_Propiedad"
+        ]
         .astype(str)
-        .isin(propiedad_seleccionada)
+        .isin(
+            propiedad_seleccionada
+        )
     ]
 
 
 if socio_seleccionado:
 
     df_graficos = df_graficos[
-        df_graficos["Nombre_Socio"]
+        df_graficos[
+            "Nombre_Socio"
+        ]
         .astype(str)
-        .isin(socio_seleccionado)
+        .isin(
+            socio_seleccionado
+        )
     ]
 
 
 # ============================================================
-# FILTRO DE FECHA
+# FECHA
 # ============================================================
 
 df_filtrado = df_graficos.copy()
-
 
 if (
     isinstance(rango_fecha, tuple)
@@ -420,18 +599,144 @@ if (
     )
 
     df_filtrado = df_filtrado[
-        (df_filtrado["Fecha"] >= fecha_inicio)
+        (
+            df_filtrado["Fecha"]
+            >= fecha_inicio
+        )
         &
-        (df_filtrado["Fecha"] < fecha_fin)
+        (
+            df_filtrado["Fecha"]
+            < fecha_fin
+        )
     ]
+
+
+# ============================================================
+# PERIODO ANTERIOR
+# ============================================================
+
+delta_income = None
+delta_expense = None
+delta_flow = None
+delta_profit = None
+
+if (
+    isinstance(rango_fecha, tuple)
+    and len(rango_fecha) == 2
+):
+
+    inicio_periodo = pd.Timestamp(
+        rango_fecha[0]
+    )
+
+    fin_periodo = pd.Timestamp(
+        rango_fecha[1]
+    )
+
+    dias_periodo = (
+        fin_periodo -
+        inicio_periodo
+    ).days + 1
+
+    fin_anterior = (
+        inicio_periodo
+        - pd.Timedelta(days=1)
+    )
+
+    inicio_anterior = (
+        fin_anterior
+        - pd.Timedelta(days=dias_periodo - 1)
+    )
+
+    df_anterior = df_graficos[
+        (
+            df_graficos["Fecha"]
+            >= inicio_anterior
+        )
+        &
+        (
+            df_graficos["Fecha"]
+            <= fin_anterior
+        )
+    ]
+
+    if (
+        not df_anterior.empty
+        and inicio_anterior >= df["Fecha"].min()
+    ):
+
+        ingreso_actual = (
+            df_filtrado["Ingreso"].sum()
+        )
+
+        ingreso_anterior = (
+            df_anterior["Ingreso"].sum()
+        )
+
+        gasto_actual = (
+            df_filtrado["Gasto"].sum()
+        )
+
+        gasto_anterior = (
+            df_anterior["Gasto"].sum()
+        )
+
+        flujo_actual = (
+            ingreso_actual -
+            gasto_actual
+        )
+
+        flujo_anterior = (
+            ingreso_anterior -
+            gasto_anterior
+        )
+
+        rent_actual = (
+            flujo_actual /
+            ingreso_actual
+            if ingreso_actual != 0
+            else 0
+        )
+
+        rent_anterior = (
+            flujo_anterior /
+            ingreso_anterior
+            if ingreso_anterior != 0
+            else 0
+        )
+
+        delta_income = porcentaje_cambio(
+            ingreso_actual,
+            ingreso_anterior
+        )
+
+        delta_expense = porcentaje_cambio(
+            gasto_actual,
+            gasto_anterior
+        )
+
+        delta_flow = porcentaje_cambio(
+            flujo_actual,
+            flujo_anterior
+        )
+
+        delta_profit = (
+            rent_actual -
+            rent_anterior
+        )
 
 
 # ============================================================
 # KPIs
 # ============================================================
 
-ingreso_total = df_filtrado["Ingreso"].sum()
-gasto_total = df_filtrado["Gasto"].sum()
+ingreso_total = (
+    df_filtrado["Ingreso"].sum()
+)
+
+gasto_total = (
+    df_filtrado["Gasto"].sum()
+)
 
 flujo_total = (
     ingreso_total -
@@ -439,7 +744,8 @@ flujo_total = (
 )
 
 rentabilidad = (
-    flujo_total / ingreso_total
+    flujo_total /
+    ingreso_total
     if ingreso_total != 0
     else 0
 )
@@ -448,68 +754,118 @@ rentabilidad = (
 k1, k2, k3, k4 = st.columns(4)
 
 
-with k1:
+def render_kpi(
+    titulo,
+    valor,
+    clase,
+    delta=None,
+    pp=False
+):
+
+    delta_html = ""
+
+    if delta is not None:
+
+        if pp:
+
+            texto_delta = (
+                f"{delta * 100:+.1f} pp"
+            )
+
+        else:
+
+            texto_delta = (
+                f"{delta * 100:+.1f}%"
+            )
+
+        flecha = (
+            "↑"
+            if delta >= 0
+            else
+            "↓"
+        )
+
+        delta_html = f"""
+        <div style="
+            margin-top:7px;
+            font-size:11px;
+            color:{color_delta(delta)};">
+            {flecha} {texto_delta}
+            <span style="color:#97A0AF;">
+                vs periodo anterior
+            </span>
+        </div>
+        """
 
     st.markdown(
         f"""
         <div class="kpi-card">
-            <div class="kpi-title">Ingreso Total</div>
-            <div class="kpi-value kpi-green">
-                {formato_moneda(ingreso_total)}
+
+            <div class="kpi-title">
+                {titulo}
             </div>
+
+            <div class="kpi-value {clase}">
+                {valor}
+            </div>
+
+            {delta_html}
+
         </div>
         """,
         unsafe_allow_html=True
+    )
+
+
+with k1:
+
+    render_kpi(
+        "Ingreso Total",
+        formato_moneda(
+            ingreso_total
+        ),
+        "kpi-green",
+        delta_income
     )
 
 
 with k2:
 
-    st.markdown(
-        f"""
-        <div class="kpi-card">
-            <div class="kpi-title">Gasto</div>
-            <div class="kpi-value kpi-red">
-                {formato_moneda(gasto_total)}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    render_kpi(
+        "Gasto Total",
+        formato_moneda(
+            gasto_total
+        ),
+        "kpi-red",
+        delta_expense
     )
 
 
 with k3:
 
-    st.markdown(
-        f"""
-        <div class="kpi-card">
-            <div class="kpi-title">Flujo</div>
-            <div class="kpi-value kpi-blue">
-                {formato_moneda(flujo_total)}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    render_kpi(
+        "Flujo",
+        formato_moneda(
+            flujo_total
+        ),
+        "kpi-blue",
+        delta_flow
     )
 
 
 with k4:
 
-    st.markdown(
-        f"""
-        <div class="kpi-card">
-            <div class="kpi-title">Rentabilidad</div>
-            <div class="kpi-value kpi-purple">
-                {rentabilidad:.1%}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    render_kpi(
+        "Rentabilidad",
+        f"{rentabilidad:.1%}",
+        "kpi-purple",
+        delta_profit,
+        pp=True
     )
 
 
 # ============================================================
-# TABLA + DISTRIBUCIÓN DE GASTOS
+# TABLA + GASTOS
 # ============================================================
 
 col_tabla, col_gastos = st.columns(
@@ -519,13 +875,18 @@ col_tabla, col_gastos = st.columns(
 
 
 # ============================================================
-# TABLA POR PROPIEDAD
+# RESUMEN POR PROPIEDAD
 # ============================================================
 
 with col_tabla:
 
     st.markdown(
         '<div class="section-title">🏢 Resumen por propiedad</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="section-subtitle">Desempeño financiero por propiedad en el periodo seleccionado</div>',
         unsafe_allow_html=True
     )
 
@@ -538,34 +899,41 @@ with col_tabla:
                 dropna=False
             )
             .agg(
-                Ingreso=("Ingreso", "sum"),
-                Gasto=("Gasto", "sum")
+                Ingreso=(
+                    "Ingreso",
+                    "sum"
+                ),
+                Gasto=(
+                    "Gasto",
+                    "sum"
+                )
             )
             .reset_index()
         )
 
-        resumen_propiedad["Flujo"] = (
-            resumen_propiedad["Ingreso"]
+        resumen_propiedad[
+            "Flujo"
+        ] = (
+            resumen_propiedad[
+                "Ingreso"
+            ]
             -
-            resumen_propiedad["Gasto"]
+            resumen_propiedad[
+                "Gasto"
+            ]
         )
 
-        resumen_propiedad["%"] = (
-            resumen_propiedad.apply(
-                lambda row:
-                (
-                    row["Flujo"] /
-                    row["Ingreso"]
-                )
-                if row["Ingreso"] != 0
-                else 0,
-                axis=1
+        resumen_propiedad[
+            "%"
+        ] = resumen_propiedad.apply(
+            lambda row:
+            (
+                row["Flujo"] /
+                row["Ingreso"]
             )
-        )
-
-        resumen_propiedad["Estado"] = (
-            resumen_propiedad["%"]
-            .apply(estado_porcentaje)
+            if row["Ingreso"] != 0
+            else 0,
+            axis=1
         )
 
         resumen_propiedad = (
@@ -577,224 +945,426 @@ with col_tabla:
         )
 
 
-        # ----------------------------------------------------
+        # ====================================================
+        # HTML TABLA
+        # ====================================================
+
+        html_tabla = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="utf-8">
+
+        <style>
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                background: transparent;
+                font-family:
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    Arial,
+                    sans-serif;
+            }
+
+            .card {
+                width: 100%;
+                background: white;
+                border: 1px solid #E1E5EA;
+                border-radius: 13px;
+                overflow: hidden;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed;
+            }
+
+            thead th {
+                background: #008577;
+                color: white;
+                padding: 10px 10px;
+                font-size: 12px;
+                font-weight: 700;
+                text-align: left;
+            }
+
+            thead th:nth-child(1) {
+                width: 24%;
+            }
+
+            thead th:nth-child(2),
+            thead th:nth-child(3),
+            thead th:nth-child(4) {
+                width: 15%;
+                text-align: right;
+            }
+
+            thead th:nth-child(5) {
+                width: 22%;
+                text-align: right;
+            }
+
+            thead th:nth-child(6) {
+                width: 9%;
+                text-align: center;
+            }
+
+            tbody td {
+                padding: 9px 10px;
+                border-bottom: 1px solid #EDF0F2;
+                font-size: 12px;
+                color: #172B4D;
+                vertical-align: middle;
+            }
+
+            tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            .property {
+                font-weight: 600;
+            }
+
+            .num {
+                text-align: right;
+                white-space: nowrap;
+            }
+
+            .income {
+                color: #00875A;
+                font-weight: 600;
+            }
+
+            .expense {
+                color: #DE350B;
+                font-weight: 600;
+            }
+
+            .positive {
+                color: #00875A;
+                font-weight: 700;
+            }
+
+            .negative {
+                color: #DE350B;
+                font-weight: 700;
+            }
+
+            .pct-box {
+                width: 100%;
+            }
+
+            .pct-row {
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 3px;
+                font-size: 11px;
+                font-weight: 600;
+            }
+
+            .bar-bg {
+                width: 100%;
+                height: 7px;
+                background: #EDF1F5;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+
+            .bar-fill {
+                height: 100%;
+                background: #16B5D1;
+                border-radius: 4px;
+            }
+
+            .status {
+                text-align: center;
+                font-size: 17px;
+            }
+
+            .total td {
+                background: #F8FAFC;
+                border-top: 2px solid #DCE3EA;
+                font-weight: 700;
+            }
+
+        </style>
+        </head>
+
+        <body>
+
+        <div class="card">
+
+        <table>
+
+        <thead>
+        <tr>
+            <th>Propiedad</th>
+            <th>Ingreso</th>
+            <th>Gasto</th>
+            <th>Flujo</th>
+            <th>%</th>
+            <th>Estado</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        """
+
+
+        # ====================================================
+        # FILAS
+        # ====================================================
+
+        for _, row in resumen_propiedad.iterrows():
+
+            nombre = html.escape(
+                str(
+                    row["Nombre_Propiedad"]
+                )
+            )
+
+            ingreso = float(
+                row["Ingreso"]
+            )
+
+            gasto = float(
+                row["Gasto"]
+            )
+
+            flujo = float(
+                row["Flujo"]
+            )
+
+            pct = float(
+                row["%"]
+            )
+
+            pct_width = min(
+                max(
+                    pct * 100,
+                    0
+                ),
+                100
+            )
+
+            estado = estado_porcentaje(
+                pct
+            )
+
+            flujo_class = (
+                "positive"
+                if flujo >= 0
+                else
+                "negative"
+            )
+
+
+            html_tabla += f"""
+            <tr>
+
+                <td class="property">
+                    {nombre}
+                </td>
+
+                <td class="num income">
+                    {formato_compacto(ingreso)}
+                </td>
+
+                <td class="num expense">
+                    {formato_compacto(gasto)}
+                </td>
+
+                <td class="num {flujo_class}">
+                    {formato_compacto(flujo)}
+                </td>
+
+                <td class="num">
+
+                    <div class="pct-box">
+
+                        <div class="pct-row">
+                            {pct:.1%}
+                        </div>
+
+                        <div class="bar-bg">
+
+                            <div
+                                class="bar-fill"
+                                style="
+                                    width:{pct_width}%;
+                                ">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </td>
+
+                <td class="status">
+                    {estado}
+                </td>
+
+            </tr>
+            """
+
+
+        # ====================================================
         # TOTAL
-        # ----------------------------------------------------
+        # ====================================================
 
         total_ingreso = (
-            resumen_propiedad["Ingreso"].sum()
+            resumen_propiedad[
+                "Ingreso"
+            ].sum()
         )
 
         total_gasto = (
-            resumen_propiedad["Gasto"].sum()
+            resumen_propiedad[
+                "Gasto"
+            ].sum()
         )
 
         total_flujo = (
-            resumen_propiedad["Flujo"].sum()
+            resumen_propiedad[
+                "Flujo"
+            ].sum()
         )
 
         total_pct = (
-            total_flujo / total_ingreso
+            total_flujo /
+            total_ingreso
             if total_ingreso != 0
             else 0
         )
 
+        total_pct_width = min(
+            max(
+                total_pct * 100,
+                0
+            ),
+            100
+        )
 
-        fila_total = pd.DataFrame(
-            [{
-                "Nombre_Propiedad": "Total",
-                "Ingreso": total_ingreso,
-                "Gasto": total_gasto,
-                "Flujo": total_flujo,
-                "%": total_pct,
-                "Estado": estado_porcentaje(
-                    total_pct
-                )
-            }]
+        total_estado = (
+            estado_porcentaje(
+                total_pct
+            )
         )
 
 
-        tabla_propiedades = pd.concat(
-            [
-                resumen_propiedad[
-                    [
-                        "Nombre_Propiedad",
-                        "Ingreso",
-                        "Gasto",
-                        "Flujo",
-                        "%",
-                        "Estado"
-                    ]
-                ],
-                fila_total
-            ],
-            ignore_index=True
+        html_tabla += f"""
+        <tr class="total">
+
+            <td>
+                Total
+            </td>
+
+            <td class="num income">
+                {formato_compacto(total_ingreso)}
+            </td>
+
+            <td class="num expense">
+                {formato_compacto(total_gasto)}
+            </td>
+
+            <td class="num positive">
+                {formato_compacto(total_flujo)}
+            </td>
+
+            <td class="num">
+
+                <div class="pct-box">
+
+                    <div class="pct-row">
+                        {total_pct:.1%}
+                    </div>
+
+                    <div class="bar-bg">
+                        <div
+                            class="bar-fill"
+                            style="
+                                width:{total_pct_width}%;
+                            ">
+                        </div>
+                    </div>
+
+                </div>
+
+            </td>
+
+            <td class="status">
+                {total_estado}
+            </td>
+
+        </tr>
+
+        </tbody>
+
+        </table>
+
+        </div>
+
+        </body>
+        </html>
+        """
+
+
+        altura_tabla = (
+            48
+            +
+            (
+                len(
+                    resumen_propiedad
+                )
+                * 49
+            )
+            +
+            49
+        )
+
+        components.html(
+            html_tabla,
+            height=min(
+                max(
+                    altura_tabla,
+                    180
+                ),
+                650
+            ),
+            scrolling=False
         )
 
 
         # ----------------------------------------------------
-        # ESTILOS
+        # DOWNLOAD
         # ----------------------------------------------------
 
-        def colorear_ingresos(valor):
-
-            return "color: #00875A; font-weight: 600"
-
-
-        def colorear_gastos(valor):
-
-            return "color: #DE350B; font-weight: 600"
-
-
-        def colorear_flujo(valor):
-
-            if valor < 0:
-                return (
-                    "color: #DE350B; "
-                    "font-weight: 700"
-                )
-
-            return (
-                "color: #00875A; "
-                "font-weight: 700"
+        csv_propiedades = (
+            resumen_propiedad
+            .to_csv(
+                index=False
             )
-
-
-        def colorear_porcentaje(valor):
-
-            if valor < 0:
-                return (
-                    "color: #DE350B; "
-                    "font-weight: 600"
-                )
-
-            return (
-                "color: #172B4D; "
-                "font-weight: 600"
-            )
-
-
-        tabla_styled = (
-            tabla_propiedades
-            .style
-
-            .format(
-                {
-                    "Ingreso": formato_compacto,
-                    "Gasto": formato_compacto,
-                    "Flujo": formato_compacto,
-                    "%": "{:.1%}"
-                }
-            )
-
-            .map(
-                colorear_ingresos,
-                subset=["Ingreso"]
-            )
-
-            .map(
-                colorear_gastos,
-                subset=["Gasto"]
-            )
-
-            .map(
-                colorear_flujo,
-                subset=["Flujo"]
-            )
-
-            .map(
-                colorear_porcentaje,
-                subset=["%"]
-            )
-
-            .bar(
-                subset=["%"],
-                align="zero",
-                vmin=0,
-                vmax=1,
-                color="#16B5D1"
-            )
-
-            .set_properties(
-                **{
-                    "font-size": "13px",
-                    "padding": "9px 10px"
-                }
-            )
-
-            .set_table_styles(
-                [
-                    {
-                        "selector": "th",
-                        "props": [
-                            (
-                                "background-color",
-                                "#008577"
-                            ),
-                            (
-                                "color",
-                                "white"
-                            ),
-                            (
-                                "font-weight",
-                                "700"
-                            ),
-                            (
-                                "font-size",
-                                "13px"
-                            )
-                        ]
-                    },
-                    {
-                        "selector": "tbody tr:last-child",
-                        "props": [
-                            (
-                                "font-weight",
-                                "700"
-                            ),
-                            (
-                                "background-color",
-                                "#F8FAFC"
-                            ),
-                            (
-                                "border-top",
-                                "2px solid #DDE3EA"
-                            )
-                        ]
-                    }
-                ]
+            .encode(
+                "utf-8-sig"
             )
         )
 
-
-        st.dataframe(
-            tabla_styled,
-            use_container_width=True,
-            hide_index=True,
-            height=420,
-            column_config={
-                "Nombre_Propiedad": st.column_config.TextColumn(
-                    "Propiedad"
-                ),
-                "Ingreso": st.column_config.TextColumn(
-                    "Ingreso"
-                ),
-                "Gasto": st.column_config.TextColumn(
-                    "Gasto"
-                ),
-                "Flujo": st.column_config.TextColumn(
-                    "Flujo"
-                ),
-                "%": st.column_config.TextColumn(
-                    "%"
-                ),
-                "Estado": st.column_config.TextColumn(
-                    "",
-                    width="small"
-                )
-            }
+        st.download_button(
+            "⬇️ Exportar resumen",
+            data=csv_propiedades,
+            file_name="resumen_propiedades.csv",
+            mime="text/csv",
+            key="download_propiedades"
         )
-
 
     else:
 
@@ -813,6 +1383,12 @@ with col_gastos:
         '<div class="section-title">💸 Distribución de gastos</div>',
         unsafe_allow_html=True
     )
+
+    st.markdown(
+        '<div class="section-subtitle">Desglose por subcategoría en el periodo seleccionado</div>',
+        unsafe_allow_html=True
+    )
+
 
     gastos_subcategoria = (
         df_filtrado[
@@ -833,17 +1409,22 @@ with col_gastos:
     if not gastos_subcategoria.empty:
 
         gasto_total_grafico = (
-            gastos_subcategoria["Gasto"].sum()
+            gastos_subcategoria[
+                "Gasto"
+            ].sum()
         )
 
 
-        # ----------------------------------------------------
+        # ====================================================
         # TOP 7 + OTROS
-        # ----------------------------------------------------
+        # ====================================================
 
         top_n = 7
 
-        if len(gastos_subcategoria) > top_n:
+        if (
+            len(gastos_subcategoria)
+            > top_n
+        ):
 
             principales = (
                 gastos_subcategoria
@@ -862,6 +1443,7 @@ with col_gastos:
                     "Nombre_Subcategoria": [
                         "Otros"
                     ],
+
                     "Gasto": [
                         otros_valor
                     ]
@@ -879,26 +1461,27 @@ with col_gastos:
         else:
 
             gastos_pie = (
-                gastos_subcategoria.copy()
+                gastos_subcategoria
+                .copy()
             )
 
 
-        # ----------------------------------------------------
+        # ====================================================
         # MAYOR GASTO
-        # ----------------------------------------------------
+        # ====================================================
 
-        mayor_gasto = (
+        mayor = (
             gastos_pie.iloc[0]
         )
 
-        mayor_categoria = (
-            mayor_gasto[
+        mayor_categoria = str(
+            mayor[
                 "Nombre_Subcategoria"
             ]
         )
 
         mayor_valor = float(
-            mayor_gasto["Gasto"]
+            mayor["Gasto"]
         )
 
         mayor_pct = (
@@ -909,9 +1492,9 @@ with col_gastos:
         )
 
 
-        # ----------------------------------------------------
+        # ====================================================
         # COLORES
-        # ----------------------------------------------------
+        # ====================================================
 
         colores = [
             "#D9232E",
@@ -921,13 +1504,13 @@ with col_gastos:
             "#F57A87",
             "#F99BA5",
             "#F7BDC3",
-            "#F4D7DA"
+            "#EAD5D8"
         ]
 
 
-        # ----------------------------------------------------
+        # ====================================================
         # DONA
-        # ----------------------------------------------------
+        # ====================================================
 
         fig_gastos = go.Figure()
 
@@ -939,7 +1522,7 @@ with col_gastos:
                 values=gastos_pie[
                     "Gasto"
                 ],
-                hole=0.63,
+                hole=0.64,
                 sort=False,
                 direction="clockwise",
                 textinfo="none",
@@ -963,7 +1546,7 @@ with col_gastos:
 
         fig_gastos.add_annotation(
             x=0.5,
-            y=0.54,
+            y=0.55,
             text=f"<b>{mayor_pct:.1%}</b>",
             showarrow=False,
             font=dict(
@@ -972,11 +1555,10 @@ with col_gastos:
             )
         )
 
-
         fig_gastos.add_annotation(
             x=0.5,
             y=0.43,
-            text=str(
+            text=html.escape(
                 mayor_categoria
             ),
             showarrow=False,
@@ -986,81 +1568,28 @@ with col_gastos:
             )
         )
 
-
         fig_gastos.update_layout(
-            height=310,
+            height=285,
             margin=dict(
                 l=0,
                 r=0,
-                t=5,
-                b=5
+                t=2,
+                b=2
             ),
             showlegend=False,
             template="plotly_white"
         )
 
 
-        # ----------------------------------------------------
-        # TABLA DESGLOSE
-        # ----------------------------------------------------
-
-        desglose_gastos = (
-            gastos_pie[
-                [
-                    "Nombre_Subcategoria",
-                    "Gasto"
-                ]
-            ]
-            .copy()
-        )
-
-        desglose_gastos["%"] = (
-            desglose_gastos["Gasto"]
-            /
-            gasto_total_grafico
-        )
-
-
-        desglose_gastos = (
-            desglose_gastos
-            .rename(
-                columns={
-                    "Nombre_Subcategoria":
-                        "Categoría",
-                    "Gasto":
-                        "Valor"
-                }
-            )
-        )
-
-
-        desglose_styled = (
-            desglose_gastos
-            .style
-            .format(
-                {
-                    "Valor": formato_compacto,
-                    "%": "{:.1%}"
-                }
-            )
-            .set_properties(
-                **{
-                    "font-size": "12px",
-                    "padding": "5px 5px"
-                }
-            )
-        )
-
-
-        # ----------------------------------------------------
-        # DONA + TABLA
-        # ----------------------------------------------------
-
         dona_col, lista_col = st.columns(
-            [1, 1.15],
+            [0.93, 1.07],
             gap="small"
         )
 
+
+        # ====================================================
+        # DONA
+        # ====================================================
 
         with dona_col:
 
@@ -1073,43 +1602,212 @@ with col_gastos:
             )
 
 
+        # ====================================================
+        # LISTA
+        # ====================================================
+
         with lista_col:
 
-            st.markdown(
-                f"**Desglose por subcategoría**"
-            )
+            html_gastos = """
+            <!DOCTYPE html>
+            <html>
 
-            st.caption(
-                f"Total gastos: {formato_moneda(gasto_total_grafico)}"
-            )
+            <head>
 
-            st.dataframe(
-                desglose_styled,
-                use_container_width=True,
-                hide_index=True,
-                height=315,
-                column_config={
-                    "Categoría":
-                        st.column_config.TextColumn(
-                            "Categoría"
-                        ),
-                    "Valor":
-                        st.column_config.TextColumn(
-                            "Valor"
-                        ),
-                    "%":
-                        st.column_config.TextColumn(
-                            "%"
-                        )
+            <style>
+
+                * {
+                    box-sizing: border-box;
                 }
+
+                body {
+                    margin: 0;
+                    background: transparent;
+                    font-family:
+                        -apple-system,
+                        BlinkMacSystemFont,
+                        "Segoe UI",
+                        Arial,
+                        sans-serif;
+                }
+
+                .box {
+                    background: white;
+                    border: 1px solid #E1E5EA;
+                    border-radius: 12px;
+                    padding: 10px 12px;
+                }
+
+                .total {
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #172B4D;
+                    margin-bottom: 2px;
+                }
+
+                .caption {
+                    font-size: 11px;
+                    color: #7A869A;
+                    margin-bottom: 7px;
+                }
+
+                .row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    border-bottom: 1px solid #F0F2F4;
+                    padding: 5px 0;
+                    gap: 8px;
+                }
+
+                .row:last-child {
+                    border-bottom: none;
+                }
+
+                .left {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    color: #344563;
+                    font-size: 11px;
+                    min-width: 0;
+                }
+
+                .dot {
+                    width: 8px;
+                    height: 8px;
+                    min-width: 8px;
+                    border-radius: 50%;
+                }
+
+                .name {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+
+                .right {
+                    white-space: nowrap;
+                    color: #172B4D;
+                    font-size: 11px;
+                    font-weight: 600;
+                }
+
+                .pct {
+                    color: #7A869A;
+                    margin-left: 5px;
+                    font-weight: 400;
+                }
+
+                .highlight {
+                    background: #F5F9FF;
+                    border-radius: 6px;
+                    padding: 3px 4px;
+                }
+
+            </style>
+
+            </head>
+
+            <body>
+
+            <div class="box">
+
+            <div class="total">
+            """
+
+
+            html_gastos += (
+                formato_moneda(
+                    gasto_total_grafico
+                )
             )
 
 
-    else:
+            html_gastos += """
+            </div>
 
-        st.info(
-            "No hay gastos para mostrar."
-        )
+            <div class="caption">
+                Total de egresos operativos
+            </div>
+            """
+
+
+            for i, (_, row) in enumerate(
+                gastos_pie.iterrows()
+            ):
+
+                categoria = html.escape(
+                    str(
+                        row[
+                            "Nombre_Subcategoria"
+                        ]
+                    )
+                )
+
+                valor = float(
+                    row["Gasto"]
+                )
+
+                pct = (
+                    valor /
+                    gasto_total_grafico
+                )
+
+                highlight = (
+                    "highlight"
+                    if i == 0
+                    else ""
+                )
+
+
+                html_gastos += f"""
+
+                <div class="row {highlight}">
+
+                    <div class="left">
+
+                        <span
+                            class="dot"
+                            style="
+                                background:
+                                {colores[i]};
+                            ">
+                        </span>
+
+                        <span class="name">
+                            {categoria}
+                        </span>
+
+                    </div>
+
+                    <div class="right">
+
+                        {formato_compacto(valor)}
+
+                        <span class="pct">
+                            {pct:.1%}
+                        </span>
+
+                    </div>
+
+                </div>
+                """
+
+
+            html_gastos += """
+            </div>
+
+            </body>
+            </html>
+            """
+
+
+            components.html(
+                html_gastos,
+                height=300,
+                scrolling=False
+            )
 
 
 # ============================================================
@@ -1121,9 +1819,14 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+st.markdown(
+    '<div class="section-subtitle">Comparación mensual y desempeño promedio de las propiedades</div>',
+    unsafe_allow_html=True
+)
+
 
 # ============================================================
-# AÑOS DISPONIBLES
+# SELECTOR AÑO
 # ============================================================
 
 años_disponibles = sorted(
@@ -1135,16 +1838,11 @@ años_disponibles = sorted(
 )
 
 
-if not años_disponibles:
+if años_disponibles:
 
-    st.warning(
-        "No hay años disponibles para analizar."
+    año_actual_sistema = (
+        pd.Timestamp.now().year
     )
-
-else:
-
-    año_actual_sistema = pd.Timestamp.now().year
-
 
     if (
         año_actual_sistema
@@ -1183,19 +1881,28 @@ else:
 
 
     # ========================================================
-    # DATOS AÑOS
+    # DATOS AÑO
     # ========================================================
 
     datos_año = df_graficos[
-        df_graficos["Fecha"].dt.year ==
+        df_graficos[
+            "Fecha"
+        ].dt.year
+        ==
         año_seleccionado
     ].copy()
 
 
-    datos_año_anterior = df_graficos[
-        df_graficos["Fecha"].dt.year ==
-        año_anterior
-    ].copy()
+    datos_año_anterior = (
+        df_graficos[
+            df_graficos[
+                "Fecha"
+            ].dt.year
+            ==
+            año_anterior
+        ]
+        .copy()
+    )
 
 
     # ========================================================
@@ -1205,7 +1912,9 @@ else:
     if not datos_año.empty:
 
         fecha_corte_anual = (
-            datos_año["Fecha"].max()
+            datos_año[
+                "Fecha"
+            ].max()
         )
 
         mes_corte_anual = (
@@ -1224,7 +1933,9 @@ else:
     ingresos_actual = (
         datos_año
         .groupby(
-            datos_año["Fecha"].dt.month
+            datos_año[
+                "Fecha"
+            ].dt.month
         )["Ingreso"]
         .sum()
     )
@@ -1257,10 +1968,6 @@ else:
     }
 
 
-    # ========================================================
-    # COMPARACIÓN MENSUAL
-    # ========================================================
-
     comparacion_mensual = []
 
 
@@ -1269,14 +1976,14 @@ else:
         mes_corte_anual + 1
     ):
 
-        ingreso_actual = float(
+        ingreso_actual_mes = float(
             ingresos_actual.get(
                 mes,
                 0
             )
         )
 
-        ingreso_anterior = float(
+        ingreso_anterior_mes = float(
             ingresos_anterior.get(
                 mes,
                 0
@@ -1292,36 +1999,40 @@ else:
                 str(
                     año_seleccionado
                 ):
-                    ingreso_actual,
+                    ingreso_actual_mes,
 
                 str(
                     año_anterior
                 ):
-                    ingreso_anterior
+                    ingreso_anterior_mes
             }
         )
 
 
-    df_comparacion = pd.DataFrame(
-        comparacion_mensual
+    df_comparacion = (
+        pd.DataFrame(
+            comparacion_mensual
+        )
     )
 
 
     # ========================================================
-    # GRÁFICA INGRESOS
+    # GRÁFICO MENSUAL
     # ========================================================
 
     fig_mensual = go.Figure()
 
 
-    # AÑO SELECCIONADO = BARRAS
-
     fig_mensual.add_trace(
         go.Bar(
-            x=df_comparacion["Mes"],
+            x=df_comparacion[
+                "Mes"
+            ],
 
             y=df_comparacion[
-                str(año_seleccionado)
+                str(
+                    año_seleccionado
+                )
             ],
 
             name=str(
@@ -1341,14 +2052,16 @@ else:
     )
 
 
-    # AÑO ANTERIOR = LÍNEA
-
     fig_mensual.add_trace(
         go.Scatter(
-            x=df_comparacion["Mes"],
+            x=df_comparacion[
+                "Mes"
+            ],
 
             y=df_comparacion[
-                str(año_anterior)
+                str(
+                    año_anterior
+                )
             ],
 
             name=str(
@@ -1413,11 +2126,14 @@ else:
 
 
     # ========================================================
-    # PROMEDIO MENSUAL POR PROPIEDAD
+    # PROMEDIO POR PROPIEDAD
     # ========================================================
 
     datos_promedio = df_graficos[
-        df_graficos["Fecha"].dt.year ==
+        df_graficos[
+            "Fecha"
+        ].dt.year
+        ==
         año_seleccionado
     ].copy()
 
@@ -1453,7 +2169,9 @@ else:
         )
 
 
-        promedio_propiedad["Meses"] = (
+        promedio_propiedad[
+            "Meses"
+        ] = (
 
             (
                 promedio_propiedad[
@@ -1483,6 +2201,7 @@ else:
             )
 
             + 1
+
         )
 
 
@@ -1499,6 +2218,7 @@ else:
             promedio_propiedad[
                 "Meses"
             ]
+
         )
 
 
@@ -1511,9 +2231,9 @@ else:
         )
 
 
-        # ----------------------------------------------------
-        # GRÁFICA
-        # ----------------------------------------------------
+        # ====================================================
+        # BARRA PROMEDIO
+        # ====================================================
 
         grafico_promedio = go.Figure()
 
@@ -1570,21 +2290,21 @@ else:
     # GRÁFICAS LADO A LADO
     # ========================================================
 
-    st.markdown(
-        "#### 📊 Comparación anual y desempeño por propiedad"
-    )
-
-
-    grafico1, grafico2 = st.columns(
+    col_grafico1, col_grafico2 = st.columns(
         [1, 1],
         gap="medium"
     )
 
 
-    with grafico1:
+    with col_grafico1:
 
         st.markdown(
             f"**Ingresos {año_seleccionado} vs {año_anterior}**"
+        )
+
+        st.caption(
+            "Barras = año seleccionado · "
+            "Línea = año anterior"
         )
 
         st.plotly_chart(
@@ -1596,10 +2316,15 @@ else:
         )
 
 
-    with grafico2:
+    with col_grafico2:
 
         st.markdown(
             f"**Promedio mensual por propiedad — {año_seleccionado}**"
+        )
+
+        st.caption(
+            "Ingreso promedio mensual calculado "
+            "sobre los meses con datos"
         )
 
         if grafico_promedio is not None:
@@ -1652,38 +2377,70 @@ else:
     )
 
 
-    col_ytd1, col_ytd2, col_ytd3 = (
-        st.columns(3)
-    )
+    y1, y2, y3 = st.columns(3)
 
 
-    with col_ytd1:
+    with y1:
 
-        st.metric(
-            f"Ingresos {año_seleccionado}",
-            formato_moneda(
-                total_actual
-            )
+        st.markdown(
+            f"""
+            <div class="mini-card">
+                <div class="mini-label">
+                    Ingresos {año_seleccionado}
+                </div>
+
+                <div class="mini-value">
+                    {formato_moneda(total_actual)}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
 
-    with col_ytd2:
+    with y2:
 
-        st.metric(
-            f"Ingresos {año_anterior}",
-            formato_moneda(
-                total_anterior
-            )
+        st.markdown(
+            f"""
+            <div class="mini-card">
+                <div class="mini-label">
+                    Ingresos {año_anterior}
+                </div>
+
+                <div class="mini-value">
+                    {formato_moneda(total_anterior)}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
 
-    with col_ytd3:
+    with y3:
 
-        st.metric(
-            "Diferencia",
-            formato_moneda(
-                diferencia
-            )
+        color_diff = (
+            "#00875A"
+            if diferencia >= 0
+            else
+            "#DE350B"
+        )
+
+        st.markdown(
+            f"""
+            <div class="mini-card">
+
+                <div class="mini-label">
+                    Diferencia
+                </div>
+
+                <div class="mini-value"
+                    style="color:{color_diff};">
+                    {formato_moneda(diferencia)}
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
 
@@ -1694,7 +2451,7 @@ else:
     if promedio_propiedad is not None:
 
         st.markdown(
-            f"#### 🏠 Detalle promedio mensual por propiedad — {año_seleccionado}"
+            f"#### 🏠 Detalle por propiedad — {año_seleccionado}"
         )
 
 
@@ -1758,5 +2515,129 @@ else:
         st.dataframe(
             tabla_promedio,
             use_container_width=True,
-            hide_index=True
+            hide_index=True,
+            height=250
         )
+
+
+        csv_promedio = (
+            tabla_promedio
+            .to_csv(
+                index=False
+            )
+            .encode(
+                "utf-8-sig"
+            )
+        )
+
+
+        st.download_button(
+            "⬇️ Exportar detalle anual",
+            data=csv_promedio,
+            file_name=(
+                f"detalle_promedio_{año_seleccionado}.csv"
+            ),
+            mime="text/csv",
+            key="download_promedio"
+        )
+
+
+# ============================================================
+# PIE DE DASHBOARD
+# ============================================================
+
+cantidad_propiedades = (
+    df_filtrado[
+        "Nombre_Propiedad"
+    ]
+    .nunique()
+)
+
+cantidad_socios = (
+    df_filtrado[
+        "Nombre_Socio"
+    ]
+    .nunique()
+)
+
+
+st.markdown("---")
+
+
+f1, f2, f3, f4 = st.columns(4)
+
+
+with f1:
+
+    st.markdown(
+        f"""
+        <div class="mini-card">
+            <div class="mini-label">
+                Flujo del periodo
+            </div>
+            <div class="mini-value"
+                 style="color:#00875A;">
+                {formato_compacto(flujo_total)}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+with f2:
+
+    st.markdown(
+        f"""
+        <div class="mini-card">
+            <div class="mini-label">
+                Propiedades analizadas
+            </div>
+            <div class="mini-value">
+                {cantidad_propiedades}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+with f3:
+
+    st.markdown(
+        f"""
+        <div class="mini-card">
+            <div class="mini-label">
+                Socios
+            </div>
+            <div class="mini-value">
+                {cantidad_socios}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+with f4:
+
+    st.markdown(
+        """
+        <div class="mini-card">
+
+            <div class="mini-label">
+                Enfoque
+            </div>
+
+            <div class="mini-value"
+                 style="
+                    font-size:15px;
+                    color:#52617A;">
+                Más que propiedades,
+                mejores decisiones.
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
