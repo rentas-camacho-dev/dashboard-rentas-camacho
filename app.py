@@ -62,17 +62,42 @@ div[data-testid="stVerticalBlock"] {
     font-size: 19px;
     font-weight: 700;
     line-height: 1.25;
-    margin-top: 8px;
-    margin-bottom: 4px;
+
+    margin-top: 10px;
+    margin-bottom: 6px;
 }
 
 .section-subtitle {
     color: #6B778C;
     font-size: 11px;
     font-weight: 400;
-    line-height: 1.3;
+    line-height: 1.4;
+
     margin-top: 0;
-    margin-bottom: 7px;
+    margin-bottom: 12px;
+}
+
+
+/* ==========================================================
+   TÍTULO PRINCIPAL
+   ========================================================== */
+
+.dashboard-title {
+    color: #172B4D;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-top: 8px;
+    margin-bottom: 5px;
+}
+
+.dashboard-subtitle {
+    color: #6B778C;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.4;
+    margin-top: 0;
+    margin-bottom: 22px;
 }
 
 
@@ -111,17 +136,6 @@ div[data-testid="stMetricLabel"] {
 div[data-testid="stMetricValue"] {
     font-size: 24px !important;
     font-weight: 400 !important;
-}
-
-
-/* ==========================================================
-   TABLA / TARJETAS
-   ========================================================== */
-
-div[data-testid="stVerticalBlockBorderWrapper"] {
-    background: white !important;
-    border: 1px solid #E1E5EA !important;
-    border-radius: 13px !important;
 }
 
 
@@ -319,27 +333,14 @@ st.markdown(
 """
 <div style="
     margin-top:8px;
-    margin-bottom:22px;
+    margin-bottom:24px;
 ">
 
-<div style="
-    color:#172B4D;
-    font-size:30px;
-    font-weight:700;
-    line-height:1.2;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-">
+<div class="dashboard-title">
 🏠 Rentas Cortas — Airbnb
 </div>
 
-<div style="
-    color:#6B778C;
-    font-size:13px;
-    font-weight:400;
-    margin-top:6px;
-    line-height:1.4;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-">
+<div class="dashboard-subtitle">
 Ingresos, gastos y rentabilidad de tus propiedades
 </div>
 
@@ -666,10 +667,10 @@ with k4:
 
 
 # ============================================================
-# ALTURA ÚNICA DE LAS DOS TARJETAS
+# ALTURA EXACTA DE LAS TARJETAS PRINCIPALES
 # ============================================================
 
-ALTURA_TARJETAS = 360
+ALTURA_TARJETAS = 425
 
 
 # ============================================================
@@ -876,7 +877,14 @@ style="width:{ancho}%;">
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
+
     box-sizing:border-box;
+}}
+
+body {{
+    margin:0;
+    padding:0;
+    background:transparent;
 }}
 
 .tabla-card {{
@@ -890,6 +898,8 @@ style="width:{ancho}%;">
     overflow:hidden;
 
     width:100%;
+
+    height:420px;
 }}
 
 .tabla-card table {{
