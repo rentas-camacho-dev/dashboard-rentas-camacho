@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-
+import plotly.graph_objects as go
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
@@ -11,94 +10,85 @@ from google.oauth2 import service_account
 # ============================================================
 
 st.set_page_config(
-    page_title="FinQuery - Rentas Cortas Airbnb",
+    page_title="Rentas Cortas - Airbnb",
     page_icon="🏠",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 
 # ============================================================
-# ESTILO
+# ESTILOS
 # ============================================================
 
 st.markdown("""
 <style>
 
-.stApp {
-    background-color: #F7F9FC;
-}
+    .stApp {
+        background-color: #F5F7FA;
+    }
 
-section[data-testid="stSidebar"] {
-    background-color: #FFFFFF;
-    border-right: 1px solid #E6EAF0;
-}
+    .main-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #172B4D;
+        margin-bottom: 4px;
+    }
 
-.main-title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #172B4D;
-    margin-bottom: 2px;
-}
+    .subtitle {
+        font-size: 15px;
+        color: #6B778C;
+        margin-bottom: 25px;
+    }
 
-.subtitle {
-    font-size: 15px;
-    color: #718096;
-    margin-bottom: 20px;
-}
+    .section-title {
+        font-size: 21px;
+        font-weight: 700;
+        color: #172B4D;
+        margin-top: 25px;
+        margin-bottom: 12px;
+    }
 
-.kpi-card {
-    background: #FFFFFF;
-    border-radius: 16px;
-    padding: 20px 22px;
-    min-height: 125px;
-    border: 1px solid #E5EAF1;
-    box-shadow: 0px 4px 14px rgba(20, 40, 70, 0.06);
-}
+    .kpi-card {
+        background-color: white;
+        padding: 20px 22px;
+        border-radius: 14px;
+        border: 1px solid #E6E9EF;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        min-height: 120px;
+    }
 
-.kpi-title {
-    font-size: 14px;
-    color: #667085;
-    margin-bottom: 8px;
-}
+    .kpi-title {
+        font-size: 14px;
+        color: #6B778C;
+        margin-bottom: 8px;
+    }
 
-.kpi-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: #172B4D;
-}
+    .kpi-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #172B4D;
+    }
 
-.kpi-sub {
-    font-size: 12px;
-    color: #98A2B3;
-    margin-top: 7px;
-}
+    .kpi-green {
+        color: #2E7D32;
+    }
 
-.section-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #172B4D;
-}
+    .kpi-red {
+        color: #C62828;
+    }
 
-.section-subtitle {
-    font-size: 13px;
-    color: #718096;
-    margin-bottom: 12px;
-}
+    .kpi-blue {
+        color: #1565C0;
+    }
 
-.info-card {
-    background: #FFFFFF;
-    border: 1px solid #E5EAF1;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0px 4px 14px rgba(20, 40, 70, 0.05);
-}
+    .kpi-purple {
+        color: #6A1B9A;
+    }
 
-.stButton > button {
-    border-radius: 10px;
-    border: 1px solid #DCE3EC;
-    background-color: white;
-}
+    div[data-testid="stDataFrame"] {
+        background-color: white;
+        border-radius: 12px;
+    }
 
 </style>
 """, unsafe_allow_html=True)
@@ -123,196 +113,102 @@ client = bigquery.Client(
 
 
 # ============================================================
-# CARGAR DATOS
+# TÍTULO
 # ============================================================
 
-@st.cache_data(ttl=600)
-def cargar_datos():
+st.markdown(
+    '<div class="main-title">🏠 Rentas Cortas — Airbnb</div>',
+    unsafe_allow_html=True
+)
 
-    query = """
-        SELECT
-            Fecha,
-            Tipo,
-            Tipo_de_Activo,
-            Nombre_Tipo,
-            Propiedad,
-            Nombre_Propiedad,
-            Propietario,
-            Estado,
-            Ciudad,
-            Categoria,
-            Nombre_Categoria,
-            Subcategoria,
-            Nombre_Subcategoria,
-            Detalle,
-            ID_Clave,
-            Clave,
-            ID_Proveedor,
-            Proveedor,
-            Cuenta,
-            Nombre_Cuenta,
-            Observaciones,
-            Nombre_Socio,
-            Porcentaje,
-            Valor,
-            Valor_Repartido,
-            Ingreso,
-            Gasto
+st.markdown(
+    '<div class="subtitle">Análisis de ingresos, gastos y rentabilidad de las propiedades Airbnb</div>',
+    unsafe_allow_html=True
+)
 
-        FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
 
-        WHERE LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
-    """
+# ============================================================
+# CONSULTA
+# ============================================================
 
-    df = client.query(query).to_dataframe()
+query = """
+SELECT
+    Fecha,
+    Tipo,
+    Tipo_de_Activo,
+    Nombre_Tipo,
+    Propiedad,
+    Nombre_Propiedad,
+    Propietario,
+    Estado,
+    Ciudad,
+    Categoria,
+    Nombre_Categoria,
+    Subcategoria,
+    Nombre_Subcategoria,
+    Detalle,
+    ID_Clave,
+    Clave,
+    ID_Proveedor,
+    Proveedor,
+    Cuenta,
+    Nombre_Cuenta,
+    Observaciones,
+    Nombre_Socio,
+    Porcentaje,
+    Valor,
+    Valor_Repartido,
+    Ingreso,
+    Gasto
+FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
+WHERE LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
+"""
 
-    df["Fecha"] = pd.to_datetime(
-        df["Fecha"],
+df = client.query(query).to_dataframe()
+
+
+# ============================================================
+# PREPARACIÓN DE DATOS
+# ============================================================
+
+df["Fecha"] = pd.to_datetime(
+    df["Fecha"],
+    errors="coerce"
+)
+
+columnas_numericas = [
+    "Porcentaje",
+    "Valor",
+    "Valor_Repartido",
+    "Ingreso",
+    "Gasto"
+]
+
+for columna in columnas_numericas:
+    df[columna] = pd.to_numeric(
+        df[columna],
         errors="coerce"
-    )
+    ).fillna(0)
 
-    for columna in [
-        "Porcentaje",
-        "Valor",
-        "Valor_Repartido",
-        "Ingreso",
-        "Gasto"
-    ]:
 
-        df[columna] = pd.to_numeric(
-            df[columna],
-            errors="coerce"
-        ).fillna(0)
-
-    return df
+# Eliminar fechas inválidas
+df = df.dropna(subset=["Fecha"])
 
 
 # ============================================================
-# CARGA
+# FILTROS
 # ============================================================
 
-try:
-
-    df = cargar_datos()
-
-except Exception as e:
-
-    st.error(
-        "❌ No fue posible cargar los datos desde BigQuery."
-    )
-
-    st.code(str(e))
-
-    st.stop()
-
-
-if df.empty:
-
-    st.warning(
-        "No se encontraron movimientos de Airbnb."
-    )
-
-    st.stop()
-
-
-# ============================================================
-# SIDEBAR
-# ============================================================
-
-with st.sidebar:
-
-    st.markdown(
-        """
-        <div style="
-            font-size:27px;
-            font-weight:700;
-            color:#172B4D;
-            margin-top:5px;
-        ">
-            FinQuery
-        </div>
-
-        <div style="
-            font-size:13px;
-            color:#718096;
-            margin-top:4px;
-            margin-bottom:28px;
-        ">
-            Rentas Cortas - Camacho
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        "### 🏠 Airbnb"
-    )
-
-    st.caption(
-        "Vista exclusiva de ingresos y gastos Airbnb"
-    )
-
-    st.divider()
-
-    st.markdown(
-        "**Datos conectados a BigQuery**"
-    )
-
-    st.caption(
-        "Movimientos_Operativos_Reparto"
-    )
-
-
-# ============================================================
-# ENCABEZADO
-# ============================================================
-
-titulo, boton = st.columns(
-    [4, 1]
+st.markdown(
+    '<div class="section-title">🔎 Filtros</div>',
+    unsafe_allow_html=True
 )
 
-with titulo:
-
-    st.markdown(
-        '<div class="main-title">'
-        'Rentas Cortas - Airbnb'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="subtitle">'
-        'Resumen de ingresos y gastos operativos'
-        '</div>',
-        unsafe_allow_html=True
-    )
+col1, col2, col3, col4 = st.columns(4)
 
 
-with boton:
-
-    if st.button(
-        "🔄 Actualizar",
-        use_container_width=True
-    ):
-
-        st.cache_data.clear()
-        st.rerun()
-
-
-# ============================================================
-# FILTROS PRINCIPALES
-# ============================================================
-
-f1, f2, f3, f4 = st.columns(
-    [1, 1, 1, 1.35]
-)
-
-
-# ------------------------------------------------------------
 # CIUDAD
-# ------------------------------------------------------------
-
-with f1:
+with col1:
 
     ciudades = sorted(
         df["Ciudad"]
@@ -321,17 +217,14 @@ with f1:
         .unique()
     )
 
-    ciudad = st.selectbox(
+    ciudad_seleccionada = st.multiselect(
         "Ciudad",
-        ["Todas"] + ciudades
+        ciudades
     )
 
 
-# ------------------------------------------------------------
 # PROPIEDAD
-# ------------------------------------------------------------
-
-with f2:
+with col2:
 
     propiedades = sorted(
         df["Nombre_Propiedad"]
@@ -340,17 +233,14 @@ with f2:
         .unique()
     )
 
-    propiedad = st.selectbox(
+    propiedad_seleccionada = st.multiselect(
         "Propiedad",
-        ["Todas"] + propiedades
+        propiedades
     )
 
 
-# ------------------------------------------------------------
 # SOCIO
-# ------------------------------------------------------------
-
-with f3:
+with col3:
 
     socios = sorted(
         df["Nombre_Socio"]
@@ -359,22 +249,19 @@ with f3:
         .unique()
     )
 
-    socio = st.selectbox(
+    socio_seleccionado = st.multiselect(
         "Socio",
-        ["Todos"] + socios
+        socios
     )
 
 
-# ------------------------------------------------------------
 # FECHA
-# ------------------------------------------------------------
-
-with f4:
+with col4:
 
     fecha_min = df["Fecha"].min().date()
     fecha_max = df["Fecha"].max().date()
 
-    rango = st.date_input(
+    rango_fecha = st.date_input(
         "Fecha",
         value=(fecha_min, fecha_max),
         min_value=fecha_min,
@@ -383,57 +270,285 @@ with f4:
 
 
 # ============================================================
-# FILTROS PARA GRÁFICOS ANUALES
+# FILTROS BASE
 # ============================================================
 
 df_graficos = df.copy()
 
 
-if ciudad != "Todas":
-
+if ciudad_seleccionada:
     df_graficos = df_graficos[
-        df_graficos["Ciudad"].astype(str) == ciudad
+        df_graficos["Ciudad"].astype(str).isin(
+            ciudad_seleccionada
+        )
     ]
 
 
-if propiedad != "Todas":
-
+if propiedad_seleccionada:
     df_graficos = df_graficos[
-        df_graficos["Nombre_Propiedad"].astype(str)
-        == propiedad
+        df_graficos["Nombre_Propiedad"].astype(str).isin(
+            propiedad_seleccionada
+        )
     ]
 
 
-if socio != "Todos":
-
+if socio_seleccionado:
     df_graficos = df_graficos[
-        df_graficos["Nombre_Socio"].astype(str)
-        == socio
+        df_graficos["Nombre_Socio"].astype(str).isin(
+            socio_seleccionado
+        )
     ]
 
 
 # ============================================================
-# FILTRO DE FECHA PARA KPI / TABLA / GASTOS
+# FILTRO DE FECHA
 # ============================================================
 
 df_filtrado = df_graficos.copy()
 
+if isinstance(rango_fecha, tuple) and len(rango_fecha) == 2:
 
-if isinstance(rango, tuple) and len(rango) == 2:
-
-    fecha_inicio = pd.Timestamp(rango[0])
-
-    fecha_fin = (
-        pd.Timestamp(rango[1])
-        + pd.Timedelta(days=1)
-        - pd.Timedelta(seconds=1)
-    )
+    fecha_inicio = pd.Timestamp(rango_fecha[0])
+    fecha_fin = pd.Timestamp(rango_fecha[1]) + pd.Timedelta(days=1)
 
     df_filtrado = df_filtrado[
-        (df_filtrado["Fecha"] >= fecha_inicio)
-        &
-        (df_filtrado["Fecha"] <= fecha_fin)
+        (df_filtrado["Fecha"] >= fecha_inicio) &
+        (df_filtrado["Fecha"] < fecha_fin)
     ]
+
+
+# ============================================================
+# KPIs
+# ============================================================
+
+ingreso_total = df_filtrado["Ingreso"].sum()
+gasto_total = df_filtrado["Gasto"].sum()
+flujo_total = ingreso_total - gasto_total
+
+if ingreso_total != 0:
+    rentabilidad = flujo_total / ingreso_total
+else:
+    rentabilidad = 0
+
+
+def formato_moneda(valor):
+
+    return f"${valor:,.0f}".replace(",", ".")
+
+
+k1, k2, k3, k4 = st.columns(4)
+
+
+with k1:
+
+    st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-title">Ingreso Total</div>
+            <div class="kpi-value kpi-green">
+                {formato_moneda(ingreso_total)}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+with k2:
+
+    st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-title">Gasto</div>
+            <div class="kpi-value kpi-red">
+                {formato_moneda(gasto_total)}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+with k3:
+
+    st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-title">Flujo</div>
+            <div class="kpi-value kpi-blue">
+                {formato_moneda(flujo_total)}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+with k4:
+
+    st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-title">Rentabilidad</div>
+            <div class="kpi-value kpi-purple">
+                {rentabilidad:.1%}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+# ============================================================
+# RESUMEN POR PROPIEDAD
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">🏢 Resumen por propiedad</div>',
+    unsafe_allow_html=True
+)
+
+if not df_filtrado.empty:
+
+    resumen_propiedad = (
+        df_filtrado
+        .groupby("Nombre_Propiedad", dropna=False)
+        .agg(
+            Ingreso=("Ingreso", "sum"),
+            Gasto=("Gasto", "sum")
+        )
+        .reset_index()
+    )
+
+    resumen_propiedad["Flujo"] = (
+        resumen_propiedad["Ingreso"] -
+        resumen_propiedad["Gasto"]
+    )
+
+    resumen_propiedad["%"] = resumen_propiedad.apply(
+        lambda row:
+            row["Flujo"] / row["Ingreso"]
+            if row["Ingreso"] != 0
+            else 0,
+        axis=1
+    )
+
+    resumen_propiedad = resumen_propiedad.sort_values(
+        "Ingreso",
+        ascending=False
+    )
+
+    resumen_mostrar = resumen_propiedad.copy()
+
+    resumen_mostrar["Ingreso"] = resumen_mostrar["Ingreso"].apply(
+        formato_moneda
+    )
+
+    resumen_mostrar["Gasto"] = resumen_mostrar["Gasto"].apply(
+        formato_moneda
+    )
+
+    resumen_mostrar["Flujo"] = resumen_mostrar["Flujo"].apply(
+        formato_moneda
+    )
+
+    resumen_mostrar["%"] = resumen_mostrar["%"].apply(
+        lambda x: f"{x:.1%}"
+    )
+
+    st.dataframe(
+        resumen_mostrar,
+        use_container_width=True,
+        hide_index=True
+    )
+
+else:
+
+    st.info("No hay datos para los filtros seleccionados.")
+
+
+# ============================================================
+# GASTOS POR SUBCATEGORÍA
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">💸 Distribución de gastos</div>',
+    unsafe_allow_html=True
+)
+
+if not df_filtrado.empty:
+
+    gastos_subcategoria = (
+        df_filtrado[
+            df_filtrado["Gasto"] > 0
+        ]
+        .groupby("Nombre_Subcategoria")["Gasto"]
+        .sum()
+        .reset_index()
+        .sort_values(
+            "Gasto",
+            ascending=False
+        )
+    )
+
+    if not gastos_subcategoria.empty:
+
+        fig_gastos = go.Figure(
+            data=[
+                go.Pie(
+                    labels=gastos_subcategoria[
+                        "Nombre_Subcategoria"
+                    ],
+                    values=gastos_subcategoria[
+                        "Gasto"
+                    ],
+                    hole=0.58,
+                    textinfo="percent",
+                    hovertemplate=
+                    "<b>%{label}</b><br>"
+                    "$%{value:,.0f}<br>"
+                    "%{percent}"
+                    "<extra></extra>"
+                )
+            ]
+        )
+
+        fig_gastos.update_layout(
+            height=420,
+            margin=dict(
+                l=10,
+                r=10,
+                t=20,
+                b=10
+            ),
+            template="plotly_white",
+            showlegend=True,
+            legend=dict(
+                orientation="v"
+            )
+        )
+
+        st.plotly_chart(
+            fig_gastos,
+            use_container_width=True,
+            config={
+                "displayModeBar": False
+            }
+        )
+
+    else:
+
+        st.info("No hay gastos para mostrar.")
+
+
+# ============================================================
+# ANÁLISIS ANUAL
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">📊 Análisis anual</div>',
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
@@ -449,678 +564,91 @@ años_disponibles = sorted(
 )
 
 
-año_actual_sistema = pd.Timestamp.today().year
+if not años_disponibles:
 
-
-if año_actual_sistema in años_disponibles:
-
-    indice_año = años_disponibles.index(
-        año_actual_sistema
-    )
+    st.warning("No hay años disponibles para analizar.")
 
 else:
 
-    indice_año = 0
+    año_actual_sistema = pd.Timestamp.now().year
 
-
-# ============================================================
-# INDICADORES
-# ============================================================
-
-ingreso_total = df_filtrado["Ingreso"].sum()
-
-gasto_total = df_filtrado["Gasto"].sum()
-
-flujo_total = (
-    ingreso_total
-    - gasto_total
-)
-
-rentabilidad = (
-    flujo_total / ingreso_total
-    if ingreso_total != 0
-    else 0
-)
-
-
-# ============================================================
-# KPI
-# ============================================================
-
-k1, k2, k3, k4 = st.columns(4)
-
-
-with k1:
-
-    st.markdown(
-        f"""
-        <div class="kpi-card"
-             style="border-left:5px solid #20A464;">
-
-            <div class="kpi-title">
-                💰 Ingreso Total
-            </div>
-
-            <div class="kpi-value"
-                 style="color:#168A52;">
-
-                $ {ingreso_total:,.0f}
-
-            </div>
-
-            <div class="kpi-sub">
-                Ingresos Airbnb
-            </div>
-
-        </div>
-        """.replace("\n", ""),
-        unsafe_allow_html=True
-    )
-
-
-with k2:
-
-    st.markdown(
-        f"""
-        <div class="kpi-card"
-             style="border-left:5px solid #F04438;">
-
-            <div class="kpi-title">
-                💸 Gasto
-            </div>
-
-            <div class="kpi-value"
-                 style="color:#E53935;">
-
-                $ {gasto_total:,.0f}
-
-            </div>
-
-            <div class="kpi-sub">
-                Gastos operativos Airbnb
-            </div>
-
-        </div>
-        """.replace("\n", ""),
-        unsafe_allow_html=True
-    )
-
-
-with k3:
-
-    st.markdown(
-        f"""
-        <div class="kpi-card"
-             style="border-left:5px solid #3B82F6;">
-
-            <div class="kpi-title">
-                📈 Flujo
-            </div>
-
-            <div class="kpi-value">
-
-                $ {flujo_total:,.0f}
-
-            </div>
-
-            <div class="kpi-sub">
-                Ingreso - Gasto
-            </div>
-
-        </div>
-        """.replace("\n", ""),
-        unsafe_allow_html=True
-    )
-
-
-with k4:
-
-    st.markdown(
-        f"""
-        <div class="kpi-card"
-             style="border-left:5px solid #8B5CF6;">
-
-            <div class="kpi-title">
-                📊 Rentabilidad
-            </div>
-
-            <div class="kpi-value"
-                 style="color:#7C3AED;">
-
-                {rentabilidad:.1%}
-
-            </div>
-
-            <div class="kpi-sub">
-                Flujo / Ingreso
-            </div>
-
-        </div>
-        """.replace("\n", ""),
-        unsafe_allow_html=True
-    )
-
-
-st.markdown(
-    "<br>",
-    unsafe_allow_html=True
-)
-
-
-# ============================================================
-# TABLA + GASTOS
-# ============================================================
-
-col_tabla, col_dona = st.columns(
-    [1.25, 0.75]
-)
-
-
-# ============================================================
-# DESEMPEÑO POR PROPIEDAD
-# ============================================================
-
-with col_tabla:
-
-    st.markdown(
-        '<div class="section-title">'
-        '🏠 Desempeño por Propiedad'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Ingresos, gastos y flujo por propiedad Airbnb'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-
-    resumen = (
-        df_filtrado
-        .groupby(
-            "Nombre_Propiedad",
-            dropna=False
-        )
-        .agg(
-            Ingreso=("Ingreso", "sum"),
-            Gasto=("Gasto", "sum")
-        )
-        .reset_index()
-    )
-
-
-    resumen["Flujo"] = (
-        resumen["Ingreso"]
-        - resumen["Gasto"]
-    )
-
-
-    resumen["%"] = resumen.apply(
-        lambda x:
-            x["Flujo"] / x["Ingreso"]
-            if x["Ingreso"] != 0
-            else 0,
-        axis=1
-    )
-
-
-    resumen = resumen.sort_values(
-        "Ingreso",
-        ascending=False
-    )
-
-
-    def formato_dinero(valor):
-
-        if abs(valor) >= 1_000_000:
-
-            return (
-                f"$ {valor / 1_000_000:.1f} M"
-            )
-
-        elif abs(valor) >= 1_000:
-
-            return (
-                f"$ {valor / 1_000:.0f} mil"
-            )
-
-        else:
-
-            return (
-                f"$ {valor:,.0f}"
-            )
-
-
-    resumen_display = resumen.copy()
-
-
-    resumen_display["Ingreso"] = (
-        resumen_display["Ingreso"]
-        .apply(formato_dinero)
-    )
-
-
-    resumen_display["Gasto"] = (
-        resumen_display["Gasto"]
-        .apply(formato_dinero)
-    )
-
-
-    resumen_display["Flujo"] = (
-        resumen_display["Flujo"]
-        .apply(formato_dinero)
-    )
-
-
-    resumen_display["%"] = (
-        resumen_display["%"]
-        .apply(
-            lambda x: f"{x:.1%}"
-        )
-    )
-
-
-    resumen_display = resumen_display.rename(
-        columns={
-            "Nombre_Propiedad": "Propiedad"
-        }
-    )
-
-
-    st.dataframe(
-        resumen_display[
-            [
-                "Propiedad",
-                "Ingreso",
-                "Gasto",
-                "Flujo",
-                "%"
-            ]
-        ],
-        use_container_width=True,
-        hide_index=True,
-        height=350
-    )
-
-
-    total_ingreso = resumen["Ingreso"].sum()
-
-    total_gasto = resumen["Gasto"].sum()
-
-    total_flujo = resumen["Flujo"].sum()
-
-
-    total_rentabilidad = (
-        total_flujo / total_ingreso
-        if total_ingreso != 0
-        else 0
-    )
-
-
-    st.markdown(
-        f"""
-        <div style="
-            background:#F0F4F8;
-            border-radius:10px;
-            padding:12px 15px;
-            display:flex;
-            justify-content:space-between;
-            color:#172B4D;
-            font-weight:700;
-            font-size:13px;
-        ">
-
-            <span>Total</span>
-
-            <span>
-                $ {total_ingreso / 1_000_000:.1f} M
-            </span>
-
-            <span>
-                $ {total_gasto / 1_000_000:.1f} M
-            </span>
-
-            <span>
-                $ {total_flujo / 1_000_000:.1f} M
-            </span>
-
-            <span>
-                {total_rentabilidad:.1%}
-            </span>
-
-        </div>
-        """.replace("\n", ""),
-        unsafe_allow_html=True
-    )
-
-
-# ============================================================
-# GASTOS POR SUBCATEGORÍA
-# ============================================================
-
-with col_dona:
-
-    st.markdown(
-        '<div class="section-title">'
-        '💸 Gastos por Subcategoría'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Distribución de los gastos operativos Airbnb'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-
-    gastos = (
-        df_filtrado[
-            df_filtrado["Gasto"] > 0
-        ]
-        .groupby(
-            "Nombre_Subcategoria"
-        )["Gasto"]
-        .sum()
-        .reset_index()
-        .sort_values(
-            "Gasto",
-            ascending=False
-        )
-    )
-
-
-    if not gastos.empty:
-
-        fig_dona = px.pie(
-            gastos,
-            names="Nombre_Subcategoria",
-            values="Gasto",
-            hole=0.55
-        )
-
-
-        fig_dona.update_traces(
-            textinfo="percent",
-            textposition="inside",
-            hovertemplate=
-                "<b>%{label}</b><br>"
-                "$ %{value:,.0f}"
-                "<extra></extra>"
-        )
-
-
-        fig_dona.update_layout(
-            height=390,
-            margin=dict(
-                l=0,
-                r=0,
-                t=0,
-                b=0
-            ),
-            legend=dict(
-                orientation="v",
-                x=1,
-                y=0.5
-            ),
-            showlegend=True
-        )
-
-
-        st.plotly_chart(
-            fig_dona,
-            use_container_width=True,
-            config={
-                "displayModeBar": False
-            }
-        )
-
-
+    if año_actual_sistema in años_disponibles:
+        año_default = año_actual_sistema
     else:
+        año_default = años_disponibles[0]
 
-        st.info(
-            "No hay gastos para los filtros seleccionados."
-        )
-
-
-# ============================================================
-# ANÁLISIS ANUAL
-# ============================================================
-
-st.markdown(
-    "<br>",
-    unsafe_allow_html=True
-)
-
-
-col_anual_titulo, col_anual_filtro = st.columns(
-    [3, 1]
-)
-
-
-with col_anual_titulo:
-
-    st.markdown(
-        '<div class="section-title">'
-        '📊 Análisis anual'
-        '</div>',
-        unsafe_allow_html=True
+    indice_default = años_disponibles.index(
+        año_default
     )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Comparación anual y comportamiento promedio de las propiedades'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-
-with col_anual_filtro:
 
     año_seleccionado = st.selectbox(
         "Año de análisis",
         años_disponibles,
-        index=indice_año
+        index=indice_default
     )
 
-
-año_anterior = año_seleccionado - 1
-
-
-# ============================================================
-# DATOS DEL AÑO SELECCIONADO
-# ============================================================
-
-datos_año = df_graficos[
-    df_graficos["Fecha"].dt.year
-    == año_seleccionado
-].copy()
+    año_anterior = año_seleccionado - 1
 
 
-# ============================================================
-# DATOS AÑO ANTERIOR
-# ============================================================
+    # ========================================================
+    # DATOS POR AÑO
+    # ========================================================
 
-datos_año_anterior = df_graficos[
-    df_graficos["Fecha"].dt.year
-    == año_anterior
-].copy()
-
-
-# ============================================================
-# FECHA DE CORTE
-# ============================================================
-
-if not datos_año.empty:
-
-    fecha_corte_anual = (
-        datos_año["Fecha"].max()
-    )
-
-else:
-
-    fecha_corte_anual = None
-
-
-if fecha_corte_anual is not None:
-
-    mes_corte_anual = (
-        fecha_corte_anual.month
-    )
-
-    dia_corte_anual = (
-        fecha_corte_anual.day
-    )
-
-else:
-
-    mes_corte_anual = 12
-    dia_corte_anual = 31
-
-
-# ============================================================
-# YTD AÑO ACTUAL
-# ============================================================
-
-if not datos_año.empty:
-
-    datos_año_ytd = datos_año[
-        datos_año["Fecha"]
-        <= fecha_corte_anual
+    datos_año = df_graficos[
+        df_graficos["Fecha"].dt.year ==
+        año_seleccionado
     ].copy()
 
-else:
-
-    datos_año_ytd = datos_año.copy()
-
-
-# ============================================================
-# LYTD AÑO ANTERIOR
-# ============================================================
-
-if not datos_año_anterior.empty:
-
-    try:
-
-        fecha_limite_anterior = pd.Timestamp(
-            year=año_anterior,
-            month=mes_corte_anual,
-            day=dia_corte_anual
-        )
-
-    except ValueError:
-
-        # Maneja el caso de 29 de febrero
-        fecha_limite_anterior = pd.Timestamp(
-            year=año_anterior,
-            month=mes_corte_anual,
-            day=28
-        )
+    datos_año_anterior = df_graficos[
+        df_graficos["Fecha"].dt.year ==
+        año_anterior
+    ].copy()
 
 
-    datos_año_anterior_ytd = (
-        datos_año_anterior[
-            datos_año_anterior["Fecha"]
-            <= fecha_limite_anterior
-        ]
-        .copy()
-    )
-
-else:
-
-    datos_año_anterior_ytd = (
-        datos_año_anterior.copy()
-    )
-
-
-# ============================================================
-# DOS GRÁFICOS LADO A LADO
-# ============================================================
-
-grafico1, grafico2 = st.columns(
-    [1, 1]
-)
-
-
-# ============================================================
-# GRÁFICO 1
-# INGRESOS YTD VS LYTD
-# ============================================================
-
-with grafico1:
+    # ========================================================
+    # YTD VS LYTD
+    # ========================================================
 
     st.markdown(
-        '<div class="section-title">'
-        f'📈 Ingresos {año_seleccionado} vs {año_anterior}'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Comparación mes contra el mismo mes del año anterior'
-        '</div>',
-        unsafe_allow_html=True
+        f"#### Ingresos YTD — {año_seleccionado} vs {año_anterior}"
     )
 
 
-    # --------------------------------------------------------
-    # INGRESO MENSUAL AÑO ACTUAL
-    # --------------------------------------------------------
+    if not datos_año.empty:
 
-    mensual_actual = (
-        datos_año_ytd
+        fecha_corte_anual = datos_año["Fecha"].max()
+
+        mes_corte_anual = fecha_corte_anual.month
+        dia_corte_anual = fecha_corte_anual.day
+
+    else:
+
+        mes_corte_anual = 12
+        dia_corte_anual = 31
+
+
+    # ========================================================
+    # INGRESOS MENSUALES
+    # ========================================================
+
+    ingresos_actual = (
+        datos_año
         .groupby(
-            datos_año_ytd["Fecha"].dt.month
+            datos_año["Fecha"].dt.month
         )["Ingreso"]
         .sum()
-        .reindex(
-            range(1, 13),
-            fill_value=0
-        )
     )
 
-
-    # --------------------------------------------------------
-    # INGRESO MENSUAL AÑO ANTERIOR
-    # --------------------------------------------------------
-
-    mensual_anterior = (
-        datos_año_anterior_ytd
+    ingresos_anterior = (
+        datos_año_anterior
         .groupby(
-            datos_año_anterior_ytd["Fecha"].dt.month
+            datos_año_anterior["Fecha"].dt.month
         )["Ingreso"]
         .sum()
-        .reindex(
-            range(1, 13),
-            fill_value=0
-        )
     )
 
 
-    # --------------------------------------------------------
-    # SOLO HASTA EL MES DISPONIBLE
-    # --------------------------------------------------------
-
-    mensual_actual = mensual_actual[
-        mensual_actual.index <= mes_corte_anual
-    ]
-
-
-    mensual_anterior = mensual_anterior[
-        mensual_anterior.index <= mes_corte_anual
-    ]
-
-
-    # --------------------------------------------------------
-    # MESES
-    # --------------------------------------------------------
-
-    nombres_meses = {
-
+    meses_nombres = {
         1: "Ene",
         2: "Feb",
         3: "Mar",
@@ -1133,457 +661,368 @@ with grafico1:
         10: "Oct",
         11: "Nov",
         12: "Dic"
-
     }
 
 
-    grafico_ytd = pd.DataFrame({
+    # ========================================================
+    # TABLA DE COMPARACIÓN
+    # ========================================================
 
-        "Mes": [
-            nombres_meses[i]
-            for i in mensual_actual.index
-        ],
+    comparacion_mensual = []
 
-        str(año_seleccionado):
-            mensual_actual.values,
+    for mes in range(
+        1,
+        mes_corte_anual + 1
+    ):
 
-        str(año_anterior):
-            mensual_anterior.values
+        ingreso_actual = float(
+            ingresos_actual.get(
+                mes,
+                0
+            )
+        )
 
-    })
+        ingreso_anterior = float(
+            ingresos_anterior.get(
+                mes,
+                0
+            )
+        )
+
+        comparacion_mensual.append(
+            {
+                "Mes": meses_nombres[mes],
+                str(año_seleccionado):
+                    ingreso_actual,
+                str(año_anterior):
+                    ingreso_anterior
+            }
+        )
 
 
-    # --------------------------------------------------------
-    # TOTALES
-    # --------------------------------------------------------
-
-    total_actual = (
-        mensual_actual.sum()
+    df_comparacion = pd.DataFrame(
+        comparacion_mensual
     )
 
 
-    total_anterior = (
-        mensual_anterior.sum()
+    # ========================================================
+    # GRÁFICO COMBINADO
+    # ========================================================
+
+    fig_mensual = go.Figure()
+
+
+    # AÑO SELECCIONADO → BARRAS
+    fig_mensual.add_trace(
+        go.Bar(
+            x=df_comparacion["Mes"],
+            y=df_comparacion[
+                str(año_seleccionado)
+            ],
+            name=str(año_seleccionado),
+            marker_color="#2E7D32",
+            opacity=0.85
+        )
     )
 
 
-    # --------------------------------------------------------
-    # GRÁFICO
-    # --------------------------------------------------------
-
-    fig_ytd = px.line(
-
-        grafico_ytd,
-
-        x="Mes",
-
-        y=[
-            str(año_seleccionado),
-            str(año_anterior)
-        ],
-
-        markers=True
-
+    # AÑO ANTERIOR → LÍNEA
+    fig_mensual.add_trace(
+        go.Scatter(
+            x=df_comparacion["Mes"],
+            y=df_comparacion[
+                str(año_anterior)
+            ],
+            name=str(año_anterior),
+            mode="lines+markers",
+            line=dict(
+                color="#1565C0",
+                width=3
+            ),
+            marker=dict(
+                size=7
+            )
+        )
     )
 
 
-    fig_ytd.update_layout(
-
-        height=350,
-
+    fig_mensual.update_layout(
+        height=430,
         margin=dict(
             l=10,
             r=10,
-            t=15,
+            t=25,
             b=10
         ),
-
-        xaxis_title="",
-
-        yaxis_title="",
-
+        template="plotly_white",
         hovermode="x unified",
 
-        legend_title=""
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
 
-    )
+        xaxis=dict(
+            title="Mes",
+            showgrid=False
+        ),
 
+        yaxis=dict(
+            title="Ingresos",
+            tickformat=",.0f",
+            gridcolor="#EAEAEA"
+        ),
 
-    fig_ytd.update_traces(
-
-        hovertemplate=
-            "<b>%{fullData.name}</b><br>"
-            "$ %{y:,.0f}"
-            "<extra></extra>"
-
+        bargap=0.25
     )
 
 
     st.plotly_chart(
-
-        fig_ytd,
-
+        fig_mensual,
         use_container_width=True,
-
         config={
             "displayModeBar": False
         }
-
     )
 
 
-    # --------------------------------------------------------
-    # TOTALES
-    # --------------------------------------------------------
+    # ========================================================
+    # TABLA YTD
+    # ========================================================
 
-    c1, c2 = st.columns(2)
+    total_actual = df_comparacion[
+        str(año_seleccionado)
+    ].sum()
+
+    total_anterior = df_comparacion[
+        str(año_anterior)
+    ].sum()
+
+    col_ytd1, col_ytd2, col_ytd3 = st.columns(3)
 
 
-    with c1:
+    with col_ytd1:
 
         st.metric(
-            f"YTD {año_seleccionado}",
-            f"$ {total_actual / 1_000_000:.1f} M"
+            f"Ingresos {año_seleccionado}",
+            formato_moneda(total_actual)
         )
 
 
-    with c2:
+    with col_ytd2:
 
         st.metric(
-            f"LYTD {año_anterior}",
-            f"$ {total_anterior / 1_000_000:.1f} M"
+            f"Ingresos {año_anterior}",
+            formato_moneda(total_anterior)
         )
 
 
-# ============================================================
-# GRÁFICO 2
-# INGRESO PROMEDIO MENSUAL
-# ============================================================
+    with col_ytd3:
 
-with grafico2:
+        diferencia = (
+            total_actual -
+            total_anterior
+        )
+
+        st.metric(
+            "Diferencia",
+            formato_moneda(diferencia)
+        )
+
+
+    # ========================================================
+    # PROMEDIO MENSUAL POR PROPIEDAD
+    # ========================================================
 
     st.markdown(
-        '<div class="section-title">'
-        '💰 Ingreso promedio mensual'
-        '</div>',
-        unsafe_allow_html=True
+        f"#### Promedio mensual de ingresos por propiedad — {año_seleccionado}"
     )
 
-    st.markdown(
-        '<div class="section-subtitle">'
-        f'Promedio por propiedad · {año_seleccionado}'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-
-    # --------------------------------------------------------
-    # DATOS DEL AÑO
-    # --------------------------------------------------------
 
     datos_promedio = df_graficos[
-        df_graficos["Fecha"].dt.year
-        == año_seleccionado
+        df_graficos["Fecha"].dt.year ==
+        año_seleccionado
     ].copy()
 
 
-    # --------------------------------------------------------
-    # INGRESOS POR PROPIEDAD
-    # --------------------------------------------------------
+    if not datos_promedio.empty:
 
-    propiedad_ingresos = (
-
-        datos_promedio
-
-        .groupby(
-            "Nombre_Propiedad"
-        )
-
-        .agg(
-
-            Ingreso=("Ingreso", "sum"),
-
-            Primera_Fecha=("Fecha", "min"),
-
-            Ultima_Fecha=("Fecha", "max")
-
-        )
-
-        .reset_index()
-
-    )
-
-
-    # --------------------------------------------------------
-    # MESES CORRIDOS
-    # --------------------------------------------------------
-
-    def calcular_meses_corridos(
-        fecha_inicio,
-        fecha_fin
-    ):
-
-        if (
-            pd.isna(fecha_inicio)
-            or pd.isna(fecha_fin)
-        ):
-
-            return 1
-
-
-        meses = (
-
-            (
-                fecha_fin.year
-                - fecha_inicio.year
+        promedio_propiedad = (
+            datos_promedio
+            .groupby(
+                "Nombre_Propiedad"
             )
-            * 12
+            .agg(
+                Ingreso=(
+                    "Ingreso",
+                    "sum"
+                ),
+                Fecha_Inicio=(
+                    "Fecha",
+                    "min"
+                ),
+                Fecha_Fin=(
+                    "Fecha",
+                    "max"
+                )
+            )
+            .reset_index()
+        )
 
+
+        # ====================================================
+        # MESES TRANSCURRIDOS
+        # ====================================================
+
+        promedio_propiedad["Meses"] = (
+            (
+                promedio_propiedad["Fecha_Fin"].dt.year
+                -
+                promedio_propiedad["Fecha_Inicio"].dt.year
+            ) * 12
             +
-
             (
-                fecha_fin.month
-                - fecha_inicio.month
+                promedio_propiedad["Fecha_Fin"].dt.month
+                -
+                promedio_propiedad["Fecha_Inicio"].dt.month
             )
-
             + 1
-
         )
 
 
-        return max(
-            meses,
-            1
+        promedio_propiedad["Promedio_Mensual"] = (
+            promedio_propiedad["Ingreso"]
+            /
+            promedio_propiedad["Meses"]
         )
 
 
-    propiedad_ingresos[
-        "Meses_Corridos"
-    ] = propiedad_ingresos.apply(
-
-        lambda fila:
-
-            calcular_meses_corridos(
-
-                fila["Primera_Fecha"],
-
-                fila["Ultima_Fecha"]
-
-            ),
-
-        axis=1
-
-    )
-
-
-    # --------------------------------------------------------
-    # PROMEDIO MENSUAL
-    # --------------------------------------------------------
-
-    propiedad_ingresos[
-        "Promedio_Mensual"
-    ] = (
-
-        propiedad_ingresos["Ingreso"]
-
-        /
-
-        propiedad_ingresos["Meses_Corridos"]
-
-    )
-
-
-    # --------------------------------------------------------
-    # ORDENAR
-    # --------------------------------------------------------
-
-    propiedad_ingresos = (
-
-        propiedad_ingresos
-
-        .sort_values(
-
-            "Promedio_Mensual",
-
-            ascending=False
-
-        )
-
-    )
-
-
-    # --------------------------------------------------------
-    # GRÁFICO
-    # --------------------------------------------------------
-
-    if not propiedad_ingresos.empty:
-
-        fig_promedio = px.bar(
-
-            propiedad_ingresos,
-
-            x="Nombre_Propiedad",
-
-            y="Promedio_Mensual"
-
+        promedio_propiedad = (
+            promedio_propiedad
+            .sort_values(
+                "Promedio_Mensual",
+                ascending=False
+            )
         )
 
 
-        fig_promedio.update_traces(
+        # ====================================================
+        # GRÁFICO PROMEDIO
+        # ====================================================
 
-            hovertemplate=
+        grafico_promedio = go.Figure()
 
+
+        grafico_promedio.add_trace(
+            go.Bar(
+                x=promedio_propiedad[
+                    "Nombre_Propiedad"
+                ],
+                y=promedio_propiedad[
+                    "Promedio_Mensual"
+                ],
+                marker_color="#6A1B9A",
+                opacity=0.85,
+
+                hovertemplate=
                 "<b>%{x}</b><br>"
-                "Promedio mensual: $ %{y:,.0f}"
+                "Promedio mensual: "
+                "$%{y:,.0f}"
                 "<extra></extra>"
-
+            )
         )
 
 
-        fig_promedio.update_layout(
-
-            height=350,
-
+        grafico_promedio.update_layout(
+            height=430,
             margin=dict(
                 l=10,
                 r=10,
-                t=15,
+                t=25,
                 b=10
             ),
+            template="plotly_white",
 
-            xaxis_title="",
+            xaxis=dict(
+                title="Propiedad",
+                showgrid=False
+            ),
 
-            yaxis_title="",
-
-            showlegend=False
-
+            yaxis=dict(
+                title="Ingreso promedio mensual",
+                tickformat=",.0f",
+                gridcolor="#EAEAEA"
+            )
         )
 
 
         st.plotly_chart(
-
-            fig_promedio,
-
+            grafico_promedio,
             use_container_width=True,
-
             config={
                 "displayModeBar": False
             }
-
         )
 
 
-        # ----------------------------------------------------
+        # ====================================================
         # TABLA PROMEDIO
-        # ----------------------------------------------------
+        # ====================================================
 
-        tabla_promedio = (
-            propiedad_ingresos.copy()
-        )
+        tabla_promedio = promedio_propiedad[
+            [
+                "Nombre_Propiedad",
+                "Ingreso",
+                "Meses",
+                "Promedio_Mensual"
+            ]
+        ].copy()
 
 
-        tabla_promedio["Ingreso"] = (
-            tabla_promedio["Ingreso"]
-            .apply(formato_dinero)
+        tabla_promedio = tabla_promedio.rename(
+            columns={
+                "Nombre_Propiedad":
+                    "Propiedad",
+                "Ingreso":
+                    "Ingreso Total",
+                "Meses":
+                    "Meses con datos",
+                "Promedio_Mensual":
+                    "Promedio Mensual"
+            }
         )
 
 
         tabla_promedio[
-            "Promedio_Mensual"
-        ] = (
-
-            tabla_promedio[
-                "Promedio_Mensual"
-            ]
-
-            .apply(formato_dinero)
-
+            "Ingreso Total"
+        ] = tabla_promedio[
+            "Ingreso Total"
+        ].apply(
+            formato_moneda
         )
 
 
-        tabla_promedio = (
-
-            tabla_promedio
-
-            .rename(
-
-                columns={
-
-                    "Nombre_Propiedad":
-                        "Propiedad",
-
-                    "Ingreso":
-                        "Ingreso acumulado",
-
-                    "Meses_Corridos":
-                        "Meses corridos",
-
-                    "Promedio_Mensual":
-                        "Promedio mensual"
-
-                }
-
-            )
-
+        tabla_promedio[
+            "Promedio Mensual"
+        ] = tabla_promedio[
+            "Promedio Mensual"
+        ].apply(
+            formato_moneda
         )
 
 
         st.dataframe(
-
-            tabla_promedio[
-
-                [
-                    "Propiedad",
-                    "Ingreso acumulado",
-                    "Meses corridos",
-                    "Promedio mensual"
-                ]
-
-            ],
-
+            tabla_promedio,
             use_container_width=True,
-
-            hide_index=True,
-
-            height=190
-
+            hide_index=True
         )
 
 
     else:
 
         st.info(
-            f"No hay ingresos registrados para {año_seleccionado}."
+            f"No hay datos para {año_seleccionado} con los filtros seleccionados."
         )
-
-
-# ============================================================
-# PIE
-# ============================================================
-
-st.markdown(
-    "<br>",
-    unsafe_allow_html=True
-)
-
-
-if fecha_corte_anual is not None:
-
-    texto_corte = (
-        fecha_corte_anual.strftime("%d/%m/%Y")
-    )
-
-else:
-
-    texto_corte = "sin datos"
-
-
-st.caption(
-
-    f"🏠 Airbnb · "
-    f"{len(df_filtrado):,} movimientos visibles · "
-    f"Análisis anual: {año_seleccionado} vs {año_anterior} · "
-    f"Corte: {texto_corte} · "
-    f"Fuente: Movimientos_Operativos_Reparto"
-
-)
