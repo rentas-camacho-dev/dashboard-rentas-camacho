@@ -28,10 +28,6 @@ st.markdown(
 """
 <style>
 
-/* ==========================================================
-   FUENTE GENERAL
-   ========================================================== */
-
 html, body, [class*="css"] {
     font-family:
         -apple-system,
@@ -40,19 +36,9 @@ html, body, [class*="css"] {
         sans-serif !important;
 }
 
-
-/* ==========================================================
-   FONDO
-   ========================================================== */
-
 .stApp {
     background: #F5F7FA;
 }
-
-
-/* ==========================================================
-   CONTENEDOR
-   ========================================================== */
 
 .block-container {
     max-width: 100%;
@@ -61,11 +47,6 @@ html, body, [class*="css"] {
     padding-left: 0.7rem !important;
     padding-right: 0.7rem !important;
 }
-
-
-/* ==========================================================
-   ESPACIADO GENERAL
-   ========================================================== */
 
 div[data-testid="stVerticalBlock"] {
     gap: 0.3rem;
@@ -82,16 +63,16 @@ div[data-testid="stVerticalBlock"] {
     font-weight: 700;
     line-height: 1.25;
     margin-top: 8px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .section-subtitle {
     color: #6B778C;
     font-size: 11px;
     font-weight: 400;
-    line-height: 1.35;
+    line-height: 1.3;
     margin-top: 0;
-    margin-bottom: 9px;
+    margin-bottom: 7px;
 }
 
 
@@ -115,43 +96,31 @@ div[data-baseweb="select"] {
    ========================================================== */
 
 div[data-testid="stMetric"] {
-
     background: white;
-
     border: 1px solid #E1E5EA;
-
     border-radius: 13px;
-
     padding: 9px 14px;
-
     box-shadow: 0 2px 7px rgba(0,0,0,.035);
 }
 
 div[data-testid="stMetricLabel"] {
-
     font-size: 11px !important;
-
     font-weight: 400 !important;
 }
 
 div[data-testid="stMetricValue"] {
-
     font-size: 24px !important;
-
     font-weight: 400 !important;
 }
 
 
 /* ==========================================================
-   TARJETAS
+   TABLA / TARJETAS
    ========================================================== */
 
 div[data-testid="stVerticalBlockBorderWrapper"] {
-
     background: white !important;
-
     border: 1px solid #E1E5EA !important;
-
     border-radius: 13px !important;
 }
 
@@ -161,9 +130,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {
    ========================================================== */
 
 div[data-testid="stPlotlyChart"] {
-
     margin-top: -4px;
-
     margin-bottom: -8px;
 }
 
@@ -173,9 +140,7 @@ div[data-testid="stPlotlyChart"] {
    ========================================================== */
 
 hr {
-
     margin: 7px 0;
-
     border-color: #E3E7EC;
 }
 
@@ -231,9 +196,7 @@ WHERE LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
 def cargar_datos():
 
     credentials = service_account.Credentials.from_service_account_info(
-
         st.secrets["gcp_service_account"],
-
         scopes=[
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/drive.readonly"
@@ -241,24 +204,18 @@ def cargar_datos():
     )
 
     client = bigquery.Client(
-
         credentials=credentials,
-
         project="rentascamacho"
     )
 
-    return client.query(
-        QUERY
-    ).to_dataframe()
+    return client.query(QUERY).to_dataframe()
 
 
 # ============================================================
 # CARGAR DATOS
 # ============================================================
 
-with st.spinner(
-    "Cargando información de Airbnb..."
-):
+with st.spinner("Cargando información de Airbnb..."):
 
     df = cargar_datos()
 
@@ -272,7 +229,6 @@ df["Fecha"] = pd.to_datetime(
     errors="coerce"
 )
 
-
 for col in [
     "Porcentaje",
     "Valor",
@@ -285,7 +241,6 @@ for col in [
         df[col],
         errors="coerce"
     ).fillna(0)
-
 
 df = df.dropna(
     subset=["Fecha"]
@@ -314,21 +269,15 @@ def compacto(valor):
 
     if valor >= 1_000_000_000:
 
-        return (
-            f"{signo}$ {valor / 1_000_000_000:.1f} B"
-        )
+        return f"{signo}$ {valor / 1_000_000_000:.1f} B"
 
     elif valor >= 1_000_000:
 
-        return (
-            f"{signo}$ {valor / 1_000_000:.1f} M"
-        )
+        return f"{signo}$ {valor / 1_000_000:.1f} M"
 
     elif valor >= 1_000:
 
-        return (
-            f"{signo}$ {valor / 1_000:.0f} mil"
-        )
+        return f"{signo}$ {valor / 1_000:.0f} mil"
 
     else:
 
@@ -341,7 +290,6 @@ def compacto(valor):
 def cambio(actual, anterior):
 
     if anterior == 0:
-
         return None
 
     return (
@@ -354,46 +302,41 @@ def cambio(actual, anterior):
 def bandera(porcentaje):
 
     if porcentaje >= 0.80:
-
         return "🏆"
 
     elif porcentaje >= 0.50:
-
         return "⚡"
 
     else:
-
         return "🚩"
 
 
 # ============================================================
-# ENCABEZADO
+# TÍTULO PRINCIPAL
 # ============================================================
 
 st.markdown(
 """
 <div style="
     margin-top:8px;
-    margin-bottom:24px;
+    margin-bottom:22px;
 ">
 
-<h1 style="
+<div style="
     color:#172B4D;
     font-size:30px;
     font-weight:700;
-    margin:0;
-    padding:0;
     line-height:1.2;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 ">
 🏠 Rentas Cortas — Airbnb
-</h1>
+</div>
 
 <div style="
     color:#6B778C;
     font-size:13px;
     font-weight:400;
-    margin-top:7px;
+    margin-top:6px;
     line-height:1.4;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 ">
@@ -415,16 +358,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 f1, f2, f3, f4 = st.columns(
     4,
     gap="medium"
 )
 
-
-# ------------------------------------------------------------
-# CIUDAD
-# ------------------------------------------------------------
 
 with f1:
 
@@ -436,20 +374,12 @@ with f1:
     )
 
     ciudad_seleccionada = st.multiselect(
-
         "Ciudad",
-
         ciudades,
-
         placeholder="Todas",
-
         key="filtro_ciudad"
     )
 
-
-# ------------------------------------------------------------
-# PROPIEDAD
-# ------------------------------------------------------------
 
 with f2:
 
@@ -461,20 +391,12 @@ with f2:
     )
 
     propiedad_seleccionada = st.multiselect(
-
         "Propiedad",
-
         propiedades,
-
         placeholder="Todas",
-
         key="filtro_propiedad"
     )
 
-
-# ------------------------------------------------------------
-# SOCIO
-# ------------------------------------------------------------
 
 with f3:
 
@@ -486,54 +408,30 @@ with f3:
     )
 
     socio_seleccionado = st.multiselect(
-
         "Socio",
-
         socios,
-
         placeholder="Todos",
-
         key="filtro_socio"
     )
 
 
-# ------------------------------------------------------------
-# FECHA
-# ------------------------------------------------------------
-
 with f4:
 
-    fecha_min = (
-        df["Fecha"]
-        .min()
-        .date()
-    )
+    fecha_min = df["Fecha"].min().date()
 
-    fecha_max = (
-        df["Fecha"]
-        .max()
-        .date()
-    )
+    fecha_max = df["Fecha"].max().date()
 
     rango_fecha = st.date_input(
-
         "Fecha",
-
-        value=(
-            fecha_min,
-            fecha_max
-        ),
-
+        value=(fecha_min, fecha_max),
         min_value=fecha_min,
-
         max_value=fecha_max,
-
         key="filtro_fecha"
     )
 
 
 # ============================================================
-# FILTROS BASE
+# FILTROS
 # ============================================================
 
 df_base = df.copy()
@@ -544,9 +442,7 @@ if ciudad_seleccionada:
     df_base = df_base[
         df_base["Ciudad"]
         .astype(str)
-        .isin(
-            ciudad_seleccionada
-        )
+        .isin(ciudad_seleccionada)
     ]
 
 
@@ -555,9 +451,7 @@ if propiedad_seleccionada:
     df_base = df_base[
         df_base["Nombre_Propiedad"]
         .astype(str)
-        .isin(
-            propiedad_seleccionada
-        )
+        .isin(propiedad_seleccionada)
     ]
 
 
@@ -566,14 +460,12 @@ if socio_seleccionado:
     df_base = df_base[
         df_base["Nombre_Socio"]
         .astype(str)
-        .isin(
-            socio_seleccionado
-        )
+        .isin(socio_seleccionado)
     ]
 
 
 # ============================================================
-# FILTRO DE FECHA
+# FECHA
 # ============================================================
 
 df_filtrado = df_base.copy()
@@ -589,16 +481,9 @@ if (
     )
 
     fecha_fin = (
-
-        pd.Timestamp(
-            rango_fecha[1]
-        )
-
+        pd.Timestamp(rango_fecha[1])
         +
-
-        pd.Timedelta(
-            days=1
-        )
+        pd.Timedelta(days=1)
     )
 
     df_filtrado = df_filtrado[
@@ -612,30 +497,15 @@ if (
 # KPIs
 # ============================================================
 
-ingreso_total = (
-    df_filtrado["Ingreso"].sum()
-)
+ingreso_total = df_filtrado["Ingreso"].sum()
 
-gasto_total = (
-    df_filtrado["Gasto"].sum()
-)
+gasto_total = df_filtrado["Gasto"].sum()
 
-flujo_total = (
-
-    ingreso_total
-    -
-    gasto_total
-)
-
+flujo_total = ingreso_total - gasto_total
 
 rentabilidad = (
-
-    flujo_total
-    /
-    ingreso_total
-
+    flujo_total / ingreso_total
     if ingreso_total != 0
-
     else 0
 )
 
@@ -664,25 +534,16 @@ if (
     )
 
     dias_periodo = (
-
-        fin_actual
-        -
-        inicio_actual
+        fin_actual - inicio_actual
     ).days + 1
 
-
     fin_anterior = (
-
         inicio_actual
         -
-        pd.Timedelta(
-            days=1
-        )
+        pd.Timedelta(days=1)
     )
 
-
     inicio_anterior = (
-
         fin_anterior
         -
         pd.Timedelta(
@@ -690,13 +551,11 @@ if (
         )
     )
 
-
     df_anterior = df_base[
         (df_base["Fecha"] >= inicio_anterior)
         &
         (df_base["Fecha"] <= fin_anterior)
     ]
-
 
     if not df_anterior.empty:
 
@@ -709,45 +568,35 @@ if (
         )
 
         flujo_anterior = (
-
             ingreso_anterior
             -
             gasto_anterior
         )
 
-
         rent_anterior = (
-
             flujo_anterior
             /
             ingreso_anterior
-
             if ingreso_anterior != 0
-
             else 0
         )
-
 
         delta_ingreso = cambio(
             ingreso_total,
             ingreso_anterior
         )
 
-
         delta_gasto = cambio(
             gasto_total,
             gasto_anterior
         )
-
 
         delta_flujo = cambio(
             flujo_total,
             flujo_anterior
         )
 
-
         delta_rentabilidad = (
-
             rentabilidad
             -
             rent_anterior
@@ -755,7 +604,7 @@ if (
 
 
 # ============================================================
-# KPIs
+# KPI
 # ============================================================
 
 k1, k2, k3, k4 = st.columns(
@@ -767,18 +616,11 @@ k1, k2, k3, k4 = st.columns(
 with k1:
 
     st.metric(
-
         "💰 Ingreso Total",
-
-        moneda(
-            ingreso_total
-        ),
-
+        moneda(ingreso_total),
         (
             f"{delta_ingreso:+.1%}"
-
             if delta_ingreso is not None
-
             else None
         )
     )
@@ -787,18 +629,11 @@ with k1:
 with k2:
 
     st.metric(
-
         "🧾 Gasto Total",
-
-        moneda(
-            gasto_total
-        ),
-
+        moneda(gasto_total),
         (
             f"{delta_gasto:+.1%}"
-
             if delta_gasto is not None
-
             else None
         )
     )
@@ -807,18 +642,11 @@ with k2:
 with k3:
 
     st.metric(
-
         "💵 Flujo",
-
-        moneda(
-            flujo_total
-        ),
-
+        moneda(flujo_total),
         (
             f"{delta_flujo:+.1%}"
-
             if delta_flujo is not None
-
             else None
         )
     )
@@ -827,29 +655,29 @@ with k3:
 with k4:
 
     st.metric(
-
         "🎯 Rentabilidad",
-
         f"{rentabilidad:.1%}",
-
         (
             f"{delta_rentabilidad * 100:+.1f} pp"
-
             if delta_rentabilidad is not None
-
             else None
         )
     )
 
 
 # ============================================================
-# TABLA + GASTOS
+# ALTURA ÚNICA DE LAS DOS TARJETAS
+# ============================================================
+
+ALTURA_TARJETAS = 360
+
+
+# ============================================================
+# DOS COLUMNAS PRINCIPALES
 # ============================================================
 
 col_tabla, col_gastos = st.columns(
-
     [1.55, 1],
-
     gap="medium"
 )
 
@@ -900,7 +728,6 @@ with col_tabla:
 
 
         resumen["Flujo"] = (
-
             resumen["Ingreso"]
             -
             resumen["Gasto"]
@@ -916,14 +743,9 @@ with col_tabla:
         ).fillna(0)
 
 
-        resumen = (
-
-            resumen
-
-            .sort_values(
-                "Ingreso",
-                ascending=False
-            )
+        resumen = resumen.sort_values(
+            "Ingreso",
+            ascending=False
         )
 
 
@@ -934,12 +756,9 @@ with col_tabla:
 
             nombre = html.escape(
                 str(
-                    row[
-                        "Nombre_Propiedad"
-                    ]
+                    row["Nombre_Propiedad"]
                 )
             )
-
 
             ingreso = float(
                 row["Ingreso"]
@@ -959,20 +778,14 @@ with col_tabla:
 
 
             ancho = min(
-                max(
-                    pct * 100,
-                    0
-                ),
+                max(pct * 100, 0),
                 100
             )
 
 
             color_flujo = (
-
                 "#00875A"
-
                 if flujo >= 0
-
                 else "#DE350B"
             )
 
@@ -993,7 +806,7 @@ with col_tabla:
 </td>
 
 <td
-class="num flujo"
+class="num"
 style="color:{color_flujo};">
 {compacto(flujo)}
 </td>
@@ -1023,18 +836,17 @@ style="width:{ancho}%;">
 """
 
 
-        total_ingreso = (
-            resumen["Ingreso"].sum()
-        )
+        total_ingreso = resumen[
+            "Ingreso"
+        ].sum()
 
-        total_gasto = (
-            resumen["Gasto"].sum()
-        )
+        total_gasto = resumen[
+            "Gasto"
+        ].sum()
 
-        total_flujo = (
-            resumen["Flujo"].sum()
-        )
-
+        total_flujo = resumen[
+            "Flujo"
+        ].sum()
 
         total_pct = (
 
@@ -1049,12 +861,7 @@ style="width:{ancho}%;">
 
 
         total_ancho = min(
-
-            max(
-                total_pct * 100,
-                0
-            ),
-
+            max(total_pct * 100, 0),
             100
         )
 
@@ -1064,15 +871,12 @@ style="width:{ancho}%;">
 <style>
 
 * {{
-
     font-family:
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
-
     box-sizing:border-box;
-
 }}
 
 .tabla-card {{
@@ -1086,7 +890,6 @@ style="width:{ancho}%;">
     overflow:hidden;
 
     width:100%;
-
 }}
 
 .tabla-card table {{
@@ -1096,7 +899,6 @@ style="width:{ancho}%;">
     border-collapse:collapse;
 
     table-layout:fixed;
-
 }}
 
 .tabla-card th {{
@@ -1105,14 +907,13 @@ style="width:{ancho}%;">
 
     color:white;
 
-    padding:8px 8px;
+    padding:8px;
 
     font-size:11px;
 
     font-weight:600;
 
     text-align:left;
-
 }}
 
 .tabla-card th:nth-child(1) {{
@@ -1126,7 +927,6 @@ style="width:{ancho}%;">
     width:14%;
 
     text-align:right;
-
 }}
 
 .tabla-card th:nth-child(5) {{
@@ -1134,7 +934,6 @@ style="width:{ancho}%;">
     width:25%;
 
     text-align:right;
-
 }}
 
 .tabla-card th:nth-child(6) {{
@@ -1142,7 +941,6 @@ style="width:{ancho}%;">
     width:10%;
 
     text-align:center;
-
 }}
 
 .tabla-card td {{
@@ -1158,7 +956,6 @@ style="width:{ancho}%;">
     color:#172B4D;
 
     height:31px;
-
 }}
 
 .propiedad {{
@@ -1170,7 +967,6 @@ style="width:{ancho}%;">
     overflow:hidden;
 
     text-overflow:ellipsis;
-
 }}
 
 .num {{
@@ -1180,25 +976,14 @@ style="width:{ancho}%;">
     white-space:nowrap;
 
     font-weight:400;
-
 }}
 
 .ingreso {{
-
     color:#00875A;
-
 }}
 
 .gasto {{
-
     color:#DE350B;
-
-}}
-
-.flujo {{
-
-    font-weight:400;
-
 }}
 
 .pct {{
@@ -1210,7 +995,6 @@ style="width:{ancho}%;">
     font-weight:400;
 
     margin-bottom:2px;
-
 }}
 
 .barra {{
@@ -1224,7 +1008,6 @@ style="width:{ancho}%;">
     border-radius:5px;
 
     overflow:hidden;
-
 }}
 
 .barra-fill {{
@@ -1234,7 +1017,6 @@ style="width:{ancho}%;">
     background:#16B5D1;
 
     border-radius:5px;
-
 }}
 
 .estado {{
@@ -1244,7 +1026,6 @@ style="width:{ancho}%;">
     font-size:13px;
 
     font-weight:400;
-
 }}
 
 .total-row td {{
@@ -1254,11 +1035,9 @@ style="width:{ancho}%;">
     border-top:2px solid #DCE3EA;
 
     font-weight:500;
-
 }}
 
 </style>
-
 
 <div class="tabla-card">
 
@@ -1290,9 +1069,7 @@ style="width:{ancho}%;">
 
 <tr class="total-row">
 
-<td>
-Total
-</td>
+<td>Total</td>
 
 <td class="num ingreso">
 {compacto(total_ingreso)}
@@ -1340,11 +1117,8 @@ style="width:{total_ancho}%;">
 
 
         components.html(
-
             tabla_html,
-
-            height=390,
-
+            height=ALTURA_TARJETAS,
             scrolling=False
         )
 
@@ -1396,9 +1170,9 @@ with col_gastos:
 
     if not gastos.empty:
 
-        total_gastos = (
-            gastos["Gasto"].sum()
-        )
+        total_gastos = gastos[
+            "Gasto"
+        ].sum()
 
 
         # ====================================================
@@ -1407,20 +1181,11 @@ with col_gastos:
 
         if len(gastos) > 7:
 
-            top = (
-                gastos
-                .head(7)
-                .copy()
-            )
+            top = gastos.head(7).copy()
 
-
-            otros_valor = (
-
-                gastos
-                .iloc[7:]["Gasto"]
-                .sum()
-            )
-
+            otros_valor = gastos.iloc[7:][
+                "Gasto"
+            ].sum()
 
             otros = pd.DataFrame({
 
@@ -1432,14 +1197,8 @@ with col_gastos:
 
             })
 
-
             gastos_pie = pd.concat(
-
-                [
-                    top,
-                    otros
-                ],
-
+                [top, otros],
                 ignore_index=True
             )
 
@@ -1474,16 +1233,13 @@ with col_gastos:
             gastos_pie.iloc[0]["Gasto"]
         )
 
-
         mayor_nombre = str(
             gastos_pie.iloc[0][
                 "Nombre_Subcategoria"
             ]
         )
 
-
         mayor_pct = (
-
             mayor_valor
             /
             total_gastos
@@ -1491,7 +1247,7 @@ with col_gastos:
 
 
         # ====================================================
-        # DONA
+        # GRÁFICA DONA
         # ====================================================
 
         fig_gastos = go.Figure()
@@ -1509,7 +1265,7 @@ with col_gastos:
                     "Gasto"
                 ],
 
-                hole=0.63,
+                hole=0.62,
 
                 textinfo="none",
 
@@ -1522,9 +1278,7 @@ with col_gastos:
                     ],
 
                     line=dict(
-
                         color="white",
-
                         width=2
                     )
                 ),
@@ -1548,9 +1302,7 @@ with col_gastos:
 
             y=0.55,
 
-            text=(
-                f"<b>{mayor_pct:.1%}</b>"
-            ),
+            text=f"<b>{mayor_pct:.1%}</b>",
 
             showarrow=False,
 
@@ -1580,7 +1332,7 @@ with col_gastos:
 
             font=dict(
 
-                size=10,
+                size=9,
 
                 color="#7A869A",
 
@@ -1592,16 +1344,12 @@ with col_gastos:
 
         fig_gastos.update_layout(
 
-            height=285,
+            height=250,
 
             margin=dict(
-
                 l=0,
-
                 r=0,
-
                 t=0,
-
                 b=0
             ),
 
@@ -1620,14 +1368,304 @@ with col_gastos:
 
 
         # ====================================================
-        # TARJETA ÚNICA
+        # TARJETA ÚNICA DE GASTOS
+        # ====================================================
+
+        gastos_html = """
+
+<style>
+
+* {
+    box-sizing:border-box;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+body {
+    margin:0;
+    padding:0;
+    background:transparent;
+}
+
+.gastos {
+
+    padding:7px 5px 0 0;
+
+    color:#172B4D;
+}
+
+.total {
+
+    font-size:19px;
+
+    font-weight:400;
+
+    line-height:1.1;
+
+    margin-bottom:3px;
+}
+
+.subtitulo {
+
+    font-size:10px;
+
+    font-weight:400;
+
+    color:#7A869A;
+
+    margin-bottom:7px;
+}
+
+.encabezado {
+
+    display:grid;
+
+    grid-template-columns:
+        1fr 68px 31px;
+
+    border-bottom:
+        1px solid #E3E7EC;
+
+    padding-bottom:4px;
+
+    color:#52617A;
+
+    font-size:9px;
+
+    font-weight:400;
+}
+
+.fila {
+
+    display:grid;
+
+    grid-template-columns:
+        1fr 68px 31px;
+
+    align-items:center;
+
+    min-height:24px;
+
+    border-bottom:
+        1px solid #F0F2F4;
+
+    font-size:10px;
+
+    font-weight:400;
+
+    color:#344563;
+}
+
+.nombre {
+
+    white-space:nowrap;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+}
+
+.punto {
+
+    display:inline-block;
+
+    width:6px;
+
+    height:6px;
+
+    border-radius:50%;
+
+    margin-right:5px;
+}
+
+.valor {
+
+    text-align:right;
+
+    color:#172B4D;
+
+    font-weight:400;
+}
+
+.porcentaje {
+
+    text-align:right;
+
+    color:#7A869A;
+
+    font-weight:400;
+}
+
+.alerta {
+
+    margin-top:7px;
+
+    background:#EAF3FF;
+
+    border:
+        1px solid #C7DDF8;
+
+    border-radius:7px;
+
+    padding:6px 8px;
+
+    color:#52617A;
+
+    font-size:9px;
+
+    line-height:1.3;
+}
+
+.alerta strong {
+
+    color:#344563;
+
+    font-weight:500;
+}
+
+</style>
+
+<div class="gastos">
+
+<div class="total">
+TOTAL_GASTOS
+</div>
+
+<div class="subtitulo">
+Total de egresos operativos
+</div>
+
+<div class="encabezado">
+
+<div>Subcategoría</div>
+
+<div style="text-align:right;">
+Valor
+</div>
+
+<div style="text-align:right;">
+%
+</div>
+
+</div>
+
+FILAS
+
+<div class="alerta">
+
+💡 Mayor centro de gasto:
+<strong>MAYOR_NOMBRE</strong>
+(MAYOR_VALOR)
+
+<br>
+
+Representa el MAYOR_PCT del total.
+
+</div>
+
+</div>
+"""
+
+
+        filas_gastos = ""
+
+
+        for i, (_, row) in enumerate(
+            gastos_pie.iterrows()
+        ):
+
+            categoria = html.escape(
+                str(
+                    row[
+                        "Nombre_Subcategoria"
+                    ]
+                )
+            )
+
+            valor = float(
+                row["Gasto"]
+            )
+
+            pct = (
+                valor
+                /
+                total_gastos
+            )
+
+
+            filas_gastos += f"""
+
+<div class="fila">
+
+<div class="nombre">
+
+<span
+class="punto"
+style="background:{colores[i]};">
+</span>
+
+{categoria}
+
+</div>
+
+<div class="valor">
+{compacto(valor)}
+</div>
+
+<div class="porcentaje">
+{pct:.1%}
+</div>
+
+</div>
+"""
+
+
+        gastos_html = (
+
+            gastos_html
+
+            .replace(
+                "TOTAL_GASTOS",
+                moneda(total_gastos)
+            )
+
+            .replace(
+                "FILAS",
+                filas_gastos
+            )
+
+            .replace(
+                "MAYOR_NOMBRE",
+                html.escape(
+                    mayor_nombre
+                )
+            )
+
+            .replace(
+                "MAYOR_VALOR",
+                compacto(
+                    mayor_valor
+                )
+            )
+
+            .replace(
+                "MAYOR_PCT",
+                f"{mayor_pct:.1%}"
+            )
+        )
+
+
+        # ====================================================
+        # CONTENEDOR ÚNICO
         # ====================================================
 
         with st.container(
-
             border=True,
-
-            height=390
+            height=ALTURA_TARJETAS
         ):
 
             gc1, gc2 = st.columns(
@@ -1664,263 +1702,26 @@ with col_gastos:
 
             with gc2:
 
-                st.markdown(
+                components.html(
 
-                    f"""
-<div style="
-font-family:
--apple-system,
-BlinkMacSystemFont,
-'Segoe UI',
-sans-serif;
+                    gastos_html,
 
-padding:8px 3px 0 0;
-font-weight:400;
-">
+                    height=300,
 
-<div style="
-font-size:20px;
-font-weight:400;
-color:#172B4D;
-line-height:1.1;
-">
-
-{moneda(total_gastos)}
-
-</div>
-
-<div style="
-font-size:11px;
-font-weight:400;
-color:#7A869A;
-margin-top:4px;
-margin-bottom:8px;
-">
-
-Total de egresos operativos
-
-</div>
-
-<div style="
-display:grid;
-grid-template-columns:1fr 72px 34px;
-
-font-size:10px;
-
-font-weight:400;
-
-color:#52617A;
-
-padding-bottom:5px;
-
-border-bottom:1px solid #E3E7EC;
-">
-
-<div>
-Subcategoría
-</div>
-
-<div style="
-text-align:right;
-">
-Valor
-</div>
-
-<div style="
-text-align:right;
-">
-%
-</div>
-
-</div>
-
-</div>
-""",
-
-                    unsafe_allow_html=True
+                    scrolling=False
                 )
-
-
-                for i, (_, row) in enumerate(
-
-                    gastos_pie.iterrows()
-
-                ):
-
-                    categoria = html.escape(
-
-                        str(
-                            row[
-                                "Nombre_Subcategoria"
-                            ]
-                        )
-                    )
-
-
-                    valor = float(
-                        row["Gasto"]
-                    )
-
-
-                    pct = (
-
-                        valor
-                        /
-                        total_gastos
-                    )
-
-
-                    st.markdown(
-
-                        f"""
-<div style="
-font-family:
--apple-system,
-BlinkMacSystemFont,
-'Segoe UI',
-sans-serif;
-
-display:grid;
-
-grid-template-columns:
-1fr 72px 34px;
-
-align-items:center;
-
-min-height:25px;
-
-border-bottom:
-1px solid #F0F2F4;
-
-font-size:11px;
-
-font-weight:400;
-">
-
-<div style="
-color:#344563;
-
-white-space:nowrap;
-
-overflow:hidden;
-
-text-overflow:ellipsis;
-">
-
-<span style="
-display:inline-block;
-
-width:7px;
-
-height:7px;
-
-border-radius:50%;
-
-background:{colores[i]};
-
-margin-right:6px;
-">
-</span>
-
-{categoria}
-
-</div>
-
-<div style="
-text-align:right;
-
-font-weight:400;
-
-color:#172B4D;
-">
-
-{compacto(valor)}
-
-</div>
-
-<div style="
-text-align:right;
-
-font-weight:400;
-
-color:#7A869A;
-">
-
-{pct:.1%}
-
-</div>
-
-</div>
-""",
-
-                        unsafe_allow_html=True
-                    )
-
-
-            # ------------------------------------------------
-            # MAYOR CENTRO DE GASTO
-            # ------------------------------------------------
-
-            st.markdown(
-
-                f"""
-<div style="
-background:#EAF3FF;
-
-border:1px solid #C7DDF8;
-
-border-radius:8px;
-
-padding:8px 10px;
-
-margin:3px 8px 0 8px;
-
-font-family:
--apple-system,
-BlinkMacSystemFont,
-'Segoe UI',
-sans-serif;
-
-font-size:11px;
-
-font-weight:400;
-
-color:#344563;
-
-line-height:1.35;
-">
-
-💡 Mayor centro de gasto:
-
-<span style="font-weight:400;">
-
-{html.escape(mayor_nombre)}
-
-</span>
-
-({compacto(mayor_valor)})
-
-<span style="
-color:#6B778C;
-margin-left:4px;
-">
-
-{mayor_pct:.1%} del total
-
-</span>
-
-</div>
-""",
-
-                unsafe_allow_html=True
-            )
 
 
     else:
 
-        st.info(
-            "No hay gastos para mostrar."
-        )
+        with st.container(
+            border=True,
+            height=ALTURA_TARJETAS
+        ):
+
+            st.info(
+                "No hay gastos para mostrar."
+            )
 
 
 # ============================================================
@@ -1978,23 +1779,18 @@ if años_disponibles:
 
 
     año_anterior = (
-
-        año_seleccionado
-        -
-        1
+        año_seleccionado - 1
     )
 
 
     # ========================================================
-    # DATOS AÑO SELECCIONADO
+    # DATOS AÑO ACTUAL
     # ========================================================
 
     datos_año = df_base[
-
         df_base["Fecha"].dt.year
         ==
         año_seleccionado
-
     ].copy()
 
 
@@ -2003,11 +1799,9 @@ if años_disponibles:
     # ========================================================
 
     datos_año_anterior = df_base[
-
         df_base["Fecha"].dt.year
         ==
         año_anterior
-
     ].copy()
 
 
@@ -2018,7 +1812,6 @@ if años_disponibles:
     if not datos_año.empty:
 
         mes_corte = (
-
             datos_año["Fecha"]
             .max()
             .month
@@ -2050,11 +1843,9 @@ if años_disponibles:
         datos_año_anterior
 
         .groupby(
-
             datos_año_anterior[
                 "Fecha"
             ].dt.month
-
         )["Ingreso"]
 
         .sum()
@@ -2083,11 +1874,8 @@ if años_disponibles:
 
 
     for mes in range(
-
         1,
-
         mes_corte + 1
-
     ):
 
         comparacion.append({
@@ -2096,7 +1884,6 @@ if años_disponibles:
                 meses_nombre[mes],
 
             str(año_seleccionado):
-
                 float(
                     ingresos_actuales.get(
                         mes,
@@ -2105,7 +1892,6 @@ if años_disponibles:
                 ),
 
             str(año_anterior):
-
                 float(
                     ingresos_anteriores.get(
                         mes,
@@ -2128,8 +1914,6 @@ if años_disponibles:
     fig_anual = go.Figure()
 
 
-    # AÑO ACTUAL / SELECCIONADO = BARRAS
-
     fig_anual.add_trace(
 
         go.Bar(
@@ -2150,8 +1934,6 @@ if años_disponibles:
         )
     )
 
-
-    # AÑO ANTERIOR = LÍNEA
 
     fig_anual.add_trace(
 
@@ -2188,13 +1970,9 @@ if años_disponibles:
         height=260,
 
         margin=dict(
-
             l=5,
-
             r=5,
-
             t=5,
-
             b=5
         ),
 
@@ -2224,9 +2002,7 @@ if años_disponibles:
         ),
 
         xaxis=dict(
-
             title=None,
-
             showgrid=False
         ),
 
@@ -2244,7 +2020,7 @@ if años_disponibles:
 
 
     # ========================================================
-    # PROMEDIO MENSUAL POR PROPIEDAD
+    # PROMEDIO MENSUAL
     # ========================================================
 
     promedio = None
@@ -2332,23 +2108,14 @@ if años_disponibles:
         ] = (
 
             promedio["Ingreso"]
-
             /
-
             promedio["Meses"]
         )
 
 
-        promedio = (
-
-            promedio
-
-            .sort_values(
-
-                "Promedio_Mensual",
-
-                ascending=False
-            )
+        promedio = promedio.sort_values(
+            "Promedio_Mensual",
+            ascending=False
         )
 
 
@@ -2392,7 +2159,6 @@ if años_disponibles:
                     family=
                     "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
                 )
-
             )
         )
 
@@ -2402,13 +2168,9 @@ if años_disponibles:
             height=260,
 
             margin=dict(
-
                 l=5,
-
                 r=5,
-
                 t=15,
-
                 b=5
             ),
 
@@ -2423,9 +2185,7 @@ if años_disponibles:
             ),
 
             xaxis=dict(
-
                 title=None,
-
                 showgrid=False
             ),
 
@@ -2441,13 +2201,11 @@ if años_disponibles:
 
 
     # ========================================================
-    # GRÁFICAS ANUALES LADO A LADO
+    # GRÁFICAS ANUALES
     # ========================================================
 
     anual1, anual2 = st.columns(
-
         2,
-
         gap="medium"
     )
 
@@ -2458,15 +2216,11 @@ if años_disponibles:
 
             f"""
 <div class="section-title">
-
 📊 Ingresos mensuales
-
 </div>
 
 <div class="section-subtitle">
-
 Comparativo {año_seleccionado} vs {año_anterior}
-
 </div>
 """,
 
@@ -2494,15 +2248,11 @@ Comparativo {año_seleccionado} vs {año_anterior}
 
             f"""
 <div class="section-title">
-
 🏠 Promedio mensual por propiedad
-
 </div>
 
 <div class="section-subtitle">
-
 Ingreso promedio mensual — {año_seleccionado}
-
 </div>
 """,
 
@@ -2528,9 +2278,7 @@ Ingreso promedio mensual — {año_seleccionado}
         else:
 
             st.info(
-
                 f"No hay datos para {año_seleccionado}."
-
             )
 
 
@@ -2547,21 +2295,15 @@ p1, p2, p3, p4 = st.columns(4)
 with p1:
 
     st.metric(
-
         "💵 Flujo del periodo",
-
-        compacto(
-            flujo_total
-        )
+        compacto(flujo_total)
     )
 
 
 with p2:
 
     st.metric(
-
         "🏠 Propiedades",
-
         df_filtrado[
             "Nombre_Propiedad"
         ].nunique()
@@ -2571,9 +2313,7 @@ with p2:
 with p3:
 
     st.metric(
-
         "👥 Socios",
-
         df_filtrado[
             "Nombre_Socio"
         ].nunique()
@@ -2583,35 +2323,24 @@ with p3:
 with p4:
 
     st.markdown(
-
         """
 <div style="
 text-align:center;
-
 padding:8px;
-
 color:#52617A;
-
 font-size:11px;
-
 font-family:
 -apple-system,
 BlinkMacSystemFont,
 'Segoe UI',
 sans-serif;
-
 font-weight:400;
 ">
-
 📊
-
 <br>
-
 Más que propiedades,
 mejores decisiones.
-
 </div>
 """,
-
         unsafe_allow_html=True
     )
