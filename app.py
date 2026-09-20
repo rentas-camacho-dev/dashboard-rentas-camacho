@@ -63,7 +63,7 @@ html, body, [class*="css"] {
     font-size: 30px;
     font-weight: 600;
     line-height: 1.2;
-    margin: 0 0 4px 0;
+    margin: 0 0 6px 0;
 }
 
 .main-subtitle {
@@ -84,7 +84,7 @@ html, body, [class*="css"] {
     font-size: 22px;
     font-weight: 600;
     line-height: 1.2;
-    margin: 0 0 5px 0;
+    margin: 0 0 7px 0;
 }
 
 .section-subtitle {
@@ -127,7 +127,7 @@ div[data-testid="stDateInput"] > div {
 
 
 /* ============================================================
-   KPI NATIVOS
+   KPI
    ============================================================ */
 
 div[data-testid="stMetric"] {
@@ -212,16 +212,32 @@ def compacto(valor):
     valor_abs = abs(valor)
 
     if valor_abs >= 1_000_000_000:
-        return f"{signo}$ {valor_abs / 1_000_000_000:.1f} B"
+
+        return (
+            f"{signo}$ "
+            f"{valor_abs / 1_000_000_000:.1f} B"
+        )
 
     elif valor_abs >= 1_000_000:
-        return f"{signo}$ {valor_abs / 1_000_000:.1f} M"
+
+        return (
+            f"{signo}$ "
+            f"{valor_abs / 1_000_000:.1f} M"
+        )
 
     elif valor_abs >= 1_000:
-        return f"{signo}$ {valor_abs / 1_000:.0f} mil"
+
+        return (
+            f"{signo}$ "
+            f"{valor_abs / 1_000:.0f} mil"
+        )
 
     else:
-        return f"{signo}$ {valor_abs:,.0f}"
+
+        return (
+            f"{signo}$ "
+            f"{valor_abs:,.0f}"
+        )
 
 
 def bandera(porcentaje):
@@ -250,7 +266,11 @@ def variacion(actual, anterior):
 
         return np.nan
 
-    return (actual - anterior) / abs(anterior)
+    return (
+        (actual - anterior)
+        /
+        abs(anterior)
+    )
 
 
 # ============================================================
@@ -307,7 +327,9 @@ df = cargar_datos()
 
 if df.empty:
 
-    st.warning("No se encontraron datos de Airbnb.")
+    st.warning(
+        "No se encontraron datos de Airbnb."
+    )
 
     st.stop()
 
@@ -380,7 +402,8 @@ with f1:
 
     ciudades = sorted(
         [
-            x for x in
+            x
+            for x in
             df["Ciudad"]
             .dropna()
             .astype(str)
@@ -399,7 +422,8 @@ with f2:
 
     propiedades = sorted(
         [
-            x for x in
+            x
+            for x in
             df["Nombre_Propiedad"]
             .dropna()
             .astype(str)
@@ -418,7 +442,8 @@ with f3:
 
     socios = sorted(
         [
-            x for x in
+            x
+            for x in
             df["Nombre_Socio"]
             .dropna()
             .astype(str)
@@ -436,6 +461,7 @@ with f3:
 with f4:
 
     fecha_min = df["Fecha"].min().date()
+
     fecha_max = df["Fecha"].max().date()
 
     fechas = st.date_input(
@@ -480,15 +506,28 @@ if socio != "Todos":
     ]
 
 
-if isinstance(fechas, tuple) and len(fechas) == 2:
+if (
+    isinstance(fechas, tuple)
+    and len(fechas) == 2
+):
 
-    fecha_inicio = pd.Timestamp(fechas[0])
-    fecha_fin = pd.Timestamp(fechas[1])
+    fecha_inicio = pd.Timestamp(
+        fechas[0]
+    )
+
+    fecha_fin = pd.Timestamp(
+        fechas[1]
+    )
 
 else:
 
-    fecha_inicio = pd.Timestamp(fecha_min)
-    fecha_fin = pd.Timestamp(fecha_max)
+    fecha_inicio = pd.Timestamp(
+        fecha_min
+    )
+
+    fecha_fin = pd.Timestamp(
+        fecha_max
+    )
 
 
 df_filtrado = df_graficos[
@@ -502,15 +541,26 @@ df_filtrado = df_graficos[
 # KPI
 # ============================================================
 
-ingreso_total = df_filtrado["Ingreso"].sum()
+ingreso_total = (
+    df_filtrado["Ingreso"].sum()
+)
 
-gasto_total = df_filtrado["Gasto"].sum()
+gasto_total = (
+    df_filtrado["Gasto"].sum()
+)
 
-flujo_total = ingreso_total - gasto_total
+flujo_total = (
+    ingreso_total -
+    gasto_total
+)
 
 rentabilidad = (
-    flujo_total / ingreso_total
+
+    flujo_total /
+    ingreso_total
+
     if ingreso_total != 0
+
     else 0
 )
 
@@ -520,7 +570,8 @@ rentabilidad = (
 # ============================================================
 
 dias_periodo = (
-    fecha_fin - fecha_inicio
+    fecha_fin -
+    fecha_inicio
 ).days + 1
 
 
@@ -532,7 +583,9 @@ fecha_anterior_fin = (
 
 fecha_anterior_inicio = (
     fecha_anterior_fin -
-    pd.Timedelta(days=dias_periodo - 1)
+    pd.Timedelta(
+        days=dias_periodo - 1
+    )
 )
 
 
@@ -543,15 +596,18 @@ df_anterior = df_graficos[
 ]
 
 
-ingreso_anterior = df_anterior["Ingreso"].sum()
+ingreso_anterior = (
+    df_anterior["Ingreso"].sum()
+)
 
-gasto_anterior = df_anterior["Gasto"].sum()
+gasto_anterior = (
+    df_anterior["Gasto"].sum()
+)
 
 flujo_anterior = (
     ingreso_anterior -
     gasto_anterior
 )
-
 
 rentabilidad_anterior = (
 
@@ -559,6 +615,7 @@ rentabilidad_anterior = (
     ingreso_anterior
 
     if ingreso_anterior != 0
+
     else 0
 )
 
@@ -597,14 +654,19 @@ k1, k2, k3, k4 = st.columns(
 with k1:
 
     delta = (
+
         f"{var_ingreso:.1%}"
+
         if not pd.isna(var_ingreso)
+
         else None
     )
 
     st.metric(
         label="💰 Ingreso Total",
-        value=moneda(ingreso_total),
+        value=moneda(
+            ingreso_total
+        ),
         delta=delta
     )
 
@@ -612,14 +674,19 @@ with k1:
 with k2:
 
     delta = (
+
         f"{var_gasto:.1%}"
+
         if not pd.isna(var_gasto)
+
         else None
     )
 
     st.metric(
         label="🧾 Gasto Total",
-        value=moneda(gasto_total),
+        value=moneda(
+            gasto_total
+        ),
         delta=delta
     )
 
@@ -627,14 +694,19 @@ with k2:
 with k3:
 
     delta = (
+
         f"{var_flujo:.1%}"
+
         if not pd.isna(var_flujo)
+
         else None
     )
 
     st.metric(
         label="💵 Flujo",
-        value=moneda(flujo_total),
+        value=moneda(
+            flujo_total
+        ),
         delta=delta
     )
 
@@ -642,8 +714,11 @@ with k3:
 with k4:
 
     delta = (
+
         f"{dif_rentabilidad:.1%}"
+
         if not pd.isna(dif_rentabilidad)
+
         else None
     )
 
@@ -665,7 +740,7 @@ st.markdown(
 
 
 # ============================================================
-# ALTURA DE LAS DOS TARJETAS
+# ALTURA TARJETAS
 # ============================================================
 
 ALTURA_TARJETAS = 500
@@ -760,8 +835,11 @@ with col_tabla:
         )
 
         color_flujo = (
+
             "#00875A"
+
             if flujo >= 0
+
             else "#DE350B"
         )
 
@@ -772,7 +850,9 @@ with col_tabla:
 
             <td>
                 {html.escape(
-                    str(row["Nombre_Propiedad"])
+                    str(
+                        row["Nombre_Propiedad"]
+                    )
                 )}
             </td>
 
@@ -786,7 +866,8 @@ with col_tabla:
 
             <td
                 class="right"
-                style="color:{color_flujo};">
+                style="color:{color_flujo};"
+            >
                 {compacto(flujo)}
             </td>
 
@@ -800,7 +881,8 @@ with col_tabla:
 
                     <div
                         class="progress-fill"
-                        style="width:{ancho}%;">
+                        style="width:{ancho}%;"
+                    >
                     </div>
 
                 </div>
@@ -822,6 +904,7 @@ with col_tabla:
         ingreso_total
 
         if ingreso_total != 0
+
         else 0
     )
 
@@ -1026,10 +1109,15 @@ with col_tabla:
                 <tr>
 
                     <th>Propiedad</th>
+
                     <th>Ingreso</th>
+
                     <th>Gasto</th>
+
                     <th>Flujo</th>
+
                     <th>%</th>
+
                     <th>Estado</th>
 
                 </tr>
@@ -1054,7 +1142,8 @@ with col_tabla:
 
                     <td
                         class="right"
-                        style="color:#00875A;">
+                        style="color:#00875A;"
+                    >
                         {compacto(flujo_total)}
                     </td>
 
@@ -1068,7 +1157,8 @@ with col_tabla:
 
                             <div
                                 class="progress-fill"
-                                style="width:{total_ancho}%;">
+                                style="width:{total_ancho}%;"
+                            >
                             </div>
 
                         </div>
@@ -1143,15 +1233,25 @@ with col_gastos:
 
     if not gastos.empty:
 
-        total_gastos = gastos["Gasto"].sum()
+        total_gastos = (
+            gastos["Gasto"].sum()
+        )
 
+
+        # ====================================================
+        # TOP 7 + OTROS
+        # ====================================================
 
         if len(gastos) > 7:
 
-            gastos_top = gastos.head(7).copy()
+            gastos_top = (
+                gastos.head(7)
+                .copy()
+            )
 
             otros_valor = (
-                gastos.iloc[7:]["Gasto"].sum()
+                gastos.iloc[7:]["Gasto"]
+                .sum()
             )
 
             gastos_otros = pd.DataFrame({
@@ -1174,10 +1274,13 @@ with col_gastos:
 
         else:
 
-            gastos_pie = gastos.copy()
+            gastos_pie = (
+                gastos.copy()
+            )
 
 
         colores = [
+
             "#D9232E",
             "#ED1C24",
             "#E83B5A",
@@ -1186,6 +1289,7 @@ with col_gastos:
             "#F99BA5",
             "#F7BDC3",
             "#E7D3D7"
+
         ]
 
 
@@ -1195,11 +1299,16 @@ with col_gastos:
             ]
         )
 
+
         mayor_valor = float(
-            gastos_pie.iloc[0]["Gasto"]
+            gastos_pie.iloc[0][
+                "Gasto"
+            ]
         )
 
+
         mayor_pct = (
+
             mayor_valor /
             total_gastos
         )
@@ -1213,6 +1322,7 @@ with col_gastos:
 
 
         fig.add_trace(
+
             go.Pie(
 
                 labels=
@@ -1221,7 +1331,9 @@ with col_gastos:
                     ],
 
                 values=
-                    gastos_pie["Gasto"],
+                    gastos_pie[
+                        "Gasto"
+                    ],
 
                 hole=0.60,
 
@@ -1254,15 +1366,20 @@ with col_gastos:
         fig.add_annotation(
 
             x=0.5,
+
             y=0.54,
 
-            text=f"<b>{mayor_pct:.1%}</b>",
+            text=
+                f"<b>{mayor_pct:.1%}</b>",
 
             showarrow=False,
 
             font=dict(
+
                 family="Arial",
+
                 size=22,
+
                 color="#172B4D"
             )
         )
@@ -1271,25 +1388,34 @@ with col_gastos:
         fig.add_annotation(
 
             x=0.5,
+
             y=0.42,
 
-            text=html.escape(
-                mayor_nombre
-            ),
+            text=
+                html.escape(
+                    mayor_nombre
+                ),
 
             showarrow=False,
 
             font=dict(
+
                 family="Arial",
+
                 size=9,
+
                 color="#7A869A"
             )
         )
 
 
+        # IMPORTANTE:
+        # La dona ahora se construye como HTML
+        # dentro de la misma tarjeta que el detalle.
+
         fig.update_layout(
 
-            height=380,
+            height=430,
 
             margin=dict(
                 l=0,
@@ -1302,7 +1428,28 @@ with col_gastos:
 
             paper_bgcolor="#F1F3F5",
 
-            plot_bgcolor="#F1F3F5"
+            plot_bgcolor="#F1F3F5",
+
+            font=dict(
+                family="Arial"
+            )
+        )
+
+
+        # ====================================================
+        # HTML DE LA DONA
+        # ====================================================
+
+        grafico_html = fig.to_html(
+
+            full_html=False,
+
+            include_plotlyjs="cdn",
+
+            config={
+                "displayModeBar": False,
+                "responsive": True
+            }
         )
 
 
@@ -1325,11 +1472,14 @@ with col_gastos:
                 )
             )
 
+
             valor = float(
                 row["Gasto"]
             )
 
+
             porcentaje = (
+
                 valor /
                 total_gastos
             )
@@ -1344,7 +1494,8 @@ with col_gastos:
                     <span
                         class="dot"
                         style="
-                        background:{colores[i]};
+                        background:
+                        {colores[i]};
                         ">
                     </span>
 
@@ -1353,11 +1504,15 @@ with col_gastos:
                 </div>
 
                 <div class="expense-value">
+
                     {compacto(valor)}
+
                 </div>
 
                 <div class="expense-percent">
+
                     {porcentaje:.1%}
+
                 </div>
 
             </div>
@@ -1365,11 +1520,19 @@ with col_gastos:
             """
 
 
-        detalle_html = f"""
+        # ====================================================
+        # TARJETA COMPLETA DE GASTOS
+        # ====================================================
+
+        gastos_html = f"""
+
+        <!DOCTYPE html>
 
         <html>
 
         <head>
+
+        <meta charset="UTF-8">
 
         <style>
 
@@ -1386,25 +1549,100 @@ with col_gastos:
                 sans-serif;
         }}
 
+
+        html,
         body {{
 
             margin:0;
 
             padding:0;
 
-            background:transparent;
+            width:100%;
+
+            height:100%;
+
+            overflow:hidden;
+
+            background:#F1F3F5;
+        }}
+
+
+        .card {{
+
+            width:100%;
+
+            height:{ALTURA_TARJETAS}px;
+
+            background:#F1F3F5;
+
+            border:
+                1px solid #D7DDE3;
+
+            border-radius:12px;
+
+            padding:12px;
 
             overflow:hidden;
         }}
 
-        .detalle {{
+
+        .content {{
+
+            display:grid;
+
+            grid-template-columns:
+                48% 52%;
+
+            width:100%;
+
+            height:100%;
+
+            gap:4px;
+
+            align-items:start;
+        }}
+
+
+        .chart {{
+
+            width:100%;
+
+            height:430px;
+
+            display:flex;
+
+            align-items:flex-start;
+
+            justify-content:center;
+
+            overflow:hidden;
+        }}
+
+
+        .chart-inner {{
+
+            width:100%;
+
+            height:430px;
+
+        }}
+
+
+        .detail {{
+
+            width:100%;
+
+            height:450px;
 
             padding:
-                10px
+                8px
                 8px
                 0
                 8px;
+
+            overflow:hidden;
         }}
+
 
         .total {{
 
@@ -1417,6 +1655,7 @@ with col_gastos:
             margin-bottom:5px;
         }}
 
+
         .subtitulo {{
 
             color:#7A869A;
@@ -1427,6 +1666,7 @@ with col_gastos:
 
             margin-bottom:9px;
         }}
+
 
         .headers {{
 
@@ -1446,6 +1686,7 @@ with col_gastos:
             border-bottom:
                 1px solid #DDE3E8;
         }}
+
 
         .expense-row {{
 
@@ -1468,6 +1709,7 @@ with col_gastos:
             color:#344563;
         }}
 
+
         .expense-name {{
 
             white-space:nowrap;
@@ -1476,6 +1718,7 @@ with col_gastos:
 
             text-overflow:ellipsis;
         }}
+
 
         .dot {{
 
@@ -1490,6 +1733,7 @@ with col_gastos:
             margin-right:6px;
         }}
 
+
         .expense-value {{
 
             text-align:right;
@@ -1499,6 +1743,7 @@ with col_gastos:
             font-weight:400;
         }}
 
+
         .expense-percent {{
 
             text-align:right;
@@ -1507,6 +1752,7 @@ with col_gastos:
 
             font-weight:400;
         }}
+
 
         .highlight {{
 
@@ -1528,6 +1774,7 @@ with col_gastos:
             line-height:1.4;
         }}
 
+
         .highlight strong {{
 
             color:#344563;
@@ -1541,49 +1788,88 @@ with col_gastos:
 
         <body>
 
-        <div class="detalle">
+        <div class="card">
 
-            <div class="total">
-                {moneda(total_gastos)}
-            </div>
+            <div class="content">
 
-            <div class="subtitulo">
-                Total de egresos operativos
-            </div>
+                <div class="chart">
 
-            <div class="headers">
+                    <div class="chart-inner">
 
-                <div>
-                    Subcategoría
+                        {grafico_html}
+
+                    </div>
+
                 </div>
 
-                <div style="text-align:right;">
-                    Valor
+
+                <div class="detail">
+
+                    <div class="total">
+
+                        {moneda(total_gastos)}
+
+                    </div>
+
+
+                    <div class="subtitulo">
+
+                        Total de egresos operativos
+
+                    </div>
+
+
+                    <div class="headers">
+
+                        <div>
+                            Subcategoría
+                        </div>
+
+                        <div
+                            style="
+                            text-align:right;
+                            "
+                        >
+                            Valor
+                        </div>
+
+                        <div
+                            style="
+                            text-align:right;
+                            "
+                        >
+                            %
+                        </div>
+
+                    </div>
+
+
+                    {filas_detalle}
+
+
+                    <div class="highlight">
+
+                        💡 Mayor centro de gasto:
+
+                        <strong>
+                            {html.escape(
+                                mayor_nombre
+                            )}
+                        </strong>
+
+                        ({compacto(
+                            mayor_valor
+                        )})
+
+                        <br>
+
+                        Representa el
+                        {mayor_pct:.1%}
+                        del total.
+
+                    </div>
+
                 </div>
-
-                <div style="text-align:right;">
-                    %
-                </div>
-
-            </div>
-
-            {filas_detalle}
-
-            <div class="highlight">
-
-                💡 Mayor centro de gasto:
-
-                <strong>
-                    {html.escape(mayor_nombre)}
-                </strong>
-
-                ({compacto(mayor_valor)})
-
-                <br>
-
-                Representa el
-                {mayor_pct:.1%}
-                del total.
 
             </div>
 
@@ -1592,81 +1878,98 @@ with col_gastos:
         </body>
 
         </html>
+
         """
 
 
         # ====================================================
-        # TARJETA GASTOS
+        # UNA SOLA TARJETA REAL
         # ====================================================
 
-        st.markdown(
-            f"""
-            <div style="
-                height:{ALTURA_TARJETAS}px;
-                background:#F1F3F5;
-                border:1px solid #D7DDE3;
-                border-radius:12px;
-                padding:12px;
-                overflow:hidden;
-            ">
-            """,
-            unsafe_allow_html=True
-        )
+        components.html(
 
+            gastos_html,
 
-        gc1, gc2 = st.columns(
-            [0.95, 1.05],
-            gap="small"
-        )
+            height=ALTURA_TARJETAS,
 
-
-        with gc1:
-
-            st.plotly_chart(
-
-                fig,
-
-                use_container_width=True,
-
-                config={
-                    "displayModeBar": False
-                },
-
-                key="gastos_donut"
-            )
-
-
-        with gc2:
-
-            components.html(
-                detalle_html,
-                height=450,
-                scrolling=False
-            )
-
-
-        st.markdown(
-            "</div>",
-            unsafe_allow_html=True
+            scrolling=False
         )
 
 
     else:
 
-        st.markdown(
-            f"""
-            <div style="
-                height:{ALTURA_TARJETAS}px;
-                background:#F1F3F5;
-                border:1px solid #D7DDE3;
-                border-radius:12px;
-                padding:25px;
-                color:#6B778C;
-            ">
-                No hay gastos para mostrar en el periodo seleccionado.
+        gastos_vacios = f"""
+
+        <html>
+
+        <head>
+
+        <style>
+
+        * {{
+            box-sizing:border-box;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+        }}
+
+        body {{
+
+            margin:0;
+
+            padding:0;
+
+            background:#F1F3F5;
+        }}
+
+        .card {{
+
+            width:100%;
+
+            height:{ALTURA_TARJETAS}px;
+
+            background:#F1F3F5;
+
+            border:
+                1px solid #D7DDE3;
+
+            border-radius:12px;
+
+            padding:25px;
+
+            color:#6B778C;
+
+            font-size:13px;
+        }}
+
+        </style>
+
+        </head>
+
+        <body>
+
+            <div class="card">
+
+                No hay gastos para mostrar
+                en el periodo seleccionado.
+
             </div>
-            """,
-            unsafe_allow_html=True
+
+        </body>
+
+        </html>
+
+        """
+
+        components.html(
+            gastos_vacios,
+            height=ALTURA_TARJETAS,
+            scrolling=False
         )
 
 
@@ -1713,18 +2016,24 @@ años_disponibles = sorted(
 
 if len(años_disponibles) == 0:
 
-    st.info("No hay años disponibles.")
+    st.info(
+        "No hay años disponibles."
+    )
 
     st.stop()
 
 
-año_sistema = pd.Timestamp.today().year
+año_sistema = (
+    pd.Timestamp.today().year
+)
 
 
 if año_sistema in años_disponibles:
 
-    indice_default = años_disponibles.index(
-        año_sistema
+    indice_default = (
+        años_disponibles.index(
+            año_sistema
+        )
     )
 
 else:
@@ -1742,7 +2051,9 @@ año_seleccionado = st.selectbox(
 )
 
 
-año_anterior = año_seleccionado - 1
+año_anterior = (
+    año_seleccionado - 1
+)
 
 
 # ============================================================
@@ -1750,14 +2061,18 @@ año_anterior = año_seleccionado - 1
 # ============================================================
 
 datos_año = df_graficos[
+
     df_graficos["Fecha"].dt.year
     == año_seleccionado
+
 ].copy()
 
 
 datos_año_anterior = df_graficos[
+
     df_graficos["Fecha"].dt.year
     == año_anterior
+
 ].copy()
 
 
@@ -1789,7 +2104,9 @@ ingresos_mes_actual = (
 
     datos_año
 
-    .groupby("Mes")["Ingreso"]
+    .groupby(
+        "Mes"
+    )["Ingreso"]
 
     .sum()
 )
@@ -1799,7 +2116,9 @@ ingresos_mes_anterior = (
 
     datos_año_anterior
 
-    .groupby("Mes")["Ingreso"]
+    .groupby(
+        "Mes"
+    )["Ingreso"]
 
     .sum()
 )
@@ -1814,6 +2133,7 @@ meses = list(
 
 
 nombres_meses = [
+
     "Ene",
     "Feb",
     "Mar",
@@ -1826,6 +2146,7 @@ nombres_meses = [
     "Oct",
     "Nov",
     "Dic"
+
 ]
 
 
@@ -1837,6 +2158,7 @@ valores_actual = [
     )
 
     for mes in meses
+
 ]
 
 
@@ -1848,6 +2170,7 @@ valores_anterior = [
     )
 
     for mes in meses
+
 ]
 
 
@@ -1956,8 +2279,10 @@ fig_comparacion.update_layout(
 # ============================================================
 
 datos_promedio = df_graficos[
+
     df_graficos["Fecha"].dt.year
     == año_seleccionado
+
 ].copy()
 
 
@@ -1997,18 +2322,34 @@ if not datos_promedio.empty:
     promedio["Meses"] = (
 
         (
-            promedio["FechaFin"].dt.year
+
+            promedio[
+                "FechaFin"
+            ].dt.year
+
             -
-            promedio["FechaInicio"].dt.year
+
+            promedio[
+                "FechaInicio"
+            ].dt.year
+
         )
         * 12
 
         +
 
         (
-            promedio["FechaFin"].dt.month
+
+            promedio[
+                "FechaFin"
+            ].dt.month
+
             -
-            promedio["FechaInicio"].dt.month
+
+            promedio[
+                "FechaInicio"
+            ].dt.month
+
         )
 
         + 1
@@ -2027,7 +2368,9 @@ if not datos_promedio.empty:
 
 
     promedio = promedio.sort_values(
+
         "PromedioMensual",
+
         ascending=False
     )
 
@@ -2060,17 +2403,23 @@ if not promedio.empty:
             marker_color="#7565D9",
 
             text=[
+
                 compacto(x)
+
                 for x in
+
                 promedio[
                     "PromedioMensual"
                 ]
+
             ],
 
             textposition="outside",
 
             textfont=dict(
+
                 size=11,
+
                 color="#172B4D"
             )
         )
@@ -2128,8 +2477,10 @@ with grafico1:
         </div>
 
         <div class="section-subtitle">
-            Comparativo de ingresos de {año_seleccionado}
-            contra {año_anterior}
+            Comparativo de ingresos de
+            {año_seleccionado}
+            contra
+            {año_anterior}
         </div>
         """,
         unsafe_allow_html=True
@@ -2155,7 +2506,8 @@ with grafico2:
     st.markdown(
         f"""
         <div class="section-title">
-            🏠 Promedio mensual por propiedad — {año_seleccionado}
+            🏠 Promedio mensual por propiedad —
+            {año_seleccionado}
         </div>
 
         <div class="section-subtitle">
@@ -2205,54 +2557,111 @@ socios_analizados = (
 
 
 st.markdown(
+
     f"""
+
     <div style="
+
         background:#FFFFFF;
-        border:1px solid #DDE2E7;
+
+        border:
+            1px solid #DDE2E7;
+
         border-radius:12px;
-        padding:14px 20px;
+
+        padding:
+            14px 20px;
+
         display:flex;
-        justify-content:space-between;
+
+        justify-content:
+            space-between;
+
         align-items:center;
+
         color:#52617A;
+
         font-size:13px;
+
     ">
 
+
         <div>
+
             🟢
-            <strong style="color:#00875A;">
+
+            <strong
+                style="
+                color:#00875A;
+                font-weight:500;
+                "
+            >
                 {moneda(flujo_total)}
             </strong>
+
             &nbsp;
+
             Flujo positivo en el periodo
+
         </div>
 
+
         <div>
+
             🏢
-            <strong style="color:#172B4D;">
+
+            <strong
+                style="
+                color:#172B4D;
+                font-weight:500;
+                "
+            >
                 {propiedades_analizadas}
             </strong>
+
             &nbsp;
+
             Propiedades analizadas
+
         </div>
+
 
         <div>
+
             👥
-            <strong style="color:#172B4D;">
+
+            <strong
+                style="
+                color:#172B4D;
+                font-weight:500;
+                "
+            >
                 {socios_analizados}
             </strong>
+
             &nbsp;
+
             Socios
+
         </div>
 
-        <div style="
+
+        <div
+            style="
             color:#6B778C;
             font-style:italic;
-        ">
-            “Más que propiedades, mejores decisiones”
+            "
+        >
+
+            “Más que propiedades,
+            mejores decisiones”
+
         </div>
 
+
     </div>
+
     """,
+
     unsafe_allow_html=True
 )
