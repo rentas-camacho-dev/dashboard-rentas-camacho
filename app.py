@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from google.cloud import bigquery
 from google.oauth2 import service_account
+from textwrap import dedent
 
 
 # ============================================================
@@ -22,12 +23,8 @@ st.set_page_config(
 # ============================================================
 
 st.markdown(
-    """
+    dedent("""
     <style>
-
-    /* =========================
-       GENERAL
-       ========================= */
 
     html, body, [class*="css"] {
         font-family:
@@ -44,7 +41,7 @@ st.markdown(
     }
 
     .block-container {
-        padding-top: 1.2rem;
+        padding-top: 1.5rem;
         padding-bottom: 2rem;
         max-width: 100%;
     }
@@ -54,18 +51,14 @@ st.markdown(
         padding-right: 5px;
     }
 
-
-    /* =========================
-       HEADER
-       ========================= */
+    /* HEADER */
 
     .dashboard-title {
         color: #172B4D;
         font-size: 30px;
         font-weight: 600;
         line-height: 1.25;
-        margin-top: 0;
-        margin-bottom: 8px;
+        margin: 0 0 7px 0;
     }
 
     .dashboard-subtitle {
@@ -73,21 +66,17 @@ st.markdown(
         font-size: 14px;
         font-weight: 400;
         line-height: 1.5;
-        margin-bottom: 25px;
+        margin: 0 0 25px 0;
     }
 
-
-    /* =========================
-       SECCIONES
-       ========================= */
+    /* SECCIONES */
 
     .section-title {
         color: #172B4D;
         font-size: 22px;
         font-weight: 600;
         line-height: 1.3;
-        margin-top: 0;
-        margin-bottom: 4px;
+        margin: 0 0 3px 0;
     }
 
     .section-subtitle {
@@ -95,8 +84,7 @@ st.markdown(
         font-size: 12px;
         font-weight: 400;
         line-height: 1.5;
-        margin-top: 0;
-        margin-bottom: 12px;
+        margin: 0 0 12px 0;
     }
 
     .filters-title {
@@ -104,14 +92,10 @@ st.markdown(
         font-size: 22px;
         font-weight: 600;
         line-height: 1.3;
-        margin-top: 5px;
-        margin-bottom: 10px;
+        margin: 5px 0 10px 0;
     }
 
-
-    /* =========================
-       FILTROS
-       ========================= */
+    /* FILTROS */
 
     div[data-testid="stSelectbox"] label,
     div[data-testid="stDateInput"] label {
@@ -127,10 +111,7 @@ st.markdown(
         min-height: 44px !important;
     }
 
-
-    /* =========================
-       KPI
-       ========================= */
+    /* KPI */
 
     .kpi-card {
         background: #FFFFFF;
@@ -179,10 +160,7 @@ st.markdown(
         background: #EEF1F5;
     }
 
-
-    /* =========================
-       TABLA
-       ========================= */
+    /* TABLA */
 
     .property-table {
         width: 100%;
@@ -290,18 +268,16 @@ st.markdown(
         border-top: 1px solid #CBD5DE;
     }
 
-
-    /* =========================
-       GASTOS
-       ========================= */
+    /* GASTOS */
 
     .expense-box {
         background: #F1F3F5;
         border: 1px solid #D5DCE3;
         border-radius: 13px;
-        min-height: 500px;
+        height: 500px;
         padding: 12px 14px;
         overflow: hidden;
+        box-sizing: border-box;
     }
 
     .expense-total {
@@ -383,28 +359,24 @@ st.markdown(
         color: #344563;
     }
 
-
-    /* =========================
-       ANALISIS ANUAL
-       ========================= */
+    /* ANUAL */
 
     .annual-title {
         color: #172B4D;
         font-size: 22px;
         font-weight: 600;
-        margin-top: 20px;
-        margin-bottom: 4px;
+        margin: 20px 0 3px 0;
     }
 
     .annual-subtitle {
         color: #6B778C;
         font-size: 12px;
         font-weight: 400;
-        margin-bottom: 12px;
+        margin: 0 0 12px 0;
     }
 
     </style>
-    """,
+    """),
     unsafe_allow_html=True
 )
 
@@ -432,6 +404,7 @@ client = bigquery.Client(
 # ============================================================
 
 def moneda(valor):
+
     if pd.isna(valor):
         valor = 0
 
@@ -439,6 +412,7 @@ def moneda(valor):
 
 
 def compacto(valor):
+
     if pd.isna(valor):
         valor = 0
 
@@ -501,30 +475,32 @@ def mostrar_kpi(
             texto = f"↓ {abs(cambio):.1%}"
             clase = "negative"
 
-    st.markdown(
-        f"""
-        <div class="kpi-card">
+    html = dedent(f"""
+    <div class="kpi-card">
 
-            <div class="kpi-title">
-                {icono} {titulo}
-            </div>
-
-            <div class="kpi-value">
-                {moneda(valor)}
-            </div>
-
-            <span class="kpi-change {clase}">
-                {texto}
-            </span>
-
+        <div class="kpi-title">
+            {icono} {titulo}
         </div>
-        """,
+
+        <div class="kpi-value">
+            {moneda(valor)}
+        </div>
+
+        <span class="kpi-change {clase}">
+            {texto}
+        </span>
+
+    </div>
+    """)
+
+    st.markdown(
+        html,
         unsafe_allow_html=True
     )
 
 
 # ============================================================
-# CARGAR DATOS
+# QUERY
 # ============================================================
 
 query = """
@@ -608,11 +584,11 @@ for col in [
 
 
 # ============================================================
-# HEADER
+# TITULO
 # ============================================================
 
 st.markdown(
-    """
+    dedent("""
     <div class="dashboard-title">
         🏠 Rentas Cortas — Airbnb
     </div>
@@ -620,7 +596,7 @@ st.markdown(
     <div class="dashboard-subtitle">
         Ingresos, gastos y rentabilidad de tus propiedades
     </div>
-    """,
+    """),
     unsafe_allow_html=True
 )
 
@@ -730,7 +706,7 @@ else:
 
 
 # ============================================================
-# FILTROS SIN FECHA
+# FILTROS
 # ============================================================
 
 df_graficos = df.copy()
@@ -744,21 +720,15 @@ if ciudad != "Todas":
 if propiedad != "Todas":
 
     df_graficos = df_graficos[
-        df_graficos["Nombre_Propiedad"]
-        == propiedad
+        df_graficos["Nombre_Propiedad"] == propiedad
     ]
 
 if socio != "Todos":
 
     df_graficos = df_graficos[
-        df_graficos["Nombre_Socio"]
-        == socio
+        df_graficos["Nombre_Socio"] == socio
     ]
 
-
-# ============================================================
-# FILTRO CON FECHA
-# ============================================================
 
 df_filtrado = df_graficos[
     (df_graficos["Fecha"] >= fecha_inicio)
@@ -791,9 +761,7 @@ rentabilidad = (
 # PERIODO ANTERIOR
 # ============================================================
 
-duracion = (
-    fecha_fin - fecha_inicio
-)
+duracion = fecha_fin - fecha_inicio
 
 fecha_anterior_fin = (
     fecha_inicio
@@ -851,7 +819,7 @@ cambio_rentabilidad = (
 
 
 # ============================================================
-# KPI ROW
+# KPI
 # ============================================================
 
 k1, k2, k3, k4 = st.columns(4)
@@ -952,8 +920,7 @@ resumen = resumen.sort_values(
 
 
 # ============================================================
-# DOS TARJETAS
-# MISMO ALTO
+# COLUMNAS PRINCIPALES
 # ============================================================
 
 col_tabla, col_gastos = st.columns(
@@ -969,7 +936,7 @@ col_tabla, col_gastos = st.columns(
 with col_tabla:
 
     st.markdown(
-        """
+        dedent("""
         <div class="section-title">
             🏢 Resumen por propiedad
         </div>
@@ -977,7 +944,7 @@ with col_tabla:
         <div class="section-subtitle">
             Desempeño financiero por propiedad en el periodo seleccionado
         </div>
-        """,
+        """),
         unsafe_allow_html=True
     )
 
@@ -998,31 +965,25 @@ with col_tabla:
 
             rent_text = f"{rent:.1f}%"
 
-        if rent > 0:
-
-            barra = min(
-                max(rent, 0),
-                100
-            )
-
-        else:
-
-            barra = 0
+        barra = min(
+            max(rent, 0),
+            100
+        )
 
         if flujo >= 0:
 
             flujo_html = (
-                f'<span class="flow-positive">'
+                '<span class="flow-positive">'
                 f'{compacto(flujo)}'
-                f'</span>'
+                '</span>'
             )
 
         else:
 
             flujo_html = (
-                f'<span class="flow-negative">'
+                '<span class="flow-negative">'
                 f'{compacto(flujo)}'
-                f'</span>'
+                '</span>'
             )
 
         if rent >= 80:
@@ -1037,7 +998,7 @@ with col_tabla:
 
             estado = "🚩"
 
-        filas += f"""
+        filas += dedent(f"""
         <tr>
 
             <td>
@@ -1069,12 +1030,10 @@ with col_tabla:
                 </div>
 
                 <div class="progress-background">
-
                     <div
                         class="progress-fill"
                         style="width:{barra}%"
                     ></div>
-
                 </div>
 
             </td>
@@ -1084,15 +1043,10 @@ with col_tabla:
             </td>
 
         </tr>
-        """
+        """)
 
 
-    total_flujo = (
-        ingreso_total
-        - gasto_total
-    )
-
-    filas += f"""
+    filas += dedent(f"""
     <tr class="total-row">
 
         <td>
@@ -1115,7 +1069,7 @@ with col_tabla:
 
         <td>
             <div class="flow-positive">
-                {compacto(total_flujo)}
+                {compacto(flujo_total)}
             </div>
         </td>
 
@@ -1126,12 +1080,10 @@ with col_tabla:
             </div>
 
             <div class="progress-background">
-
                 <div
                     class="progress-fill"
                     style="width:{min(max(rentabilidad * 100, 0), 100)}%"
                 ></div>
-
             </div>
 
         </td>
@@ -1141,10 +1093,10 @@ with col_tabla:
         </td>
 
     </tr>
-    """
+    """)
 
 
-    tabla_html = f"""
+    tabla_html = dedent(f"""
     <div class="property-table">
 
         <table>
@@ -1182,15 +1134,13 @@ with col_tabla:
             </thead>
 
             <tbody>
-
                 {filas}
-
             </tbody>
 
         </table>
 
     </div>
-    """
+    """)
 
     st.markdown(
         tabla_html,
@@ -1205,7 +1155,7 @@ with col_tabla:
 with col_gastos:
 
     st.markdown(
-        """
+        dedent("""
         <div class="section-title">
             💸 Distribución de gastos
         </div>
@@ -1213,13 +1163,9 @@ with col_gastos:
         <div class="section-subtitle">
             Desglose por subcategoría de gasto en el periodo seleccionado
         </div>
-        """,
+        """),
         unsafe_allow_html=True
     )
-
-    # -----------------------------------------
-    # DATOS DE GASTOS
-    # -----------------------------------------
 
     gastos = (
         df_filtrado[
@@ -1234,16 +1180,13 @@ with col_gastos:
         )
     )
 
-    gasto_distribucion = (
-        gastos["Gasto"].sum()
-    )
+    gasto_distribucion = gastos["Gasto"].sum()
 
     if gasto_distribucion > 0:
 
         gastos["Porcentaje"] = (
             gastos["Gasto"]
-            /
-            gasto_distribucion
+            / gasto_distribucion
             * 100
         )
 
@@ -1252,27 +1195,21 @@ with col_gastos:
         gastos["Porcentaje"] = 0
 
 
-    # -----------------------------------------
-    # TOP CATEGORÍA
-    # -----------------------------------------
-
     if len(gastos) > 0:
 
         top_categoria = gastos.iloc[0]
 
-        top_nombre = (
-            top_categoria[
-                "Nombre_Subcategoria"
-            ]
-        )
+        top_nombre = top_categoria[
+            "Nombre_Subcategoria"
+        ]
 
-        top_valor = (
-            top_categoria["Gasto"]
-        )
+        top_valor = top_categoria[
+            "Gasto"
+        ]
 
-        top_porcentaje = (
-            top_categoria["Porcentaje"]
-        )
+        top_porcentaje = top_categoria[
+            "Porcentaje"
+        ]
 
     else:
 
@@ -1280,10 +1217,6 @@ with col_gastos:
         top_valor = 0
         top_porcentaje = 0
 
-
-    # -----------------------------------------
-    # AGRUPAR OTROS
-    # -----------------------------------------
 
     top_n = 8
 
@@ -1300,8 +1233,7 @@ with col_gastos:
 
         otros_pct = (
             otros_valor
-            /
-            gasto_distribucion
+            / gasto_distribucion
             * 100
             if gasto_distribucion > 0
             else 0
@@ -1329,10 +1261,6 @@ with col_gastos:
         gastos_grafico = gastos.copy()
 
 
-    # -----------------------------------------
-    # COLORES
-    # -----------------------------------------
-
     colores = [
         "#D71920",
         "#ED1B24",
@@ -1346,9 +1274,9 @@ with col_gastos:
     ]
 
 
-    # -----------------------------------------
-    # PIE / DONUT
-    # -----------------------------------------
+    # ========================================================
+    # DONUT
+    # ========================================================
 
     fig_gastos = go.Figure(
         data=[
@@ -1373,8 +1301,8 @@ with col_gastos:
                 ),
                 hovertemplate=(
                     "<b>%{label}</b><br>"
-                    "$%{value:,.0f}"
-                    "<br>%{percent}"
+                    "$%{value:,.0f}<br>"
+                    "%{percent}"
                     "<extra></extra>"
                 )
             )
@@ -1382,7 +1310,7 @@ with col_gastos:
     )
 
     fig_gastos.update_layout(
-        height=390,
+        height=420,
         margin=dict(
             l=0,
             r=0,
@@ -1416,14 +1344,14 @@ with col_gastos:
                     size=20,
                     color="#172B4D"
                 )
-            )
-        ]
+            ]
+        )
     )
 
 
-    # -----------------------------------------
-    # TARJETA DE GASTOS
-    # -----------------------------------------
+    # ========================================================
+    # TARJETA
+    # ========================================================
 
     st.markdown(
         '<div class="expense-box">',
@@ -1435,10 +1363,6 @@ with col_gastos:
         gap="small"
     )
 
-
-    # -----------------------------------------
-    # GRÁFICO
-    # -----------------------------------------
 
     with ec1:
 
@@ -1452,14 +1376,10 @@ with col_gastos:
         )
 
 
-    # -----------------------------------------
-    # DETALLE
-    # -----------------------------------------
-
     with ec2:
 
         st.markdown(
-            f"""
+            dedent(f"""
             <div class="expense-total">
                 {moneda(gasto_distribucion)}
             </div>
@@ -1483,7 +1403,7 @@ with col_gastos:
                 </div>
 
             </div>
-            """,
+            """),
             unsafe_allow_html=True
         )
 
@@ -1506,7 +1426,7 @@ with col_gastos:
 
             pct = row["Porcentaje"]
 
-            filas_gasto += f"""
+            filas_gasto += dedent(f"""
             <div class="expense-row">
 
                 <div class="expense-name">
@@ -1529,7 +1449,7 @@ with col_gastos:
                 </div>
 
             </div>
-            """
+            """)
 
 
         st.markdown(
@@ -1539,7 +1459,7 @@ with col_gastos:
 
 
         st.markdown(
-            f"""
+            dedent(f"""
             <div class="expense-highlight">
 
                 💡 Mayor centro de gasto:
@@ -1555,7 +1475,7 @@ with col_gastos:
                 del total de egresos operativos.
 
             </div>
-            """,
+            """),
             unsafe_allow_html=True
         )
 
@@ -1567,11 +1487,11 @@ with col_gastos:
 
 
 # ============================================================
-# ANÁLISIS ANUAL
+# ANALISIS ANUAL
 # ============================================================
 
 st.markdown(
-    """
+    dedent("""
     <div class="annual-title">
         📊 Análisis anual
     </div>
@@ -1579,14 +1499,10 @@ st.markdown(
     <div class="annual-subtitle">
         Comparación mensual y desempeño promedio de las propiedades
     </div>
-    """,
+    """),
     unsafe_allow_html=True
 )
 
-
-# ============================================================
-# SELECTOR DE AÑO
-# ============================================================
 
 años_disponibles = sorted(
     df_graficos[
@@ -1599,6 +1515,7 @@ años_disponibles = sorted(
     reverse=True
 )
 
+
 if len(años_disponibles) == 0:
 
     st.info(
@@ -1610,15 +1527,10 @@ if len(años_disponibles) == 0:
 
 año_actual_sistema = pd.Timestamp.now().year
 
-if (
-    año_actual_sistema
-    in años_disponibles
-):
+if año_actual_sistema in años_disponibles:
 
-    año_default = (
-        años_disponibles.index(
-            año_actual_sistema
-        )
+    año_default = años_disponibles.index(
+        año_actual_sistema
     )
 
 else:
@@ -1632,14 +1544,13 @@ año_seleccionado = st.selectbox(
     index=año_default
 )
 
-
 año_anterior = (
     año_seleccionado - 1
 )
 
 
 # ============================================================
-# DATOS AÑOS
+# DATOS ANUALES
 # ============================================================
 
 datos_año = df_graficos[
@@ -1653,10 +1564,6 @@ datos_año_anterior = df_graficos[
 ].copy()
 
 
-# ============================================================
-# FECHA CORTE
-# ============================================================
-
 if len(datos_año) > 0:
 
     fecha_corte = (
@@ -1665,18 +1572,12 @@ if len(datos_año) > 0:
         .max()
     )
 
-    mes_corte = (
-        fecha_corte.month
-    )
+    mes_corte = fecha_corte.month
 
 else:
 
     mes_corte = 12
 
-
-# ============================================================
-# INGRESOS MENSUALES
-# ============================================================
 
 datos_año["Mes"] = (
     datos_año["Fecha"].dt.month
@@ -1740,6 +1641,7 @@ nombres_meses = [
     "Dic"
 ]
 
+
 nombres_mostrar = [
     nombres_meses[m - 1]
     for m in meses
@@ -1747,9 +1649,7 @@ nombres_mostrar = [
 
 
 # ============================================================
-# GRÁFICO INGRESOS
-# BARRAS AÑO SELECCIONADO
-# LÍNEA AÑO ANTERIOR
+# GRAFICO ANUAL
 # ============================================================
 
 fig_anual = go.Figure()
@@ -1830,7 +1730,7 @@ fig_anual.update_layout(
 
 
 # ============================================================
-# PROMEDIO MENSUAL POR PROPIEDAD
+# PROMEDIO POR PROPIEDAD
 # ============================================================
 
 datos_promedio = datos_año.copy()
@@ -1905,7 +1805,7 @@ promedio_propiedad = (
 
 
 # ============================================================
-# GRÁFICO PROMEDIO
+# GRAFICO PROMEDIO
 # ============================================================
 
 fig_promedio = go.Figure()
@@ -1967,7 +1867,7 @@ fig_promedio.update_layout(
 
 
 # ============================================================
-# DOS GRÁFICOS LADO A LADO
+# GRAFICOS ANUALES LADO A LADO
 # ============================================================
 
 g1, g2 = st.columns(
@@ -1979,7 +1879,7 @@ g1, g2 = st.columns(
 with g1:
 
     st.markdown(
-        f"""
+        dedent(f"""
         <div class="section-title">
             📊 Ingresos mensuales
         </div>
@@ -1988,7 +1888,7 @@ with g1:
             Comparativo de ingresos del año {año_seleccionado}
             contra {año_anterior}
         </div>
-        """,
+        """),
         unsafe_allow_html=True
     )
 
@@ -2005,7 +1905,7 @@ with g1:
 with g2:
 
     st.markdown(
-        f"""
+        dedent(f"""
         <div class="section-title">
             🏠 Promedio mensual por propiedad — {año_seleccionado}
         </div>
@@ -2013,7 +1913,7 @@ with g2:
         <div class="section-subtitle">
             Ingreso promedio mensual por propiedad
         </div>
-        """,
+        """),
         unsafe_allow_html=True
     )
 
@@ -2028,7 +1928,7 @@ with g2:
 
 
 # ============================================================
-# TABLA PEQUEÑA PROMEDIO
+# TABLA PROMEDIO
 # ============================================================
 
 if len(promedio_propiedad) > 0:
@@ -2066,8 +1966,3 @@ if len(promedio_propiedad) > 0:
         use_container_width=True,
         hide_index=True
     )
-
-
-# ============================================================
-# FIN
-# ============================================================
