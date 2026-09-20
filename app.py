@@ -830,9 +830,11 @@ with col_tabla:
             100
         )
 
+
         flujo = float(
             row["Flujo"]
         )
+
 
         color_flujo = (
 
@@ -1409,10 +1411,6 @@ with col_gastos:
         )
 
 
-        # IMPORTANTE:
-        # La dona ahora se construye como HTML
-        # dentro de la misma tarjeta que el detalle.
-
         fig.update_layout(
 
             height=430,
@@ -1907,6 +1905,7 @@ with col_gastos:
         <style>
 
         * {{
+
             box-sizing:border-box;
 
             font-family:
@@ -2537,131 +2536,147 @@ with grafico2:
 # ============================================================
 
 propiedades_analizadas = (
-
-    df_filtrado[
-        "Nombre_Propiedad"
-    ]
-
-    .nunique()
+    df_filtrado["Nombre_Propiedad"].nunique()
 )
-
 
 socios_analizados = (
-
-    df_filtrado[
-        "Nombre_Socio"
-    ]
-
-    .nunique()
+    df_filtrado["Nombre_Socio"].nunique()
 )
 
 
-st.markdown(
+pie_final_html = f"""
+<!DOCTYPE html>
+<html>
 
-    f"""
+<head>
 
-    <div style="
+<meta charset="UTF-8">
 
-        background:#FFFFFF;
+<style>
 
-        border:
-            1px solid #DDE2E7;
+* {{
+    box-sizing: border-box;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+}}
 
-        border-radius:12px;
+html,
+body {{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+}}
 
-        padding:
-            14px 20px;
+.pie-final {{
+    width: 100%;
+    height: 62px;
+    background: #FFFFFF;
+    border: 1px solid #DDE2E7;
+    border-radius: 12px;
+    padding: 10px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #52617A;
+    font-size: 13px;
+}}
 
-        display:flex;
+.item {{
+    white-space: nowrap;
+}}
 
-        justify-content:
-            space-between;
+.green {{
+    color: #00875A;
+    font-weight: 500;
+}}
 
-        align-items:center;
+.dark {{
+    color: #172B4D;
+    font-weight: 500;
+}}
 
-        color:#52617A;
+.quote {{
+    color: #6B778C;
+    font-style: italic;
+}}
 
-        font-size:13px;
+</style>
 
-    ">
+</head>
 
+<body>
 
-        <div>
+<div class="pie-final">
 
-            🟢
+    <div class="item">
 
-            <strong
-                style="
-                color:#00875A;
-                font-weight:500;
-                "
-            >
-                {moneda(flujo_total)}
-            </strong>
+        🟢
 
-            &nbsp;
+        <strong class="green">
+            {moneda(flujo_total)}
+        </strong>
 
-            Flujo positivo en el periodo
+        &nbsp;
 
-        </div>
-
-
-        <div>
-
-            🏢
-
-            <strong
-                style="
-                color:#172B4D;
-                font-weight:500;
-                "
-            >
-                {propiedades_analizadas}
-            </strong>
-
-            &nbsp;
-
-            Propiedades analizadas
-
-        </div>
-
-
-        <div>
-
-            👥
-
-            <strong
-                style="
-                color:#172B4D;
-                font-weight:500;
-                "
-            >
-                {socios_analizados}
-            </strong>
-
-            &nbsp;
-
-            Socios
-
-        </div>
-
-
-        <div
-            style="
-            color:#6B778C;
-            font-style:italic;
-            "
-        >
-
-            “Más que propiedades,
-            mejores decisiones”
-
-        </div>
-
+        Flujo positivo en el periodo
 
     </div>
 
-    """,
 
-    unsafe_allow_html=True
+    <div class="item">
+
+        🏢
+
+        <strong class="dark">
+            {propiedades_analizadas}
+        </strong>
+
+        &nbsp;
+
+        Propiedades analizadas
+
+    </div>
+
+
+    <div class="item">
+
+        👥
+
+        <strong class="dark">
+            {socios_analizados}
+        </strong>
+
+        &nbsp;
+
+        Socios
+
+    </div>
+
+
+    <div class="item quote">
+
+        “Más que propiedades, mejores decisiones”
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
+"""
+
+
+components.html(
+    pie_final_html,
+    height=72,
+    scrolling=False
 )
