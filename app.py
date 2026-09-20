@@ -166,150 +166,6 @@ div[data-testid="stMetricDelta"] {
     height: 18px;
 }
 
-
-
-/* ============================================================
-   VISTA RESPONSIVE — CELULAR
-   Solo cambia presentación; NO cambia cálculos ni datos.
-   ============================================================ */
-
-@media (max-width: 768px) {
-
-    .block-container {
-        padding-top: 1rem !important;
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
-        padding-bottom: 1.5rem !important;
-    }
-
-    .main-title {
-        font-size: 24px;
-        line-height: 1.25;
-        margin-bottom: 5px;
-    }
-
-    .main-subtitle {
-        font-size: 13px;
-        margin-bottom: 22px;
-    }
-
-    .filter-title {
-        font-size: 20px;
-        margin-bottom: 10px;
-    }
-
-    .section-title {
-        font-size: 20px;
-        line-height: 1.25;
-        margin-bottom: 6px;
-    }
-
-    .section-subtitle {
-        font-size: 12px;
-        line-height: 1.45;
-        margin-bottom: 12px;
-    }
-
-    /* Filtros: uno debajo del otro para que no se aprieten. */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]),
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stDateInput"]) {
-        flex-wrap: wrap !important;
-        gap: 0.15rem !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="stColumn"],
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stDateInput"]) > div[data-testid="stColumn"] {
-        flex: 0 0 100% !important;
-        width: 100% !important;
-        min-width: 100% !important;
-    }
-
-    /* KPI: 2 x 2 en celular. */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stMetric"]) {
-        flex-wrap: wrap !important;
-        gap: 0.65rem !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stMetric"]) > div[data-testid="stColumn"] {
-        flex: 0 0 calc(50% - 0.325rem) !important;
-        width: calc(50% - 0.325rem) !important;
-        min-width: calc(50% - 0.325rem) !important;
-    }
-
-    div[data-testid="stMetric"] {
-        min-height: 112px;
-        padding: 13px 14px;
-        border-radius: 12px;
-    }
-
-    div[data-testid="stMetricLabel"] {
-        font-size: 12px !important;
-    }
-
-    div[data-testid="stMetricValue"] {
-        font-size: 21px !important;
-    }
-
-    div[data-testid="stMetricDelta"] {
-        font-size: 11px !important;
-    }
-
-    /* Tabla + gastos: uno debajo del otro en celular. */
-    div[data-testid="stHorizontalBlock"]:has(iframe) > div[data-testid="stColumn"] {
-        flex: 0 0 100% !important;
-        width: 100% !important;
-        min-width: 100% !important;
-    }
-
-    /* Gráficos anuales: uno debajo del otro. */
-    div[data-testid="stHorizontalBlock"]:has(.js-plotly-plot) > div[data-testid="stColumn"] {
-        flex: 0 0 100% !important;
-        width: 100% !important;
-        min-width: 100% !important;
-    }
-
-    /* Selectores más cómodos para tocar con el dedo. */
-    div[data-baseweb="select"] > div {
-        min-height: 44px;
-        border-radius: 9px;
-    }
-
-    div[data-testid="stDateInput"] input {
-        min-height: 42px;
-    }
-
-    /* Menos espacio vertical entre bloques en pantallas pequeñas. */
-    .section-space {
-        height: 12px;
-    }
-}
-
-@media (max-width: 430px) {
-
-    .main-title {
-        font-size: 22px;
-    }
-
-    .main-subtitle {
-        font-size: 12px;
-    }
-
-    .section-title {
-        font-size: 18px;
-    }
-
-    .section-subtitle {
-        font-size: 11px;
-    }
-
-    /* En teléfonos muy angostos, los KPI pasan a una sola columna. */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stMetric"]) > div[data-testid="stColumn"] {
-        flex: 0 0 100% !important;
-        width: 100% !important;
-        min-width: 100% !important;
-    }
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -974,9 +830,11 @@ with col_tabla:
             100
         )
 
+
         flujo = float(
             row["Flujo"]
         )
+
 
         color_flujo = (
 
@@ -1224,44 +1082,6 @@ with col_tabla:
         text-align:center;
 
         font-size:14px;
-    }}
-
-
-
-    @media (max-width: 768px) {{
-
-        .card {{
-            height:{ALTURA_TARJETAS}px;
-        }}
-
-        th {{
-            font-size:11px;
-            padding:6px 6px;
-        }}
-
-        td {{
-            font-size:11px;
-            padding:6px 6px;
-        }}
-
-        th:nth-child(1) {{ width:25%; }}
-        th:nth-child(2) {{ width:14%; }}
-        th:nth-child(3) {{ width:14%; }}
-        th:nth-child(4) {{ width:15%; }}
-        th:nth-child(5) {{ width:22%; }}
-        th:nth-child(6) {{ width:10%; }}
-
-        .pct-text {{
-            font-size:10px;
-        }}
-
-        .status {{
-            font-size:13px;
-        }}
-
-        .total td {{
-            height:46px;
-        }}
     }}
 
     .total td {{
@@ -1590,10 +1410,6 @@ with col_gastos:
             )
         )
 
-
-        # IMPORTANTE:
-        # La dona ahora se construye como HTML
-        # dentro de la misma tarjeta que el detalle.
 
         fig.update_layout(
 
@@ -1957,65 +1773,6 @@ with col_gastos:
         }}
 
 
-
-
-        @media (max-width: 768px) {{
-
-            .card {{
-                height:{ALTURA_TARJETAS}px;
-                padding:10px;
-            }}
-
-            .content {{
-                grid-template-columns:1fr;
-                grid-template-rows:250px 220px;
-                gap:4px;
-            }}
-
-            .chart {{
-                height:250px;
-            }}
-
-            .chart-inner {{
-                height:250px;
-            }}
-
-            .chart-inner .plotly-graph-div {{
-                height:250px !important;
-                min-height:250px !important;
-            }}
-
-            .detail {{
-                height:220px;
-                padding:4px 6px 0 6px;
-            }}
-
-            .total {{
-                font-size:18px;
-            }}
-
-            .subtitulo,
-            .headers,
-            .expense-row {{
-                font-size:10px;
-            }}
-
-            .expense-row {{
-                min-height:27px;
-            }}
-
-            .headers,
-            .expense-row {{
-                grid-template-columns:1fr 65px 32px;
-            }}
-
-            .highlight {{
-                margin-top:7px;
-                padding:6px 7px;
-                font-size:9px;
-            }}
-        }}
-
         .highlight strong {{
 
             color:#344563;
@@ -2148,6 +1905,7 @@ with col_gastos:
         <style>
 
         * {{
+
             box-sizing:border-box;
 
             font-family:
@@ -2778,131 +2536,147 @@ with grafico2:
 # ============================================================
 
 propiedades_analizadas = (
-
-    df_filtrado[
-        "Nombre_Propiedad"
-    ]
-
-    .nunique()
+    df_filtrado["Nombre_Propiedad"].nunique()
 )
-
 
 socios_analizados = (
-
-    df_filtrado[
-        "Nombre_Socio"
-    ]
-
-    .nunique()
+    df_filtrado["Nombre_Socio"].nunique()
 )
 
 
-st.markdown(
+pie_final_html = f"""
+<!DOCTYPE html>
+<html>
 
-    f"""
+<head>
 
-    <div style="
+<meta charset="UTF-8">
 
-        background:#FFFFFF;
+<style>
 
-        border:
-            1px solid #DDE2E7;
+* {{
+    box-sizing: border-box;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+}}
 
-        border-radius:12px;
+html,
+body {{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+}}
 
-        padding:
-            14px 20px;
+.pie-final {{
+    width: 100%;
+    height: 62px;
+    background: #FFFFFF;
+    border: 1px solid #DDE2E7;
+    border-radius: 12px;
+    padding: 10px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #52617A;
+    font-size: 13px;
+}}
 
-        display:flex;
+.item {{
+    white-space: nowrap;
+}}
 
-        justify-content:
-            space-between;
+.green {{
+    color: #00875A;
+    font-weight: 500;
+}}
 
-        align-items:center;
+.dark {{
+    color: #172B4D;
+    font-weight: 500;
+}}
 
-        color:#52617A;
+.quote {{
+    color: #6B778C;
+    font-style: italic;
+}}
 
-        font-size:13px;
+</style>
 
-    ">
+</head>
 
+<body>
 
-        <div>
+<div class="pie-final">
 
-            🟢
+    <div class="item">
 
-            <strong
-                style="
-                color:#00875A;
-                font-weight:500;
-                "
-            >
-                {moneda(flujo_total)}
-            </strong>
+        🟢
 
-            &nbsp;
+        <strong class="green">
+            {moneda(flujo_total)}
+        </strong>
 
-            Flujo positivo en el periodo
+        &nbsp;
 
-        </div>
-
-
-        <div>
-
-            🏢
-
-            <strong
-                style="
-                color:#172B4D;
-                font-weight:500;
-                "
-            >
-                {propiedades_analizadas}
-            </strong>
-
-            &nbsp;
-
-            Propiedades analizadas
-
-        </div>
-
-
-        <div>
-
-            👥
-
-            <strong
-                style="
-                color:#172B4D;
-                font-weight:500;
-                "
-            >
-                {socios_analizados}
-            </strong>
-
-            &nbsp;
-
-            Socios
-
-        </div>
-
-
-        <div
-            style="
-            color:#6B778C;
-            font-style:italic;
-            "
-        >
-
-            “Más que propiedades,
-            mejores decisiones”
-
-        </div>
-
+        Flujo positivo en el periodo
 
     </div>
 
-    """,
 
-    unsafe_allow_html=True
+    <div class="item">
+
+        🏢
+
+        <strong class="dark">
+            {propiedades_analizadas}
+        </strong>
+
+        &nbsp;
+
+        Propiedades analizadas
+
+    </div>
+
+
+    <div class="item">
+
+        👥
+
+        <strong class="dark">
+            {socios_analizados}
+        </strong>
+
+        &nbsp;
+
+        Socios
+
+    </div>
+
+
+    <div class="item quote">
+
+        “Más que propiedades, mejores decisiones”
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
+"""
+
+
+components.html(
+    pie_final_html,
+    height=72,
+    scrolling=False
 )
