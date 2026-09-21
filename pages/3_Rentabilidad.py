@@ -30,7 +30,6 @@ st.markdown("""
     max-width: 1500px;
 }
 
-/* Títulos */
 .main-title {
     font-size: 30px;
     font-weight: 700;
@@ -50,7 +49,6 @@ st.markdown("""
     margin-bottom: 12px;
 }
 
-/* Indicadores */
 div[data-testid="stMetric"] {
     background: white;
     border: 1px solid #eeeeee;
@@ -58,21 +56,18 @@ div[data-testid="stMetric"] {
     padding: 14px;
 }
 
-/* Tarjetas */
 div[data-testid="stVerticalBlockBorderWrapper"] {
     background: white;
     border-radius: 18px;
     border: 1px solid #eeeeee;
 }
 
-/* Separador */
 .card-separator {
     border-top: 1px solid #eeeeee;
     margin-top: 12px;
     margin-bottom: 12px;
 }
 
-/* Ocupación */
 .occupancy-title {
     color: #777777;
     font-size: 12px;
@@ -237,6 +232,7 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
                     p_fecha_fin,
                     INTERVAL 1 DAY
                 )
+
             AND Fecha_Fin >
                 p_fecha_inicio
     ),
@@ -264,8 +260,14 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
         SELECT
             Nombre_Propiedad,
             Ciudad,
-            COUNT(DISTINCT Codigo_Reserva) AS Reservas,
-            SUM(Noches_Periodo) AS Noches_Reservadas
+
+            COUNT(
+                DISTINCT Codigo_Reserva
+            ) AS Reservas,
+
+            SUM(
+                Noches_Periodo
+            ) AS Noches_Reservadas
 
         FROM
             reservas_mapeadas
@@ -314,6 +316,7 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
                     r.Noches_Reservadas,
                     0
                 ),
+
                 DATE_DIFF(
                     DATE_ADD(
                         p_fecha_fin,
@@ -363,6 +366,7 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
 # ============================================================
 
 def dinero(valor):
+
     return f"${valor:,.0f}".replace(",", ".")
 
 
@@ -380,7 +384,7 @@ def dinero_corto(valor):
 
 
 # ============================================================
-# CARGAR
+# CARGAR DATOS
 # ============================================================
 
 df = cargar_datos_financieros()
@@ -422,11 +426,12 @@ with header:
         )
 
         st.success(
-            "● Información actualizada",
-            icon="●"
+            "● Información actualizada"
         )
 
-    # YTD
+    # --------------------------------------------------------
+    # INDICADORES YTD
+    # --------------------------------------------------------
 
     df_ytd = df[
         (df["Fecha"] >= pd.Timestamp(hoy.year, 1, 1))
@@ -608,25 +613,33 @@ st.markdown(
 
 k1, k2, k3, k4 = st.columns(4)
 
+
 with k1:
+
     st.metric(
         "Ingresos Brutos",
         dinero(ingresos)
     )
 
+
 with k2:
+
     st.metric(
         "Gastos Operativos",
         dinero(gastos)
     )
 
+
 with k3:
+
     st.metric(
         "Flujo",
         dinero(flujo)
     )
 
+
 with k4:
+
     st.metric(
         "Rentabilidad",
         f"{rentabilidad:.1f}%"
@@ -679,6 +692,7 @@ if meses_cerrados > 0:
     )
 
     promedios["Ingreso_Promedio"] /= meses_cerrados
+
     promedios["Gasto_Promedio"] /= meses_cerrados
 
     promedios["Flujo_Promedio"] = (
@@ -738,6 +752,7 @@ resumen["Rentabilidad"] = resumen.apply(
     axis=1
 )
 
+
 resumen = resumen.merge(
     promedios,
     on=[
@@ -759,7 +774,7 @@ ocupacion = cargar_ocupacion(
 
 
 # ============================================================
-# UNIR
+# UNIR OCUPACIÓN
 # ============================================================
 
 resumen = resumen.merge(
@@ -829,7 +844,7 @@ else:
                         row["Ciudad"]
                     )
 
-                    st.markdown("---")
+                    st.divider()
 
                     st.metric(
                         "Ingresos",
@@ -854,7 +869,7 @@ else:
                         f"{row['Rentabilidad']:.1f}%"
                     )
 
-                    st.markdown("---")
+                    st.divider()
 
                     ocup = row["Ocupacion_Porcentaje"]
 
