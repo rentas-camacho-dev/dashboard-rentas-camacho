@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import html
-import textwrap
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -48,9 +47,7 @@ html, body, [class*="css"] {
 }
 
 
-/* ============================================================
-   HERO
-   ============================================================ */
+/* HERO */
 
 .hero {
     background: white;
@@ -75,9 +72,7 @@ html, body, [class*="css"] {
 }
 
 
-/* ============================================================
-   FILTROS
-   ============================================================ */
+/* FILTROS */
 
 .filter-box {
     background: white;
@@ -88,9 +83,7 @@ html, body, [class*="css"] {
 }
 
 
-/* ============================================================
-   KPI
-   ============================================================ */
+/* KPI */
 
 .kpi-card {
     background: white;
@@ -121,9 +114,7 @@ html, body, [class*="css"] {
 }
 
 
-/* ============================================================
-   SECCIONES
-   ============================================================ */
+/* SECCIONES */
 
 .section-title {
     color: #172B4D;
@@ -140,9 +131,7 @@ html, body, [class*="css"] {
 }
 
 
-/* ============================================================
-   TARJETAS DE PROPIEDAD
-   ============================================================ */
+/* TARJETAS */
 
 .property-card {
     background: white;
@@ -174,12 +163,6 @@ html, body, [class*="css"] {
 .metric-label {
     color: #6B778C;
     font-size: 13px;
-}
-
-.metric-value {
-    color: #172B4D;
-    font-size: 18px;
-    font-weight: 600;
 }
 
 .metric-income {
@@ -255,7 +238,7 @@ html, body, [class*="css"] {
 
 
 # ============================================================
-# CONEXIÓN A BIGQUERY
+# BIGQUERY
 # ============================================================
 
 credentials = service_account.Credentials.from_service_account_info(
@@ -273,7 +256,7 @@ client = bigquery.Client(
 
 
 # ============================================================
-# CARGAR DATOS
+# CARGA DE DATOS
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -360,20 +343,21 @@ df = df.dropna(
 # ENCABEZADO
 # ============================================================
 
-st.markdown("""
-<div class="hero">
+st.markdown(
+    """
+    <div class="hero">
+        <div class="hero-title">
+            🏠 Rentas Cortas
+        </div>
 
-    <div class="hero-title">
-        🏠 Rentas Cortas
+        <div class="hero-subtitle">
+            Rentabilidad financiera por propiedad ·
+            Datos conectados directamente a BigQuery
+        </div>
     </div>
-
-    <div class="hero-subtitle">
-        Rentabilidad financiera por propiedad ·
-        Datos conectados directamente a BigQuery
-    </div>
-
-</div>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
@@ -455,7 +439,7 @@ st.markdown(
 
 
 # ============================================================
-# APLICAR FILTROS
+# FILTRAR
 # ============================================================
 
 df_f = df.copy()
@@ -501,7 +485,7 @@ if isinstance(fechas, tuple) and len(fechas) == 2:
 
 
 # ============================================================
-# FUNCIÓN DINERO
+# FUNCIÓN MONEDA
 # ============================================================
 
 def dinero(valor):
@@ -517,7 +501,9 @@ def dinero(valor):
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
+
 gastos = df_f["Gasto"].sum()
+
 flujo = ingresos - gastos
 
 rentabilidad = (
@@ -645,21 +631,25 @@ with k4:
 
 
 # ============================================================
-# RESUMEN POR PROPIEDAD
+# RENTABILIDAD POR PROPIEDAD
 # ============================================================
 
 st.markdown(
-    '<div class="section-title">'
-    '🏢 Rentabilidad por propiedad'
-    '</div>',
+    """
+    <div class="section-title">
+        🏢 Rentabilidad por propiedad
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
 st.markdown(
-    '<div class="section-subtitle">'
-    'Desempeño financiero de cada propiedad '
-    'en el periodo seleccionado'
-    '</div>',
+    """
+    <div class="section-subtitle">
+        Desempeño financiero de cada propiedad
+        en el periodo seleccionado
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
@@ -672,6 +662,10 @@ if df_f.empty:
 
     st.stop()
 
+
+# ============================================================
+# AGRUPACIÓN
+# ============================================================
 
 resumen = (
     df_f
@@ -712,7 +706,7 @@ resumen = resumen.sort_values(
 
 
 # ============================================================
-# TARJETAS DE PROPIEDADES
+# TARJETAS
 # ============================================================
 
 for inicio in range(
@@ -721,9 +715,9 @@ for inicio in range(
     2
 ):
 
-    cols = st.columns(2)
+    columnas = st.columns(2)
 
-    for posicion, columna in enumerate(cols):
+    for posicion in range(2):
 
         indice = inicio + posicion
 
@@ -769,132 +763,142 @@ for inicio in range(
         if margen_prop >= 35:
 
             color = "#00A878"
-            estado = "✓ Rentabilidad saludable"
-            clase = ""
+
+            estado = (
+                "✓ Rentabilidad saludable"
+            )
+
+            clase_tarjeta = ""
+
+            clase_estado = "ok-box"
 
         else:
 
             color = "#EF4444"
-            estado = "⚠️ Por debajo del objetivo"
-            clase = "alert"
+
+            estado = (
+                "⚠️ Por debajo del objetivo"
+            )
+
+            clase_tarjeta = "alert"
+
+            clase_estado = "alert-box"
 
 
-        estado_clase = (
-            "alert-box"
-            if margen_prop < 35
-            else "ok-box"
-        )
+        # ----------------------------------------------------
+        # HTML DE LA TARJETA
+        # ----------------------------------------------------
 
+        tarjeta = f"""
+<div class="property-card {clase_tarjeta}">
 
-        tarjeta = textwrap.dedent(
-            f"""
-            <div class="property-card {clase}">
+    <div class="property-name">
+        {nombre}
+    </div>
 
-                <div class="property-name">
-                    {nombre}
-                </div>
+    <div class="property-location">
+        📍 {ciudad_nombre}
+    </div>
 
-                <div class="property-location">
-                    📍 {ciudad_nombre}
-                </div>
+    <div class="divider"></div>
 
-                <div class="divider"></div>
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        margin-bottom:10px;
+    ">
 
-                <div style="
-                    display:flex;
-                    justify-content:space-between;
-                    margin-bottom:10px;
-                ">
+        <div>
 
-                    <div>
-
-                        <div class="metric-label">
-                            Ingresos
-                        </div>
-
-                        <div class="metric-income">
-                            {dinero(ingreso_prop)}
-                        </div>
-
-                    </div>
-
-
-                    <div>
-
-                        <div class="metric-label">
-                            Gastos
-                        </div>
-
-                        <div class="metric-expense">
-                            {dinero(gasto_prop)}
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="divider"></div>
-
-                <div>
-
-                    <div class="metric-label">
-                        Flujo / beneficio
-                    </div>
-
-                    <div class="metric-flow">
-                        {dinero(flujo_prop)}
-                    </div>
-
-                </div>
-
-                <div style="margin-top:20px;">
-
-                    <div style="
-                        display:flex;
-                        justify-content:space-between;
-                        align-items:center;
-                    ">
-
-                        <div class="margin-label">
-                            Rentabilidad
-                        </div>
-
-                        <div
-                            class="margin-value"
-                            style="color:{color};"
-                        >
-                            {margen_prop:.1f}%
-                        </div>
-
-                    </div>
-
-
-                    <div class="progress-bg">
-
-                        <div
-                            class="progress-fill"
-                            style="
-                                width:{progreso}%;
-                                background:{color};
-                            "
-                        >
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="{estado_clase}">
-                    {estado}
-                </div>
-
+            <div class="metric-label">
+                Ingresos
             </div>
-            """
-        )
+
+            <div class="metric-income">
+                {dinero(ingreso_prop)}
+            </div>
+
+        </div>
 
 
-        with columna:
+        <div>
+
+            <div class="metric-label">
+                Gastos
+            </div>
+
+            <div class="metric-expense">
+                {dinero(gasto_prop)}
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="divider"></div>
+
+
+    <div>
+
+        <div class="metric-label">
+            Flujo / beneficio
+        </div>
+
+        <div class="metric-flow">
+            {dinero(flujo_prop)}
+        </div>
+
+    </div>
+
+
+    <div style="margin-top:20px;">
+
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        ">
+
+            <div class="margin-label">
+                Rentabilidad
+            </div>
+
+            <div
+                class="margin-value"
+                style="color:{color};"
+            >
+                {margen_prop:.1f}%
+            </div>
+
+        </div>
+
+
+        <div class="progress-bg">
+
+            <div
+                class="progress-fill"
+                style="
+                    width:{progreso}%;
+                    background:{color};
+                "
+            >
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="{clase_estado}">
+        {estado}
+    </div>
+
+</div>
+"""
+
+
+        with columnas[posicion]:
 
             st.markdown(
                 tarjeta,
