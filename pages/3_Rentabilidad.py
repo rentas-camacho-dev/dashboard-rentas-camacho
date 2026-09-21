@@ -30,18 +30,6 @@ st.markdown("""
     max-width: 1500px;
 }
 
-.main-title {
-    font-size: 30px;
-    font-weight: 700;
-    margin-bottom: 4px;
-}
-
-.subtitle {
-    color: #777777;
-    font-size: 14px;
-    margin-bottom: 8px;
-}
-
 .section-title {
     font-size: 21px;
     font-weight: 700;
@@ -60,27 +48,6 @@ div[data-testid="stVerticalBlockBorderWrapper"] {
     background: white;
     border-radius: 18px;
     border: 1px solid #eeeeee;
-}
-
-.card-separator {
-    border-top: 1px solid #eeeeee;
-    margin-top: 12px;
-    margin-bottom: 12px;
-}
-
-.occupancy-title {
-    color: #777777;
-    font-size: 12px;
-}
-
-.occupancy-number {
-    font-size: 24px;
-    font-weight: 700;
-}
-
-.occupancy-detail {
-    color: #888888;
-    font-size: 12px;
 }
 
 </style>
@@ -106,6 +73,34 @@ client = bigquery.Client(
 
 
 # ============================================================
+# FUNCIÓN AUXILIAR
+# ============================================================
+
+def ejecutar_dataframe(query, job_config=None):
+    """
+    Ejecuta BigQuery y convierte el resultado a DataFrame
+    sin depender directamente de to_dataframe().
+    """
+
+    job = client.query(
+        query,
+        job_config=job_config
+    )
+
+    resultado = job.result()
+
+    filas = [
+        dict(row)
+        for row in resultado
+    ]
+
+    if not filas:
+        return pd.DataFrame()
+
+    return pd.DataFrame(filas)
+
+
+# ============================================================
 # DATOS FINANCIEROS
 # ============================================================
 
@@ -124,10 +119,23 @@ def cargar_datos_financieros():
     FROM
         `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
     WHERE
-        LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
+        LOWER(TRIM(CAST(Nombre_Tipo AS STRING))) = 'airbnb'
     """
 
-    df = client.query(query).to_dataframe()
+    df = ejecutar_dataframe(query)
+
+    if df.empty:
+        return pd.DataFrame(
+            columns=[
+                "Fecha",
+                "Nombre_Propiedad",
+                "Ciudad",
+                "Nombre_Socio",
+                "Nombre_Tipo",
+                "Ingreso",
+                "Gasto"
+            ]
+        )
 
     df["Fecha"] = pd.to_datetime(
         df["Fecha"],
@@ -180,17 +188,27 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
 
         SELECT
             C__digo_de_confirmaci__n AS Codigo_Reserva,
+
             ANY_VALUE(Anuncio) AS Anuncio,
-            ANY_VALUE(DATE(Fecha_de_inicio)) AS Fecha_Inicio,
-            ANY_VALUE(DATE(Fecha_de_finalizaci__n)) AS Fecha_Fin
+
+            ANY_VALUE(
+                DATE(Fecha_de_inicio)
+            ) AS Fecha_Inicio,
+
+            ANY_VALUE(
+                DATE(Fecha_de_finalizaci__n)
+            ) AS Fecha_Fin
 
         FROM
             `rentascamacho.rentas_cortas.Airbnb_Prorrateado`
 
         WHERE
             LOWER(TRIM(Tipo)) = 'reservación'
+
             AND C__digo_de_confirmaci__n IS NOT NULL
+
             AND Fecha_de_inicio IS NOT NULL
+
             AND Fecha_de_finalizaci__n IS NOT NULL
 
         GROUP BY
@@ -214,10 +232,12 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
                             INTERVAL 1 DAY
                         )
                     ),
+
                     GREATEST(
                         Fecha_Inicio,
                         p_fecha_inicio
                     ),
+
                     DAY
                 ),
                 0
@@ -249,7 +269,9 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
             reservas_periodo r
 
         INNER JOIN mapa m
-            ON LOWER(TRIM(r.Anuncio)) = m.anuncio_key
+
+            ON LOWER(TRIM(r.Anuncio))
+             = m.anuncio_key
 
         WHERE
             r.Noches_Periodo > 0
@@ -288,6 +310,7 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
     )
 
     SELECT
+
         p.Nombre_Propiedad,
         p.Ciudad,
 
@@ -333,8 +356,12 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
         propiedades p
 
     LEFT JOIN resumen_reservas r
-        ON p.Nombre_Propiedad = r.Nombre_Propiedad
-        AND p.Ciudad = r.Ciudad
+
+        ON p.Nombre_Propiedad
+         = r.Nombre_Propiedad
+
+        AND p.Ciudad
+         = r.Ciudad
 
     ORDER BY
         p.Nombre_Propiedad
@@ -355,10 +382,10 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
         ]
     )
 
-    return client.query(
+    return ejecutar_dataframe(
         query,
-        job_config=job_config
-    ).to_dataframe()
+        job_config
+    )
 
 
 # ============================================================
@@ -375,19 +402,46 @@ def dinero_corto(valor):
     valor = float(valor)
 
     if abs(valor) >= 1_000_000:
+
         return f"${valor / 1_000_000:.1f}M"
 
-    if abs(valor) >= 1_000:
+    elif abs(valor) >= 1_000:
+
         return f"${valor / 1_000:.0f}k"
 
-    return f"${valor:,.0f}".replace(",", ".")
+    else:
+
+        return f"${valor:,.0f}".replace(",", ".")
 
 
 # ============================================================
 # CARGAR DATOS
 # ============================================================
 
-df = cargar_datos_financieros()
+try:
+
+    df = cargar_datos_financieros()
+
+except Exception as e:
+
+    st.error(
+        "No fue posible cargar la información financiera desde BigQuery."
+    )
+
+    st.code(
+        str(e)
+    )
+
+    st.stop()
+
+
+if df.empty:
+
+    st.warning(
+        "No se encontraron movimientos de Airbnb en BigQuery."
+    )
+
+    st.stop()
 
 
 # ============================================================
@@ -407,7 +461,9 @@ inicio_mes = date(
 # HEADER
 # ============================================================
 
-header = st.container(border=True)
+header = st.container(
+    border=True
+)
 
 with header:
 
@@ -430,7 +486,7 @@ with header:
         )
 
     # --------------------------------------------------------
-    # INDICADORES YTD
+    # YTD
     # --------------------------------------------------------
 
     df_ytd = df[
@@ -445,11 +501,21 @@ with header:
     ]
 
     ingreso_ytd = df_ytd["Ingreso"].sum()
+
     gasto_ytd = df_ytd["Gasto"].sum()
-    flujo_ytd = ingreso_ytd - gasto_ytd
+
+    flujo_ytd = (
+        ingreso_ytd
+        -
+        gasto_ytd
+    )
 
     rentabilidad_ytd = (
-        flujo_ytd / ingreso_ytd * 100
+        flujo_ytd
+        /
+        ingreso_ytd
+        *
+        100
         if ingreso_ytd != 0
         else 0
     )
@@ -536,15 +602,21 @@ with col4:
 
     rango = st.date_input(
         "Período de análisis",
-        value=(inicio_mes, hoy)
+        value=(
+            inicio_mes,
+            hoy
+        )
     )
 
 
 # ============================================================
-# FECHAS SELECCIONADAS
+# RANGO
 # ============================================================
 
-if isinstance(rango, tuple) and len(rango) == 2:
+if isinstance(
+    rango,
+    tuple
+) and len(rango) == 2:
 
     fecha_inicio = rango[0]
     fecha_fin = rango[1]
@@ -597,11 +669,21 @@ if socio != "Todos":
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
+
 gastos = df_f["Gasto"].sum()
-flujo = ingresos - gastos
+
+flujo = (
+    ingresos
+    -
+    gastos
+)
 
 rentabilidad = (
-    flujo / ingresos * 100
+    flujo
+    /
+    ingresos
+    *
+    100
     if ingresos != 0
     else 0
 )
@@ -686,14 +768,29 @@ if meses_cerrados > 0:
             as_index=False
         )
         .agg(
-            Ingreso_Promedio=("Ingreso", "sum"),
-            Gasto_Promedio=("Gasto", "sum")
+            Ingreso_Promedio=(
+                "Ingreso",
+                "sum"
+            ),
+
+            Gasto_Promedio=(
+                "Gasto",
+                "sum"
+            )
         )
     )
 
-    promedios["Ingreso_Promedio"] /= meses_cerrados
+    promedios["Ingreso_Promedio"] = (
+        promedios["Ingreso_Promedio"]
+        /
+        meses_cerrados
+    )
 
-    promedios["Gasto_Promedio"] /= meses_cerrados
+    promedios["Gasto_Promedio"] = (
+        promedios["Gasto_Promedio"]
+        /
+        meses_cerrados
+    )
 
     promedios["Flujo_Promedio"] = (
         promedios["Ingreso_Promedio"]
@@ -728,8 +825,15 @@ resumen = (
         as_index=False
     )
     .agg(
-        Ingreso=("Ingreso", "sum"),
-        Gasto=("Gasto", "sum")
+        Ingreso=(
+            "Ingreso",
+            "sum"
+        ),
+
+        Gasto=(
+            "Gasto",
+            "sum"
+        )
     )
 )
 
@@ -741,24 +845,31 @@ resumen["Flujo"] = (
 
 resumen["Rentabilidad"] = resumen.apply(
     lambda row:
+
         (
             row["Flujo"]
             /
             row["Ingreso"]
-            * 100
+            *
+            100
         )
+
         if row["Ingreso"] != 0
+
         else 0,
+
     axis=1
 )
 
 
 resumen = resumen.merge(
     promedios,
+
     on=[
         "Nombre_Propiedad",
         "Ciudad"
     ],
+
     how="left"
 )
 
@@ -767,19 +878,26 @@ resumen = resumen.merge(
 # OCUPACIÓN
 # ============================================================
 
-ocupacion = cargar_ocupacion(
-    fecha_inicio,
-    fecha_fin
-)
+try:
 
+    ocupacion = cargar_ocupacion(
+        fecha_inicio,
+        fecha_fin
+    )
 
-# ============================================================
-# UNIR OCUPACIÓN
-# ============================================================
+except Exception as e:
 
-resumen = resumen.merge(
-    ocupacion[
-        [
+    st.error(
+        "La información financiera cargó correctamente, "
+        "pero hubo un problema al calcular la ocupación."
+    )
+
+    st.code(
+        str(e)
+    )
+
+    ocupacion = pd.DataFrame(
+        columns=[
             "Nombre_Propiedad",
             "Ciudad",
             "Reservas",
@@ -787,13 +905,45 @@ resumen = resumen.merge(
             "Noches_Disponibles",
             "Ocupacion_Porcentaje"
         ]
-    ],
-    on=[
-        "Nombre_Propiedad",
-        "Ciudad"
-    ],
-    how="left"
-)
+    )
+
+
+# ============================================================
+# UNIR OCUPACIÓN
+# ============================================================
+
+if not ocupacion.empty:
+
+    resumen = resumen.merge(
+
+        ocupacion[
+            [
+                "Nombre_Propiedad",
+                "Ciudad",
+                "Reservas",
+                "Noches_Reservadas",
+                "Noches_Disponibles",
+                "Ocupacion_Porcentaje"
+            ]
+        ],
+
+        on=[
+            "Nombre_Propiedad",
+            "Ciudad"
+        ],
+
+        how="left"
+    )
+
+else:
+
+    resumen["Reservas"] = pd.NA
+
+    resumen["Noches_Reservadas"] = pd.NA
+
+    resumen["Noches_Disponibles"] = pd.NA
+
+    resumen["Ocupacion_Porcentaje"] = pd.NA
 
 
 # ============================================================
@@ -836,6 +986,10 @@ else:
                     border=True
                 ):
 
+                    # ----------------------------------------
+                    # NOMBRE
+                    # ----------------------------------------
+
                     st.markdown(
                         f"#### {row['Nombre_Propiedad']}"
                     )
@@ -846,23 +1000,48 @@ else:
 
                     st.divider()
 
+                    # ----------------------------------------
+                    # INGRESOS
+                    # ----------------------------------------
+
                     st.metric(
                         "Ingresos",
-                        dinero(row["Ingreso"]),
-                        f"Prom. mes {dinero_corto(row['Ingreso_Promedio'])}"
+                        dinero(
+                            row["Ingreso"]
+                        ),
+                        f"Prom. mes "
+                        f"{dinero_corto(row['Ingreso_Promedio'])}"
                     )
+
+                    # ----------------------------------------
+                    # GASTOS
+                    # ----------------------------------------
 
                     st.metric(
                         "Gastos",
-                        dinero(row["Gasto"]),
-                        f"Prom. mes {dinero_corto(row['Gasto_Promedio'])}"
+                        dinero(
+                            row["Gasto"]
+                        ),
+                        f"Prom. mes "
+                        f"{dinero_corto(row['Gasto_Promedio'])}"
                     )
+
+                    # ----------------------------------------
+                    # FLUJO
+                    # ----------------------------------------
 
                     st.metric(
                         "Flujo",
-                        dinero(row["Flujo"]),
-                        f"Prom. mes {dinero_corto(row['Flujo_Promedio'])}"
+                        dinero(
+                            row["Flujo"]
+                        ),
+                        f"Prom. mes "
+                        f"{dinero_corto(row['Flujo_Promedio'])}"
                     )
+
+                    # ----------------------------------------
+                    # RENTABILIDAD
+                    # ----------------------------------------
 
                     st.metric(
                         "Rentabilidad",
@@ -871,7 +1050,13 @@ else:
 
                     st.divider()
 
-                    ocup = row["Ocupacion_Porcentaje"]
+                    # ----------------------------------------
+                    # OCUPACIÓN
+                    # ----------------------------------------
+
+                    ocup = row[
+                        "Ocupacion_Porcentaje"
+                    ]
 
                     if pd.isna(ocup):
 
@@ -894,10 +1079,13 @@ else:
                         )
 
                         st.markdown(
-                            f"### {float(ocup):.1f}%"
+                            f"### "
+                            f"{float(ocup):.1f}%"
                         )
 
                         st.caption(
-                            f"{int(row['Reservas'])} reservas · "
-                            f"{int(row['Noches_Reservadas'])} noches"
+                            f"{int(row['Reservas'])} "
+                            f"reservas · "
+                            f"{int(row['Noches_Reservadas'])} "
+                            f"noches"
                         )
