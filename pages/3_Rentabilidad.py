@@ -3,6 +3,8 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from datetime import date
+from textwrap import dedent
+
 
 # ============================================================
 # CONFIGURACIÓN
@@ -15,11 +17,23 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+
+# ============================================================
+# FUNCIÓN PARA RENDERIZAR HTML
+# ============================================================
+
+def render_html(html):
+    st.markdown(
+        dedent(html),
+        unsafe_allow_html=True
+    )
+
+
 # ============================================================
 # ESTILOS
 # ============================================================
 
-st.markdown("""
+render_html("""
 <style>
 
 .stApp {
@@ -31,6 +45,7 @@ st.markdown("""
     padding-bottom: 1.5rem !important;
     max-width: 1500px !important;
 }
+
 
 /* =========================================================
    HEADER
@@ -81,6 +96,7 @@ st.markdown("""
     margin-top: 4px;
 }
 
+
 /* =========================================================
    INDICADORES ANUALES
    ========================================================= */
@@ -117,14 +133,6 @@ st.markdown("""
     white-space: nowrap;
 }
 
-.annual-value.positive {
-    color: #00875A;
-}
-
-.annual-value.negative {
-    color: #DE350B;
-}
-
 .header-status {
     margin-left: auto;
     white-space: nowrap;
@@ -132,6 +140,7 @@ st.markdown("""
     font-size: 10px;
     font-weight: 500;
 }
+
 
 /* =========================================================
    FILTROS
@@ -144,8 +153,9 @@ div[data-testid="stDateInput"] label {
     font-weight: 500 !important;
 }
 
+
 /* =========================================================
-   KPI PRINCIPALES
+   KPI
    ========================================================= */
 
 .kpi-card {
@@ -177,8 +187,9 @@ div[data-testid="stDateInput"] label {
     margin-top: 6px;
 }
 
+
 /* =========================================================
-   SECCIÓN PROPIEDADES
+   SECCIONES
    ========================================================= */
 
 .section-title {
@@ -194,6 +205,7 @@ div[data-testid="stDateInput"] label {
     font-size: 12px;
     margin-bottom: 10px;
 }
+
 
 /* =========================================================
    TARJETAS DE PROPIEDADES
@@ -308,6 +320,11 @@ div[data-testid="stDateInput"] label {
     color: #DE350B;
 }
 
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
 @media (max-width: 1100px) {
 
     .app-title-block {
@@ -336,13 +353,15 @@ div[data-testid="stDateInput"] label {
     .metric-flow {
         font-size: 11px;
     }
+
 }
 
 </style>
-""", unsafe_allow_html=True)
+""")
+
 
 # ============================================================
-# CONEXIÓN BIGQUERY
+# CONEXIÓN A BIGQUERY
 # ============================================================
 
 try:
@@ -362,7 +381,10 @@ try:
 
 except Exception as e:
 
-    st.error(f"No fue posible conectar con BigQuery: {e}")
+    st.error(
+        f"No fue posible conectar con BigQuery: {e}"
+    )
+
     st.stop()
 
 
@@ -400,6 +422,7 @@ except Exception as e:
     st.error(
         f"Error consultando Movimientos_Operativos_Reparto: {e}"
     )
+
     st.stop()
 
 
@@ -468,7 +491,7 @@ def dinero(valor):
 
 
 # ============================================================
-# INDICADORES DEL AÑO EN CURSO
+# AÑO EN CURSO
 # ============================================================
 
 hoy = date.today()
@@ -479,16 +502,27 @@ inicio_anio = pd.Timestamp(
     day=1
 )
 
-fin_hoy = pd.Timestamp(hoy) + pd.Timedelta(days=1)
+fin_hoy = (
+    pd.Timestamp(hoy)
+    + pd.Timedelta(days=1)
+)
+
 
 df_ytd = df[
-    (df["Fecha"] >= inicio_anio) &
+    (df["Fecha"] >= inicio_anio)
+    &
     (df["Fecha"] < fin_hoy)
 ].copy()
 
+
 ingresos_ytd = df_ytd["Ingreso"].sum()
+
 gastos_ytd = df_ytd["Gasto"].sum()
-flujo_ytd = ingresos_ytd - gastos_ytd
+
+flujo_ytd = (
+    ingresos_ytd
+    - gastos_ytd
+)
 
 rentabilidad_ytd = (
     flujo_ytd / ingresos_ytd * 100
@@ -513,7 +547,8 @@ color_rentabilidad_ytd = (
     else "#DE350B"
 )
 
-st.markdown(
+
+render_html(
     f"""
     <div class="app-header">
 
@@ -555,11 +590,11 @@ st.markdown(
                     Flujo {hoy.year}
                 </div>
 
-                <div class="annual-value"
-                     style="color:{color_flujo_ytd};">
-
+                <div
+                    class="annual-value"
+                    style="color:{color_flujo_ytd};"
+                >
                     {dinero(flujo_ytd)}
-
                 </div>
 
             </div>
@@ -571,11 +606,11 @@ st.markdown(
                     Rentabilidad {hoy.year}
                 </div>
 
-                <div class="annual-value"
-                     style="color:{color_rentabilidad_ytd};">
-
+                <div
+                    class="annual-value"
+                    style="color:{color_rentabilidad_ytd};"
+                >
                     {rentabilidad_ytd:.1f}%
-
                 </div>
 
             </div>
@@ -588,8 +623,7 @@ st.markdown(
         </div>
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -602,13 +636,15 @@ col1, col2, col3, col4 = st.columns(4)
 
 with col1:
 
-    ciudades = [
-        "Todas"
-    ] + sorted(
-        df["Ciudad"]
-        .dropna()
-        .unique()
-        .tolist()
+    ciudades = (
+        ["Todas"]
+        +
+        sorted(
+            df["Ciudad"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
     )
 
     ciudad = st.selectbox(
@@ -619,13 +655,15 @@ with col1:
 
 with col2:
 
-    propiedades = [
-        "Todas"
-    ] + sorted(
-        df["Nombre_Propiedad"]
-        .dropna()
-        .unique()
-        .tolist()
+    propiedades = (
+        ["Todas"]
+        +
+        sorted(
+            df["Nombre_Propiedad"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
     )
 
     propiedad = st.selectbox(
@@ -636,13 +674,15 @@ with col2:
 
 with col3:
 
-    socios = [
-        "Todos"
-    ] + sorted(
-        df["Nombre_Socio"]
-        .dropna()
-        .unique()
-        .tolist()
+    socios = (
+        ["Todos"]
+        +
+        sorted(
+            df["Nombre_Socio"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
     )
 
     socio = st.selectbox(
@@ -654,17 +694,25 @@ with col3:
 with col4:
 
     # --------------------------------------------------------
-    # FECHA: POR DEFECTO MES ACTUAL
+    # MES ACTUAL POR DEFECTO
     # --------------------------------------------------------
 
-    inicio_mes_actual = hoy.replace(day=1)
+    inicio_mes_actual = hoy.replace(
+        day=1
+    )
 
-    fecha_min = df["Fecha"].min().date()
+    fecha_min = (
+        df["Fecha"]
+        .min()
+        .date()
+    )
 
-    fecha_max_datos = df["Fecha"].max().date()
+    fecha_max_datos = (
+        df["Fecha"]
+        .max()
+        .date()
+    )
 
-    # Permite que el calendario llegue hasta hoy,
-    # incluso si todavía no hay movimientos posteriores.
     fecha_max = max(
         fecha_max_datos,
         hoy
@@ -716,7 +764,10 @@ if socio != "Todos":
     ]
 
 
-if isinstance(fechas, tuple) and len(fechas) == 2:
+if isinstance(
+    fechas,
+    tuple
+) and len(fechas) == 2:
 
     fecha_inicio = pd.Timestamp(
         fechas[0]
@@ -728,13 +779,14 @@ if isinstance(fechas, tuple) and len(fechas) == 2:
     )
 
     df_f = df_f[
-        (df_f["Fecha"] >= fecha_inicio) &
+        (df_f["Fecha"] >= fecha_inicio)
+        &
         (df_f["Fecha"] < fecha_fin)
     ]
 
 
 # ============================================================
-# VALIDAR RESULTADO
+# VALIDAR FILTROS
 # ============================================================
 
 if df_f.empty:
@@ -754,7 +806,10 @@ ingresos = df_f["Ingreso"].sum()
 
 gastos = df_f["Gasto"].sum()
 
-flujo = ingresos - gastos
+flujo = (
+    ingresos
+    - gastos
+)
 
 rentabilidad = (
     flujo / ingresos * 100
@@ -764,7 +819,7 @@ rentabilidad = (
 
 
 # ============================================================
-# TARJETAS KPI
+# KPI 1 - INGRESOS
 # ============================================================
 
 k1, k2, k3, k4 = st.columns(4)
@@ -772,7 +827,7 @@ k1, k2, k3, k4 = st.columns(4)
 
 with k1:
 
-    st.markdown(
+    render_html(
         f"""
         <div class="kpi-card">
 
@@ -789,14 +844,17 @@ with k1:
             </div>
 
         </div>
-        """,
-        unsafe_allow_html=True
+        """
     )
 
 
+# ============================================================
+# KPI 2 - GASTOS
+# ============================================================
+
 with k2:
 
-    st.markdown(
+    render_html(
         f"""
         <div class="kpi-card">
 
@@ -813,10 +871,13 @@ with k2:
             </div>
 
         </div>
-        """,
-        unsafe_allow_html=True
+        """
     )
 
+
+# ============================================================
+# KPI 3 - FLUJO
+# ============================================================
 
 with k3:
 
@@ -826,7 +887,7 @@ with k3:
         else "#DE350B"
     )
 
-    st.markdown(
+    render_html(
         f"""
         <div class="kpi-card">
 
@@ -834,11 +895,11 @@ with k3:
                 💵 FLUJO
             </div>
 
-            <div class="kpi-value"
-                 style="color:{color_flujo};">
-
+            <div
+                class="kpi-value"
+                style="color:{color_flujo};"
+            >
                 {dinero(flujo)}
-
             </div>
 
             <div class="kpi-sub">
@@ -846,10 +907,13 @@ with k3:
             </div>
 
         </div>
-        """,
-        unsafe_allow_html=True
+        """
     )
 
+
+# ============================================================
+# KPI 4 - RENTABILIDAD
+# ============================================================
 
 with k4:
 
@@ -859,7 +923,7 @@ with k4:
         else "#DE350B"
     )
 
-    st.markdown(
+    render_html(
         f"""
         <div class="kpi-card">
 
@@ -867,11 +931,11 @@ with k4:
                 🎯 RENTABILIDAD
             </div>
 
-            <div class="kpi-value"
-                 style="color:{color_rentabilidad};">
-
+            <div
+                class="kpi-value"
+                style="color:{color_rentabilidad};"
+            >
                 {rentabilidad:.1f}%
-
             </div>
 
             <div class="kpi-sub">
@@ -879,8 +943,7 @@ with k4:
             </div>
 
         </div>
-        """,
-        unsafe_allow_html=True
+        """
     )
 
 
@@ -888,7 +951,7 @@ with k4:
 # RENTABILIDAD POR PROPIEDAD
 # ============================================================
 
-st.markdown(
+render_html(
     """
     <div class="section-title">
         🏢 Rentabilidad por propiedad
@@ -897,8 +960,7 @@ st.markdown(
     <div class="section-subtitle">
         Desempeño financiero de cada propiedad en el período seleccionado
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -924,14 +986,17 @@ resumen = (
 
 resumen["Flujo"] = (
     resumen["Ingreso"]
-    - resumen["Gasto"]
+    -
+    resumen["Gasto"]
 )
 
 
 resumen["Rentabilidad"] = (
     resumen["Flujo"]
-    / resumen["Ingreso"]
-    * 100
+    /
+    resumen["Ingreso"]
+    *
+    100
 ).fillna(0)
 
 
@@ -942,7 +1007,7 @@ resumen = resumen.sort_values(
 
 
 # ============================================================
-# TARJETAS DE PROPIEDADES - 3 POR FILA
+# TARJETAS - 3 POR FILA
 # ============================================================
 
 for inicio in range(
@@ -955,12 +1020,20 @@ for inicio in range(
 
     for posicion in range(3):
 
-        indice = inicio + posicion
+        indice = (
+            inicio
+            +
+            posicion
+        )
 
         if indice >= len(resumen):
             continue
 
-        fila = resumen.iloc[indice]
+
+        fila = resumen.iloc[
+            indice
+        ]
+
 
         nombre = str(
             fila["Nombre_Propiedad"]
@@ -1028,11 +1101,13 @@ for inicio in range(
         tarjeta = f"""
         <div class="property-card {clase_tarjeta}">
 
-            <div style="
-                display:flex;
-                justify-content:space-between;
-                align-items:flex-start;
-            ">
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:flex-start;
+                "
+            >
 
                 <div>
 
@@ -1139,10 +1214,7 @@ for inicio in range(
 
         with columnas[posicion]:
 
-            st.markdown(
-                tarjeta,
-                unsafe_allow_html=True
-            )
+            render_html(tarjeta)
 
 
 # ============================================================
