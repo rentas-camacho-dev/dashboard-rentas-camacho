@@ -80,7 +80,6 @@ st.markdown("""
     margin-top: 4px;
 }
 
-/* INDICADORES ANUALES */
 .header-annual {
     display: flex;
     align-items: center;
@@ -236,6 +235,13 @@ div[data-testid="stDateInput"] label {
     margin-top: 2px;
 }
 
+/* PROMEDIO MENSUAL */
+.metric-average {
+    color: #8A94A6;
+    font-size: 8px;
+    margin-top: 3px;
+}
+
 .margin-row {
     display: flex;
     justify-content: space-between;
@@ -281,7 +287,7 @@ div[data-testid="stDateInput"] label {
     color: #DE350B;
 }
 
-/* OCUPACIÓN AIRBNB */
+/* OCUPACIÓN */
 .occupancy-row {
     display: flex;
     gap: 7px;
@@ -308,6 +314,13 @@ div[data-testid="stDateInput"] label {
 }
 
 .occupancy-detail {
+    color: #8A94A6;
+    font-size: 9px;
+    margin-top: 1px;
+}
+
+/* ACUMULADO */
+.accumulated-label {
     color: #8A94A6;
     font-size: 9px;
     margin-top: 1px;
@@ -346,7 +359,7 @@ except Exception as e:
 
 
 # ============================================================
-# CARGA DE DATOS FINANCIEROS
+# DATOS FINANCIEROS
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -548,7 +561,6 @@ def cargar_ocupacion(
             reservas_mapeadas
 
         GROUP BY
-
             Nombre_Propiedad,
             Ciudad
     ),
@@ -670,6 +682,41 @@ def cargar_ocupacion(
 
 
 # ============================================================
+# FORMATO DINERO
+# ============================================================
+
+def dinero(valor):
+
+    return f"${valor:,.0f}".replace(
+        ",",
+        "."
+    )
+
+
+def dinero_corto(valor):
+
+    if pd.isna(valor):
+        return "$0"
+
+    valor = float(valor)
+
+    if abs(valor) >= 1_000_000:
+
+        return f"${valor / 1_000_000:.1f}M"
+
+    elif abs(valor) >= 1_000:
+
+        return f"${valor / 1_000:.0f}k"
+
+    else:
+
+        return f"${valor:,.0f}".replace(
+            ",",
+            "."
+        )
+
+
+# ============================================================
 # CARGAR DATOS
 # ============================================================
 
@@ -738,27 +785,10 @@ df = df.dropna(
 
 
 # ============================================================
-# MONEDA
-# ============================================================
-
-def dinero(valor):
-
-    return f"${valor:,.0f}".replace(
-        ",",
-        "."
-    )
-
-
-# ============================================================
-# FECHA ACTUAL
+# FECHA
 # ============================================================
 
 hoy = date.today()
-
-
-# ============================================================
-# INDICADORES AÑO EN CURSO
-# ============================================================
 
 inicio_anio = pd.Timestamp(
     hoy.year,
@@ -772,6 +802,10 @@ fin_hoy = (
 )
 
 
+# ============================================================
+# YTD GENERAL
+# ============================================================
+
 df_ytd = df[
     (df["Fecha"] >= inicio_anio)
     &
@@ -779,17 +813,14 @@ df_ytd = df[
 ].copy()
 
 
-ingresos_ytd = (
-    df_ytd["Ingreso"].sum()
-)
+ingresos_ytd = df_ytd["Ingreso"].sum()
 
-gastos_ytd = (
-    df_ytd["Gasto"].sum()
-)
+gastos_ytd = df_ytd["Gasto"].sum()
 
 flujo_ytd = (
     ingresos_ytd
-    - gastos_ytd
+    -
+    gastos_ytd
 )
 
 rentabilidad_ytd = (
@@ -806,25 +837,22 @@ rentabilidad_ytd = (
 )
 
 
-color_flujo_ytd = (
+# ============================================================
+# HEADER
+# ============================================================
 
+color_flujo_ytd = (
     "#00875A"
     if flujo_ytd >= 0
     else "#DE350B"
 )
 
-
 color_rentabilidad_ytd = (
-
     "#00875A"
     if rentabilidad_ytd >= 0
     else "#DE350B"
 )
 
-
-# ============================================================
-# HEADER
-# ============================================================
 
 header_html = (
 
@@ -920,18 +948,14 @@ col1, col2, col3, col4 = st.columns(4)
 with col1:
 
     ciudades = (
-
         ["Todas"]
-
         +
-
         sorted(
             df["Ciudad"]
             .dropna()
             .unique()
             .tolist()
         )
-
     )
 
     ciudad = st.selectbox(
@@ -943,18 +967,14 @@ with col1:
 with col2:
 
     propiedades = (
-
         ["Todas"]
-
         +
-
         sorted(
             df["Nombre_Propiedad"]
             .dropna()
             .unique()
             .tolist()
         )
-
     )
 
     propiedad = st.selectbox(
@@ -966,18 +986,14 @@ with col2:
 with col3:
 
     socios = (
-
         ["Todos"]
-
         +
-
         sorted(
             df["Nombre_Socio"]
             .dropna()
             .unique()
             .tolist()
         )
-
     )
 
     socio = st.selectbox(
@@ -1006,30 +1022,57 @@ with col4:
     )
 
     fechas = st.date_input(
-
         "Período de análisis",
-
         value=(
             inicio_mes,
             hoy
         ),
-
         min_value=fecha_min,
-
         max_value=fecha_max,
-
         format="DD/MM/YYYY",
-
         key="periodo_analisis"
-
     )
 
 
 # ============================================================
-# FILTRAR
+# VALIDAR FECHAS
 # ============================================================
 
-df_f = df.copy()
+if (
+    isinstance(fechas, tuple)
+    and len(fechas) == 2
+):
+
+    fecha_inicio = pd.Timestamp(
+        fechas[0]
+    )
+
+    fecha_fin = (
+        pd.Timestamp(fechas[1])
+        + pd.Timedelta(days=1)
+    )
+
+else:
+
+    fecha_inicio = pd.Timestamp(
+        fechas
+    )
+
+    fecha_fin = (
+        fecha_inicio
+        + pd.Timedelta(days=1)
+    )
+
+
+# ============================================================
+# FILTRAR FINANZAS
+# ============================================================
+
+df_f = df[
+    (df["Fecha"] >= fecha_inicio)
+    &
+    (df["Fecha"] < fecha_fin)
+].copy()
 
 
 if ciudad != "Todas":
@@ -1055,27 +1098,6 @@ if socio != "Todos":
     ]
 
 
-if (
-    isinstance(fechas, tuple)
-    and len(fechas) == 2
-):
-
-    fecha_inicio = pd.Timestamp(
-        fechas[0]
-    )
-
-    fecha_fin = (
-        pd.Timestamp(fechas[1])
-        + pd.Timedelta(days=1)
-    )
-
-    df_f = df_f[
-        (df_f["Fecha"] >= fecha_inicio)
-        &
-        (df_f["Fecha"] < fecha_fin)
-    ]
-
-
 if df_f.empty:
 
     st.warning(
@@ -1086,58 +1108,46 @@ if df_f.empty:
 
 
 # ============================================================
-# OCUPACIÓN DEL PERÍODO
+# OCUPACIÓN
 # ============================================================
 
 try:
 
     df_ocupacion = cargar_ocupacion(
-
-        fechas[0],
-
-        fechas[1]
-        + pd.Timedelta(days=1)
-
+        fecha_inicio.date(),
+        fecha_fin.date()
     )
 
 except Exception as e:
 
     st.warning(
-        "No fue posible calcular "
-        "la ocupación de Airbnb."
+        "No fue posible calcular la ocupación de Airbnb."
     )
 
     df_ocupacion = pd.DataFrame(
-
         columns=[
-
             "Nombre_Propiedad",
             "Ciudad",
             "Reservas",
             "Noches_Reservadas",
             "Noches_Disponibles",
             "Ocupacion_Porcentaje"
-
         ]
-
     )
 
 
 # ============================================================
-# KPI DEL PERÍODO
+# KPI PERÍODO
 # ============================================================
 
-ingresos = (
-    df_f["Ingreso"].sum()
-)
+ingresos = df_f["Ingreso"].sum()
 
-gastos = (
-    df_f["Gasto"].sum()
-)
+gastos = df_f["Gasto"].sum()
 
 flujo = (
     ingresos
-    - gastos
+    -
+    gastos
 )
 
 rentabilidad = (
@@ -1163,56 +1173,44 @@ k1, k2, k3, k4 = st.columns(4)
 
 with k1:
 
-    html = (
-
-        '<div class="kpi-card">'
-
-        '<div class="kpi-label">'
-        '💰 INGRESOS BRUTOS'
-        '</div>'
-
-        f'<div class="kpi-value">'
-        f'{dinero(ingresos)}'
-        f'</div>'
-
-        '<div class="kpi-sub">'
-        'Ingresos registrados'
-        '</div>'
-
-        '</div>'
-
-    )
-
     st.markdown(
-        html,
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">
+                💰 INGRESOS BRUTOS
+            </div>
+
+            <div class="kpi-value">
+                {dinero(ingresos)}
+            </div>
+
+            <div class="kpi-sub">
+                Ingresos registrados
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
 
 with k2:
 
-    html = (
-
-        '<div class="kpi-card">'
-
-        '<div class="kpi-label">'
-        '🧾 GASTOS OPERATIVOS'
-        '</div>'
-
-        f'<div class="kpi-value">'
-        f'{dinero(gastos)}'
-        f'</div>'
-
-        '<div class="kpi-sub">'
-        'Egresos registrados'
-        '</div>'
-
-        '</div>'
-
-    )
-
     st.markdown(
-        html,
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">
+                🧾 GASTOS OPERATIVOS
+            </div>
+
+            <div class="kpi-value">
+                {dinero(gastos)}
+            </div>
+
+            <div class="kpi-sub">
+                Egresos registrados
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
@@ -1220,38 +1218,28 @@ with k2:
 with k3:
 
     color_flujo = (
-
         "#00875A"
         if flujo >= 0
         else "#DE350B"
-
-    )
-
-    html = (
-
-        '<div class="kpi-card">'
-
-        '<div class="kpi-label">'
-        '💵 FLUJO'
-        '</div>'
-
-        f'<div class="kpi-value" '
-        f'style="color:{color_flujo};">'
-
-        f'{dinero(flujo)}'
-
-        '</div>'
-
-        '<div class="kpi-sub">'
-        'Ingresos − gastos'
-        '</div>'
-
-        '</div>'
-
     )
 
     st.markdown(
-        html,
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">
+                💵 FLUJO
+            </div>
+
+            <div class="kpi-value"
+                 style="color:{color_flujo};">
+                {dinero(flujo)}
+            </div>
+
+            <div class="kpi-sub">
+                Ingresos − gastos
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
@@ -1259,60 +1247,114 @@ with k3:
 with k4:
 
     color_rentabilidad = (
-
         "#00875A"
         if rentabilidad >= 35
         else "#DE350B"
-
-    )
-
-    html = (
-
-        '<div class="kpi-card">'
-
-        '<div class="kpi-label">'
-        '🎯 RENTABILIDAD'
-        '</div>'
-
-        f'<div class="kpi-value" '
-        f'style="color:{color_rentabilidad};">'
-
-        f'{rentabilidad:.1f}%'
-
-        '</div>'
-
-        '<div class="kpi-sub">'
-        'Objetivo: 35%'
-        '</div>'
-
-        '</div>'
-
     )
 
     st.markdown(
-        html,
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">
+                🎯 RENTABILIDAD
+            </div>
+
+            <div class="kpi-value"
+                 style="color:{color_rentabilidad};">
+                {rentabilidad:.1f}%
+            </div>
+
+            <div class="kpi-sub">
+                Objetivo: 35%
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
 
 # ============================================================
-# TÍTULO PROPIEDADES
+# PROMEDIOS MENSUALES
 # ============================================================
 
-st.markdown(
-
-    '<div class="section-title">'
-    '🏢 Rentabilidad por propiedad'
-    '</div>'
-
-    '<div class="section-subtitle">'
-    'Desempeño financiero de cada propiedad '
-    'en el período seleccionado'
-    '</div>',
-
-    unsafe_allow_html=True
-
+meses_cerrados = max(
+    hoy.month - 1,
+    0
 )
+
+inicio_mes_actual = pd.Timestamp(
+    hoy.year,
+    hoy.month,
+    1
+)
+
+
+df_cerrado = df[
+    (df["Fecha"] >= inicio_anio)
+    &
+    (df["Fecha"] < inicio_mes_actual)
+].copy()
+
+
+if meses_cerrados > 0:
+
+    promedios = (
+
+        df_cerrado
+
+        .groupby(
+            [
+                "Nombre_Propiedad",
+                "Ciudad"
+            ],
+            as_index=False
+        )
+
+        .agg(
+            Ingreso_Promedio=(
+                "Ingreso",
+                "sum"
+            ),
+
+            Gasto_Promedio=(
+                "Gasto",
+                "sum"
+            )
+        )
+
+    )
+
+    promedios["Ingreso_Promedio"] = (
+        promedios["Ingreso_Promedio"]
+        /
+        meses_cerrados
+    )
+
+    promedios["Gasto_Promedio"] = (
+        promedios["Gasto_Promedio"]
+        /
+        meses_cerrados
+    )
+
+    promedios["Flujo_Promedio"] = (
+
+        promedios["Ingreso_Promedio"]
+        -
+        promedios["Gasto_Promedio"]
+
+    )
+
+else:
+
+    promedios = pd.DataFrame(
+        columns=[
+            "Nombre_Propiedad",
+            "Ciudad",
+            "Ingreso_Promedio",
+            "Gasto_Promedio",
+            "Flujo_Promedio"
+        ]
+    )
 
 
 # ============================================================
@@ -1324,14 +1366,11 @@ resumen = (
     df_f
 
     .groupby(
-
         [
             "Nombre_Propiedad",
             "Ciudad"
         ],
-
         as_index=False
-
     )
 
     .agg(
@@ -1371,23 +1410,103 @@ resumen["Rentabilidad"] = (
 ).fillna(0)
 
 
-resumen = resumen.sort_values(
+# ============================================================
+# ACUMULADO 2026 POR PROPIEDAD
+# ============================================================
 
-    "Rentabilidad",
+resumen_ytd = (
 
-    ascending=False
+    df_ytd
+
+    .groupby(
+        [
+            "Nombre_Propiedad",
+            "Ciudad"
+        ],
+        as_index=False
+    )
+
+    .agg(
+
+        Ingreso_YTD=(
+            "Ingreso",
+            "sum"
+        ),
+
+        Gasto_YTD=(
+            "Gasto",
+            "sum"
+        )
+
+    )
 
 )
 
 
+resumen_ytd["Flujo_YTD"] = (
+
+    resumen_ytd["Ingreso_YTD"]
+    -
+    resumen_ytd["Gasto_YTD"]
+
+)
+
+
+resumen_ytd["Rentabilidad_YTD"] = (
+
+    resumen_ytd["Flujo_YTD"]
+    /
+    resumen_ytd["Ingreso_YTD"]
+    *
+    100
+
+).fillna(0)
+
+
 # ============================================================
-# UNIR OCUPACIÓN
+# UNIR INFORMACIÓN
 # ============================================================
 
 resumen = resumen.merge(
 
-    df_ocupacion[
+    promedios,
 
+    on=[
+        "Nombre_Propiedad",
+        "Ciudad"
+    ],
+
+    how="left"
+
+)
+
+
+resumen = resumen.merge(
+
+    resumen_ytd[
+        [
+            "Nombre_Propiedad",
+            "Ciudad",
+            "Ingreso_YTD",
+            "Gasto_YTD",
+            "Flujo_YTD",
+            "Rentabilidad_YTD"
+        ]
+    ],
+
+    on=[
+        "Nombre_Propiedad",
+        "Ciudad"
+    ],
+
+    how="left"
+
+)
+
+
+resumen = resumen.merge(
+
+    df_ocupacion[
         [
             "Nombre_Propiedad",
             "Ciudad",
@@ -1396,14 +1515,11 @@ resumen = resumen.merge(
             "Noches_Disponibles",
             "Ocupacion_Porcentaje"
         ]
-
     ],
 
     on=[
-
         "Nombre_Propiedad",
         "Ciudad"
-
     ],
 
     how="left"
@@ -1412,15 +1528,42 @@ resumen = resumen.merge(
 
 
 # ============================================================
-# PROPIEDADES - 3 POR FILA
+# ORDEN
+# ============================================================
+
+resumen = resumen.sort_values(
+    "Rentabilidad",
+    ascending=False
+)
+
+
+# ============================================================
+# TÍTULO
+# ============================================================
+
+st.markdown(
+
+    '<div class="section-title">'
+    '🏢 Rentabilidad por propiedad'
+    '</div>'
+
+    '<div class="section-subtitle">'
+    'Desempeño financiero de cada propiedad '
+    'en el período seleccionado'
+    '</div>',
+
+    unsafe_allow_html=True
+)
+
+
+# ============================================================
+# TARJETAS
 # ============================================================
 
 for inicio in range(
-
     0,
     len(resumen),
     3
-
 ):
 
     columnas = st.columns(3)
@@ -1471,6 +1614,39 @@ for inicio in range(
 
         margen_prop = float(
             fila["Rentabilidad"]
+        )
+
+
+        # ----------------------------------------------------
+        # ACUMULADO
+        # ----------------------------------------------------
+
+        margen_ytd = float(
+            fila["Rentabilidad_YTD"]
+        )
+
+        ingreso_promedio = float(
+            fila["Ingreso_Promedio"]
+            if not pd.isna(
+                fila["Ingreso_Promedio"]
+            )
+            else 0
+        )
+
+        gasto_promedio = float(
+            fila["Gasto_Promedio"]
+            if not pd.isna(
+                fila["Gasto_Promedio"]
+            )
+            else 0
+        )
+
+        flujo_promedio = float(
+            fila["Flujo_Promedio"]
+            if not pd.isna(
+                fila["Flujo_Promedio"]
+            )
+            else 0
         )
 
 
@@ -1534,14 +1710,13 @@ for inicio in range(
             ocupacion_detalle = (
 
                 f"{reservas_prop} reservas · "
-
                 f"{noches_prop} noches"
 
             )
 
 
         # ----------------------------------------------------
-        # ESTADO RENTABILIDAD
+        # COLOR RENTABILIDAD PERÍODO
         # ----------------------------------------------------
 
         if margen_prop >= 35:
@@ -1573,6 +1748,25 @@ for inicio in range(
             )
 
 
+        # ----------------------------------------------------
+        # COLOR ACUMULADO
+        # ----------------------------------------------------
+
+        color_ytd = (
+
+            "#00A878"
+
+            if margen_ytd >= 35
+
+            else "#EF4444"
+
+        )
+
+
+        # ----------------------------------------------------
+        # PROGRESO DEL PERÍODO
+        # ----------------------------------------------------
+
         progreso = max(
 
             0,
@@ -1595,6 +1789,7 @@ for inicio in range(
             f'{clase_tarjeta}">'
 
 
+            # CABECERA
             '<div style="display:flex;'
             'justify-content:space-between;'
             'align-items:flex-start;">'
@@ -1602,24 +1797,30 @@ for inicio in range(
 
             '<div>'
 
-
             f'<div class="property-name">'
             f'{nombre}'
             f'</div>'
-
 
             f'<div class="property-location">'
             f'📍 {ciudad_nombre}'
             f'</div>'
 
-
             '</div>'
 
+
+            # RENTABILIDAD ACUMULADA
+            '<div style="text-align:right;">'
 
             f'<div class="margin-value" '
-            f'style="color:{color};">'
+            f'style="color:{color_ytd};">'
 
-            f'{margen_prop:.1f}%'
+            f'{margen_ytd:.1f}%'
+
+            '</div>'
+
+            '<div class="accumulated-label">'
+            f'Acumulada {hoy.year}'
+            '</div>'
 
             '</div>'
 
@@ -1627,9 +1828,11 @@ for inicio in range(
             '</div>'
 
 
+            # MÉTRICAS
             '<div class="property-metrics">'
 
 
+            # INGRESOS
             '<div class="metric-box">'
 
             '<div class="metric-label">'
@@ -1637,14 +1840,18 @@ for inicio in range(
             '</div>'
 
             f'<div class="metric-income">'
-
             f'{dinero(ingreso_prop)}'
+            f'</div>'
 
+            f'<div class="metric-average">'
+            f'Prom. mes '
+            f'{dinero_corto(ingreso_promedio)}'
             f'</div>'
 
             '</div>'
 
 
+            # GASTOS
             '<div class="metric-box">'
 
             '<div class="metric-label">'
@@ -1652,14 +1859,18 @@ for inicio in range(
             '</div>'
 
             f'<div class="metric-expense">'
-
             f'{dinero(gasto_prop)}'
+            f'</div>'
 
+            f'<div class="metric-average">'
+            f'Prom. mes '
+            f'{dinero_corto(gasto_promedio)}'
             f'</div>'
 
             '</div>'
 
 
+            # FLUJO
             '<div class="metric-box">'
 
             '<div class="metric-label">'
@@ -1667,9 +1878,12 @@ for inicio in range(
             '</div>'
 
             f'<div class="metric-flow">'
-
             f'{dinero(flujo_prop)}'
+            f'</div>'
 
+            f'<div class="metric-average">'
+            f'Prom. mes '
+            f'{dinero_corto(flujo_promedio)}'
             f'</div>'
 
             '</div>'
@@ -1678,10 +1892,11 @@ for inicio in range(
             '</div>'
 
 
+            # RENTABILIDAD DEL PERÍODO
             '<div class="margin-row">'
 
             '<div class="margin-label">'
-            'Rentabilidad'
+            'Rentabilidad período'
             '</div>'
 
             f'<div class="margin-value" '
@@ -1713,12 +1928,8 @@ for inicio in range(
             '</div>'
 
 
-            # ------------------------------------------------
             # OCUPACIÓN
-            # ------------------------------------------------
-
             '<div class="occupancy-row">'
-
 
             '<div class="occupancy-box">'
 
@@ -1726,19 +1937,15 @@ for inicio in range(
             'Ocupación Airbnb'
             '</div>'
 
-
             f'<div class="occupancy-value">'
             f'{ocupacion_texto}'
             f'</div>'
-
 
             f'<div class="occupancy-detail">'
             f'{ocupacion_detalle}'
             f'</div>'
 
-
             '</div>'
-
 
             '</div>'
 
@@ -1751,11 +1958,8 @@ for inicio in range(
         with columnas[posicion]:
 
             st.markdown(
-
                 tarjeta,
-
                 unsafe_allow_html=True
-
             )
 
 
@@ -1765,15 +1969,10 @@ for inicio in range(
 
 st.markdown("---")
 
-
 st.caption(
 
     f"Airbnb Financial Hub · "
-
     f"{len(df_f):,} registros · "
-
-    f"{len(resumen)} propiedades · "
-
-    f"ocupación Airbnb incluida"
+    f"{len(resumen)} propiedades"
 
 )
