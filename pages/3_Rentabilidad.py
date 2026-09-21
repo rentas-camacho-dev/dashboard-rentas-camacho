@@ -20,7 +20,7 @@ st.set_page_config(
 
 
 # ============================================================
-# FUNCIÓN HTML SEGURA
+# FUNCIÓN PARA RENDERIZAR HTML
 # ============================================================
 
 def render_html(contenido):
@@ -47,6 +47,11 @@ st.markdown("""
     max-width: 1500px !important;
 }
 
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
 .hero {
     background: white;
     border-radius: 18px;
@@ -68,6 +73,11 @@ st.markdown("""
     margin-top: 7px;
 }
 
+
+/* ============================================================
+   FILTROS
+   ============================================================ */
+
 .filter-box {
     background: white;
     border-radius: 18px;
@@ -75,6 +85,11 @@ st.markdown("""
     margin-bottom: 22px;
     border: 1px solid #E3E8EF;
 }
+
+
+/* ============================================================
+   KPI
+   ============================================================ */
 
 .kpi-card {
     background: white;
@@ -104,6 +119,11 @@ st.markdown("""
     margin-top: 8px;
 }
 
+
+/* ============================================================
+   SECCIONES
+   ============================================================ */
+
 .section-title {
     color: #172B4D;
     font-size: 25px;
@@ -117,6 +137,11 @@ st.markdown("""
     font-size: 14px;
     margin-bottom: 18px;
 }
+
+
+/* ============================================================
+   PROPIEDADES
+   ============================================================ */
 
 .property-card {
     background: white;
@@ -183,6 +208,11 @@ st.markdown("""
     font-weight: 700;
 }
 
+
+/* ============================================================
+   ALERTAS
+   ============================================================ */
+
 .alert-box {
     background: #FFF0F0;
     border: 1px solid #FFB3B3;
@@ -203,6 +233,11 @@ st.markdown("""
     margin-top: 12px;
 }
 
+
+/* ============================================================
+   BARRA
+   ============================================================ */
+
 .progress-bg {
     width: 100%;
     height: 9px;
@@ -222,7 +257,7 @@ st.markdown("""
 
 
 # ============================================================
-# BIGQUERY
+# CONEXIÓN BIGQUERY
 # ============================================================
 
 credentials = service_account.Credentials.from_service_account_info(
@@ -240,7 +275,7 @@ client = bigquery.Client(
 
 
 # ============================================================
-# CARGAR DATOS
+# CARGAR DATOS DESDE BIGQUERY
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -252,16 +287,35 @@ def cargar_datos():
         Nombre_Propiedad,
         Ciudad,
         Nombre_Socio,
+        Nombre_Tipo,
         Ingreso,
         Gasto
+
     FROM
         `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
+
+    WHERE
+        LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
     """
 
     return client.query(query).to_dataframe()
 
 
 df = cargar_datos()
+
+
+# ============================================================
+# VALIDACIÓN
+# ============================================================
+
+if df.empty:
+
+    st.warning(
+        "No se encontraron movimientos de tipo Airbnb "
+        "en Movimientos_Operativos_Reparto."
+    )
+
+    st.stop()
 
 
 # ============================================================
@@ -312,11 +366,16 @@ df = df.dropna(
 
 render_html("""
 <div class="hero">
-<div class="hero-title">🏠 Rentas Cortas</div>
+
+<div class="hero-title">
+🏠 Rentas Cortas
+</div>
+
 <div class="hero-subtitle">
 Rentabilidad financiera por propiedad ·
 Datos conectados directamente a BigQuery
 </div>
+
 </div>
 """)
 
@@ -327,17 +386,31 @@ Datos conectados directamente a BigQuery
 
 render_html("""
 <div class="filter-box">
+
 <h3>🔎 Filtros</h3>
+
 </div>
 """)
+
 
 col1, col2, col3, col4 = st.columns(4)
 
 
+# ============================================================
+# FILTRO CIUDAD
+# ============================================================
+
 with col1:
 
-    ciudades = ["Todas"] + sorted(
-        df["Ciudad"].unique().tolist()
+    ciudades = (
+        ["Todas"]
+        +
+        sorted(
+            df["Ciudad"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
     )
 
     ciudad = st.selectbox(
@@ -346,10 +419,21 @@ with col1:
     )
 
 
+# ============================================================
+# FILTRO PROPIEDAD
+# ============================================================
+
 with col2:
 
-    propiedades = ["Todas"] + sorted(
-        df["Nombre_Propiedad"].unique().tolist()
+    propiedades = (
+        ["Todas"]
+        +
+        sorted(
+            df["Nombre_Propiedad"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
     )
 
     propiedad = st.selectbox(
@@ -358,10 +442,21 @@ with col2:
     )
 
 
+# ============================================================
+# FILTRO SOCIO
+# ============================================================
+
 with col3:
 
-    socios = ["Todos"] + sorted(
-        df["Nombre_Socio"].unique().tolist()
+    socios = (
+        ["Todos"]
+        +
+        sorted(
+            df["Nombre_Socio"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
     )
 
     socio = st.selectbox(
@@ -369,6 +464,10 @@ with col3:
         socios
     )
 
+
+# ============================================================
+# FILTRO FECHA
+# ============================================================
 
 with col4:
 
@@ -384,23 +483,28 @@ with col4:
 
 
 # ============================================================
-# FILTROS APLICADOS
+# APLICAR FILTROS
 # ============================================================
 
 df_f = df.copy()
 
 
 if ciudad != "Todas":
-    df_f = df_f[df_f["Ciudad"] == ciudad]
+
+    df_f = df_f[
+        df_f["Ciudad"] == ciudad
+    ]
 
 
 if propiedad != "Todas":
+
     df_f = df_f[
         df_f["Nombre_Propiedad"] == propiedad
     ]
 
 
 if socio != "Todos":
+
     df_f = df_f[
         df_f["Nombre_Socio"] == socio
     ]
@@ -408,17 +512,20 @@ if socio != "Todos":
 
 if isinstance(fechas, tuple) and len(fechas) == 2:
 
-    inicio = pd.Timestamp(fechas[0])
+    fecha_inicio = pd.Timestamp(
+        fechas[0]
+    )
 
-    fin = (
+    fecha_fin = (
         pd.Timestamp(fechas[1])
-        + pd.Timedelta(days=1)
+        +
+        pd.Timedelta(days=1)
     )
 
     df_f = df_f[
-        (df_f["Fecha"] >= inicio)
+        (df_f["Fecha"] >= fecha_inicio)
         &
-        (df_f["Fecha"] < fin)
+        (df_f["Fecha"] < fecha_fin)
     ]
 
 
@@ -435,7 +542,7 @@ def dinero(valor):
 
 
 # ============================================================
-# KPIs
+# KPIs GENERALES
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
@@ -451,65 +558,125 @@ rentabilidad = (
 )
 
 
+# ============================================================
+# KPI 1
+# ============================================================
+
 k1, k2, k3, k4 = st.columns(4)
 
 
 with k1:
 
     render_html(f"""
-    <div class="kpi-card">
-    <div class="kpi-label">💰 Ingresos brutos</div>
-    <div class="kpi-value">{dinero(ingresos)}</div>
-    <div class="kpi-sub">Ingresos registrados</div>
-    </div>
-    """)
+<div class="kpi-card">
 
+<div class="kpi-label">
+💰 Ingresos brutos
+</div>
+
+<div class="kpi-value">
+{dinero(ingresos)}
+</div>
+
+<div class="kpi-sub">
+Ingresos registrados
+</div>
+
+</div>
+""")
+
+
+# ============================================================
+# KPI 2
+# ============================================================
 
 with k2:
 
     render_html(f"""
-    <div class="kpi-card">
-    <div class="kpi-label">🧾 Gastos operativos</div>
-    <div class="kpi-value">{dinero(gastos)}</div>
-    <div class="kpi-sub">Egresos registrados</div>
-    </div>
-    """)
+<div class="kpi-card">
 
+<div class="kpi-label">
+🧾 Gastos operativos
+</div>
+
+<div class="kpi-value">
+{dinero(gastos)}
+</div>
+
+<div class="kpi-sub">
+Egresos registrados
+</div>
+
+</div>
+""")
+
+
+# ============================================================
+# KPI 3
+# ============================================================
 
 with k3:
 
-    color = "#0065BD" if flujo >= 0 else "#DE350B"
+    flujo_color = (
+        "#0065BD"
+        if flujo >= 0
+        else "#DE350B"
+    )
 
     render_html(f"""
-    <div class="kpi-card">
-    <div class="kpi-label">💵 Flujo / beneficio</div>
-    <div class="kpi-value" style="color:{color};">
-    {dinero(flujo)}
-    </div>
-    <div class="kpi-sub">Ingresos − gastos</div>
-    </div>
-    """)
+<div class="kpi-card">
 
+<div class="kpi-label">
+💵 Flujo / beneficio
+</div>
+
+<div
+class="kpi-value"
+style="color:{flujo_color};"
+>
+{dinero(flujo)}
+</div>
+
+<div class="kpi-sub">
+Ingresos − gastos
+</div>
+
+</div>
+""")
+
+
+# ============================================================
+# KPI 4
+# ============================================================
 
 with k4:
 
-    color = (
+    margen_color = (
         "#00875A"
         if rentabilidad >= 35
         else "#DE350B"
     )
 
     render_html(f"""
-    <div class="kpi-card">
-    <div class="kpi-label">🎯 Rentabilidad</div>
-    <div class="kpi-value" style="color:{color};">
-    {rentabilidad:.1f}%
-    </div>
-    <div class="kpi-sub">
-    Objetivo de referencia: 35%
-    </div>
-    </div>
-    """)
+<div class="kpi-card">
+
+<div class="kpi-label">
+🎯 Rentabilidad
+</div>
+
+<div
+class="kpi-value"
+style="color:{margen_color};"
+>
+{rentabilidad:.1f}%
+</div>
+
+<div class="kpi-sub">
+Objetivo de referencia: 35%
+</div>
+
+</div>
+""")
 
 
 # ============================================================
@@ -529,13 +696,29 @@ en el periodo seleccionado
 
 
 # ============================================================
-# RESUMEN
+# VALIDAR FILTROS
+# ============================================================
+
+if df_f.empty:
+
+    st.warning(
+        "No existen datos para los filtros seleccionados."
+    )
+
+    st.stop()
+
+
+# ============================================================
+# RESUMEN POR PROPIEDAD
 # ============================================================
 
 resumen = (
     df_f
     .groupby(
-        ["Nombre_Propiedad", "Ciudad"],
+        [
+            "Nombre_Propiedad",
+            "Ciudad"
+        ],
         as_index=False
     )
     .agg(
@@ -544,11 +727,13 @@ resumen = (
     )
 )
 
+
 resumen["Flujo"] = (
     resumen["Ingreso"]
     -
     resumen["Gasto"]
 )
+
 
 resumen["Rentabilidad"] = (
     resumen["Flujo"]
@@ -557,6 +742,7 @@ resumen["Rentabilidad"] = (
     *
     100
 ).fillna(0)
+
 
 resumen = resumen.sort_values(
     "Rentabilidad",
@@ -581,33 +767,42 @@ for inicio in range(
         indice = inicio + posicion
 
         if indice >= len(resumen):
+
             continue
 
+
         fila = resumen.iloc[indice]
+
 
         nombre = html.escape(
             str(fila["Nombre_Propiedad"])
         )
 
+
         ciudad_nombre = html.escape(
             str(fila["Ciudad"])
         )
+
 
         ingreso_prop = float(
             fila["Ingreso"]
         )
 
+
         gasto_prop = float(
             fila["Gasto"]
         )
+
 
         flujo_prop = float(
             fila["Flujo"]
         )
 
+
         margen_prop = float(
             fila["Rentabilidad"]
         )
+
 
         progreso = max(
             0,
@@ -617,23 +812,42 @@ for inicio in range(
             )
         )
 
+
+        # ----------------------------------------------------
+        # ESTADO
+        # ----------------------------------------------------
+
         if margen_prop >= 35:
 
             color = "#00A878"
-            estado = "✓ Rentabilidad saludable"
-            clase = "ok-box"
-            tarjeta = ""
+
+            estado = (
+                "✓ Rentabilidad saludable"
+            )
+
+            clase_estado = "ok-box"
+
+            clase_tarjeta = ""
 
         else:
 
             color = "#EF4444"
-            estado = "⚠️ Por debajo del objetivo"
-            clase = "alert-box"
-            tarjeta = "alert"
 
+            estado = (
+                "⚠️ Por debajo del objetivo"
+            )
+
+            clase_estado = "alert-box"
+
+            clase_tarjeta = "alert"
+
+
+        # ----------------------------------------------------
+        # TARJETA
+        # ----------------------------------------------------
 
         contenido = f"""
-<div class="property-card {tarjeta}">
+<div class="property-card {clase_tarjeta}">
 
 <div class="property-name">
 {nombre}
@@ -645,25 +859,44 @@ for inicio in range(
 
 <div class="divider"></div>
 
-<div style="display:flex;justify-content:space-between;">
+
+<div style="
+display:flex;
+justify-content:space-between;
+">
+
 
 <div>
-<div class="metric-label">Ingresos</div>
+
+<div class="metric-label">
+Ingresos
+</div>
+
 <div class="metric-income">
 {dinero(ingreso_prop)}
 </div>
+
 </div>
 
+
 <div>
-<div class="metric-label">Gastos</div>
+
+<div class="metric-label">
+Gastos
+</div>
+
 <div class="metric-expense">
 {dinero(gasto_prop)}
 </div>
-</div>
 
 </div>
+
+
+</div>
+
 
 <div class="divider"></div>
+
 
 <div class="metric-label">
 Flujo / beneficio
@@ -673,44 +906,64 @@ Flujo / beneficio
 {dinero(flujo_prop)}
 </div>
 
+
 <div style="margin-top:20px;">
 
-<div style="display:flex;justify-content:space-between;">
+
+<div style="
+display:flex;
+justify-content:space-between;
+">
+
 
 <div class="margin-label">
 Rentabilidad
 </div>
 
-<div class="margin-value"
-style="color:{color};">
+
+<div
+class="margin-value"
+style="color:{color};"
+>
 
 {margen_prop:.1f}%
 
 </div>
 
+
 </div>
+
 
 <div class="progress-bg">
 
 <div
 class="progress-fill"
-style="width:{progreso}%;background:{color};">
+style="
+width:{progreso}%;
+background:{color};
+">
 </div>
 
 </div>
 
+
 </div>
 
-<div class="{clase}">
+
+<div class="{clase_estado}">
 {estado}
 </div>
+
 
 </div>
 """
 
+
         with columnas[posicion]:
 
-            render_html(contenido)
+            render_html(
+                contenido
+            )
 
 
 # ============================================================
@@ -720,6 +973,8 @@ style="width:{progreso}%;background:{color};">
 st.markdown("---")
 
 st.caption(
-    f"BigQuery · {len(df_f):,} registros · "
+    f"BigQuery · "
+    f"Filtro: Airbnb · "
+    f"{len(df_f):,} registros · "
     f"{len(resumen)} propiedades"
 )
