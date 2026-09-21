@@ -1,6 +1,10 @@
+# ============================================================
+# pages/3_Rentabilidad.py
+# AIRBNB FINANCIAL HUB
+# ============================================================
+
 import streamlit as st
 import pandas as pd
-import html
 import textwrap
 
 from google.cloud import bigquery
@@ -20,337 +24,360 @@ st.set_page_config(
 
 
 # ============================================================
-# HTML SEGURO
-# ============================================================
-
-def render_html(contenido):
-    st.markdown(
-        textwrap.dedent(contenido).strip(),
-        unsafe_allow_html=True
-    )
-
-
-# ============================================================
 # ESTILOS
 # ============================================================
 
-st.markdown("""
-<style>
+st.markdown(
+    """
+    <style>
 
-/* ------------------------------------------------------------
-   GENERAL
------------------------------------------------------------- */
+    /* ========================================================
+       GENERAL
+    ======================================================== */
 
-.stApp {
-    background: #F4F6F8;
-}
+    .stApp {
+        background: #F4F6F8;
+    }
 
-.block-container {
-    padding-top: 1rem !important;
-    padding-bottom: 2rem !important;
-    max-width: 1500px !important;
-}
-
-
-/* ------------------------------------------------------------
-   HEADER
------------------------------------------------------------- */
-
-.app-header {
-    background: white;
-    border-radius: 18px;
-    border: 1px solid #E3E8EF;
-    padding: 16px 22px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.04);
-}
-
-.app-icon {
-    width: 54px;
-    height: 54px;
-    min-width: 54px;
-    border-radius: 15px;
-    background: linear-gradient(
-        135deg,
-        #FF385C,
-        #FF0A45
-    );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 27px;
-}
-
-.app-name {
-    color: #172B4D;
-    font-size: 24px;
-    font-weight: 700;
-    line-height: 1.05;
-}
-
-.app-name span {
-    color: #FF385C;
-}
-
-.app-subtitle {
-    color: #6B778C;
-    font-size: 13px;
-    margin-top: 4px;
-}
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 2rem !important;
+        max-width: 1500px !important;
+    }
 
 
-/* ------------------------------------------------------------
-   FILTROS
------------------------------------------------------------- */
+    /* ========================================================
+       HEADER
+    ======================================================== */
 
-.filter-title {
-    color: #172B4D;
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 2px;
-}
+    .app-header {
+        background: white;
+        border: 1px solid #E3E8EF;
+        border-radius: 18px;
+        padding: 15px 20px;
+        margin-bottom: 12px;
 
+        display: flex;
+        align-items: center;
+        gap: 14px;
 
-/* ------------------------------------------------------------
-   KPI
------------------------------------------------------------- */
+        box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+    }
 
-.kpi-card {
-    background: white;
-    border: 1px solid #E3E8EF;
-    border-radius: 16px;
-    padding: 16px 18px;
-    min-height: 112px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.035);
-}
+    .app-icon {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
 
-.kpi-label {
-    color: #6B778C;
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 7px;
-}
+        border-radius: 14px;
 
-.kpi-value {
-    color: #172B4D;
-    font-size: 25px;
-    font-weight: 700;
-    line-height: 1.1;
-}
+        background: linear-gradient(
+            135deg,
+            #FF385C,
+            #FF0A45
+        );
 
-.kpi-sub {
-    color: #8A94A6;
-    font-size: 11px;
-    margin-top: 7px;
-}
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-.kpi-positive {
-    color: #00875A;
-}
+        font-size: 26px;
+    }
 
-.kpi-negative {
-    color: #DE350B;
-}
+    .app-name {
+        color: #172B4D;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.05;
+    }
 
+    .app-name span {
+        color: #FF385C;
+    }
 
-/* ------------------------------------------------------------
-   SECCIÓN
------------------------------------------------------------- */
+    .app-subtitle {
+        color: #6B778C;
+        font-size: 13px;
+        margin-top: 4px;
+    }
 
-.section-title {
-    color: #172B4D;
-    font-size: 22px;
-    font-weight: 700;
-    margin-top: 18px;
-    margin-bottom: 2px;
-}
-
-.section-subtitle {
-    color: #6B778C;
-    font-size: 13px;
-    margin-bottom: 12px;
-}
+    .connection {
+        margin-left: auto;
+        color: #00875A;
+        font-size: 12px;
+        font-weight: 600;
+    }
 
 
-/* ------------------------------------------------------------
-   PROPIEDADES
------------------------------------------------------------- */
+    /* ========================================================
+       FILTROS
+    ======================================================== */
 
-.property-card {
-    background: white;
-    border: 1px solid #E0E6ED;
-    border-radius: 16px;
-    padding: 17px 19px;
-    margin-bottom: 14px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.035);
-}
-
-.property-card.alert {
-    border: 1.5px solid #FF9B9B;
-}
-
-.property-name {
-    color: #172B4D;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.property-location {
-    color: #6B778C;
-    font-size: 12px;
-    margin-top: 2px;
-}
-
-.property-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.metric-box {
-    background: #F7F9FB;
-    border-radius: 10px;
-    padding: 9px 10px;
-}
-
-.metric-label {
-    color: #6B778C;
-    font-size: 11px;
-}
-
-.metric-income {
-    color: #00875A;
-    font-size: 15px;
-    font-weight: 600;
-    margin-top: 2px;
-}
-
-.metric-expense {
-    color: #DE350B;
-    font-size: 15px;
-    font-weight: 600;
-    margin-top: 2px;
-}
-
-.metric-flow {
-    color: #0065BD;
-    font-size: 15px;
-    font-weight: 700;
-    margin-top: 2px;
-}
-
-.margin-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 14px;
-}
-
-.margin-label {
-    color: #6B778C;
-    font-size: 12px;
-}
-
-.margin-value {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.progress-bg {
-    width: 100%;
-    height: 7px;
-    background: #E8EDF2;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 6px;
-}
-
-.progress-fill {
-    height: 100%;
-    border-radius: 10px;
-}
-
-.status {
-    font-size: 11px;
-    margin-top: 9px;
-    font-weight: 600;
-}
-
-.status-ok {
-    color: #00875A;
-}
-
-.status-alert {
-    color: #DE350B;
-}
+    div[data-testid="stSelectbox"] label,
+    div[data-testid="stDateInput"] label {
+        font-size: 12px !important;
+        color: #6B778C !important;
+        font-weight: 500 !important;
+    }
 
 
-/* ------------------------------------------------------------
-   BIGQUERY
------------------------------------------------------------- */
+    /* ========================================================
+       KPI
+    ======================================================== */
 
-.connection {
-    color: #00875A;
-    font-size: 11px;
-    margin-left: auto;
-}
+    .kpi-card {
+        background: white;
 
-</style>
-""", unsafe_allow_html=True)
+        border: 1px solid #E3E8EF;
+        border-radius: 16px;
+
+        padding: 15px 18px;
+
+        min-height: 108px;
+
+        box-shadow: 0 3px 10px rgba(0,0,0,0.035);
+    }
+
+    .kpi-label {
+        color: #6B778C;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 7px;
+    }
+
+    .kpi-value {
+        color: #172B4D;
+        font-size: 25px;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    .kpi-sub {
+        color: #8A94A6;
+        font-size: 11px;
+        margin-top: 7px;
+    }
+
+
+    /* ========================================================
+       SECCIONES
+    ======================================================== */
+
+    .section-title {
+        color: #172B4D;
+        font-size: 21px;
+        font-weight: 700;
+
+        margin-top: 17px;
+        margin-bottom: 2px;
+    }
+
+    .section-subtitle {
+        color: #6B778C;
+        font-size: 12px;
+        margin-bottom: 11px;
+    }
+
+
+    /* ========================================================
+       PROPIEDADES
+    ======================================================== */
+
+    .property-card {
+        background: white;
+
+        border: 1px solid #E0E6ED;
+        border-radius: 16px;
+
+        padding: 16px 18px;
+        margin-bottom: 13px;
+
+        box-shadow: 0 3px 10px rgba(0,0,0,0.035);
+    }
+
+    .property-card.alert {
+        border: 1.5px solid #FF9B9B;
+    }
+
+    .property-name {
+        color: #172B4D;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    .property-location {
+        color: #6B778C;
+        font-size: 11px;
+        margin-top: 2px;
+    }
+
+    .property-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+
+        gap: 9px;
+        margin-top: 14px;
+    }
+
+    .metric-box {
+        background: #F7F9FB;
+
+        border-radius: 10px;
+
+        padding: 8px 9px;
+    }
+
+    .metric-label {
+        color: #6B778C;
+        font-size: 10px;
+    }
+
+    .metric-income {
+        color: #00875A;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .metric-expense {
+        color: #DE350B;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .metric-flow {
+        color: #0065BD;
+        font-size: 14px;
+        font-weight: 700;
+        margin-top: 2px;
+    }
+
+    .margin-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        margin-top: 12px;
+    }
+
+    .margin-label {
+        color: #6B778C;
+        font-size: 11px;
+    }
+
+    .margin-value {
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .progress-bg {
+        width: 100%;
+        height: 6px;
+
+        background: #E8EDF2;
+
+        border-radius: 10px;
+
+        overflow: hidden;
+
+        margin-top: 5px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 10px;
+    }
+
+    .status {
+        font-size: 10px;
+        margin-top: 8px;
+        font-weight: 600;
+    }
+
+    .status-ok {
+        color: #00875A;
+    }
+
+    .status-alert {
+        color: #DE350B;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
-# BIGQUERY
+# CONEXIÓN BIGQUERY
 # ============================================================
 
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"],
-    scopes=[
-        "https://www.googleapis.com/auth/cloud-platform",
-        "https://www.googleapis.com/auth/drive.readonly"
-    ]
-)
+try:
 
-client = bigquery.Client(
-    credentials=credentials,
-    project="rentascamacho"
-)
+    credentials = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=[
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/drive.readonly"
+        ]
+    )
+
+    client = bigquery.Client(
+        credentials=credentials,
+        project="rentascamacho"
+    )
+
+except Exception as e:
+
+    st.error(
+        f"No fue posible conectar con BigQuery: {e}"
+    )
+
+    st.stop()
 
 
 # ============================================================
 # CONSULTA BIGQUERY
-# SOLO AIRBNB
+#
+# IMPORTANTE:
+# SOLO SE TRAEN REGISTROS DONDE Nombre_Tipo = Airbnb
 # ============================================================
 
 @st.cache_data(ttl=300)
 def cargar_datos():
 
     query = """
-    SELECT
-        Fecha,
-        Nombre_Propiedad,
-        Ciudad,
-        Nombre_Socio,
-        Nombre_Tipo,
-        Ingreso,
-        Gasto
+        SELECT
+            Fecha,
+            Nombre_Propiedad,
+            Ciudad,
+            Nombre_Socio,
+            Nombre_Tipo,
+            Ingreso,
+            Gasto
 
-    FROM
-        `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
+        FROM
+            `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
 
-    WHERE
-        LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
+        WHERE
+            LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
     """
 
     return client.query(query).to_dataframe()
 
 
-df = cargar_datos()
+try:
+
+    df = cargar_datos()
+
+except Exception as e:
+
+    st.error(
+        f"Error consultando Movimientos_Operativos_Reparto: {e}"
+    )
+
+    st.stop()
 
 
 # ============================================================
@@ -359,9 +386,9 @@ df = cargar_datos()
 
 if df.empty:
 
-    st.error(
-        "No se encontraron registros de Airbnb "
-        "en Movimientos_Operativos_Reparto."
+    st.warning(
+        "BigQuery respondió correctamente, pero no "
+        "hay registros con Nombre_Tipo = Airbnb."
     )
 
     st.stop()
@@ -410,7 +437,7 @@ df = df.dropna(
 
 
 # ============================================================
-# FORMATO MONEDA
+# FUNCIÓN MONEDA
 # ============================================================
 
 def dinero(valor):
@@ -425,31 +452,34 @@ def dinero(valor):
 # HEADER
 # ============================================================
 
-render_html("""
-<div class="app-header">
+st.markdown(
+    """
+    <div class="app-header">
 
-    <div class="app-icon">
-        🏢
-    </div>
-
-    <div>
-
-        <div class="app-name">
-            Airbnb <span>Financial Hub</span>
+        <div class="app-icon">
+            🏢
         </div>
 
-        <div class="app-subtitle">
-            Rentabilidad financiera · BigQuery · Solo Airbnb
+        <div>
+
+            <div class="app-name">
+                Airbnb <span>Financial Hub</span>
+            </div>
+
+            <div class="app-subtitle">
+                Rentabilidad financiera · BigQuery · Solo Airbnb
+            </div>
+
+        </div>
+
+        <div class="connection">
+            ● BigQuery conectado
         </div>
 
     </div>
-
-    <div class="connection">
-        ● BigQuery conectado
-    </div>
-
-</div>
-""")
+    """,
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
@@ -468,6 +498,7 @@ with col1:
         +
         sorted(
             df["Ciudad"]
+            .dropna()
             .unique()
             .tolist()
         )
@@ -486,6 +517,7 @@ with col2:
         +
         sorted(
             df["Nombre_Propiedad"]
+            .dropna()
             .unique()
             .tolist()
         )
@@ -504,6 +536,7 @@ with col3:
         +
         sorted(
             df["Nombre_Socio"]
+            .dropna()
             .unique()
             .tolist()
         )
@@ -577,7 +610,7 @@ if isinstance(fechas, tuple) and len(fechas) == 2:
 
 
 # ============================================================
-# VALIDACIÓN
+# VALIDACIÓN FILTROS
 # ============================================================
 
 if df_f.empty:
@@ -590,7 +623,7 @@ if df_f.empty:
 
 
 # ============================================================
-# KPIs
+# KPI
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
@@ -607,7 +640,7 @@ rentabilidad = (
 
 
 # ============================================================
-# CUATRO KPI EN UNA SOLA FILA
+# TARJETAS KPI
 # ============================================================
 
 k1, k2, k3, k4 = st.columns(4)
@@ -615,123 +648,138 @@ k1, k2, k3, k4 = st.columns(4)
 
 with k1:
 
-    render_html(f"""
-<div class="kpi-card">
+    st.markdown(
+        f"""
+        <div class="kpi-card">
 
-<div class="kpi-label">
-💰 INGRESOS BRUTOS
-</div>
+            <div class="kpi-label">
+                💰 INGRESOS BRUTOS
+            </div>
 
-<div class="kpi-value">
-{dinero(ingresos)}
-</div>
+            <div class="kpi-value">
+                {dinero(ingresos)}
+            </div>
 
-<div class="kpi-sub">
-Ingresos registrados
-</div>
+            <div class="kpi-sub">
+                Ingresos registrados
+            </div>
 
-</div>
-""")
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 with k2:
 
-    render_html(f"""
-<div class="kpi-card">
+    st.markdown(
+        f"""
+        <div class="kpi-card">
 
-<div class="kpi-label">
-🧾 GASTOS OPERATIVOS
-</div>
+            <div class="kpi-label">
+                🧾 GASTOS OPERATIVOS
+            </div>
 
-<div class="kpi-value">
-{dinero(gastos)}
-</div>
+            <div class="kpi-value">
+                {dinero(gastos)}
+            </div>
 
-<div class="kpi-sub">
-Egresos registrados
-</div>
+            <div class="kpi-sub">
+                Egresos registrados
+            </div>
 
-</div>
-""")
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 with k3:
 
-    flujo_color = (
+    color_flujo = (
         "#00875A"
         if flujo >= 0
         else "#DE350B"
     )
 
-    render_html(f"""
-<div class="kpi-card">
+    st.markdown(
+        f"""
+        <div class="kpi-card">
 
-<div class="kpi-label">
-💵 FLUJO
-</div>
+            <div class="kpi-label">
+                💵 FLUJO
+            </div>
 
-<div
-class="kpi-value"
-style="color:{flujo_color};"
->
-{dinero(flujo)}
-</div>
+            <div
+                class="kpi-value"
+                style="color:{color_flujo};"
+            >
+                {dinero(flujo)}
+            </div>
 
-<div class="kpi-sub">
-Ingresos − gastos
-</div>
+            <div class="kpi-sub">
+                Ingresos − gastos
+            </div>
 
-</div>
-""")
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 with k4:
 
-    margen_color = (
+    color_rentabilidad = (
         "#00875A"
         if rentabilidad >= 35
         else "#DE350B"
     )
 
-    render_html(f"""
-<div class="kpi-card">
+    st.markdown(
+        f"""
+        <div class="kpi-card">
 
-<div class="kpi-label">
-🎯 RENTABILIDAD
-</div>
+            <div class="kpi-label">
+                🎯 RENTABILIDAD
+            </div>
 
-<div
-class="kpi-value"
-style="color:{margen_color};"
->
-{rentabilidad:.1f}%
-</div>
+            <div
+                class="kpi-value"
+                style="color:{color_rentabilidad};"
+            >
+                {rentabilidad:.1f}%
+            </div>
 
-<div class="kpi-sub">
-Objetivo: 35%
-</div>
+            <div class="kpi-sub">
+                Objetivo: 35%
+            </div>
 
-</div>
-""")
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # ============================================================
 # SECCIÓN PROPIEDADES
 # ============================================================
 
-render_html("""
-<div class="section-title">
-🏢 Rentabilidad por propiedad
-</div>
+st.markdown(
+    """
+    <div class="section-title">
+        🏢 Rentabilidad por propiedad
+    </div>
 
-<div class="section-subtitle">
-Desempeño financiero de cada propiedad en el periodo seleccionado
-</div>
-""")
+    <div class="section-subtitle">
+        Desempeño financiero de cada propiedad en el periodo seleccionado
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
-# AGRUPACIÓN
+# RESUMEN POR PROPIEDAD
 # ============================================================
 
 resumen = (
@@ -784,53 +832,39 @@ for inicio in range(
 
     columnas = st.columns(2)
 
-
     for posicion in range(2):
 
         indice = inicio + posicion
-
 
         if indice >= len(resumen):
 
             continue
 
-
         fila = resumen.iloc[indice]
 
-
-        nombre = html.escape(
-            str(
-                fila["Nombre_Propiedad"]
-            )
+        nombre = str(
+            fila["Nombre_Propiedad"]
         )
 
-
-        ciudad_nombre = html.escape(
-            str(
-                fila["Ciudad"]
-            )
+        ciudad_nombre = str(
+            fila["Ciudad"]
         )
-
 
         ingreso_prop = float(
             fila["Ingreso"]
         )
 
-
         gasto_prop = float(
             fila["Gasto"]
         )
-
 
         flujo_prop = float(
             fila["Flujo"]
         )
 
-
         margen_prop = float(
             fila["Rentabilidad"]
         )
-
 
         progreso = max(
             0,
@@ -839,7 +873,6 @@ for inicio in range(
                 100
             )
         )
-
 
         # ----------------------------------------------------
         # ESTADO
@@ -870,122 +903,121 @@ for inicio in range(
         # TARJETA
         # ----------------------------------------------------
 
-        contenido = f"""
-<div class="property-card {clase_tarjeta}">
+        tarjeta = f"""
+        <div class="property-card {clase_tarjeta}">
 
-<div style="
-display:flex;
-justify-content:space-between;
-align-items:flex-start;
-">
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+            ">
 
-<div>
+                <div>
 
-<div class="property-name">
-{nombre}
-</div>
+                    <div class="property-name">
+                        {nombre}
+                    </div>
 
-<div class="property-location">
-📍 {ciudad_nombre}
-</div>
+                    <div class="property-location">
+                        📍 {ciudad_nombre}
+                    </div>
 
-</div>
+                </div>
 
-<div
-class="margin-value"
-style="color:{color};"
->
-{margen_prop:.1f}%
-</div>
+                <div
+                    class="margin-value"
+                    style="color:{color};"
+                >
+                    {margen_prop:.1f}%
+                </div>
 
-</div>
-
-
-<div class="property-metrics">
-
-<div class="metric-box">
-
-<div class="metric-label">
-Ingresos
-</div>
-
-<div class="metric-income">
-{dinero(ingreso_prop)}
-</div>
-
-</div>
+            </div>
 
 
-<div class="metric-box">
+            <div class="property-metrics">
 
-<div class="metric-label">
-Gastos
-</div>
+                <div class="metric-box">
 
-<div class="metric-expense">
-{dinero(gasto_prop)}
-</div>
+                    <div class="metric-label">
+                        Ingresos
+                    </div>
 
-</div>
+                    <div class="metric-income">
+                        {dinero(ingreso_prop)}
+                    </div>
 
-
-<div class="metric-box">
-
-<div class="metric-label">
-Flujo
-</div>
-
-<div class="metric-flow">
-{dinero(flujo_prop)}
-</div>
-
-</div>
-
-</div>
+                </div>
 
 
-<div class="margin-row">
+                <div class="metric-box">
 
-<div class="margin-label">
-Rentabilidad
-</div>
+                    <div class="metric-label">
+                        Gastos
+                    </div>
 
-<div
-class="margin-value"
-style="color:{color};"
->
-{margen_prop:.1f}%
-</div>
+                    <div class="metric-expense">
+                        {dinero(gasto_prop)}
+                    </div>
 
-</div>
+                </div>
 
 
-<div class="progress-bg">
+                <div class="metric-box">
 
-<div
-class="progress-fill"
-style="
-width:{progreso}%;
-background:{color};
-">
-</div>
+                    <div class="metric-label">
+                        Flujo
+                    </div>
 
-</div>
+                    <div class="metric-flow">
+                        {dinero(flujo_prop)}
+                    </div>
 
+                </div>
 
-<div class="status {clase_estado}">
-{estado}
-</div>
+            </div>
 
 
-</div>
-"""
+            <div class="margin-row">
 
+                <div class="margin-label">
+                    Rentabilidad
+                </div>
+
+                <div
+                    class="margin-value"
+                    style="color:{color};"
+                >
+                    {margen_prop:.1f}%
+                </div>
+
+            </div>
+
+
+            <div class="progress-bg">
+
+                <div
+                    class="progress-fill"
+                    style="
+                        width:{progreso}%;
+                        background:{color};
+                    "
+                ></div>
+
+            </div>
+
+
+            <div class="status {clase_estado}">
+                {estado}
+            </div>
+
+        </div>
+        """
 
         with columnas[posicion]:
 
-            render_html(
-                contenido
+            st.markdown(
+                tarjeta,
+                unsafe_allow_html=True
             )
 
 
