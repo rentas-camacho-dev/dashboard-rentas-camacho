@@ -3,7 +3,6 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from datetime import date
-from textwrap import dedent
 
 
 # ============================================================
@@ -19,23 +18,11 @@ st.set_page_config(
 
 
 # ============================================================
-# FUNCIÓN PARA RENDERIZAR HTML
-# ============================================================
-
-def render_html(html):
-    st.markdown(
-        dedent(html),
-        unsafe_allow_html=True
-    )
-
-
-# ============================================================
 # ESTILOS
 # ============================================================
 
-render_html("""
+st.markdown("""
 <style>
-
 .stApp {
     background: #F4F6F8;
 }
@@ -46,11 +33,7 @@ render_html("""
     max-width: 1500px !important;
 }
 
-
-/* =========================================================
-   HEADER
-   ========================================================= */
-
+/* HEADER */
 .app-header {
     background: #FFFFFF;
     border: 1px solid #E3E8EF;
@@ -76,7 +59,7 @@ render_html("""
 }
 
 .app-title-block {
-    min-width: 245px;
+    min-width: 225px;
 }
 
 .app-name {
@@ -96,16 +79,11 @@ render_html("""
     margin-top: 4px;
 }
 
-
-/* =========================================================
-   INDICADORES ANUALES
-   ========================================================= */
-
+/* INDICADORES ANUALES */
 .header-annual {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-left: 8px;
+    gap: 9px;
     flex: 1;
 }
 
@@ -113,7 +91,7 @@ render_html("""
     background: #F7F9FB;
     border: 1px solid #E7EBF0;
     border-radius: 11px;
-    padding: 7px 13px;
+    padding: 7px 12px;
     min-width: 125px;
 }
 
@@ -122,7 +100,6 @@ render_html("""
     font-size: 9px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.2px;
 }
 
 .annual-value {
@@ -134,18 +111,13 @@ render_html("""
 }
 
 .header-status {
-    margin-left: auto;
-    white-space: nowrap;
     color: #6B778C;
     font-size: 10px;
-    font-weight: 500;
+    white-space: nowrap;
+    margin-left: auto;
 }
 
-
-/* =========================================================
-   FILTROS
-   ========================================================= */
-
+/* FILTROS */
 div[data-testid="stSelectbox"] label,
 div[data-testid="stDateInput"] label {
     font-size: 12px !important;
@@ -153,11 +125,7 @@ div[data-testid="stDateInput"] label {
     font-weight: 500 !important;
 }
 
-
-/* =========================================================
-   KPI
-   ========================================================= */
-
+/* KPI */
 .kpi-card {
     background: #FFFFFF;
     border: 1px solid #E3E8EF;
@@ -187,11 +155,7 @@ div[data-testid="stDateInput"] label {
     margin-top: 6px;
 }
 
-
-/* =========================================================
-   SECCIONES
-   ========================================================= */
-
+/* SECCIÓN */
 .section-title {
     color: #172B4D;
     font-size: 21px;
@@ -206,11 +170,7 @@ div[data-testid="stDateInput"] label {
     margin-bottom: 10px;
 }
 
-
-/* =========================================================
-   TARJETAS DE PROPIEDADES
-   ========================================================= */
-
+/* PROPIEDADES */
 .property-card {
     background: #FFFFFF;
     border: 1px solid #E0E6ED;
@@ -319,53 +279,15 @@ div[data-testid="stDateInput"] label {
 .status-alert {
     color: #DE350B;
 }
-
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
-@media (max-width: 1100px) {
-
-    .app-title-block {
-        min-width: 210px;
-    }
-
-    .header-annual {
-        gap: 6px;
-    }
-
-    .annual-card {
-        min-width: 105px;
-        padding: 6px 9px;
-    }
-
-    .annual-value {
-        font-size: 12px;
-    }
-
-    .property-name {
-        font-size: 15px;
-    }
-
-    .metric-income,
-    .metric-expense,
-    .metric-flow {
-        font-size: 11px;
-    }
-
-}
-
 </style>
-""")
+""", unsafe_allow_html=True)
 
 
 # ============================================================
-# CONEXIÓN A BIGQUERY
+# BIGQUERY
 # ============================================================
 
 try:
-
     credentials = service_account.Credentials.from_service_account_info(
         st.secrets["gcp_service_account"],
         scopes=[
@@ -380,16 +302,12 @@ try:
     )
 
 except Exception as e:
-
-    st.error(
-        f"No fue posible conectar con BigQuery: {e}"
-    )
-
+    st.error(f"No fue posible conectar con BigQuery: {e}")
     st.stop()
 
 
 # ============================================================
-# CARGAR DATOS
+# CARGA DE DATOS
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -414,28 +332,19 @@ def cargar_datos():
 
 
 try:
-
     df = cargar_datos()
 
 except Exception as e:
-
     st.error(
         f"Error consultando Movimientos_Operativos_Reparto: {e}"
     )
-
     st.stop()
 
 
-# ============================================================
-# VALIDACIÓN
-# ============================================================
-
 if df.empty:
-
     st.warning(
         "No hay registros disponibles para Airbnb."
     )
-
     st.stop()
 
 
@@ -476,30 +385,32 @@ df["Nombre_Socio"] = (
     .astype(str)
 )
 
-df = df.dropna(
-    subset=["Fecha"]
-)
+df = df.dropna(subset=["Fecha"])
 
 
 # ============================================================
-# FUNCIÓN MONEDA
+# MONEDA
 # ============================================================
 
 def dinero(valor):
-
     return f"${valor:,.0f}".replace(",", ".")
 
 
 # ============================================================
-# AÑO EN CURSO
+# FECHA ACTUAL
 # ============================================================
 
 hoy = date.today()
 
+
+# ============================================================
+# INDICADORES AÑO EN CURSO
+# ============================================================
+
 inicio_anio = pd.Timestamp(
-    year=hoy.year,
-    month=1,
-    day=1
+    hoy.year,
+    1,
+    1
 )
 
 fin_hoy = (
@@ -507,13 +418,11 @@ fin_hoy = (
     + pd.Timedelta(days=1)
 )
 
-
 df_ytd = df[
     (df["Fecha"] >= inicio_anio)
     &
     (df["Fecha"] < fin_hoy)
 ].copy()
-
 
 ingresos_ytd = df_ytd["Ingreso"].sum()
 
@@ -531,10 +440,6 @@ rentabilidad_ytd = (
 )
 
 
-# ============================================================
-# HEADER
-# ============================================================
-
 color_flujo_ytd = (
     "#00875A"
     if flujo_ytd >= 0
@@ -548,82 +453,50 @@ color_rentabilidad_ytd = (
 )
 
 
-render_html(
-    f"""
-    <div class="app-header">
+# ============================================================
+# HEADER
+# ============================================================
 
-        <div class="app-icon">
-            🏢
-        </div>
+header_html = (
+    '<div class="app-header">'
+    '<div class="app-icon">🏢</div>'
 
-        <div class="app-title-block">
+    '<div class="app-title-block">'
+    '<div class="app-name">Airbnb <span>Financial Hub</span></div>'
+    '<div class="app-subtitle">Rentabilidad financiera · Solo Airbnb</div>'
+    '</div>'
 
-            <div class="app-name">
-                Airbnb <span>Financial Hub</span>
-            </div>
+    '<div class="header-annual">'
 
-            <div class="app-subtitle">
-                Rentabilidad financiera · Solo Airbnb
-            </div>
+    '<div class="annual-card">'
+    f'<div class="annual-label">Ingresos {hoy.year}</div>'
+    f'<div class="annual-value">{dinero(ingresos_ytd)}</div>'
+    '</div>'
 
-        </div>
+    '<div class="annual-card">'
+    f'<div class="annual-label">Flujo {hoy.year}</div>'
+    f'<div class="annual-value" style="color:{color_flujo_ytd};">'
+    f'{dinero(flujo_ytd)}'
+    '</div>'
+    '</div>'
 
+    '<div class="annual-card">'
+    f'<div class="annual-label">Rentabilidad {hoy.year}</div>'
+    f'<div class="annual-value" style="color:{color_rentabilidad_ytd};">'
+    f'{rentabilidad_ytd:.1f}%'
+    '</div>'
+    '</div>'
 
-        <div class="header-annual">
+    '</div>'
 
-            <div class="annual-card">
+    '<div class="header-status">● Información actualizada</div>'
 
-                <div class="annual-label">
-                    Ingresos {hoy.year}
-                </div>
+    '</div>'
+)
 
-                <div class="annual-value">
-                    {dinero(ingresos_ytd)}
-                </div>
-
-            </div>
-
-
-            <div class="annual-card">
-
-                <div class="annual-label">
-                    Flujo {hoy.year}
-                </div>
-
-                <div
-                    class="annual-value"
-                    style="color:{color_flujo_ytd};"
-                >
-                    {dinero(flujo_ytd)}
-                </div>
-
-            </div>
-
-
-            <div class="annual-card">
-
-                <div class="annual-label">
-                    Rentabilidad {hoy.year}
-                </div>
-
-                <div
-                    class="annual-value"
-                    style="color:{color_rentabilidad_ytd};"
-                >
-                    {rentabilidad_ytd:.1f}%
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="header-status">
-            ● Información actualizada
-        </div>
-
-    </div>
-    """
+st.markdown(
+    header_html,
+    unsafe_allow_html=True
 )
 
 
@@ -693,81 +566,51 @@ with col3:
 
 with col4:
 
-    # --------------------------------------------------------
-    # MES ACTUAL POR DEFECTO
-    # --------------------------------------------------------
+    inicio_mes = hoy.replace(day=1)
 
-    inicio_mes_actual = hoy.replace(
-        day=1
-    )
-
-    fecha_min = (
-        df["Fecha"]
-        .min()
-        .date()
-    )
-
-    fecha_max_datos = (
-        df["Fecha"]
-        .max()
-        .date()
-    )
+    fecha_min = df["Fecha"].min().date()
 
     fecha_max = max(
-        fecha_max_datos,
+        df["Fecha"].max().date(),
         hoy
     )
 
     fechas = st.date_input(
         "Período de análisis",
-
-        value=(
-            inicio_mes_actual,
-            hoy
-        ),
-
+        value=(inicio_mes, hoy),
         min_value=fecha_min,
-
         max_value=fecha_max,
-
         format="DD/MM/YYYY",
-
         key="periodo_analisis"
     )
 
 
 # ============================================================
-# APLICAR FILTROS
+# FILTRAR
 # ============================================================
 
 df_f = df.copy()
 
 
 if ciudad != "Todas":
-
     df_f = df_f[
         df_f["Ciudad"] == ciudad
     ]
 
 
 if propiedad != "Todas":
-
     df_f = df_f[
         df_f["Nombre_Propiedad"] == propiedad
     ]
 
 
 if socio != "Todos":
-
     df_f = df_f[
         df_f["Nombre_Socio"] == socio
     ]
 
 
-if isinstance(
-    fechas,
-    tuple
-) and len(fechas) == 2:
+if isinstance(fechas, tuple) and len(fechas) == 2:
 
     fecha_inicio = pd.Timestamp(
         fechas[0]
@@ -785,10 +628,6 @@ if isinstance(
     ]
 
 
-# ============================================================
-# VALIDAR FILTROS
-# ============================================================
-
 if df_f.empty:
 
     st.warning(
@@ -799,17 +638,14 @@ if df_f.empty:
 
 
 # ============================================================
-# KPI DEL PERÍODO SELECCIONADO
+# KPI DEL PERÍODO
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
 
 gastos = df_f["Gasto"].sum()
 
-flujo = (
-    ingresos
-    - gastos
-)
+flujo = ingresos - gastos
 
 rentabilidad = (
     flujo / ingresos * 100
@@ -819,7 +655,7 @@ rentabilidad = (
 
 
 # ============================================================
-# KPI 1 - INGRESOS
+# KPI CARDS
 # ============================================================
 
 k1, k2, k3, k4 = st.columns(4)
@@ -827,57 +663,35 @@ k1, k2, k3, k4 = st.columns(4)
 
 with k1:
 
-    render_html(
-        f"""
-        <div class="kpi-card">
-
-            <div class="kpi-label">
-                💰 INGRESOS BRUTOS
-            </div>
-
-            <div class="kpi-value">
-                {dinero(ingresos)}
-            </div>
-
-            <div class="kpi-sub">
-                Ingresos registrados
-            </div>
-
-        </div>
-        """
+    html = (
+        '<div class="kpi-card">'
+        '<div class="kpi-label">💰 INGRESOS BRUTOS</div>'
+        f'<div class="kpi-value">{dinero(ingresos)}</div>'
+        '<div class="kpi-sub">Ingresos registrados</div>'
+        '</div>'
     )
 
+    st.markdown(
+        html,
+        unsafe_allow_html=True
+    )
 
-# ============================================================
-# KPI 2 - GASTOS
-# ============================================================
 
 with k2:
 
-    render_html(
-        f"""
-        <div class="kpi-card">
-
-            <div class="kpi-label">
-                🧾 GASTOS OPERATIVOS
-            </div>
-
-            <div class="kpi-value">
-                {dinero(gastos)}
-            </div>
-
-            <div class="kpi-sub">
-                Egresos registrados
-            </div>
-
-        </div>
-        """
+    html = (
+        '<div class="kpi-card">'
+        '<div class="kpi-label">🧾 GASTOS OPERATIVOS</div>'
+        f'<div class="kpi-value">{dinero(gastos)}</div>'
+        '<div class="kpi-sub">Egresos registrados</div>'
+        '</div>'
     )
 
+    st.markdown(
+        html,
+        unsafe_allow_html=True
+    )
 
-# ============================================================
-# KPI 3 - FLUJO
-# ============================================================
 
 with k3:
 
@@ -887,33 +701,21 @@ with k3:
         else "#DE350B"
     )
 
-    render_html(
-        f"""
-        <div class="kpi-card">
-
-            <div class="kpi-label">
-                💵 FLUJO
-            </div>
-
-            <div
-                class="kpi-value"
-                style="color:{color_flujo};"
-            >
-                {dinero(flujo)}
-            </div>
-
-            <div class="kpi-sub">
-                Ingresos − gastos
-            </div>
-
-        </div>
-        """
+    html = (
+        '<div class="kpi-card">'
+        '<div class="kpi-label">💵 FLUJO</div>'
+        f'<div class="kpi-value" style="color:{color_flujo};">'
+        f'{dinero(flujo)}'
+        '</div>'
+        '<div class="kpi-sub">Ingresos − gastos</div>'
+        '</div>'
     )
 
+    st.markdown(
+        html,
+        unsafe_allow_html=True
+    )
 
-# ============================================================
-# KPI 4 - RENTABILIDAD
-# ============================================================
 
 with k4:
 
@@ -923,44 +725,32 @@ with k4:
         else "#DE350B"
     )
 
-    render_html(
-        f"""
-        <div class="kpi-card">
+    html = (
+        '<div class="kpi-card">'
+        '<div class="kpi-label">🎯 RENTABILIDAD</div>'
+        f'<div class="kpi-value" style="color:{color_rentabilidad};">'
+        f'{rentabilidad:.1f}%'
+        '</div>'
+        '<div class="kpi-sub">Objetivo: 35%</div>'
+        '</div>'
+    )
 
-            <div class="kpi-label">
-                🎯 RENTABILIDAD
-            </div>
-
-            <div
-                class="kpi-value"
-                style="color:{color_rentabilidad};"
-            >
-                {rentabilidad:.1f}%
-            </div>
-
-            <div class="kpi-sub">
-                Objetivo: 35%
-            </div>
-
-        </div>
-        """
+    st.markdown(
+        html,
+        unsafe_allow_html=True
     )
 
 
 # ============================================================
-# RENTABILIDAD POR PROPIEDAD
+# TÍTULO PROPIEDADES
 # ============================================================
 
-render_html(
-    """
-    <div class="section-title">
-        🏢 Rentabilidad por propiedad
-    </div>
-
-    <div class="section-subtitle">
-        Desempeño financiero de cada propiedad en el período seleccionado
-    </div>
-    """
+st.markdown(
+    '<div class="section-title">🏢 Rentabilidad por propiedad</div>'
+    '<div class="section-subtitle">'
+    'Desempeño financiero de cada propiedad en el período seleccionado'
+    '</div>',
+    unsafe_allow_html=True
 )
 
 
@@ -983,22 +773,16 @@ resumen = (
     )
 )
 
-
 resumen["Flujo"] = (
     resumen["Ingreso"]
-    -
-    resumen["Gasto"]
+    - resumen["Gasto"]
 )
-
 
 resumen["Rentabilidad"] = (
     resumen["Flujo"]
-    /
-    resumen["Ingreso"]
-    *
-    100
+    / resumen["Ingreso"]
+    * 100
 ).fillna(0)
-
 
 resumen = resumen.sort_values(
     "Rentabilidad",
@@ -1007,7 +791,7 @@ resumen = resumen.sort_values(
 
 
 # ============================================================
-# TARJETAS - 3 POR FILA
+# PROPIEDADES - 3 POR FILA
 # ============================================================
 
 for inicio in range(
@@ -1020,20 +804,12 @@ for inicio in range(
 
     for posicion in range(3):
 
-        indice = (
-            inicio
-            +
-            posicion
-        )
+        indice = inicio + posicion
 
         if indice >= len(resumen):
             continue
 
-
-        fila = resumen.iloc[
-            indice
-        ]
-
+        fila = resumen.iloc[indice]
 
         nombre = str(
             fila["Nombre_Propiedad"]
@@ -1060,28 +836,18 @@ for inicio in range(
         )
 
 
-        # ----------------------------------------------------
-        # ESTADO
-        # ----------------------------------------------------
-
         if margen_prop >= 35:
 
             color = "#00A878"
-
             estado = "✓ Sobre objetivo"
-
             clase_tarjeta = ""
-
             clase_estado = "status-ok"
 
         else:
 
             color = "#EF4444"
-
             estado = "⚠ Bajo objetivo"
-
             clase_tarjeta = "alert"
-
             clase_estado = "status-alert"
 
 
@@ -1094,127 +860,81 @@ for inicio in range(
         )
 
 
-        # ----------------------------------------------------
-        # TARJETA
-        # ----------------------------------------------------
+        tarjeta = (
+            f'<div class="property-card {clase_tarjeta}">'
 
-        tarjeta = f"""
-        <div class="property-card {clase_tarjeta}">
+            '<div style="display:flex;'
+            'justify-content:space-between;'
+            'align-items:flex-start;">'
 
-            <div
-                style="
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:flex-start;
-                "
-            >
+            '<div>'
 
-                <div>
+            f'<div class="property-name">{nombre}</div>'
 
-                    <div class="property-name">
-                        {nombre}
-                    </div>
+            f'<div class="property-location">'
+            f'📍 {ciudad_nombre}'
+            f'</div>'
 
-                    <div class="property-location">
-                        📍 {ciudad_nombre}
-                    </div>
+            '</div>'
 
-                </div>
+            f'<div class="margin-value" style="color:{color};">'
+            f'{margen_prop:.1f}%'
+            '</div>'
 
-                <div
-                    class="margin-value"
-                    style="color:{color};"
-                >
-                    {margen_prop:.1f}%
-                </div>
+            '</div>'
 
-            </div>
+            '<div class="property-metrics">'
 
+            '<div class="metric-box">'
+            '<div class="metric-label">Ingresos</div>'
+            f'<div class="metric-income">'
+            f'{dinero(ingreso_prop)}'
+            f'</div>'
+            '</div>'
 
-            <div class="property-metrics">
+            '<div class="metric-box">'
+            '<div class="metric-label">Gastos</div>'
+            f'<div class="metric-expense">'
+            f'{dinero(gasto_prop)}'
+            f'</div>'
+            '</div>'
 
+            '<div class="metric-box">'
+            '<div class="metric-label">Flujo</div>'
+            f'<div class="metric-flow">'
+            f'{dinero(flujo_prop)}'
+            f'</div>'
+            '</div>'
 
-                <div class="metric-box">
+            '</div>'
 
-                    <div class="metric-label">
-                        Ingresos
-                    </div>
+            '<div class="margin-row">'
+            '<div class="margin-label">Rentabilidad</div>'
+            f'<div class="margin-value" style="color:{color};">'
+            f'{margen_prop:.1f}%'
+            '</div>'
+            '</div>'
 
-                    <div class="metric-income">
-                        {dinero(ingreso_prop)}
-                    </div>
+            '<div class="progress-bg">'
+            f'<div class="progress-fill" '
+            f'style="width:{progreso}%;background:{color};">'
+            '</div>'
+            '</div>'
 
-                </div>
+            f'<div class="status {clase_estado}">'
+            f'{estado}'
+            '</div>'
 
-
-                <div class="metric-box">
-
-                    <div class="metric-label">
-                        Gastos
-                    </div>
-
-                    <div class="metric-expense">
-                        {dinero(gasto_prop)}
-                    </div>
-
-                </div>
-
-
-                <div class="metric-box">
-
-                    <div class="metric-label">
-                        Flujo
-                    </div>
-
-                    <div class="metric-flow">
-                        {dinero(flujo_prop)}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="margin-row">
-
-                <div class="margin-label">
-                    Rentabilidad
-                </div>
-
-                <div
-                    class="margin-value"
-                    style="color:{color};"
-                >
-                    {margen_prop:.1f}%
-                </div>
-
-            </div>
-
-
-            <div class="progress-bg">
-
-                <div
-                    class="progress-fill"
-                    style="
-                        width:{progreso}%;
-                        background:{color};
-                    "
-                ></div>
-
-            </div>
-
-
-            <div class="status {clase_estado}">
-                {estado}
-            </div>
-
-        </div>
-        """
+            '</div>'
+        )
 
 
         with columnas[posicion]:
 
-            render_html(tarjeta)
+            st.markdown(
+                tarjeta,
+                unsafe_allow_html=True
+            )
 
 
 # ============================================================
@@ -1224,9 +944,7 @@ for inicio in range(
 st.markdown("---")
 
 st.caption(
-    f"""
-    Airbnb Financial Hub ·
-    {len(df_f):,} registros ·
-    {len(resumen)} propiedades
-    """
+    f"Airbnb Financial Hub · "
+    f"{len(df_f):,} registros · "
+    f"{len(resumen)} propiedades"
 )
