@@ -33,7 +33,7 @@ st.markdown("""
 }
 
 .block-container {
-    padding-top: 0.8rem !important;
+    padding-top: 4.8rem !important;
     padding-bottom: 1.5rem !important;
     max-width: 1500px !important;
 }
@@ -48,7 +48,7 @@ st.markdown("""
     border: 1px solid #E3E8EF;
     border-radius: 18px;
     padding: 14px 20px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 
     display: flex;
     align-items: center;
@@ -181,25 +181,25 @@ div[data-testid="stDateInput"] label {
     border: 1px solid #E0E6ED;
     border-radius: 16px;
 
-    padding: 15px 17px;
+    padding: 14px 15px;
     margin-bottom: 12px;
 
     box-shadow: 0 3px 10px rgba(0,0,0,0.035);
 }
 
 .property-card.alert {
-    border: 1.5px solid #FF9B9B;
+    border: 1.5px solid #FF7777;
 }
 
 .property-name {
     color: #172B4D;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
 }
 
 .property-location {
     color: #6B778C;
-    font-size: 11px;
+    font-size: 10px;
     margin-top: 2px;
 }
 
@@ -207,39 +207,39 @@ div[data-testid="stDateInput"] label {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
 
-    gap: 8px;
-    margin-top: 13px;
+    gap: 7px;
+    margin-top: 11px;
 }
 
 .metric-box {
     background: #F7F9FB;
-    border-radius: 10px;
+    border-radius: 9px;
 
-    padding: 8px 9px;
+    padding: 7px 8px;
 }
 
 .metric-label {
     color: #6B778C;
-    font-size: 10px;
+    font-size: 9px;
 }
 
 .metric-income {
     color: #00875A;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     margin-top: 2px;
 }
 
 .metric-expense {
     color: #DE350B;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     margin-top: 2px;
 }
 
 .metric-flow {
     color: #0065BD;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
     margin-top: 2px;
 }
@@ -249,22 +249,22 @@ div[data-testid="stDateInput"] label {
     justify-content: space-between;
     align-items: center;
 
-    margin-top: 11px;
+    margin-top: 9px;
 }
 
 .margin-label {
     color: #6B778C;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .margin-value {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
 }
 
 .progress-bg {
     width: 100%;
-    height: 6px;
+    height: 5px;
 
     background: #E8EDF2;
 
@@ -281,8 +281,8 @@ div[data-testid="stDateInput"] label {
 }
 
 .status {
-    font-size: 10px;
-    margin-top: 7px;
+    font-size: 9px;
+    margin-top: 6px;
     font-weight: 600;
 }
 
@@ -296,17 +296,19 @@ div[data-testid="stDateInput"] label {
 
 
 /* ============================================================
-   MOBILE
+   RESPONSIVE
 ============================================================ */
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
 
-    .app-name {
-        font-size: 20px;
+    .property-name {
+        font-size: 15px;
     }
 
-    .connection {
-        display: none;
+    .metric-income,
+    .metric-expense,
+    .metric-flow {
+        font-size: 11px;
     }
 
 }
@@ -316,7 +318,7 @@ div[data-testid="stDateInput"] label {
 
 
 # ============================================================
-# CONEXIÓN A BIGQUERY
+# CONEXIÓN BIGQUERY
 # ============================================================
 
 try:
@@ -336,21 +338,12 @@ try:
 
 except Exception as e:
 
-    st.error(
-        f"No fue posible conectar con BigQuery: {e}"
-    )
-
+    st.error(f"No fue posible conectar con BigQuery: {e}")
     st.stop()
 
 
 # ============================================================
-# CARGAR INFORMACIÓN
-#
-# FUENTE:
-# rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto
-#
-# IMPORTANTE:
-# SOLO AIRBNB
+# CARGAR DATOS
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -390,14 +383,14 @@ except Exception as e:
 
 
 # ============================================================
-# VALIDAR DATOS
+# VALIDACIÓN
 # ============================================================
 
 if df.empty:
 
     st.warning(
-        "BigQuery está conectado, pero no se encontraron "
-        "registros donde Nombre_Tipo = Airbnb."
+        "BigQuery está conectado, pero no hay registros "
+        "donde Nombre_Tipo = Airbnb."
     )
 
     st.stop()
@@ -446,7 +439,7 @@ df = df.dropna(
 
 
 # ============================================================
-# FORMATO DE DINERO
+# FORMATO DINERO
 # ============================================================
 
 def dinero(valor):
@@ -456,10 +449,6 @@ def dinero(valor):
 
 # ============================================================
 # HEADER
-#
-# IMPORTANTE:
-# EL HTML ESTÁ DELIBERADAMENTE SIN INDENTACIÓN
-# PARA EVITAR QUE STREAMLIT LO INTERPRETE COMO CÓDIGO.
 # ============================================================
 
 st.markdown(
@@ -479,14 +468,8 @@ unsafe_allow_html=True
 # FILTROS
 # ============================================================
 
-col1, col2, col3, col4 = st.columns(
-    [1, 1, 1, 1]
-)
+col1, col2, col3, col4 = st.columns(4)
 
-
-# ------------------------------------------------------------
-# CIUDAD
-# ------------------------------------------------------------
 
 with col1:
 
@@ -507,10 +490,6 @@ with col1:
     )
 
 
-# ------------------------------------------------------------
-# PROPIEDAD
-# ------------------------------------------------------------
-
 with col2:
 
     propiedades = (
@@ -529,10 +508,6 @@ with col2:
         propiedades
     )
 
-
-# ------------------------------------------------------------
-# SOCIO
-# ------------------------------------------------------------
 
 with col3:
 
@@ -553,14 +528,9 @@ with col3:
     )
 
 
-# ------------------------------------------------------------
-# PERIODO
-# ------------------------------------------------------------
-
 with col4:
 
     fecha_min = df["Fecha"].min().date()
-
     fecha_max = df["Fecha"].max().date()
 
     fechas = st.date_input(
@@ -618,10 +588,6 @@ if isinstance(fechas, tuple) and len(fechas) == 2:
     ]
 
 
-# ============================================================
-# VALIDAR FILTROS
-# ============================================================
-
 if df_f.empty:
 
     st.warning(
@@ -632,7 +598,7 @@ if df_f.empty:
 
 
 # ============================================================
-# CÁLCULO KPI
+# KPI
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
@@ -642,15 +608,11 @@ gastos = df_f["Gasto"].sum()
 flujo = ingresos - gastos
 
 rentabilidad = (
-    (flujo / ingresos) * 100
+    flujo / ingresos * 100
     if ingresos != 0
     else 0
 )
 
-
-# ============================================================
-# KPI 1 — INGRESOS
-# ============================================================
 
 k1, k2, k3, k4 = st.columns(4)
 
@@ -667,10 +629,6 @@ unsafe_allow_html=True
     )
 
 
-# ============================================================
-# KPI 2 — GASTOS
-# ============================================================
-
 with k2:
 
     st.markdown(
@@ -682,10 +640,6 @@ f"""<div class="kpi-card">
 unsafe_allow_html=True
     )
 
-
-# ============================================================
-# KPI 3 — FLUJO
-# ============================================================
 
 with k3:
 
@@ -704,10 +658,6 @@ f"""<div class="kpi-card">
 unsafe_allow_html=True
     )
 
-
-# ============================================================
-# KPI 4 — RENTABILIDAD
-# ============================================================
 
 with k4:
 
@@ -728,7 +678,7 @@ unsafe_allow_html=True
 
 
 # ============================================================
-# TÍTULO PROPIEDADES
+# PROPIEDADES
 # ============================================================
 
 st.markdown(
@@ -737,10 +687,6 @@ st.markdown(
 unsafe_allow_html=True
 )
 
-
-# ============================================================
-# AGRUPAR POR PROPIEDAD
-# ============================================================
 
 resumen = (
     df_f
@@ -781,18 +727,18 @@ resumen = resumen.sort_values(
 
 
 # ============================================================
-# TARJETAS DE PROPIEDADES
+# 3 PROPIEDADES POR FILA
 # ============================================================
 
 for inicio in range(
     0,
     len(resumen),
-    2
+    3
 ):
 
-    columnas = st.columns(2)
+    columnas = st.columns(3)
 
-    for posicion in range(2):
+    for posicion in range(3):
 
         indice = inicio + posicion
 
@@ -826,10 +772,6 @@ for inicio in range(
         )
 
 
-        # ----------------------------------------------------
-        # COLOR SEGÚN OBJETIVO
-        # ----------------------------------------------------
-
         if margen_prop >= 35:
 
             color = "#00A878"
@@ -851,10 +793,6 @@ for inicio in range(
             clase_estado = "status-alert"
 
 
-        # ----------------------------------------------------
-        # BARRA
-        # ----------------------------------------------------
-
         progreso = max(
             0,
             min(
@@ -863,10 +801,6 @@ for inicio in range(
             )
         )
 
-
-        # ----------------------------------------------------
-        # TARJETA
-        # ----------------------------------------------------
 
         tarjeta = f"""<div class="property-card {clase_tarjeta}">
 
