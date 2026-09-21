@@ -3,6 +3,7 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from datetime import date
+from textwrap import dedent
 
 
 # ============================================================
@@ -24,154 +25,150 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 3rem;
-        max-width: 1500px;
-    }
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    max-width: 1500px;
+}
 
-    /* Header */
-    .hero {
-        background: white;
-        border-radius: 20px;
-        padding: 28px 32px;
-        margin-bottom: 22px;
-        border: 1px solid #eeeeee;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.04);
-    }
+.hero {
+    background: white;
+    border-radius: 20px;
+    padding: 28px 32px;
+    margin-bottom: 22px;
+    border: 1px solid #eeeeee;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+}
 
-    .hero-title {
-        font-size: 30px;
-        font-weight: 700;
-        color: #222222;
-        margin-bottom: 4px;
-    }
+.hero-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 4px;
+}
 
-    .hero-subtitle {
-        font-size: 15px;
-        color: #777777;
-        margin-bottom: 20px;
-    }
+.hero-subtitle {
+    font-size: 15px;
+    color: #777777;
+    margin-bottom: 20px;
+}
 
-    .status {
-        color: #25a244;
-        font-size: 13px;
-        font-weight: 600;
-    }
+.status {
+    color: #25a244;
+    font-size: 13px;
+    font-weight: 600;
+}
 
-    /* KPI */
-    .kpi-card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        border: 1px solid #eeeeee;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.035);
-        min-height: 120px;
-    }
+.kpi-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #eeeeee;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.035);
+    min-height: 120px;
+}
 
-    .kpi-title {
-        font-size: 13px;
-        color: #777777;
-        margin-bottom: 8px;
-    }
+.kpi-title {
+    font-size: 13px;
+    color: #777777;
+    margin-bottom: 8px;
+}
 
-    .kpi-value {
-        font-size: 27px;
-        font-weight: 700;
-        color: #222222;
-    }
+.kpi-value {
+    font-size: 27px;
+    font-weight: 700;
+    color: #222222;
+}
 
-    .kpi-positive {
-        color: #1f9d55;
-    }
+.kpi-positive {
+    color: #1f9d55;
+}
 
-    /* Property card */
-    .property-card {
-        background: white;
-        border-radius: 18px;
-        padding: 20px;
-        border: 1px solid #eeeeee;
-        box-shadow: 0 3px 14px rgba(0,0,0,0.035);
-        min-height: 330px;
-        margin-bottom: 18px;
-    }
+.property-card {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    border: 1px solid #eeeeee;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.035);
+    min-height: 365px;
+    margin-bottom: 18px;
+}
 
-    .property-name {
-        font-size: 19px;
-        font-weight: 700;
-        color: #222222;
-        margin-bottom: 2px;
-    }
+.property-name {
+    font-size: 19px;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 2px;
+}
 
-    .property-city {
-        font-size: 13px;
-        color: #888888;
-        margin-bottom: 18px;
-    }
+.property-city {
+    font-size: 13px;
+    color: #888888;
+    margin-bottom: 18px;
+}
 
-    .metric-label {
-        font-size: 12px;
-        color: #888888;
-        margin-top: 7px;
-    }
+.metric-label {
+    font-size: 12px;
+    color: #888888;
+    margin-top: 7px;
+}
 
-    .metric-value {
-        font-size: 21px;
-        font-weight: 700;
-        color: #222222;
-    }
+.metric-value {
+    font-size: 21px;
+    font-weight: 700;
+    color: #222222;
+}
 
-    .metric-average {
-        font-size: 11px;
-        color: #999999;
-        margin-bottom: 8px;
-    }
+.metric-average {
+    font-size: 11px;
+    color: #999999;
+    margin-bottom: 8px;
+}
 
-    .occupancy-box {
-        margin-top: 14px;
-        padding-top: 14px;
-        border-top: 1px solid #eeeeee;
-    }
+.occupancy-box {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #eeeeee;
+}
 
-    .occupancy-label {
-        font-size: 12px;
-        color: #888888;
-    }
+.occupancy-label {
+    font-size: 12px;
+    color: #888888;
+}
 
-    .occupancy-value {
-        font-size: 23px;
-        font-weight: 700;
-        color: #e63946;
-    }
+.occupancy-value {
+    font-size: 23px;
+    font-weight: 700;
+    color: #e63946;
+}
 
-    .occupancy-detail {
-        font-size: 11px;
-        color: #999999;
-    }
+.occupancy-detail {
+    font-size: 11px;
+    color: #999999;
+}
 
-    .section-title {
-        font-size: 21px;
-        font-weight: 700;
-        color: #222222;
-        margin-top: 18px;
-        margin-bottom: 14px;
-    }
+.section-title {
+    font-size: 21px;
+    font-weight: 700;
+    color: #222222;
+    margin-top: 18px;
+    margin-bottom: 14px;
+}
 
-    .mini-indicator {
-        text-align: right;
-        color: #555555;
-    }
+.mini-indicator {
+    text-align: right;
+}
 
-    .mini-label {
-        font-size: 11px;
-        color: #999999;
-    }
+.mini-label {
+    font-size: 11px;
+    color: #999999;
+}
 
-    .mini-value {
-        font-size: 17px;
-        font-weight: 700;
-        color: #222222;
-    }
+.mini-value {
+    font-size: 17px;
+    font-weight: 700;
+    color: #222222;
+}
 
 </style>
 """, unsafe_allow_html=True)
@@ -196,7 +193,7 @@ client = bigquery.Client(
 
 
 # ============================================================
-# FUNCIONES
+# CARGAR DATOS FINANCIEROS
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -219,7 +216,10 @@ def cargar_datos_financieros():
 
     df = client.query(query).to_dataframe()
 
-    df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
+    df["Fecha"] = pd.to_datetime(
+        df["Fecha"],
+        errors="coerce"
+    )
 
     df["Ingreso"] = pd.to_numeric(
         df["Ingreso"],
@@ -234,21 +234,12 @@ def cargar_datos_financieros():
     return df
 
 
+# ============================================================
+# CARGAR OCUPACIÓN
+# ============================================================
+
 @st.cache_data(ttl=300)
 def cargar_ocupacion(fecha_inicio, fecha_fin):
-
-    # ========================================================
-    # La lógica de ocupación es independiente del reparto
-    # financiero.
-    #
-    # Participaciones SOLO sirve para:
-    # Anuncio -> Propiedad -> Ciudad
-    #
-    # No usamos:
-    # Socio
-    # Participación
-    # Propietario
-    # ========================================================
 
     query = """
     DECLARE p_fecha_inicio DATE DEFAULT @fecha_inicio;
@@ -320,12 +311,10 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
                             INTERVAL 1 DAY
                         )
                     ),
-
                     GREATEST(
                         Fecha_Inicio,
                         p_fecha_inicio
                     ),
-
                     DAY
                 ),
                 0
@@ -358,7 +347,6 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
             reservas_periodo r
 
         INNER JOIN mapa m
-
             ON LOWER(TRIM(r.Anuncio))
              = m.anuncio_key
 
@@ -445,12 +433,8 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
         propiedades p
 
     LEFT JOIN resumen_reservas r
-
-        ON p.Nombre_Propiedad
-         = r.Nombre_Propiedad
-
-        AND p.Ciudad
-         = r.Ciudad
+        ON p.Nombre_Propiedad = r.Nombre_Propiedad
+        AND p.Ciudad = r.Ciudad
 
     ORDER BY
         p.Nombre_Propiedad
@@ -478,7 +462,7 @@ def cargar_ocupacion(fecha_inicio, fecha_fin):
 
 
 # ============================================================
-# FORMATO
+# FORMATO DE DINERO
 # ============================================================
 
 def dinero(valor):
@@ -491,12 +475,15 @@ def dinero_corto(valor):
     valor = float(valor)
 
     if abs(valor) >= 1_000_000:
+
         return f"${valor / 1_000_000:.1f}M"
 
     elif abs(valor) >= 1_000:
+
         return f"${valor / 1_000:.0f}k"
 
     else:
+
         return f"${valor:,.0f}".replace(",", ".")
 
 
@@ -519,14 +506,20 @@ inicio_mes = date(
     1
 )
 
+
 # ============================================================
-# HEADER
+# INDICADORES ANUALES
 # ============================================================
 
 df_ytd = df[
     (df["Fecha"] >= pd.Timestamp(hoy.year, 1, 1))
     &
-    (df["Fecha"] < pd.Timestamp(hoy) + pd.Timedelta(days=1))
+    (
+        df["Fecha"]
+        <
+        pd.Timestamp(hoy)
+        + pd.Timedelta(days=1)
+    )
 ]
 
 ingreso_ytd = df_ytd["Ingreso"].sum()
@@ -540,63 +533,62 @@ rentabilidad_ytd = (
 )
 
 
-st.markdown(
-    f"""
-    <div class="hero">
+# ============================================================
+# HEADER
+# ============================================================
 
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+header_html = f"""
+<div class="hero">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+            <div class="hero-title">
+                🏠 Airbnb Financial Hub
+            </div>
+            <div class="hero-subtitle">
+                Rentabilidad financiera · Solo Airbnb
+            </div>
+        </div>
 
-            <div>
+        <div style="display:flex; gap:35px;">
 
-                <div class="hero-title">
-                    🏠 Airbnb Financial Hub
+            <div class="mini-indicator">
+                <div class="mini-label">
+                    Ingresos {hoy.year}
                 </div>
-
-                <div class="hero-subtitle">
-                    Rentabilidad financiera · Solo Airbnb
+                <div class="mini-value">
+                    {dinero_corto(ingreso_ytd)}
                 </div>
-
             </div>
 
-            <div style="display:flex; gap:35px;">
-
-                <div class="mini-indicator">
-                    <div class="mini-label">
-                        Ingresos {hoy.year}
-                    </div>
-                    <div class="mini-value">
-                        {dinero_corto(ingreso_ytd)}
-                    </div>
+            <div class="mini-indicator">
+                <div class="mini-label">
+                    Flujo {hoy.year}
                 </div>
-
-                <div class="mini-indicator">
-                    <div class="mini-label">
-                        Flujo {hoy.year}
-                    </div>
-                    <div class="mini-value">
-                        {dinero_corto(flujo_ytd)}
-                    </div>
+                <div class="mini-value">
+                    {dinero_corto(flujo_ytd)}
                 </div>
+            </div>
 
-                <div class="mini-indicator">
-                    <div class="mini-label">
-                        Rentabilidad {hoy.year}
-                    </div>
-                    <div class="mini-value">
-                        {rentabilidad_ytd:.1f}%
-                    </div>
+            <div class="mini-indicator">
+                <div class="mini-label">
+                    Rentabilidad {hoy.year}
                 </div>
-
+                <div class="mini-value">
+                    {rentabilidad_ytd:.1f}%
+                </div>
             </div>
 
         </div>
-
-        <div class="status">
-            ● Información actualizada
-        </div>
-
     </div>
-    """,
+
+    <div class="status">
+        ● Información actualizada
+    </div>
+</div>
+"""
+
+st.markdown(
+    dedent(header_html),
     unsafe_allow_html=True
 )
 
@@ -611,6 +603,7 @@ st.markdown(
 )
 
 col1, col2, col3, col4 = st.columns(4)
+
 
 with col1:
 
@@ -666,7 +659,7 @@ with col4:
 
 
 # ============================================================
-# VALIDAR RANGO
+# VALIDAR FECHAS
 # ============================================================
 
 if isinstance(rango, tuple) and len(rango) == 2:
@@ -687,7 +680,12 @@ else:
 df_f = df[
     (df["Fecha"] >= pd.Timestamp(fecha_inicio))
     &
-    (df["Fecha"] < pd.Timestamp(fecha_fin) + pd.Timedelta(days=1))
+    (
+        df["Fecha"]
+        <
+        pd.Timestamp(fecha_fin)
+        + pd.Timedelta(days=1)
+    )
 ].copy()
 
 
@@ -735,84 +733,72 @@ st.markdown(
 k1, k2, k3, k4 = st.columns(4)
 
 
-with k1:
+k1_html = f"""
+<div class="kpi-card">
+    <div class="kpi-title">
+        Ingresos Brutos
+    </div>
+    <div class="kpi-value">
+        {dinero(ingresos)}
+    </div>
+</div>
+"""
 
-    st.markdown(
-        f"""
-        <div class="kpi-card">
-
-            <div class="kpi-title">
-                Ingresos Brutos
-            </div>
-
-            <div class="kpi-value">
-                {dinero(ingresos)}
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+k1.markdown(
+    dedent(k1_html),
+    unsafe_allow_html=True
+)
 
 
-with k2:
+k2_html = f"""
+<div class="kpi-card">
+    <div class="kpi-title">
+        Gastos Operativos
+    </div>
+    <div class="kpi-value">
+        {dinero(gastos)}
+    </div>
+</div>
+"""
 
-    st.markdown(
-        f"""
-        <div class="kpi-card">
-
-            <div class="kpi-title">
-                Gastos Operativos
-            </div>
-
-            <div class="kpi-value">
-                {dinero(gastos)}
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+k2.markdown(
+    dedent(k2_html),
+    unsafe_allow_html=True
+)
 
 
-with k3:
+k3_html = f"""
+<div class="kpi-card">
+    <div class="kpi-title">
+        Flujo
+    </div>
+    <div class="kpi-value kpi-positive">
+        {dinero(flujo)}
+    </div>
+</div>
+"""
 
-    st.markdown(
-        f"""
-        <div class="kpi-card">
-
-            <div class="kpi-title">
-                Flujo
-            </div>
-
-            <div class="kpi-value kpi-positive">
-                {dinero(flujo)}
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+k3.markdown(
+    dedent(k3_html),
+    unsafe_allow_html=True
+)
 
 
-with k4:
+k4_html = f"""
+<div class="kpi-card">
+    <div class="kpi-title">
+        Rentabilidad
+    </div>
+    <div class="kpi-value">
+        {rentabilidad:.1f}%
+    </div>
+</div>
+"""
 
-    st.markdown(
-        f"""
-        <div class="kpi-card">
-
-            <div class="kpi-title">
-                Rentabilidad
-            </div>
-
-            <div class="kpi-value">
-                {rentabilidad:.1f}%
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+k4.markdown(
+    dedent(k4_html),
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
@@ -859,7 +845,6 @@ if meses_cerrados > 0:
                 "Ingreso",
                 "sum"
             ),
-
             Gasto_Promedio=(
                 "Gasto",
                 "sum"
@@ -927,7 +912,6 @@ resumen["Rentabilidad"] = resumen.apply(
     axis=1
 )
 
-
 resumen = resumen.merge(
     promedios,
     on=[
@@ -939,7 +923,7 @@ resumen = resumen.merge(
 
 
 # ============================================================
-# OCUPACIÓN AIRBNB
+# OCUPACIÓN
 # ============================================================
 
 ocupacion = cargar_ocupacion(
@@ -949,7 +933,7 @@ ocupacion = cargar_ocupacion(
 
 
 # ============================================================
-# UNIR FINANZAS + OCUPACIÓN
+# UNIR OCUPACIÓN
 # ============================================================
 
 resumen = resumen.merge(
@@ -972,26 +956,7 @@ resumen = resumen.merge(
 
 
 # ============================================================
-# MOSTRAR OCUPACIÓN SOLO PARA PROPIEDADES MAPEADAS
-# ============================================================
-
-# Si una propiedad financiera no tiene anuncio Airbnb
-# asociado en Participaciones, dejamos la ocupación como "—".
-
-for columna in [
-    "Reservas",
-    "Noches_Reservadas",
-    "Noches_Disponibles",
-    "Ocupacion_Porcentaje"
-]:
-
-    if columna in resumen.columns:
-
-        resumen[columna] = resumen[columna]
-
-
-# ============================================================
-# PROPIEDADES
+# TÍTULO PROPIEDADES
 # ============================================================
 
 st.markdown(
@@ -999,6 +964,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
+# ============================================================
+# TARJETAS
+# ============================================================
 
 if resumen.empty:
 
@@ -1008,17 +977,15 @@ if resumen.empty:
 
 else:
 
-    # 3 tarjetas por fila
-    filas = [
-        resumen.iloc[i:i + 3]
-        for i in range(
-            0,
-            len(resumen),
-            3
-        )
-    ]
+    for i in range(
+        0,
+        len(resumen),
+        3
+    ):
 
-    for fila in filas:
+        fila = resumen.iloc[
+            i:i + 3
+        ]
 
         cols = st.columns(3)
 
@@ -1027,149 +994,133 @@ else:
             fila.iterrows()
         ):
 
-            with col:
+            ingreso_prom = row.get(
+                "Ingreso_Promedio",
+                0
+            )
 
-                ingreso_prom = row.get(
-                    "Ingreso_Promedio",
-                    0
-                )
+            gasto_prom = row.get(
+                "Gasto_Promedio",
+                0
+            )
 
-                gasto_prom = row.get(
-                    "Gasto_Promedio",
-                    0
-                )
+            flujo_prom = row.get(
+                "Flujo_Promedio",
+                0
+            )
 
-                flujo_prom = row.get(
-                    "Flujo_Promedio",
-                    0
-                )
+            ocup = row.get(
+                "Ocupacion_Porcentaje",
+                None
+            )
 
-                ocup = row.get(
-                    "Ocupacion_Porcentaje",
-                    None
-                )
+            reservas = row.get(
+                "Reservas",
+                None
+            )
 
-                reservas = row.get(
-                    "Reservas",
-                    None
-                )
+            noches = row.get(
+                "Noches_Reservadas",
+                None
+            )
 
-                noches = row.get(
-                    "Noches_Reservadas",
-                    None
-                )
+            if pd.isna(ocup):
 
-                # --------------------------------------------
-                # Ocupación
-                # --------------------------------------------
+                ocupacion_html = """
+<div class="occupancy-box">
+    <div class="occupancy-label">
+        Ocupación
+    </div>
 
-                if pd.isna(ocup):
+    <div class="occupancy-value">
+        —
+    </div>
 
-                    ocupacion_html = """
-                    <div class="occupancy-box">
-                        <div class="occupancy-label">
-                            Ocupación
-                        </div>
+    <div class="occupancy-detail">
+        Sin anuncio asociado
+    </div>
+</div>
+"""
 
-                        <div class="occupancy-value">
-                            —
-                        </div>
+            else:
 
-                        <div class="occupancy-detail">
-                            Sin anuncio asociado
-                        </div>
-                    </div>
-                    """
+                ocupacion_html = f"""
+<div class="occupancy-box">
+    <div class="occupancy-label">
+        Ocupación
+    </div>
 
-                else:
+    <div class="occupancy-value">
+        {float(ocup):.1f}%
+    </div>
 
-                    ocupacion_html = f"""
-                    <div class="occupancy-box">
+    <div class="occupancy-detail">
+        {int(reservas)} reservas · {int(noches)} noches
+    </div>
+</div>
+"""
 
-                        <div class="occupancy-label">
-                            Ocupación
-                        </div>
+            tarjeta_html = f"""
+<div class="property-card">
 
-                        <div class="occupancy-value">
-                            {float(ocup):.1f}%
-                        </div>
+    <div class="property-name">
+        {row["Nombre_Propiedad"]}
+    </div>
 
-                        <div class="occupancy-detail">
-                            {int(reservas)} reservas ·
-                            {int(noches)} noches
-                        </div>
+    <div class="property-city">
+        {row["Ciudad"]}
+    </div>
 
-                    </div>
-                    """
+    <div class="metric-label">
+        Ingresos
+    </div>
 
-                # --------------------------------------------
-                # Tarjeta
-                # --------------------------------------------
+    <div class="metric-value">
+        {dinero(row["Ingreso"])}
+    </div>
 
-                st.markdown(
-                    f"""
-                    <div class="property-card">
+    <div class="metric-average">
+        Prom. mes {dinero_corto(ingreso_prom)}
+    </div>
 
-                        <div class="property-name">
-                            {row["Nombre_Propiedad"]}
-                        </div>
+    <div class="metric-label">
+        Gastos
+    </div>
 
-                        <div class="property-city">
-                            {row["Ciudad"]}
-                        </div>
+    <div class="metric-value">
+        {dinero(row["Gasto"])}
+    </div>
 
+    <div class="metric-average">
+        Prom. mes {dinero_corto(gasto_prom)}
+    </div>
 
-                        <div class="metric-label">
-                            Ingresos
-                        </div>
+    <div class="metric-label">
+        Flujo
+    </div>
 
-                        <div class="metric-value">
-                            {dinero(row["Ingreso"])}
-                        </div>
+    <div class="metric-value">
+        {dinero(row["Flujo"])}
+    </div>
 
-                        <div class="metric-average">
-                            Prom. mes {dinero_corto(ingreso_prom)}
-                        </div>
+    <div class="metric-average">
+        Prom. mes {dinero_corto(flujo_prom)}
+    </div>
 
+    <div class="metric-label">
+        Rentabilidad
+    </div>
 
-                        <div class="metric-label">
-                            Gastos
-                        </div>
+    <div class="metric-value">
+        {row["Rentabilidad"]:.1f}%
+    </div>
 
-                        <div class="metric-value">
-                            {dinero(row["Gasto"])}
-                        </div>
+    {ocupacion_html}
 
-                        <div class="metric-average">
-                            Prom. mes {dinero_corto(gasto_prom)}
-                        </div>
+</div>
+"""
 
-
-                        <div class="metric-label">
-                            Flujo
-                        </div>
-
-                        <div class="metric-value">
-                            {dinero(row["Flujo"])}
-                        </div>
-
-                        <div class="metric-average">
-                            Prom. mes {dinero_corto(flujo_prom)}
-                        </div>
-
-
-                        <div class="metric-label">
-                            Rentabilidad
-                        </div>
-
-                        <div class="metric-value">
-                            {row["Rentabilidad"]:.1f}%
-                        </div>
-
-
-                        {ocupacion_html}
-
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+            col.markdown(
+                dedent(tarjeta_html),
+                unsafe_allow_html=True
+            )
