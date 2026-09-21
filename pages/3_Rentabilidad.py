@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import html
+import textwrap
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -19,7 +20,7 @@ st.set_page_config(
 
 
 # ============================================================
-# ESTILO
+# ESTILOS
 # ============================================================
 
 st.markdown("""
@@ -47,7 +48,9 @@ html, body, [class*="css"] {
 }
 
 
-/* TÍTULO */
+/* ============================================================
+   HERO
+   ============================================================ */
 
 .hero {
     background: white;
@@ -72,7 +75,9 @@ html, body, [class*="css"] {
 }
 
 
-/* FILTROS */
+/* ============================================================
+   FILTROS
+   ============================================================ */
 
 .filter-box {
     background: white;
@@ -83,7 +88,9 @@ html, body, [class*="css"] {
 }
 
 
-/* KPI */
+/* ============================================================
+   KPI
+   ============================================================ */
 
 .kpi-card {
     background: white;
@@ -114,7 +121,9 @@ html, body, [class*="css"] {
 }
 
 
-/* SECCIÓN */
+/* ============================================================
+   SECCIONES
+   ============================================================ */
 
 .section-title {
     color: #172B4D;
@@ -131,7 +140,9 @@ html, body, [class*="css"] {
 }
 
 
-/* PROPIEDAD */
+/* ============================================================
+   TARJETAS DE PROPIEDAD
+   ============================================================ */
 
 .property-card {
     background: white;
@@ -244,7 +255,7 @@ html, body, [class*="css"] {
 
 
 # ============================================================
-# BIGQUERY
+# CONEXIÓN A BIGQUERY
 # ============================================================
 
 credentials = service_account.Credentials.from_service_account_info(
@@ -291,12 +302,21 @@ df = cargar_datos()
 
 
 # ============================================================
-# LIMPIEZA
+# VALIDACIÓN
 # ============================================================
 
 if df.empty:
-    st.error("No se encontraron registros de Airbnb en BigQuery.")
+
+    st.error(
+        "No se encontraron registros de Airbnb en BigQuery."
+    )
+
     st.stop()
+
+
+# ============================================================
+# LIMPIEZA
+# ============================================================
 
 df["Fecha"] = pd.to_datetime(
     df["Fecha"],
@@ -331,7 +351,9 @@ df["Nombre_Socio"] = (
     .astype(str)
 )
 
-df = df.dropna(subset=["Fecha"])
+df = df.dropna(
+    subset=["Fecha"]
+)
 
 
 # ============================================================
@@ -341,13 +363,14 @@ df = df.dropna(subset=["Fecha"])
 st.markdown("""
 <div class="hero">
 
-<div class="hero-title">
-🏠 Rentas Cortas
-</div>
+    <div class="hero-title">
+        🏠 Rentas Cortas
+    </div>
 
-<div class="hero-subtitle">
-Rentabilidad financiera por propiedad · Datos conectados directamente a BigQuery
-</div>
+    <div class="hero-subtitle">
+        Rentabilidad financiera por propiedad ·
+        Datos conectados directamente a BigQuery
+    </div>
 
 </div>
 """, unsafe_allow_html=True)
@@ -366,10 +389,14 @@ st.markdown("### 🔎 Filtros")
 
 col1, col2, col3, col4 = st.columns(4)
 
+
 with col1:
 
     ciudades = ["Todas"] + sorted(
-        df["Ciudad"].dropna().unique().tolist()
+        df["Ciudad"]
+        .dropna()
+        .unique()
+        .tolist()
     )
 
     ciudad = st.selectbox(
@@ -381,7 +408,10 @@ with col1:
 with col2:
 
     propiedades = ["Todas"] + sorted(
-        df["Nombre_Propiedad"].dropna().unique().tolist()
+        df["Nombre_Propiedad"]
+        .dropna()
+        .unique()
+        .tolist()
     )
 
     propiedad = st.selectbox(
@@ -393,7 +423,10 @@ with col2:
 with col3:
 
     socios = ["Todos"] + sorted(
-        df["Nombre_Socio"].dropna().unique().tolist()
+        df["Nombre_Socio"]
+        .dropna()
+        .unique()
+        .tolist()
     )
 
     socio = st.selectbox(
@@ -413,6 +446,7 @@ with col4:
         min_value=fecha_min,
         max_value=fecha_max
     )
+
 
 st.markdown(
     '</div>',
@@ -450,14 +484,32 @@ if socio != "Todos":
 
 if isinstance(fechas, tuple) and len(fechas) == 2:
 
-    fecha_inicio = pd.Timestamp(fechas[0])
-    fecha_fin = pd.Timestamp(fechas[1]) + pd.Timedelta(days=1)
+    fecha_inicio = pd.Timestamp(
+        fechas[0]
+    )
+
+    fecha_fin = (
+        pd.Timestamp(fechas[1])
+        + pd.Timedelta(days=1)
+    )
 
     df_f = df_f[
         (df_f["Fecha"] >= fecha_inicio)
         &
         (df_f["Fecha"] < fecha_fin)
     ]
+
+
+# ============================================================
+# FUNCIÓN DINERO
+# ============================================================
+
+def dinero(valor):
+
+    return f"${valor:,.0f}".replace(
+        ",",
+        "."
+    )
 
 
 # ============================================================
@@ -475,82 +527,88 @@ rentabilidad = (
 )
 
 
-def dinero(valor):
-
-    return f"${valor:,.0f}".replace(
-        ",", "."
-    )
-
-
 k1, k2, k3, k4 = st.columns(4)
 
 
 with k1:
 
-    st.markdown(f"""
-    <div class="kpi-card">
+    st.markdown(
+        f"""
+        <div class="kpi-card">
 
-    <div class="kpi-label">
-    💰 Ingresos brutos
-    </div>
+            <div class="kpi-label">
+                💰 Ingresos brutos
+            </div>
 
-    <div class="kpi-value">
-    {dinero(ingresos)}
-    </div>
+            <div class="kpi-value">
+                {dinero(ingresos)}
+            </div>
 
-    <div class="kpi-sub">
-    Ingresos registrados
-    </div>
+            <div class="kpi-sub">
+                Ingresos registrados
+            </div>
 
-    </div>
-    """, unsafe_allow_html=True)
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 with k2:
 
-    st.markdown(f"""
-    <div class="kpi-card">
+    st.markdown(
+        f"""
+        <div class="kpi-card">
 
-    <div class="kpi-label">
-    🧾 Gastos operativos
-    </div>
+            <div class="kpi-label">
+                🧾 Gastos operativos
+            </div>
 
-    <div class="kpi-value">
-    {dinero(gastos)}
-    </div>
+            <div class="kpi-value">
+                {dinero(gastos)}
+            </div>
 
-    <div class="kpi-sub">
-    Egresos registrados
-    </div>
+            <div class="kpi-sub">
+                Egresos registrados
+            </div>
 
-    </div>
-    """, unsafe_allow_html=True)
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 with k3:
 
-    flujo_color = "#0065BD" if flujo >= 0 else "#DE350B"
+    flujo_color = (
+        "#0065BD"
+        if flujo >= 0
+        else "#DE350B"
+    )
 
-    st.markdown(f"""
-    <div class="kpi-card">
+    st.markdown(
+        f"""
+        <div class="kpi-card">
 
-    <div class="kpi-label">
-    💵 Flujo / beneficio
-    </div>
+            <div class="kpi-label">
+                💵 Flujo / beneficio
+            </div>
 
-    <div class="kpi-value"
-         style="color:{flujo_color};">
+            <div
+                class="kpi-value"
+                style="color:{flujo_color};"
+            >
+                {dinero(flujo)}
+            </div>
 
-    {dinero(flujo)}
+            <div class="kpi-sub">
+                Ingresos − gastos
+            </div>
 
-    </div>
-
-    <div class="kpi-sub">
-    Ingresos − gastos
-    </div>
-
-    </div>
-    """, unsafe_allow_html=True)
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 with k4:
@@ -561,26 +619,29 @@ with k4:
         else "#DE350B"
     )
 
-    st.markdown(f"""
-    <div class="kpi-card">
+    st.markdown(
+        f"""
+        <div class="kpi-card">
 
-    <div class="kpi-label">
-    🎯 Rentabilidad
-    </div>
+            <div class="kpi-label">
+                🎯 Rentabilidad
+            </div>
 
-    <div class="kpi-value"
-         style="color:{margen_color};">
+            <div
+                class="kpi-value"
+                style="color:{margen_color};"
+            >
+                {rentabilidad:.1f}%
+            </div>
 
-    {rentabilidad:.1f}%
+            <div class="kpi-sub">
+                Objetivo de referencia: 35%
+            </div>
 
-    </div>
-
-    <div class="kpi-sub">
-    Objetivo de referencia: 35%
-    </div>
-
-    </div>
-    """, unsafe_allow_html=True)
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # ============================================================
@@ -588,13 +649,16 @@ with k4:
 # ============================================================
 
 st.markdown(
-    '<div class="section-title">🏢 Rentabilidad por propiedad</div>',
+    '<div class="section-title">'
+    '🏢 Rentabilidad por propiedad'
+    '</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
     '<div class="section-subtitle">'
-    'Desempeño financiero de cada propiedad en el periodo seleccionado'
+    'Desempeño financiero de cada propiedad '
+    'en el periodo seleccionado'
     '</div>',
     unsafe_allow_html=True
 )
@@ -631,6 +695,7 @@ resumen["Flujo"] = (
     resumen["Gasto"]
 )
 
+
 resumen["Rentabilidad"] = (
     resumen["Flujo"]
     /
@@ -640,8 +705,6 @@ resumen["Rentabilidad"] = (
 ).fillna(0)
 
 
-# Ordenar por rentabilidad descendente
-
 resumen = resumen.sort_values(
     "Rentabilidad",
     ascending=False
@@ -649,7 +712,7 @@ resumen = resumen.sort_values(
 
 
 # ============================================================
-# TARJETAS
+# TARJETAS DE PROPIEDADES
 # ============================================================
 
 for inicio in range(
@@ -694,8 +757,6 @@ for inicio in range(
         )
 
 
-        # Barra limitada entre 0 y 100
-
         progreso = max(
             0,
             min(
@@ -718,9 +779,15 @@ for inicio in range(
             clase = "alert"
 
 
-        with columna:
+        estado_clase = (
+            "alert-box"
+            if margen_prop < 35
+            else "ok-box"
+        )
 
-            st.markdown(f"""
+
+        tarjeta = textwrap.dedent(
+            f"""
             <div class="property-card {clase}">
 
                 <div class="property-name">
@@ -733,11 +800,14 @@ for inicio in range(
 
                 <div class="divider"></div>
 
-                <div style="display:flex;
-                            justify-content:space-between;
-                            margin-bottom:10px;">
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    margin-bottom:10px;
+                ">
 
                     <div>
+
                         <div class="metric-label">
                             Ingresos
                         </div>
@@ -745,10 +815,12 @@ for inicio in range(
                         <div class="metric-income">
                             {dinero(ingreso_prop)}
                         </div>
+
                     </div>
 
 
                     <div>
+
                         <div class="metric-label">
                             Gastos
                         </div>
@@ -756,15 +828,15 @@ for inicio in range(
                         <div class="metric-expense">
                             {dinero(gasto_prop)}
                         </div>
+
                     </div>
 
                 </div>
 
-
                 <div class="divider"></div>
 
-
                 <div>
+
                     <div class="metric-label">
                         Flujo / beneficio
                     </div>
@@ -772,8 +844,8 @@ for inicio in range(
                     <div class="metric-flow">
                         {dinero(flujo_prop)}
                     </div>
-                </div>
 
+                </div>
 
                 <div style="margin-top:20px;">
 
@@ -787,11 +859,11 @@ for inicio in range(
                             Rentabilidad
                         </div>
 
-                        <div class="margin-value"
-                             style="color:{color};">
-
+                        <div
+                            class="margin-value"
+                            style="color:{color};"
+                        >
                             {margen_prop:.1f}%
-
                         </div>
 
                     </div>
@@ -799,11 +871,13 @@ for inicio in range(
 
                     <div class="progress-bg">
 
-                        <div class="progress-fill"
-                             style="
-                             width:{progreso}%;
-                             background:{color};
-                             ">
+                        <div
+                            class="progress-fill"
+                            style="
+                                width:{progreso}%;
+                                background:{color};
+                            "
+                        >
                         </div>
 
                     </div>
@@ -811,22 +885,25 @@ for inicio in range(
                 </div>
 
 
-                <div class="{
-                    'alert-box'
-                    if margen_prop < 35
-                    else 'ok-box'
-                }">
-
+                <div class="{estado_clase}">
                     {estado}
-
                 </div>
 
             </div>
-            """, unsafe_allow_html=True)
+            """
+        )
+
+
+        with columna:
+
+            st.markdown(
+                tarjeta,
+                unsafe_allow_html=True
+            )
 
 
 # ============================================================
-# RESUMEN FINAL
+# PIE
 # ============================================================
 
 st.markdown("---")
