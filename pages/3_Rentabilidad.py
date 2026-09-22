@@ -135,6 +135,7 @@ st.markdown("""
     width: 145px;
     height: 52px;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .mini-chart-title {
@@ -145,61 +146,22 @@ st.markdown("""
     white-space: nowrap;
 }
 
-
-/* Sparkline sin SVG */
-
-.sparkline-container {
-    height: 27px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-    line-height: 10px;
-    white-space: nowrap;
-}
-
-.sparkline-line {
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    letter-spacing: 0px;
-    line-height: 10px;
-    height: 11px;
-    overflow: hidden;
-}
-
-.sparkline-2026 {
+.sparkline-text {
     color: #35B58A;
-}
-
-.sparkline-2025 {
-    color: #2673D9;
-    opacity: 0.75;
-}
-
-
-/* Barras mini */
-
-.mini-bars {
-    height: 27px;
-    width: 100%;
-    display: flex;
-    align-items: flex-end;
-    gap: 4px;
+    font-family: monospace;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -2px;
+    line-height: 18px;
+    white-space: nowrap;
     overflow: hidden;
+    margin-top: 2px;
 }
 
-.mini-bar-wrapper {
-    flex: 1;
-    height: 27px;
-    display: flex;
-    align-items: flex-end;
-}
-
-.mini-bar {
-    width: 100%;
-    min-height: 2px;
-    background: #7462D8;
-    border-radius: 2px 2px 0 0;
+.sparkline-purple {
+    color: #7462D8;
+    font-size: 17px;
+    letter-spacing: -1px;
 }
 
 .mini-chart-legend {
@@ -350,11 +312,6 @@ div[data-testid="stDateInput"] label {
     font-weight: 700;
     margin-top: 2px;
 }
-
-
-/* ============================================================
-   PROMEDIO MENSUAL
-   ============================================================ */
 
 .metric-average {
     color: #8A94A6;
@@ -838,7 +795,7 @@ def dinero_corto(valor):
 
 
 # ============================================================
-# MINI GRÁFICO — INGRESOS MENSUALES
+# MINI GRÁFICO DE INGRESOS
 # ============================================================
 
 def crear_sparkline(df_grafico):
@@ -848,17 +805,9 @@ def crear_sparkline(df_grafico):
 
     df_grafico = df_grafico.copy()
 
-    # Normalizar nombres de columnas
-    df_grafico.columns = [
-        str(col)
-        for col in df_grafico.columns
-    ]
-
-    # Asegurar 2025
     if "2025" not in df_grafico.columns:
         df_grafico["2025"] = 0
 
-    # Asegurar 2026
     if "2026" not in df_grafico.columns:
         df_grafico["2026"] = 0
 
@@ -880,11 +829,9 @@ def crear_sparkline(df_grafico):
         .tolist()
     )
 
-    # Solo enero-septiembre
     valores_2025 = valores_2025[:9]
     valores_2026 = valores_2026[:9]
 
-    # Completar meses faltantes
     while len(valores_2025) < 9:
         valores_2025.append(0)
 
@@ -897,12 +844,9 @@ def crear_sparkline(df_grafico):
         1
     )
 
-    # Caracteres de sparkline.
-    # NO usamos SVG para evitar que Streamlit
-    # muestre las etiquetas HTML.
     bloques = "▁▂▃▄▅▆▇█"
 
-    def construir_linea(valores):
+    def linea(valores):
 
         resultado = ""
 
@@ -915,40 +859,22 @@ def crear_sparkline(df_grafico):
             )
 
             indice = int(
-                proporcion * (
-                    len(bloques) - 1
-                )
+                proporcion * 7
             )
 
             resultado += bloques[indice]
 
         return resultado
 
-    linea_2026 = construir_linea(
-        valores_2026
+    return (
+        linea(valores_2026)
+        + " "
+        + linea(valores_2025)
     )
-
-    linea_2025 = construir_linea(
-        valores_2025
-    )
-
-    return f"""
-    <div class="sparkline-container">
-
-        <div class="sparkline-line sparkline-2026">
-            {linea_2026}
-        </div>
-
-        <div class="sparkline-line sparkline-2025">
-            {linea_2025}
-        </div>
-
-    </div>
-    """
 
 
 # ============================================================
-# MINI GRÁFICO — PROMEDIO POR PROPIEDAD
+# MINI GRÁFICO DE PROMEDIOS POR PROPIEDAD
 # ============================================================
 
 def crear_barras_propiedades(
@@ -987,34 +913,25 @@ def crear_barras_propiedades(
         1
     )
 
-    html = """
-    <div class="mini-bars">
-    """
+    bloques = "▁▂▃▄▅▆▇█"
+
+    resultado = ""
 
     for valor in valores:
 
-        porcentaje = (
-            valor
-            /
-            max_valor
-            *
-            100
+        proporcion = (
+            valor / max_valor
+            if max_valor > 0
+            else 0
         )
 
-        html += f"""
-        <div class="mini-bar-wrapper">
-            <div
-                class="mini-bar"
-                style="height:{max(porcentaje, 4):.1f}%;">
-            </div>
-        </div>
-        """
+        indice = int(
+            proporcion * 7
+        )
 
-    html += """
-    </div>
-    """
+        resultado += bloques[indice]
 
-    return html
+    return resultado
 
 
 # ============================================================
@@ -1127,13 +1044,9 @@ df_ytd = df[
     (df["Fecha"] < fin_hoy)
 ].copy()
 
-ingresos_ytd = (
-    df_ytd["Ingreso"].sum()
-)
+ingresos_ytd = df_ytd["Ingreso"].sum()
 
-gastos_ytd = (
-    df_ytd["Gasto"].sum()
-)
+gastos_ytd = df_ytd["Gasto"].sum()
 
 flujo_ytd = (
     ingresos_ytd
@@ -1165,7 +1078,7 @@ color_rentabilidad_ytd = (
 
 
 # ============================================================
-# DATOS MINI GRÁFICO MENSUAL
+# DATOS DEL MINI GRÁFICO MENSUAL
 # ============================================================
 
 df_grafico_mensual = df.copy()
@@ -1195,7 +1108,6 @@ grafico_mensual = (
     )
 )
 
-
 tabla_mensual = (
     grafico_mensual
     .pivot(
@@ -1206,16 +1118,10 @@ tabla_mensual = (
     .fillna(0)
 )
 
-
-# ============================================================
-# ASEGURAR AÑOS
-# ============================================================
-
 for año in [2025, 2026]:
 
     if año not in tabla_mensual.columns:
         tabla_mensual[año] = 0
-
 
 tabla_mensual = (
     tabla_mensual
@@ -1225,18 +1131,15 @@ tabla_mensual = (
     )
 )
 
-
 tabla_mensual[2025] = pd.to_numeric(
     tabla_mensual[2025],
     errors="coerce"
 ).fillna(0)
 
-
 tabla_mensual[2026] = pd.to_numeric(
     tabla_mensual[2026],
     errors="coerce"
 ).fillna(0)
-
 
 tabla_mensual = tabla_mensual[
     [2025, 2026]
@@ -1252,7 +1155,6 @@ df_promedio_header = df[
     &
     (df["Fecha"] < inicio_mes_actual)
 ].copy()
-
 
 if meses_cerrados > 0:
 
@@ -1341,22 +1243,22 @@ header_html = (
 
     '<div class="annual-card">'
 
-    f'<div class="annual-label">'
+    '<div class="annual-label">'
     f'Ingresos {hoy.year}'
-    f'</div>'
+    '</div>'
 
-    f'<div class="annual-value">'
+    '<div class="annual-value">'
     f'{dinero(ingresos_ytd)}'
-    f'</div>'
+    '</div>'
 
     '</div>'
 
 
     '<div class="annual-card">'
 
-    f'<div class="annual-label">'
+    '<div class="annual-label">'
     f'Flujo {hoy.year}'
-    f'</div>'
+    '</div>'
 
     f'<div class="annual-value" '
     f'style="color:{color_flujo_ytd};">'
@@ -1370,9 +1272,9 @@ header_html = (
 
     '<div class="annual-card">'
 
-    f'<div class="annual-label">'
+    '<div class="annual-label">'
     f'Rentabilidad {hoy.year}'
-    f'</div>'
+    '</div>'
 
     f'<div class="annual-value" '
     f'style="color:{color_rentabilidad_ytd};">'
@@ -1398,10 +1300,12 @@ header_html = (
     'Ingreso mensual'
     '</div>'
 
+    f'<div class="sparkline-text">'
     f'{sparkline}'
+    f'</div>'
 
     '<div class="mini-chart-legend">'
-    '▰ 2026&nbsp;&nbsp;━ 2025'
+    '2026 · 2025'
     '</div>'
 
     '</div>'
@@ -1410,13 +1314,15 @@ header_html = (
     '<div class="mini-chart">'
 
     '<div class="mini-chart-title">'
-    'Promedio mensual por propiedad'
+    'Promedio mensual'
     '</div>'
 
+    f'<div class="sparkline-text sparkline-purple">'
     f'{barras_propiedades}'
+    f'</div>'
 
     '<div class="mini-chart-legend">'
-    'Top propiedades'
+    'Por propiedad'
     '</div>'
 
     '</div>'
@@ -1434,7 +1340,6 @@ header_html = (
 
     '</div>'
 )
-
 
 st.markdown(
     header_html,
@@ -1519,9 +1424,7 @@ with col4:
     )
 
     fecha_max = max(
-        df["Fecha"]
-        .max()
-        .date(),
+        df["Fecha"].max().date(),
         hoy
     )
 
@@ -1580,13 +1483,11 @@ df_f = df[
     (df["Fecha"] < fecha_fin)
 ].copy()
 
-
 if ciudad != "Todas":
 
     df_f = df_f[
         df_f["Ciudad"] == ciudad
     ]
-
 
 if propiedad != "Todas":
 
@@ -1595,14 +1496,12 @@ if propiedad != "Todas":
         == propiedad
     ]
 
-
 if socio != "Todos":
 
     df_f = df_f[
         df_f["Nombre_Socio"]
         == socio
     ]
-
 
 if df_f.empty:
 
@@ -1642,16 +1541,14 @@ except Exception:
 # KPI DEL PERÍODO
 # ============================================================
 
-ingresos = (
-    df_f["Ingreso"].sum()
-)
+ingresos = df_f["Ingreso"].sum()
 
-gastos = (
-    df_f["Gasto"].sum()
-)
+gastos = df_f["Gasto"].sum()
 
 flujo = (
-    ingresos - gastos
+    ingresos
+    -
+    gastos
 )
 
 rentabilidad = (
@@ -1690,7 +1587,6 @@ with k1:
         '</div>'
 
         '</div>',
-
         unsafe_allow_html=True
     )
 
@@ -1713,7 +1609,6 @@ with k2:
         '</div>'
 
         '</div>',
-
         unsafe_allow_html=True
     )
 
@@ -1745,7 +1640,6 @@ with k3:
         '</div>'
 
         '</div>',
-
         unsafe_allow_html=True
     )
 
@@ -1777,7 +1671,6 @@ with k4:
         '</div>'
 
         '</div>',
-
         unsafe_allow_html=True
     )
 
@@ -1880,13 +1773,11 @@ resumen = (
     )
 )
 
-
 resumen["Flujo"] = (
     resumen["Ingreso"]
     -
     resumen["Gasto"]
 )
-
 
 resumen["Rentabilidad"] = (
     resumen["Flujo"]
@@ -1898,7 +1789,7 @@ resumen["Rentabilidad"] = (
 
 
 # ============================================================
-# ACUMULADO 2026 POR PROPIEDAD
+# ACUMULADO 2026
 # ============================================================
 
 resumen_ytd = (
@@ -1923,13 +1814,11 @@ resumen_ytd = (
     )
 )
 
-
 resumen_ytd["Flujo_YTD"] = (
     resumen_ytd["Ingreso_YTD"]
     -
     resumen_ytd["Gasto_YTD"]
 )
-
 
 resumen_ytd["Rentabilidad_YTD"] = (
     resumen_ytd["Flujo_YTD"]
@@ -1953,7 +1842,6 @@ resumen = resumen.merge(
     how="left"
 )
 
-
 resumen = resumen.merge(
     resumen_ytd[
         [
@@ -1971,7 +1859,6 @@ resumen = resumen.merge(
     ],
     how="left"
 )
-
 
 resumen = resumen.merge(
     df_ocupacion[
@@ -1993,7 +1880,7 @@ resumen = resumen.merge(
 
 
 # ============================================================
-# ORDENAR
+# ORDEN
 # ============================================================
 
 resumen = resumen.sort_values(
@@ -2015,7 +1902,6 @@ st.markdown(
     'Desempeño financiero de cada propiedad '
     'en el período seleccionado'
     '</div>',
-
     unsafe_allow_html=True
 )
 
@@ -2043,9 +1929,7 @@ for inicio in range(
         if indice >= len(resumen):
             continue
 
-        fila = resumen.iloc[
-            indice
-        ]
+        fila = resumen.iloc[indice]
 
         nombre = str(
             fila["Nombre_Propiedad"]
@@ -2249,7 +2133,7 @@ for inicio in range(
 
 
             # ------------------------------------------------
-            # INGRESOS / GASTOS / FLUJO
+            # MÉTRICAS
             # ------------------------------------------------
 
             '<div class="property-metrics">'
@@ -2311,7 +2195,7 @@ for inicio in range(
 
 
             # ------------------------------------------------
-            # RENTABILIDAD
+            # RENTABILIDAD DEL PERÍODO
             # ------------------------------------------------
 
             '<div class="margin-row">'
