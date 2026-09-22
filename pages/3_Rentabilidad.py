@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import textwrap
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -36,12 +37,7 @@ st.markdown("""
 
 .block-container {
     max-width: 1500px !important;
-
-    /* SOLO AJUSTE REALIZADO:
-       bajamos todo un poco para que la barra superior
-       no tape el contenido */
-    padding-top: 3rem !important;
-
+    padding-top: 0.85rem !important;
     padding-bottom: 1rem !important;
     padding-left: 3rem !important;
     padding-right: 3rem !important;
@@ -79,30 +75,25 @@ div[data-testid="stDecoration"] {
 
 /* ============================================================
    PRIMERA FILA
+   MARCA + GRÁFICOS + FILTROS
 ============================================================ */
 
 .brand-mini {
     height: 72px;
-
     background: #FFFFFF;
-
     border: 1px solid #DCE5EE;
     border-radius: 13px;
-
     padding: 10px 12px;
-
     display: flex;
     align-items: center;
-
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .logo-mini {
     width: 48px;
     height: 48px;
-
     border-radius: 13px;
-
     background: #FF214B;
 
     display: flex;
@@ -110,20 +101,15 @@ div[data-testid="stDecoration"] {
     justify-content: center;
 
     font-size: 26px;
-
     flex-shrink: 0;
-
     margin-right: 10px;
 }
 
 .brand-mini-title {
     font-size: 17px;
     line-height: 1.05;
-
     font-weight: 850;
-
     color: #17345E;
-
     white-space: nowrap;
 }
 
@@ -133,11 +119,8 @@ div[data-testid="stDecoration"] {
 
 .brand-mini-sub {
     font-size: 9px;
-
     color: #8290A4;
-
     margin-top: 5px;
-
     white-space: nowrap;
 }
 
@@ -148,11 +131,8 @@ div[data-testid="stDecoration"] {
 
 .filter-label {
     font-size: 10px;
-
     font-weight: 800;
-
     color: #71839A;
-
     margin-bottom: 3px;
 }
 
@@ -163,35 +143,27 @@ div[data-testid="stDateInput"] label {
 
 div[data-baseweb="select"] > div {
     background: #F4F7FA !important;
-
     border: 1px solid #DFE6ED !important;
-
     border-radius: 9px !important;
-
     min-height: 36px !important;
     height: 36px !important;
 }
 
 div[data-baseweb="select"] span {
     font-size: 12px !important;
-
     color: #3E4B5D !important;
 }
 
 div[data-testid="stDateInput"] > div {
     background: #F4F7FA !important;
-
     border: 1px solid #DFE6ED !important;
-
     border-radius: 9px !important;
-
     min-height: 36px !important;
     height: 36px !important;
 }
 
 div[data-testid="stDateInput"] input {
     font-size: 12px !important;
-
     color: #3E4B5D !important;
 }
 
@@ -207,29 +179,21 @@ div[data-testid="stPopover"] {
 div[data-testid="stPopover"] button {
     height: 72px !important;
     min-height: 72px !important;
-
     width: 100% !important;
 
     border-radius: 13px !important;
-
     border: 1px solid #DCE5EE !important;
-
     background: #FFFFFF !important;
 
     color: #50637B !important;
-
     font-size: 11px !important;
-
     font-weight: 750 !important;
-
     padding: 8px !important;
 }
 
 div[data-testid="stPopover"] button:hover {
     border-color: #17345E !important;
-
     color: #17345E !important;
-
     background: #F8FAFC !important;
 }
 
@@ -240,35 +204,24 @@ div[data-testid="stPopover"] button:hover {
 
 .top-card {
     height: 72px;
-
     background: #FFFFFF;
-
     border: 1px solid #DCE5EE;
-
     border-radius: 13px;
-
     padding: 10px 14px;
-
     box-sizing: border-box;
 }
 
 .top-label {
     font-size: 8px;
-
     font-weight: 800;
-
     color: #8290A4;
 }
 
 .top-value {
     font-size: 22px;
-
     font-weight: 850;
-
     color: #17345E;
-
     margin-top: 7px;
-
     line-height: 1;
 }
 
@@ -291,19 +244,14 @@ div.stButton {
 
 div.stButton > button {
     height: 72px !important;
-
     min-height: 72px !important;
 
     background: #FFFFFF !important;
-
     border: 1px solid #DCE5EE !important;
-
     border-radius: 13px !important;
 
     color: #50637B !important;
-
     font-size: 14px !important;
-
     font-weight: 750 !important;
 
     padding: 0 8px !important;
@@ -311,9 +259,7 @@ div.stButton > button {
 
 div.stButton > button:hover {
     border-color: #17345E !important;
-
     color: #17345E !important;
-
     background: #F8FAFC !important;
 }
 
@@ -324,23 +270,16 @@ div.stButton > button:hover {
 
 .section-title {
     font-size: 27px;
-
     font-weight: 850;
-
     color: #17345E;
-
     line-height: 1.1;
-
     margin-top: 12px;
 }
 
 .section-subtitle {
     font-size: 11px;
-
     color: #8290A4;
-
     margin-top: 4px;
-
     margin-bottom: 10px;
 }
 
@@ -351,13 +290,10 @@ div.stButton > button:hover {
 
 .kpi-card {
     background: #FFFFFF;
-
     border: 1px solid #DCE5EE;
-
     border-radius: 14px;
 
     height: 104px;
-
     padding: 14px 17px;
 
     box-sizing: border-box;
@@ -365,21 +301,15 @@ div.stButton > button:hover {
 
 .kpi-label {
     font-size: 9px;
-
     font-weight: 800;
-
     color: #7E8EA4;
 }
 
 .kpi-value {
     font-size: 26px;
-
     font-weight: 850;
-
     color: #17345E;
-
     margin-top: 9px;
-
     line-height: 1;
 }
 
@@ -393,9 +323,7 @@ div.stButton > button:hover {
 
 .kpi-sub {
     font-size: 9px;
-
     color: #8B98A9;
-
     margin-top: 8px;
 }
 
@@ -406,12 +334,8 @@ div.stButton > button:hover {
 
 .properties-grid {
     display: grid;
-
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr));
-
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 13px;
-
     margin-top: 13px;
 }
 
@@ -419,11 +343,9 @@ div.stButton > button:hover {
     background: #FFFFFF;
 
     border: 1px solid #DCE5EE;
-
     border-radius: 15px;
 
     padding: 15px;
-
     height: 270px;
 
     box-sizing: border-box;
@@ -440,27 +362,20 @@ div.stButton > button:hover {
     height: 46px;
 
     display: flex;
-
     justify-content: space-between;
-
     align-items: flex-start;
 }
 
 .property-name {
     font-size: 18px;
-
     font-weight: 850;
-
     color: #17345E;
-
     line-height: 1.1;
 }
 
 .property-city {
     font-size: 10px;
-
     color: #8290A4;
-
     margin-top: 5px;
 }
 
@@ -470,9 +385,7 @@ div.stButton > button:hover {
 
 .property-profit-value {
     font-size: 19px;
-
     font-weight: 850;
-
     line-height: 1;
 }
 
@@ -486,35 +399,27 @@ div.stButton > button:hover {
 
 .property-profit-label {
     font-size: 8px;
-
     color: #9AA5B4;
-
     margin-top: 5px;
 }
 
 
 /* ============================================================
-   MÉTRICAS
+   MÉTRICAS DE PROPIEDAD
 ============================================================ */
 
 .metrics-grid {
     display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
+    grid-template-columns: repeat(3, 1fr);
     gap: 7px;
-
     margin-top: 10px;
 }
 
 .metric-box {
     background: #F5F7F9;
-
     border-radius: 9px;
 
     padding: 9px;
-
     height: 61px;
 
     box-sizing: border-box;
@@ -522,17 +427,13 @@ div.stButton > button:hover {
 
 .metric-label {
     font-size: 8px;
-
     color: #8290A4;
 }
 
 .metric-value {
     font-size: 15px;
-
     font-weight: 850;
-
     margin-top: 6px;
-
     white-space: nowrap;
 }
 
@@ -559,21 +460,17 @@ div.stButton > button:hover {
 
 .profit-line {
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
 }
 
 .profit-label {
     font-size: 9px;
-
     color: #8290A4;
 }
 
 .profit-number {
     font-size: 13px;
-
     font-weight: 850;
 }
 
@@ -587,23 +484,18 @@ div.stButton > button:hover {
 
 .progress {
     width: 100%;
-
     height: 6px;
 
     background: #E7EDF1;
-
     border-radius: 6px;
 
     margin-top: 5px;
-
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-
     background: #00AC7C;
-
     border-radius: 6px;
 }
 
@@ -618,45 +510,35 @@ div.stButton > button:hover {
 
 .occupancy-box {
     background: #F5F7FA;
-
     border-radius: 9px;
 
     margin-top: 9px;
-
     padding: 8px 10px;
 
     height: 48px;
-
     box-sizing: border-box;
 }
 
 .occupancy-top {
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
 }
 
 .occupancy-label {
     font-size: 8px;
-
     color: #8290A4;
 }
 
 .occupancy-value {
     font-size: 14px;
-
     font-weight: 850;
-
     color: #6954E6;
 }
 
 .occupancy-detail {
     font-size: 8px;
-
     color: #96A1AF;
-
     margin-top: 3px;
 }
 
@@ -667,65 +549,51 @@ div.stButton > button:hover {
 
 .portfolio-card {
     background: #17345E;
-
     border-radius: 15px;
 
     padding: 16px;
-
     height: 270px;
 
     box-sizing: border-box;
-
     color: #FFFFFF;
 }
 
 .portfolio-title {
     font-size: 19px;
-
     font-weight: 850;
 }
 
 .portfolio-subtitle {
     font-size: 9px;
-
     color: #B9C8DA;
-
     margin-top: 4px;
 }
 
 .portfolio-main {
     font-size: 31px;
-
     font-weight: 850;
-
     margin-top: 20px;
 }
 
 .portfolio-main-label {
     font-size: 9px;
-
     color: #B9C8DA;
 }
 
 .portfolio-row {
     display: flex;
-
     justify-content: space-between;
-
     margin-top: 16px;
 }
 
 .portfolio-mini-label {
     font-size: 8px;
-
     color: #B9C8DA;
 }
 
 .portfolio-mini-value {
     font-size: 16px;
-
     font-weight: 800;
-
     margin-top: 3px;
 }
 
@@ -742,27 +610,21 @@ div.stButton > button:hover {
     background: #FFFFFF;
 
     border: 1px solid #DCE5EE;
-
     border-radius: 13px;
 
     padding: 13px 15px;
-
     margin-top: 12px;
 }
 
 .side-title {
     font-size: 14px;
-
     font-weight: 850;
-
     color: #17345E;
 }
 
 .side-subtitle {
     font-size: 9px;
-
     color: #8A98AA;
-
     margin-top: 4px;
 }
 
@@ -773,11 +635,8 @@ div.stButton > button:hover {
 
 .rank {
     display: flex;
-
     align-items: center;
-
     gap: 8px;
-
     margin-top: 9px;
 }
 
@@ -785,13 +644,10 @@ div.stButton > button:hover {
     width: 95px;
 
     font-size: 9px;
-
     color: #61738C;
 
     white-space: nowrap;
-
     overflow: hidden;
-
     text-overflow: ellipsis;
 }
 
@@ -799,9 +655,7 @@ div.stButton > button:hover {
     flex: 1;
 
     height: 8px;
-
     background: #EDF0F4;
-
     border-radius: 8px;
 
     overflow: hidden;
@@ -809,9 +663,7 @@ div.stButton > button:hover {
 
 .rank-fill {
     height: 100%;
-
     background: #7964DD;
-
     border-radius: 8px;
 }
 
@@ -821,7 +673,6 @@ div.stButton > button:hover {
     text-align: right;
 
     font-size: 9px;
-
     color: #697A91;
 }
 
@@ -1172,6 +1023,7 @@ rentabilidad_ytd = (
 
 # ============================================================
 # FILA SUPERIOR
+# MARCA + GRÁFICOS + FILTROS
 # ============================================================
 
 f1, f2, f3, f4, f5, f6 = st.columns(
@@ -1193,8 +1045,7 @@ f1, f2, f3, f4, f5, f6 = st.columns(
 
 with f1:
 
-    st.markdown(
-        """
+    brand_html = """
 <div class="brand-mini">
     <div class="logo-mini">🏢</div>
 
@@ -1208,13 +1059,17 @@ with f1:
         </div>
     </div>
 </div>
-""",
+"""
+
+    st.markdown(
+        textwrap.dedent(brand_html).strip(),
         unsafe_allow_html=True
     )
 
 
 # ============================================================
-# GRÁFICO INGRESO MENSUAL
+# GRÁFICO 1
+# INGRESO MENSUAL + ACUMULADO
 # ============================================================
 
 with f2:
@@ -1258,7 +1113,8 @@ with f2:
     )
 
     mensual["Acumulado"] = (
-        mensual["Ingresos"].cumsum()
+        mensual["Ingresos"]
+        .cumsum()
     )
 
     with st.popover(
@@ -1343,7 +1199,8 @@ with f2:
 
 
 # ============================================================
-# GRÁFICO INGRESOS POR PROPIEDAD
+# GRÁFICO 2
+# INGRESOS POR PROPIEDAD + PROMEDIO
 # ============================================================
 
 with f3:
@@ -1408,7 +1265,8 @@ with f3:
                 ],
                 y=[
                     promedio_propiedad
-                ] * len(
+                ] *
+                len(
                     propiedades_grafico
                 ),
                 name="Promedio",
@@ -1548,7 +1406,7 @@ else:
 
 
 # ============================================================
-# FILTRADO
+# FILTRADO FINANCIERO
 # ============================================================
 
 df_f = df[
@@ -1573,17 +1431,22 @@ if propiedad != "Todas":
 
 
 # ============================================================
-# TOTALES
+# TOTALES DEL PERÍODO
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
 
 gastos = df_f["Gasto"].sum()
 
-flujo = ingresos - gastos
+flujo = (
+    ingresos -
+    gastos
+)
 
 rentabilidad = (
-    flujo / ingresos * 100
+    flujo /
+    ingresos *
+    100
     if ingresos
     else 0
 )
@@ -1689,7 +1552,7 @@ resumen = (
 
 
 # ============================================================
-# NAVEGACIÓN
+# ESTADO DE NAVEGACIÓN
 # ============================================================
 
 if "vista_airbnb" not in st.session_state:
@@ -1698,7 +1561,7 @@ if "vista_airbnb" not in st.session_state:
 
 
 # ============================================================
-# INDICADORES + NAVEGACIÓN
+# FILA INDICADORES + NAVEGACIÓN
 # ============================================================
 
 r1, r2, r3, r4, r5, r6 = st.columns(
@@ -1713,6 +1576,10 @@ r1, r2, r3, r4, r5, r6 = st.columns(
     gap="small"
 )
 
+
+# ============================================================
+# INGRESOS 2026
+# ============================================================
 
 with r1:
 
@@ -1734,6 +1601,10 @@ INGRESOS 2026
     )
 
 
+# ============================================================
+# FLUJO 2026
+# ============================================================
+
 with r2:
 
     st.markdown(
@@ -1753,6 +1624,10 @@ FLUJO 2026
         unsafe_allow_html=True
     )
 
+
+# ============================================================
+# RENTABILIDAD 2026
+# ============================================================
 
 with r3:
 
@@ -1780,6 +1655,10 @@ RENTABILIDAD 2026
     )
 
 
+# ============================================================
+# BOTÓN PROPIEDADES
+# ============================================================
+
 with r4:
 
     if st.button(
@@ -1792,6 +1671,10 @@ with r4:
         st.rerun()
 
 
+# ============================================================
+# BOTÓN FINANCIERO
+# ============================================================
+
 with r5:
 
     if st.button(
@@ -1803,6 +1686,10 @@ with r5:
 
         st.rerun()
 
+
+# ============================================================
+# BOTÓN OCUPACIÓN
+# ============================================================
 
 with r6:
 
@@ -1856,7 +1743,9 @@ def tarjeta_propiedad(row):
 
     else:
 
-        ocup_text = f"{float(ocup):.1f}%"
+        ocup_text = (
+            f"{float(ocup):.1f}%"
+        )
 
         if pd.isna(reservas):
 
@@ -2099,6 +1988,10 @@ Desempeño financiero de tus propiedades Airbnb en el período seleccionado.
     )
 
 
+    # ========================================================
+    # KPI DEL PERÍODO
+    # ========================================================
+
     k1, k2, k3, k4 = st.columns(
         4,
         gap="small"
@@ -2213,16 +2106,13 @@ Objetivo: 35%
 
     cards_html = '<div class="properties-grid">'
 
-
     for _, row in resumen.iterrows():
 
         cards_html += tarjeta_propiedad(row)
 
-
     cards_html += tarjeta_portafolio()
 
     cards_html += "</div>"
-
 
     st.markdown(
         cards_html,
@@ -2269,7 +2159,6 @@ Período seleccionado
 </div>
 """
 
-
         for _, row in ranking.iterrows():
 
             width = (
@@ -2305,9 +2194,7 @@ style="width:{width:.1f}%;">
 </div>
 """
 
-
         html += "</div>"
-
 
         st.markdown(
             html,
