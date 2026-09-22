@@ -36,8 +36,10 @@ st.markdown("""
 
 .block-container {
     max-width: 1500px !important;
-    padding-top: 2.2rem !important;
-    padding-bottom: 1.5rem !important;
+    padding-top: 0.8rem !important;
+    padding-bottom: 1rem !important;
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
 }
 
 #MainMenu,
@@ -47,48 +49,35 @@ footer {
 
 
 /* ============================================================
-   FILA 1
-============================================================ */
-
-.top-control {
-    background: #FFFFFF;
-    border: 1px solid #DCE5EE;
-    border-radius: 15px;
-    padding: 9px;
-    margin-bottom: 10px;
-}
-
-
-/* ============================================================
-   MARCA
+   PRIMERA FILA
 ============================================================ */
 
 .brand-mini {
-    height: 76px;
+    height: 68px;
     background: #FFFFFF;
     border: 1px solid #DCE5EE;
     border-radius: 13px;
-    padding: 10px 12px;
+    padding: 9px 11px;
     display: flex;
     align-items: center;
     box-sizing: border-box;
 }
 
 .logo-mini {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
     background: #FF214B;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 26px;
     flex-shrink: 0;
-    margin-right: 10px;
+    margin-right: 9px;
 }
 
 .brand-mini-title {
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.05;
     font-weight: 850;
     color: #17345E;
@@ -113,7 +102,7 @@ footer {
     font-size: 9px;
     font-weight: 800;
     color: #71839A;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 div[data-testid="stSelectbox"] label,
@@ -125,8 +114,8 @@ div[data-baseweb="select"] > div {
     background: #F4F7FA !important;
     border: 1px solid #DFE6ED !important;
     border-radius: 9px !important;
-    min-height: 38px !important;
-    height: 38px !important;
+    min-height: 36px !important;
+    height: 36px !important;
 }
 
 div[data-baseweb="select"] span {
@@ -138,8 +127,8 @@ div[data-testid="stDateInput"] > div {
     background: #F4F7FA !important;
     border: 1px solid #DFE6ED !important;
     border-radius: 9px !important;
-    min-height: 38px !important;
-    height: 38px !important;
+    min-height: 36px !important;
+    height: 36px !important;
 }
 
 div[data-testid="stDateInput"] input {
@@ -153,8 +142,8 @@ div[data-testid="stDateInput"] input {
 ============================================================ */
 
 div[data-testid="stPopover"] button {
-    height: 76px !important;
-    min-height: 76px !important;
+    height: 68px !important;
+    min-height: 68px !important;
     width: 100% !important;
     border-radius: 13px !important;
     border: 1px solid #DCE5EE !important;
@@ -172,21 +161,11 @@ div[data-testid="stPopover"] button:hover {
 
 
 /* ============================================================
-   FILA 2
-============================================================ */
-
-.row-two {
-    margin-top: 0px;
-    margin-bottom: 15px;
-}
-
-
-/* ============================================================
-   INDICADORES
+   INDICADORES SUPERIORES
 ============================================================ */
 
 .top-card {
-    height: 78px;
+    height: 72px;
     background: #FFFFFF;
     border: 1px solid #DCE5EE;
     border-radius: 13px;
@@ -204,7 +183,7 @@ div[data-testid="stPopover"] button:hover {
     font-size: 22px;
     font-weight: 850;
     color: #17345E;
-    margin-top: 8px;
+    margin-top: 7px;
     line-height: 1;
 }
 
@@ -218,12 +197,16 @@ div[data-testid="stPopover"] button:hover {
 
 
 /* ============================================================
-   BOTONES NAVEGACIÓN
+   BOTONES DE NAVEGACIÓN
 ============================================================ */
 
+div.stButton {
+    margin-top: 0 !important;
+}
+
 div.stButton > button {
-    height: 78px !important;
-    min-height: 78px !important;
+    height: 72px !important;
+    min-height: 72px !important;
     background: #FFFFFF !important;
     border: 1px solid #DCE5EE !important;
     border-radius: 13px !important;
@@ -249,18 +232,19 @@ div.stButton > button:hover {
     font-weight: 850;
     color: #17345E;
     line-height: 1.1;
+    margin-top: 12px;
 }
 
 .section-subtitle {
     font-size: 11px;
     color: #8290A4;
     margin-top: 4px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 
 /* ============================================================
-   KPI PERÍODO
+   KPI DEL PERÍODO
 ============================================================ */
 
 .kpi-card {
@@ -562,7 +546,7 @@ div.stButton > button:hover {
 
 
 /* ============================================================
-   PANELES
+   PANELES INFERIORES
 ============================================================ */
 
 .side-card {
@@ -634,12 +618,13 @@ div.stButton > button:hover {
 
 @media (max-width: 1200px) {
 
-    .properties-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+    .block-container {
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
     }
 
-    .brand-mini-title {
-        font-size: 16px;
+    .properties-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
 }
@@ -744,6 +729,7 @@ def cargar_datos_financieros():
         "Ciudad",
         "Nombre_Socio"
     ]:
+
         df[col] = (
             df[col]
             .fillna("Sin información")
@@ -910,7 +896,7 @@ def cargar_reservas(
 
 
 # ============================================================
-# CARGA
+# CARGA DATOS
 # ============================================================
 
 df = cargar_datos_financieros()
@@ -940,7 +926,8 @@ fin_hoy = (
 # ============================================================
 
 df_ytd = df[
-    (df["Fecha"] >= inicio_anio) &
+    (df["Fecha"] >= inicio_anio)
+    &
     (df["Fecha"] < fin_hoy)
 ].copy()
 
@@ -963,22 +950,18 @@ rentabilidad_ytd = (
 
 
 # ============================================================
-# FILTROS
+# FILA 1
+# MARCA + GRÁFICOS + FILTROS
 # ============================================================
-
-st.markdown(
-    '<div class="top-control">',
-    unsafe_allow_html=True
-)
 
 f1, f2, f3, f4, f5, f6 = st.columns(
     [
-        1.65,
+        1.60,
+        0.95,
+        0.95,
         1.05,
         1.05,
-        1.15,
-        1.15,
-        1.45
+        1.35
     ],
     gap="small"
 )
@@ -1017,7 +1000,7 @@ Rentabilidad financiera · Solo Airbnb
 
 
 # ============================================================
-# GRÁFICO MENSUAL
+# GRÁFICO INGRESO MENSUAL
 # ============================================================
 
 with f2:
@@ -1066,7 +1049,7 @@ with f2:
     )
 
     with st.popover(
-        "📊 Ingreso mensual",
+        "📊  Ingreso mensual",
         use_container_width=True
     ):
 
@@ -1147,7 +1130,7 @@ with f2:
 
 
 # ============================================================
-# GRÁFICO POR PROPIEDAD
+# GRÁFICO INGRESOS POR PROPIEDAD
 # ============================================================
 
 with f3:
@@ -1177,7 +1160,7 @@ with f3:
     )
 
     with st.popover(
-        "🏢 Ingresos propiedad",
+        "🏢  Ingresos propiedad",
         use_container_width=True
     ):
 
@@ -1257,7 +1240,7 @@ with f3:
 
 
 # ============================================================
-# CIUDAD
+# FILTRO CIUDAD
 # ============================================================
 
 with f4:
@@ -1282,7 +1265,7 @@ with f4:
 
 
 # ============================================================
-# PROPIEDAD
+# FILTRO PROPIEDAD
 # ============================================================
 
 with f5:
@@ -1307,7 +1290,7 @@ with f5:
 
 
 # ============================================================
-# PERÍODO
+# FILTRO PERÍODO
 # ============================================================
 
 with f6:
@@ -1325,12 +1308,6 @@ with f6:
         ),
         label_visibility="collapsed"
     )
-
-
-st.markdown(
-    '</div>',
-    unsafe_allow_html=True
-)
 
 
 # ============================================================
@@ -1352,14 +1329,9 @@ else:
 
 
 # ============================================================
-# FILA 2:
-# 3 INDICADORES + 3 BOTONES
+# FILA 2
+# INDICADORES + NAVEGACIÓN
 # ============================================================
-
-st.markdown(
-    '<div class="row-two">',
-    unsafe_allow_html=True
-)
 
 r1, r2, r3, r4, r5, r6 = st.columns(
     [
@@ -1374,9 +1346,9 @@ r1, r2, r3, r4, r5, r6 = st.columns(
 )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # INGRESOS 2026
-# ------------------------------------------------------------
+# ============================================================
 
 with r1:
 
@@ -1398,9 +1370,9 @@ INGRESOS 2026
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # FLUJO 2026
-# ------------------------------------------------------------
+# ============================================================
 
 with r2:
 
@@ -1422,9 +1394,9 @@ FLUJO 2026
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # RENTABILIDAD 2026
-# ------------------------------------------------------------
+# ============================================================
 
 with r3:
 
@@ -1452,9 +1424,9 @@ RENTABILIDAD 2026
     )
 
 
-# ------------------------------------------------------------
-# PROPIEDADES
-# ------------------------------------------------------------
+# ============================================================
+# NAVEGACIÓN PROPIEDADES
+# ============================================================
 
 with r4:
 
@@ -1467,9 +1439,9 @@ with r4:
         st.rerun()
 
 
-# ------------------------------------------------------------
-# FINANCIERO
-# ------------------------------------------------------------
+# ============================================================
+# NAVEGACIÓN FINANCIERO
+# ============================================================
 
 with r5:
 
@@ -1482,9 +1454,9 @@ with r5:
         st.rerun()
 
 
-# ------------------------------------------------------------
-# OCUPACIÓN
-# ------------------------------------------------------------
+# ============================================================
+# NAVEGACIÓN OCUPACIÓN
+# ============================================================
 
 with r6:
 
@@ -1495,12 +1467,6 @@ with r6:
 
         st.session_state.vista_airbnb = "Ocupación"
         st.rerun()
-
-
-st.markdown(
-    '</div>',
-    unsafe_allow_html=True
-)
 
 
 # ============================================================
@@ -1929,16 +1895,12 @@ if st.session_state.vista_airbnb == "Propiedades":
 
     st.markdown(
         """
-<div style="margin-top:8px;">
-
 <div class="section-title">
 🏢 Tu portafolio
 </div>
 
 <div class="section-subtitle">
 Desempeño financiero de tus propiedades Airbnb en el período seleccionado.
-</div>
-
 </div>
 """,
         unsafe_allow_html=True
@@ -2058,7 +2020,7 @@ Objetivo: 35%
 
 
     # ========================================================
-    # TARJETAS
+    # PROPIEDADES
     # ========================================================
 
     cards_html = '<div class="properties-grid">'
@@ -2081,7 +2043,7 @@ Objetivo: 35%
 
 
     # ========================================================
-    # RANKING
+    # PANELES INFERIORES
     # ========================================================
 
     ranking_col, acumulado_col = st.columns(
@@ -2219,16 +2181,12 @@ elif st.session_state.vista_airbnb == "Financiero":
 
     st.markdown(
         """
-<div style="margin-top:8px;">
-
 <div class="section-title">
 💰 Financiero
 </div>
 
 <div class="section-subtitle">
 Evolución mensual de ingresos, gastos y flujo durante 2026.
-</div>
-
 </div>
 """,
         unsafe_allow_html=True
@@ -2350,16 +2308,12 @@ elif st.session_state.vista_airbnb == "Ocupación":
 
     st.markdown(
         """
-<div style="margin-top:8px;">
-
 <div class="section-title">
 📊 Ocupación Airbnb
 </div>
 
 <div class="section-subtitle">
 Reservas y noches ocupadas durante el período seleccionado.
-</div>
-
 </div>
 """,
         unsafe_allow_html=True
