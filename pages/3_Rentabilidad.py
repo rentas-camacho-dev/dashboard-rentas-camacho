@@ -38,7 +38,7 @@ st.markdown("""
     max-width: 1500px !important;
 
     /* Espacio suficiente para la barra superior */
-    padding-top: 1.15rem !important;
+    padding-top: 2.15rem !important;
     padding-bottom: 1rem !important;
     padding-left: 3rem !important;
     padding-right: 3rem !important;
