@@ -38,7 +38,7 @@ st.markdown("""
     max-width: 1500px !important;
 
     /* Espacio suficiente para la barra superior */
-    padding-top: 1.15rem !important;
+    padding-top: 1.65rem !important;
     padding-bottom: 1rem !important;
     padding-left: 3rem !important;
     padding-right: 3rem !important;
@@ -87,7 +87,6 @@ div[data-testid="stDecoration"] {
     display: flex;
     align-items: center;
     box-sizing: border-box;
-    margin-top: 8px;
 }
 
 .logo-mini {
