@@ -1103,6 +1103,18 @@ with f2:
     mensual["Mes"] = mensual["Mes_Num"].map(nombres_meses)
     mensual_2025["Mes"] = mensual_2025["Mes_Num"].map(nombres_meses)
 
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stPopoverBody"] {
+            width: 700px !important;
+            max-width: 700px !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    
     with st.popover(
         "📊  Ingreso mensual",
         use_container_width=True
