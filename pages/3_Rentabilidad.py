@@ -3,7 +3,6 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from datetime import date
-import textwrap
 
 
 # ============================================================
@@ -19,7 +18,7 @@ st.set_page_config(
 
 
 # ============================================================
-# CSS
+# CSS GENERAL
 # ============================================================
 
 st.markdown("""
@@ -87,7 +86,7 @@ st.markdown("""
 
 
 /* ============================================================
-   MINI HEADER
+   MINI CARDS HEADER
    ============================================================ */
 
 .mini-card {
@@ -194,18 +193,6 @@ div[data-testid="stDateInput"] > div {
 
 
 /* ============================================================
-   LAYOUT PRINCIPAL
-   ============================================================ */
-
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 190px 1fr;
-    gap: 16px;
-    align-items: start;
-}
-
-
-/* ============================================================
    COLUMNA RESUMEN
    ============================================================ */
 
@@ -218,12 +205,6 @@ div[data-testid="stDateInput"] > div {
     margin-bottom: 7px;
 }
 
-.kpi-column {
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-}
-
 .kpi-card {
     background: white;
     border: 1px solid #E0E6ED;
@@ -232,6 +213,7 @@ div[data-testid="stDateInput"] > div {
     height: 91px;
     box-sizing: border-box;
     box-shadow: 0 3px 9px rgba(20,40,70,0.035);
+    margin-bottom: 9px;
 }
 
 .kpi-title {
@@ -277,215 +259,6 @@ div[data-testid="stDateInput"] > div {
 
 
 /* ============================================================
-   TARJETA PROPIEDAD
-   ============================================================ */
-
-.property-card {
-    background: white;
-    border: 1px solid #DDE4EC;
-    border-radius: 15px;
-    padding: 14px;
-    height: 318px;
-    box-sizing: border-box;
-    box-shadow: 0 3px 10px rgba(20,40,70,0.035);
-    overflow: hidden;
-}
-
-.property-card.bad {
-    border: 1px solid #FF9A9A;
-}
-
-
-/* ============================================================
-   HEADER PROPIEDAD
-   ============================================================ */
-
-.property-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-    min-height: 39px;
-}
-
-.property-name {
-    font-size: 17px;
-    font-weight: 800;
-    color: #19345C;
-    line-height: 1.1;
-}
-
-.property-city {
-    font-size: 10px;
-    color: #71809A;
-    margin-top: 5px;
-}
-
-.property-profit {
-    font-size: 16px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-.property-profit.good {
-    color: #00A878;
-}
-
-.property-profit.bad {
-    color: #E53B24;
-}
-
-.accumulated {
-    font-size: 8px;
-    color: #8795AA;
-    margin-top: 2px;
-    text-align: right;
-}
-
-
-/* ============================================================
-   MÉTRICAS
-   ============================================================ */
-
-.metric-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-top: 12px;
-}
-
-.metric-box {
-    background: #F6F8FA;
-    border-radius: 9px;
-    padding: 8px 7px;
-    height: 65px;
-    box-sizing: border-box;
-}
-
-.metric-label {
-    font-size: 9px;
-    font-weight: 600;
-    color: #71809A;
-}
-
-.metric-value {
-    font-size: 13px;
-    font-weight: 800;
-    margin-top: 5px;
-    line-height: 1;
-    white-space: nowrap;
-}
-
-.metric-value.income {
-    color: #009D72;
-}
-
-.metric-value.expense {
-    color: #FF3B20;
-}
-
-.metric-value.flow {
-    color: #006FCB;
-}
-
-.metric-average {
-    font-size: 8px;
-    color: #8795AA;
-    margin-top: 6px;
-    white-space: nowrap;
-}
-
-
-/* ============================================================
-   RENTABILIDAD
-   ============================================================ */
-
-.profit-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 12px;
-}
-
-.profit-label {
-    font-size: 10px;
-    font-weight: 600;
-    color: #71809A;
-}
-
-.progress-bg {
-    height: 5px;
-    border-radius: 8px;
-    background: #E7ECF1;
-    margin-top: 5px;
-    overflow: hidden;
-}
-
-.progress-good {
-    height: 100%;
-    background: #00A878;
-    border-radius: 8px;
-}
-
-.progress-bad {
-    height: 100%;
-    background: #E53B24;
-    border-radius: 8px;
-}
-
-.target-good {
-    color: #009A6C;
-    font-size: 9px;
-    font-weight: 700;
-    margin-top: 5px;
-}
-
-.target-bad {
-    color: #E53B24;
-    font-size: 9px;
-    font-weight: 700;
-    margin-top: 5px;
-}
-
-
-/* ============================================================
-   OCUPACIÓN
-   ============================================================ */
-
-.occupancy-box {
-    background: #F6F8FA;
-    border-radius: 9px;
-    padding: 8px 9px;
-    margin-top: 9px;
-    height: 48px;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.occupancy-title {
-    font-size: 9px;
-    font-weight: 600;
-    color: #71809A;
-}
-
-.occupancy-value {
-    font-size: 14px;
-    font-weight: 800;
-    color: #7256E8;
-    margin-top: 3px;
-}
-
-.occupancy-detail {
-    font-size: 8px;
-    line-height: 1.5;
-    color: #8795AA;
-    text-align: right;
-}
-
-
-/* ============================================================
    STREAMLIT
    ============================================================ */
 
@@ -502,7 +275,7 @@ footer {
 
 
 # ============================================================
-# BIGQUERY
+# CREDENCIALES BIGQUERY
 # ============================================================
 
 credentials = service_account.Credentials.from_service_account_info(
@@ -785,7 +558,7 @@ inicio_mes = date(
 
 
 # ============================================================
-# YTD
+# INDICADORES YTD
 # ============================================================
 
 df_ytd = df[
@@ -806,12 +579,6 @@ rentabilidad_ytd = (
     flujo_ytd / ingresos_ytd * 100
     if ingresos_ytd != 0
     else 0
-)
-
-color_rent_ytd = (
-    "green"
-    if rentabilidad_ytd >= 35
-    else "red"
 )
 
 
@@ -921,7 +688,7 @@ else:
 
 
 # ============================================================
-# BARRAS
+# BARRAS MINI GRÁFICOS
 # ============================================================
 
 barras_ingreso = ""
@@ -964,6 +731,12 @@ for _, row in promedio_propiedad.iterrows():
 # HEADER
 # ============================================================
 
+color_rent_ytd = (
+    "green"
+    if rentabilidad_ytd >= 35
+    else "red"
+)
+
 header_html = f"""
 <div class="hero">
 
@@ -993,7 +766,6 @@ Rentabilidad financiera · Solo Airbnb
 
 </div>
 
-
 <div class="mini-card" style="flex:1;">
 
 <div class="mini-label">
@@ -1005,7 +777,6 @@ INGRESOS 2026
 </div>
 
 </div>
-
 
 <div class="mini-card" style="flex:1;">
 
@@ -1019,7 +790,6 @@ FLUJO 2026
 
 </div>
 
-
 <div class="mini-card" style="flex:1;">
 
 <div class="mini-label">
@@ -1031,7 +801,6 @@ RENTABILIDAD 2026
 </div>
 
 </div>
-
 
 <div class="mini-chart-card" style="flex:1;">
 
@@ -1049,7 +818,6 @@ Ingreso mensual
 </div>
 
 </div>
-
 
 <div class="mini-chart-card" style="flex:1;">
 
@@ -1074,7 +842,7 @@ Promedio mensual
 """
 
 st.markdown(
-    textwrap.dedent(header_html).strip(),
+    header_html,
     unsafe_allow_html=True
 )
 
@@ -1166,6 +934,10 @@ with col4:
     )
 
 
+# ============================================================
+# PERÍODO
+# ============================================================
+
 if (
     isinstance(periodo, tuple)
     and len(periodo) == 2
@@ -1212,7 +984,7 @@ if socio != "Todos":
 
 
 # ============================================================
-# KPIs DEL PERÍODO
+# KPIs PERÍODO
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
@@ -1232,7 +1004,7 @@ rentabilidad = (
 
 
 # ============================================================
-# RESUMEN PROPIEDADES
+# RESUMEN POR PROPIEDAD
 # ============================================================
 
 resumen = (
@@ -1412,7 +1184,7 @@ resumen = resumen.merge(
 
 
 # ============================================================
-# ORDEN
+# ORDENAR PROPIEDADES
 # ============================================================
 
 resumen = resumen.sort_values(
@@ -1422,7 +1194,7 @@ resumen = resumen.sort_values(
 
 
 # ============================================================
-# LAYOUT PRINCIPAL
+# LAYOUT
 # ============================================================
 
 left, right = st.columns(
@@ -1599,30 +1371,26 @@ Desempeño financiero de cada propiedad en el período seleccionado
             inicio:inicio + 3
         ]
 
-        cols = st.columns(3)
+        cols = st.columns(
+            3,
+            gap="small"
+        )
+
 
         for col, (_, row) in zip(
             cols,
             fila.iterrows()
         ):
 
+            # ------------------------------------------------
+            # DATOS
+            # ------------------------------------------------
+
             rent = float(
                 row["Rentabilidad"]
             )
 
             es_buena = rent >= 35
-
-            card_class = (
-                "good"
-                if es_buena
-                else "bad"
-            )
-
-            profit_class = (
-                "good"
-                if es_buena
-                else "bad"
-            )
 
             progress = min(
                 max(rent, 0),
@@ -1631,21 +1399,39 @@ Desempeño financiero de cada propiedad en el período seleccionado
 
 
             # ------------------------------------------------
-            # OBJETIVO
+            # CLASES
             # ------------------------------------------------
 
             if es_buena:
 
-                objetivo = """
-<div class="target-good">
+                card_border = "#DDE4EC"
+                profit_color = "#00A878"
+                progress_color = "#00A878"
+
+                objetivo_html = """
+<div style="
+font-size:9px;
+font-weight:700;
+color:#009A6C;
+margin-top:5px;
+">
 ✓ Sobre objetivo
 </div>
 """
 
             else:
 
-                objetivo = """
-<div class="target-bad">
+                card_border = "#FF9999"
+                profit_color = "#E53B24"
+                progress_color = "#E53B24"
+
+                objetivo_html = """
+<div style="
+font-size:9px;
+font-weight:700;
+color:#E53B24;
+margin-top:5px;
+">
 ⚠ Bajo objetivo
 </div>
 """
@@ -1691,31 +1477,215 @@ Desempeño financiero de cada propiedad en el período seleccionado
             )
 
 
-            ocupacion_txt = (
-                "—"
-                if pd.isna(ocupacion)
-                else f"{float(ocupacion):.1f}%"
-            )
+            if pd.isna(ocupacion):
 
-            reservas_txt = (
-                "—"
-                if pd.isna(reservas)
-                else f"{int(reservas)} reservas"
-            )
+                ocupacion_txt = "—"
 
-            noches_txt = (
-                "—"
-                if pd.isna(noches)
-                else f"{int(noches)} noches"
-            )
+            else:
+
+                ocupacion_txt = (
+                    f"{float(ocupacion):.1f}%"
+                )
+
+
+            if pd.isna(reservas):
+
+                reservas_txt = "—"
+
+            else:
+
+                reservas_txt = (
+                    f"{int(reservas)} reservas"
+                )
+
+
+            if pd.isna(noches):
+
+                noches_txt = "—"
+
+            else:
+
+                noches_txt = (
+                    f"{int(noches)} noches"
+                )
 
 
             # ------------------------------------------------
-            # HTML TARJETA
+            # TARJETA
+            #
+            # IMPORTANTE:
+            # Se usa st.html para evitar que Streamlit
+            # muestre el HTML como texto.
             # ------------------------------------------------
 
             html_card = f"""
-<div class="property-card {card_class}">
+<style>
+
+.property-card {{
+    width: 100%;
+    height: 318px;
+    box-sizing: border-box;
+    background: #FFFFFF;
+    border: 1px solid {card_border};
+    border-radius: 15px;
+    padding: 14px;
+    box-shadow: 0 3px 10px rgba(20,40,70,0.035);
+    font-family: Arial, sans-serif;
+    color: #19345C;
+    overflow: hidden;
+}}
+
+.property-header {{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    height: 42px;
+}}
+
+.property-name {{
+    font-size: 17px;
+    font-weight: 800;
+    color: #19345C;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}}
+
+.property-city {{
+    font-size: 10px;
+    color: #71809A;
+    margin-top: 5px;
+}}
+
+.property-profit {{
+    font-size: 16px;
+    font-weight: 800;
+    color: {profit_color};
+    text-align: right;
+    white-space: nowrap;
+}}
+
+.accumulated {{
+    font-size: 8px;
+    color: #8795AA;
+    margin-top: 2px;
+    text-align: right;
+}}
+
+.metric-grid {{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 11px;
+}}
+
+.metric-box {{
+    background: #F6F8FA;
+    border-radius: 9px;
+    padding: 8px 7px;
+    height: 65px;
+    box-sizing: border-box;
+}}
+
+.metric-label {{
+    font-size: 9px;
+    font-weight: 600;
+    color: #71809A;
+}}
+
+.metric-value {{
+    font-size: 13px;
+    font-weight: 800;
+    margin-top: 5px;
+    line-height: 1;
+    white-space: nowrap;
+}}
+
+.income {{
+    color: #009D72;
+}}
+
+.expense {{
+    color: #FF3B20;
+}}
+
+.flow {{
+    color: #006FCB;
+}}
+
+.metric-average {{
+    font-size: 8px;
+    color: #8795AA;
+    margin-top: 6px;
+    white-space: nowrap;
+}}
+
+.profit-row {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}}
+
+.profit-label {{
+    font-size: 10px;
+    font-weight: 600;
+    color: #71809A;
+}}
+
+.progress-bg {{
+    height: 5px;
+    border-radius: 8px;
+    background: #E7ECF1;
+    margin-top: 5px;
+    overflow: hidden;
+}}
+
+.progress-bar {{
+    height: 100%;
+    width: {progress:.1f}%;
+    background: {progress_color};
+    border-radius: 8px;
+}}
+
+.occupancy-box {{
+    background: #F6F8FA;
+    border-radius: 9px;
+    padding: 8px 9px;
+    margin-top: 9px;
+    height: 48px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}}
+
+.occupancy-title {{
+    font-size: 9px;
+    font-weight: 600;
+    color: #71809A;
+}}
+
+.occupancy-value {{
+    font-size: 14px;
+    font-weight: 800;
+    color: #7256E8;
+    margin-top: 3px;
+}}
+
+.occupancy-detail {{
+    font-size: 8px;
+    line-height: 1.5;
+    color: #8795AA;
+    text-align: right;
+}}
+
+</style>
+
+
+<div class="property-card">
 
     <div class="property-header">
 
@@ -1731,9 +1701,10 @@ Desempeño financiero de cada propiedad en el período seleccionado
 
         </div>
 
+
         <div>
 
-            <div class="property-profit {profit_class}">
+            <div class="property-profit">
                 {rent:.1f}%
             </div>
 
@@ -1747,6 +1718,7 @@ Desempeño financiero de cada propiedad en el período seleccionado
 
 
     <div class="metric-grid">
+
 
         <div class="metric-box">
 
@@ -1798,6 +1770,7 @@ Desempeño financiero de cada propiedad en el período seleccionado
 
         </div>
 
+
     </div>
 
 
@@ -1807,7 +1780,7 @@ Desempeño financiero de cada propiedad en el período seleccionado
             Rentabilidad
         </div>
 
-        <div class="property-profit {profit_class}">
+        <div class="property-profit">
             {rent:.1f}%
         </div>
 
@@ -1816,15 +1789,12 @@ Desempeño financiero de cada propiedad en el período seleccionado
 
     <div class="progress-bg">
 
-        <div
-            class="progress-{'good' if es_buena else 'bad'}"
-            style="width:{progress:.1f}%;">
-        </div>
+        <div class="progress-bar"></div>
 
     </div>
 
 
-    {objetivo}
+    {objetivo_html}
 
 
     <div class="occupancy-box">
@@ -1841,6 +1811,7 @@ Desempeño financiero de cada propiedad en el período seleccionado
 
         </div>
 
+
         <div class="occupancy-detail">
             {reservas_txt}<br>
             {noches_txt}
@@ -1848,20 +1819,25 @@ Desempeño financiero de cada propiedad en el período seleccionado
 
     </div>
 
+
 </div>
 """
 
-            html_card = textwrap.dedent(
-                html_card
-            ).strip()
+
+            # ------------------------------------------------
+            # RENDER CORRECTO
+            # ------------------------------------------------
 
             with col:
 
-                st.markdown(
-                    html_card,
-                    unsafe_allow_html=True
+                st.html(
+                    html_card
                 )
 
+
+        # ----------------------------------------------------
+        # ESPACIO ENTRE FILAS
+        # ----------------------------------------------------
 
         st.markdown(
             "<div style='height:9px'></div>",
