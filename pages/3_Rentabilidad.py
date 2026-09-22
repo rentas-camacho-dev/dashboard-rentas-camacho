@@ -34,7 +34,11 @@ st.markdown("""
     max-width: 1500px !important;
 }
 
-/* HEADER */
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
 .app-header {
     background: #FFFFFF;
     border: 1px solid #E3E8EF;
@@ -84,7 +88,7 @@ st.markdown("""
     display: flex;
     align-items: center;
     gap: 9px;
-    flex: 1;
+    flex-shrink: 0;
 }
 
 .annual-card {
@@ -117,7 +121,56 @@ st.markdown("""
     margin-left: auto;
 }
 
-/* FILTROS */
+
+/* ============================================================
+   MINI GRÁFICOS DEL HEADER
+   ============================================================ */
+
+.header-minicharts {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 3px;
+    flex-shrink: 0;
+}
+
+.mini-chart {
+    background: #F7F9FB;
+    border: 1px solid #E7EBF0;
+    border-radius: 10px;
+    padding: 5px 8px;
+    width: 145px;
+    height: 52px;
+    box-sizing: border-box;
+}
+
+.mini-chart-title {
+    color: #8A94A6;
+    font-size: 8px;
+    font-weight: 600;
+    margin-bottom: 1px;
+    white-space: nowrap;
+}
+
+.mini-chart svg {
+    width: 100%;
+    height: 27px;
+    display: block;
+}
+
+.mini-chart-legend {
+    color: #8A94A6;
+    font-size: 7px;
+    text-align: right;
+    margin-top: -1px;
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   FILTROS
+   ============================================================ */
+
 div[data-testid="stSelectbox"] label,
 div[data-testid="stDateInput"] label {
     font-size: 12px !important;
@@ -125,7 +178,11 @@ div[data-testid="stDateInput"] label {
     font-weight: 500 !important;
 }
 
-/* KPI */
+
+/* ============================================================
+   KPI
+   ============================================================ */
+
 .kpi-card {
     background: #FFFFFF;
     border: 1px solid #E3E8EF;
@@ -155,7 +212,11 @@ div[data-testid="stDateInput"] label {
     margin-top: 6px;
 }
 
-/* SECCIÓN */
+
+/* ============================================================
+   SECCIÓN
+   ============================================================ */
+
 .section-title {
     color: #172B4D;
     font-size: 21px;
@@ -170,7 +231,11 @@ div[data-testid="stDateInput"] label {
     margin-bottom: 10px;
 }
 
-/* PROPIEDADES */
+
+/* ============================================================
+   PROPIEDADES
+   ============================================================ */
+
 .property-card {
     background: #FFFFFF;
     border: 1px solid #E0E6ED;
@@ -235,12 +300,21 @@ div[data-testid="stDateInput"] label {
     margin-top: 2px;
 }
 
-/* PROMEDIO MENSUAL */
+
+/* ============================================================
+   PROMEDIO MENSUAL
+   ============================================================ */
+
 .metric-average {
     color: #8A94A6;
     font-size: 8px;
     margin-top: 3px;
 }
+
+
+/* ============================================================
+   RENTABILIDAD
+   ============================================================ */
 
 .margin-row {
     display: flex;
@@ -287,7 +361,11 @@ div[data-testid="stDateInput"] label {
     color: #DE350B;
 }
 
-/* OCUPACIÓN */
+
+/* ============================================================
+   OCUPACIÓN
+   ============================================================ */
+
 .occupancy-row {
     display: flex;
     gap: 7px;
@@ -560,7 +638,6 @@ def cargar_ocupacion(
             reservas_mapeadas
 
         GROUP BY
-
             Nombre_Propiedad,
             Ciudad
     ),
@@ -585,18 +662,15 @@ def cargar_ocupacion(
 
         p.Ciudad,
 
-
         COALESCE(
             r.Reservas,
             0
         ) AS Reservas,
 
-
         COALESCE(
             r.Noches_Reservadas,
             0
         ) AS Noches_Reservadas,
-
 
         DATE_DIFF(
 
@@ -607,7 +681,6 @@ def cargar_ocupacion(
             DAY
 
         ) AS Noches_Disponibles,
-
 
         ROUND(
 
@@ -634,10 +707,8 @@ def cargar_ocupacion(
 
         ) AS Ocupacion_Porcentaje
 
-
     FROM
         propiedades p
-
 
     LEFT JOIN resumen_reservas r
 
@@ -646,7 +717,6 @@ def cargar_ocupacion(
 
         AND p.Ciudad
             = r.Ciudad
-
 
     ORDER BY
         p.Nombre_Propiedad
@@ -714,6 +784,219 @@ def dinero_corto(valor):
             ",",
             "."
         )
+
+
+# ============================================================
+# FUNCIONES MINI GRÁFICOS
+# ============================================================
+
+def crear_sparkline(df_grafico):
+
+    if df_grafico.empty:
+        return ""
+
+    valores_2025 = (
+        df_grafico["2025"]
+        .astype(float)
+        .tolist()
+    )
+
+    valores_2026 = (
+        df_grafico["2026"]
+        .astype(float)
+        .tolist()
+    )
+
+    todos = (
+        valores_2025
+        +
+        valores_2026
+    )
+
+    max_valor = (
+        max(todos)
+        if todos
+        else 1
+    )
+
+    if max_valor == 0:
+        max_valor = 1
+
+    ancho = 130
+    alto = 27
+
+    def puntos(valores):
+
+        resultado = []
+
+        for i, valor in enumerate(valores):
+
+            x = (
+                i
+                *
+                ancho
+                /
+                8
+            )
+
+            y = (
+                alto
+                -
+                (
+                    valor
+                    /
+                    max_valor
+                    *
+                    21
+                )
+                -
+                2
+            )
+
+            resultado.append(
+                f"{x:.1f},{y:.1f}"
+            )
+
+        return " ".join(resultado)
+
+
+    puntos_2026 = puntos(
+        valores_2026
+    )
+
+    puntos_2025 = puntos(
+        valores_2025
+    )
+
+
+    return f"""
+    <svg
+        viewBox="0 0 {ancho} {alto}"
+        preserveAspectRatio="none"
+    >
+
+        <polyline
+            points="{puntos_2026}"
+            fill="none"
+            stroke="#35B58A"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        />
+
+        <polyline
+            points="{puntos_2025}"
+            fill="none"
+            stroke="#2673D9"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            opacity="0.75"
+        />
+
+    </svg>
+    """
+
+
+def crear_barras_propiedades(
+    df_propiedades
+):
+
+    if df_propiedades.empty:
+        return ""
+
+    df_propiedades = (
+        df_propiedades
+        .sort_values(
+            "Ingreso_Promedio",
+            ascending=False
+        )
+        .head(6)
+    )
+
+
+    valores = (
+        df_propiedades[
+            "Ingreso_Promedio"
+        ]
+        .astype(float)
+        .tolist()
+    )
+
+
+    if not valores:
+        return ""
+
+
+    max_valor = max(
+        valores
+    )
+
+    if max_valor == 0:
+        max_valor = 1
+
+
+    html = """
+    <svg
+        viewBox="0 0 140 30"
+        preserveAspectRatio="none"
+    >
+    """
+
+
+    cantidad = len(
+        valores
+    )
+
+    ancho_barra = (
+        130
+        /
+        cantidad
+    )
+
+
+    for i, valor in enumerate(
+        valores
+    ):
+
+        altura = (
+            valor
+            /
+            max_valor
+            *
+            22
+        )
+
+        x = (
+            i
+            *
+            ancho_barra
+            +
+            2
+        )
+
+        y = (
+            27
+            -
+            altura
+        )
+
+
+        html += f"""
+        <rect
+            x="{x:.1f}"
+            y="{y:.1f}"
+            width="{max(ancho_barra - 4, 3):.1f}"
+            height="{altura:.1f}"
+            rx="2"
+            fill="#7462D8"
+        />
+        """
+
+
+    html += "</svg>"
+
+    return html
 
 
 # ============================================================
@@ -798,7 +1081,19 @@ inicio_anio = pd.Timestamp(
 
 fin_hoy = (
     pd.Timestamp(hoy)
-    + pd.Timedelta(days=1)
+    +
+    pd.Timedelta(days=1)
+)
+
+meses_cerrados = max(
+    hoy.month - 1,
+    0
+)
+
+inicio_mes_actual = pd.Timestamp(
+    hoy.year,
+    hoy.month,
+    1
 )
 
 
@@ -813,9 +1108,13 @@ df_ytd = df[
 ].copy()
 
 
-ingresos_ytd = df_ytd["Ingreso"].sum()
+ingresos_ytd = (
+    df_ytd["Ingreso"].sum()
+)
 
-gastos_ytd = df_ytd["Gasto"].sum()
+gastos_ytd = (
+    df_ytd["Gasto"].sum()
+)
 
 flujo_ytd = (
     ingresos_ytd
@@ -851,6 +1150,161 @@ color_rentabilidad_ytd = (
 
 
 # ============================================================
+# DATOS MINI GRÁFICO MENSUAL
+# ============================================================
+
+df_grafico_mensual = df.copy()
+
+df_grafico_mensual["Año"] = (
+    df_grafico_mensual["Fecha"]
+    .dt.year
+)
+
+df_grafico_mensual["Mes"] = (
+    df_grafico_mensual["Fecha"]
+    .dt.month
+)
+
+
+grafico_mensual = (
+
+    df_grafico_mensual
+
+    .groupby(
+        [
+            "Año",
+            "Mes"
+        ],
+        as_index=False
+    )
+
+    .agg(
+        Ingreso=(
+            "Ingreso",
+            "sum"
+        )
+    )
+)
+
+
+tabla_mensual = (
+
+    grafico_mensual
+
+    .pivot(
+        index="Mes",
+        columns="Año",
+        values="Ingreso"
+    )
+
+    .fillna(0)
+)
+
+
+for año in [2025, 2026]:
+
+    if año not in tabla_mensual.columns:
+
+        tabla_mensual[año] = 0
+
+
+tabla_mensual = (
+
+    tabla_mensual
+
+    .sort_index()
+
+    .reindex(
+        range(1, 10),
+        fill_value=0
+    )
+
+)
+
+
+tabla_mensual = tabla_mensual[
+    [2025, 2026]
+]
+
+
+# ============================================================
+# DATOS MINI GRÁFICO POR PROPIEDAD
+# ============================================================
+
+df_promedio_header = df.copy()
+
+
+df_promedio_header = (
+    df_promedio_header[
+        (df_promedio_header["Fecha"] >= inicio_anio)
+        &
+        (df_promedio_header["Fecha"] < inicio_mes_actual)
+    ]
+)
+
+
+if meses_cerrados > 0:
+
+    promedio_header = (
+
+        df_promedio_header
+
+        .groupby(
+            [
+                "Nombre_Propiedad",
+                "Ciudad"
+            ],
+            as_index=False
+        )
+
+        .agg(
+            Ingreso_Total=(
+                "Ingreso",
+                "sum"
+            )
+        )
+
+    )
+
+
+    promedio_header[
+        "Ingreso_Promedio"
+    ] = (
+
+        promedio_header[
+            "Ingreso_Total"
+        ]
+
+        /
+
+        meses_cerrados
+
+    )
+
+else:
+
+    promedio_header = pd.DataFrame(
+        columns=[
+            "Nombre_Propiedad",
+            "Ciudad",
+            "Ingreso_Promedio"
+        ]
+    )
+
+
+sparkline = crear_sparkline(
+    tabla_mensual
+)
+
+
+barras_propiedades = (
+    crear_barras_propiedades(
+        promedio_header
+    )
+)
+
+
+# ============================================================
 # HEADER
 # ============================================================
 
@@ -872,6 +1326,11 @@ header_html = (
     '</div>'
 
     '</div>'
+
+
+    # --------------------------------------------------------
+    # INDICADORES ANUALES
+    # --------------------------------------------------------
 
     '<div class="header-annual">'
 
@@ -915,6 +1374,45 @@ header_html = (
 
     f'{rentabilidad_ytd:.1f}%'
 
+    '</div>'
+
+    '</div>'
+
+    '</div>'
+
+
+    # --------------------------------------------------------
+    # MINI GRÁFICOS
+    # --------------------------------------------------------
+
+    '<div class="header-minicharts">'
+
+
+    '<div class="mini-chart">'
+
+    '<div class="mini-chart-title">'
+    'Ingreso mensual'
+    '</div>'
+
+    f'{sparkline}'
+
+    '<div class="mini-chart-legend">'
+    '▰ 2026&nbsp;&nbsp;━ 2025'
+    '</div>'
+
+    '</div>'
+
+
+    '<div class="mini-chart">'
+
+    '<div class="mini-chart-title">'
+    'Promedio mensual por propiedad'
+    '</div>'
+
+    f'{barras_propiedades}'
+
+    '<div class="mini-chart-legend">'
+    'Top propiedades'
     '</div>'
 
     '</div>'
@@ -1049,7 +1547,8 @@ if (
 
     fecha_fin = (
         pd.Timestamp(fechas[1])
-        + pd.Timedelta(days=1)
+        +
+        pd.Timedelta(days=1)
     )
 
 else:
@@ -1060,7 +1559,8 @@ else:
 
     fecha_fin = (
         fecha_inicio
-        + pd.Timedelta(days=1)
+        +
+        pd.Timedelta(days=1)
     )
 
 
@@ -1136,9 +1636,13 @@ except Exception:
 # KPI DEL PERÍODO
 # ============================================================
 
-ingresos = df_f["Ingreso"].sum()
+ingresos = (
+    df_f["Ingreso"].sum()
+)
 
-gastos = df_f["Gasto"].sum()
+gastos = (
+    df_f["Gasto"].sum()
+)
 
 flujo = (
     ingresos
@@ -1235,18 +1739,6 @@ with k4:
 # PROMEDIOS MENSUALES
 # ============================================================
 
-meses_cerrados = max(
-    hoy.month - 1,
-    0
-)
-
-inicio_mes_actual = pd.Timestamp(
-    hoy.year,
-    hoy.month,
-    1
-)
-
-
 df_cerrado = df[
     (df["Fecha"] >= inicio_anio)
     &
@@ -1269,6 +1761,7 @@ if meses_cerrados > 0:
         )
 
         .agg(
+
             Ingreso_Promedio=(
                 "Ingreso",
                 "sum"
@@ -1278,26 +1771,36 @@ if meses_cerrados > 0:
                 "Gasto",
                 "sum"
             )
+
         )
 
     )
 
+
     promedios["Ingreso_Promedio"] = (
+
         promedios["Ingreso_Promedio"]
         /
         meses_cerrados
+
     )
 
+
     promedios["Gasto_Promedio"] = (
+
         promedios["Gasto_Promedio"]
         /
         meses_cerrados
+
     )
 
+
     promedios["Flujo_Promedio"] = (
+
         promedios["Ingreso_Promedio"]
         -
         promedios["Gasto_Promedio"]
+
     )
 
 else:
@@ -1398,9 +1901,11 @@ resumen_ytd = (
 
 
 resumen_ytd["Flujo_YTD"] = (
+
     resumen_ytd["Ingreso_YTD"]
     -
     resumen_ytd["Gasto_YTD"]
+
 )
 
 
@@ -1430,6 +1935,7 @@ resumen = resumen.merge(
 
 
 resumen = resumen.merge(
+
     resumen_ytd[
         [
             "Nombre_Propiedad",
@@ -1440,15 +1946,19 @@ resumen = resumen.merge(
             "Rentabilidad_YTD"
         ]
     ],
+
     on=[
         "Nombre_Propiedad",
         "Ciudad"
     ],
+
     how="left"
+
 )
 
 
 resumen = resumen.merge(
+
     df_ocupacion[
         [
             "Nombre_Propiedad",
@@ -1459,11 +1969,14 @@ resumen = resumen.merge(
             "Ocupacion_Porcentaje"
         ]
     ],
+
     on=[
         "Nombre_Propiedad",
         "Ciudad"
     ],
+
     how="left"
+
 )
 
 
@@ -1482,13 +1995,16 @@ resumen = resumen.sort_values(
 # ============================================================
 
 st.markdown(
+
     '<div class="section-title">'
     '🏢 Rentabilidad por propiedad'
     '</div>'
+
     '<div class="section-subtitle">'
     'Desempeño financiero de cada propiedad '
     'en el período seleccionado'
     '</div>',
+
     unsafe_allow_html=True
 )
 
@@ -1505,37 +2021,49 @@ for inicio in range(
 
     columnas = st.columns(3)
 
+
     for posicion in range(3):
 
         indice = (
             inicio
-            + posicion
+            +
+            posicion
         )
+
 
         if indice >= len(resumen):
             continue
 
-        fila = resumen.iloc[indice]
+
+        fila = resumen.iloc[
+            indice
+        ]
+
 
         nombre = str(
             fila["Nombre_Propiedad"]
         )
 
+
         ciudad_nombre = str(
             fila["Ciudad"]
         )
+
 
         ingreso_prop = float(
             fila["Ingreso"]
         )
 
+
         gasto_prop = float(
             fila["Gasto"]
         )
 
+
         flujo_prop = float(
             fila["Flujo"]
         )
+
 
         margen_prop = float(
             fila["Rentabilidad"]
@@ -1552,29 +2080,41 @@ for inicio in range(
 
 
         ingreso_promedio = float(
+
             fila["Ingreso_Promedio"]
+
             if not pd.isna(
                 fila["Ingreso_Promedio"]
             )
+
             else 0
+
         )
 
 
         gasto_promedio = float(
+
             fila["Gasto_Promedio"]
+
             if not pd.isna(
                 fila["Gasto_Promedio"]
             )
+
             else 0
+
         )
 
 
         flujo_promedio = float(
+
             fila["Flujo_Promedio"]
+
             if not pd.isna(
                 fila["Flujo_Promedio"]
             )
+
             else 0
+
         )
 
 
@@ -1583,24 +2123,34 @@ for inicio in range(
         # ----------------------------------------------------
 
         reservas_prop = (
+
             0
+
             if pd.isna(
                 fila.get("Reservas")
             )
+
             else int(
                 fila["Reservas"]
             )
+
         )
 
 
         noches_prop = (
+
             0
+
             if pd.isna(
-                fila.get("Noches_Reservadas")
+                fila.get(
+                    "Noches_Reservadas"
+                )
             )
+
             else int(
                 fila["Noches_Reservadas"]
             )
+
         )
 
 
@@ -1622,17 +2172,21 @@ for inicio in range(
         else:
 
             ocupacion_texto = (
+
                 f"{float(ocupacion_prop):.1f}%"
+
             )
 
             ocupacion_detalle = (
+
                 f"{reservas_prop} reservas · "
                 f"{noches_prop} noches"
+
             )
 
 
         # ----------------------------------------------------
-        # COLOR RENTABILIDAD PERÍODO
+        # COLOR RENTABILIDAD
         # ----------------------------------------------------
 
         if margen_prop >= 35:
@@ -1669,9 +2223,13 @@ for inicio in range(
         # ----------------------------------------------------
 
         color_ytd = (
+
             "#00A878"
+
             if margen_ytd >= 35
+
             else "#EF4444"
+
         )
 
 
@@ -1680,11 +2238,14 @@ for inicio in range(
         # ----------------------------------------------------
 
         progreso = max(
+
             0,
+
             min(
                 margen_prop,
                 100
             )
+
         )
 
 
@@ -1697,9 +2258,11 @@ for inicio in range(
             f'<div class="property-card '
             f'{clase_tarjeta}">'
 
+
             '<div style="display:flex;'
             'justify-content:space-between;'
             'align-items:flex-start;">'
+
 
             '<div>'
 
@@ -1712,6 +2275,7 @@ for inicio in range(
             f'</div>'
 
             '</div>'
+
 
             '<div style="text-align:right;">'
 
@@ -1729,6 +2293,7 @@ for inicio in range(
             '</div>'
 
             '</div>'
+
 
             '</div>'
 
@@ -1862,6 +2427,7 @@ for inicio in range(
 
 
             '</div>'
+
         )
 
 
@@ -1880,7 +2446,9 @@ for inicio in range(
 st.markdown("---")
 
 st.caption(
+
     f"Airbnb Financial Hub · "
     f"{len(df_f):,} registros · "
     f"{len(resumen)} propiedades"
+
 )
