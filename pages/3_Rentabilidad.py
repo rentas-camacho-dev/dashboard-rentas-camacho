@@ -37,10 +37,11 @@ st.markdown("""
 .block-container {
     max-width: 1500px !important;
 
-    /*
-    ESPACIO PARA LA BARRA BLANCA SUPERIOR DE STREAMLIT
+    /* IMPORTANTE:
+       Espacio para la barra superior de Streamlit,
+       sin dejar el contenido demasiado abajo.
     */
-    padding-top: 5.5rem !important;
+    padding-top: 3.2rem !important;
     padding-bottom: 1rem !important;
     padding-left: 3rem !important;
     padding-right: 3rem !important;
@@ -53,15 +54,13 @@ footer {
 
 
 /* ============================================================
-   BARRA SUPERIOR DE STREAMLIT
+   BARRA SUPERIOR STREAMLIT
 ============================================================ */
 
 header[data-testid="stHeader"] {
     height: 46px !important;
     min-height: 46px !important;
-
     background: #FFFFFF !important;
-
     border-bottom: 1px solid #EEF2F5 !important;
 }
 
@@ -79,34 +78,28 @@ div[data-testid="stDecoration"] {
 
 
 /* ============================================================
-   MARCA
+   PRIMERA FILA
+   MARCA + GRÁFICOS + FILTROS
 ============================================================ */
 
 .brand-mini {
     height: 72px;
 
-    width: 100%;
-
     background: #FFFFFF;
 
     border: 1px solid #DCE5EE;
-
     border-radius: 13px;
 
     padding: 10px 12px;
 
     display: flex;
-
     align-items: center;
 
     box-sizing: border-box;
-
-    overflow: hidden;
 }
 
 .logo-mini {
     width: 48px;
-
     height: 48px;
 
     border-radius: 13px;
@@ -114,9 +107,7 @@ div[data-testid="stDecoration"] {
     background: #FF214B;
 
     display: flex;
-
     align-items: center;
-
     justify-content: center;
 
     font-size: 26px;
@@ -128,7 +119,6 @@ div[data-testid="stDecoration"] {
 
 .brand-mini-title {
     font-size: 17px;
-
     line-height: 1.05;
 
     font-weight: 850;
@@ -180,7 +170,6 @@ div[data-baseweb="select"] > div {
     border-radius: 9px !important;
 
     min-height: 36px !important;
-
     height: 36px !important;
 }
 
@@ -198,7 +187,6 @@ div[data-testid="stDateInput"] > div {
     border-radius: 9px !important;
 
     min-height: 36px !important;
-
     height: 36px !important;
 }
 
@@ -219,7 +207,6 @@ div[data-testid="stPopover"] {
 
 div[data-testid="stPopover"] button {
     height: 72px !important;
-
     min-height: 72px !important;
 
     width: 100% !important;
@@ -296,7 +283,7 @@ div[data-testid="stPopover"] button:hover {
 
 
 /* ============================================================
-   BOTONES DE NAVEGACIÓN
+   BOTONES NAVEGACIÓN
 ============================================================ */
 
 div.stButton {
@@ -333,7 +320,7 @@ div.stButton > button:hover {
 
 
 /* ============================================================
-   TÍTULOS
+   SECCIONES
 ============================================================ */
 
 .section-title {
@@ -415,7 +402,7 @@ div.stButton > button:hover {
 
 
 /* ============================================================
-   PROPIEDADES
+   GRID PROPIEDADES
 ============================================================ */
 
 .properties-grid {
@@ -508,7 +495,7 @@ div.stButton > button:hover {
 
 
 /* ============================================================
-   MÉTRICAS
+   MÉTRICAS PROPIEDAD
 ============================================================ */
 
 .metrics-grid {
@@ -848,7 +835,6 @@ div.stButton > button:hover {
 
     .block-container {
         padding-left: 1.5rem !important;
-
         padding-right: 1.5rem !important;
     }
 
@@ -856,6 +842,7 @@ div.stButton > button:hover {
         grid-template-columns:
             repeat(3, minmax(0, 1fr));
     }
+
 }
 
 @media (max-width: 900px) {
@@ -864,6 +851,7 @@ div.stButton > button:hover {
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
     }
+
 }
 
 @media (max-width: 650px) {
@@ -875,6 +863,7 @@ div.stButton > button:hover {
     .brand-mini-title {
         font-size: 14px;
     }
+
 }
 
 </style>
@@ -900,7 +889,7 @@ client = bigquery.Client(
 
 
 # ============================================================
-# FORMATO
+# FORMATO DINERO
 # ============================================================
 
 def dinero_corto(valor):
@@ -1073,6 +1062,7 @@ def cargar_reservas(
     )
 
     SELECT
+
         Nombre_Propiedad,
         Ciudad,
 
@@ -1149,8 +1139,7 @@ inicio_anio = pd.Timestamp(
 
 fin_hoy = (
     pd.Timestamp(hoy)
-    +
-    pd.Timedelta(days=1)
+    + pd.Timedelta(days=1)
 )
 
 
@@ -1184,6 +1173,7 @@ rentabilidad_ytd = (
 
 # ============================================================
 # FILA SUPERIOR
+# MARCA + GRÁFICOS + FILTROS
 # ============================================================
 
 f1, f2, f3, f4, f5, f6 = st.columns(
@@ -1206,17 +1196,27 @@ f1, f2, f3, f4, f5, f6 = st.columns(
 with f1:
 
     st.markdown(
-        '<div class="brand-mini">'
-        '<div class="logo-mini">🏢</div>'
-        '<div>'
-        '<div class="brand-mini-title">'
-        'Airbnb <span>Financial Hub</span>'
-        '</div>'
-        '<div class="brand-mini-sub">'
-        'Rentabilidad financiera · Solo Airbnb'
-        '</div>'
-        '</div>'
-        '</div>',
+        """
+<div class="brand-mini">
+
+    <div class="logo-mini">
+        🏢
+    </div>
+
+    <div>
+
+        <div class="brand-mini-title">
+            Airbnb <span>Financial Hub</span>
+        </div>
+
+        <div class="brand-mini-sub">
+            Rentabilidad financiera · Solo Airbnb
+        </div>
+
+    </div>
+
+</div>
+""",
         unsafe_allow_html=True
     )
 
@@ -1354,7 +1354,7 @@ with f2:
 
 # ============================================================
 # GRÁFICO 2
-# INGRESOS POR PROPIEDAD
+# INGRESOS POR PROPIEDAD + PROMEDIO
 # ============================================================
 
 with f3:
@@ -1420,7 +1420,9 @@ with f3:
                 y=[
                     promedio_propiedad
                 ] *
-                len(propiedades_grafico),
+                len(
+                    propiedades_grafico
+                ),
                 name="Promedio",
                 mode="lines",
                 line=dict(
@@ -1515,7 +1517,7 @@ with f5:
 
 
 # ============================================================
-# FILTRO PERÍODO
+# FILTRO FECHA
 # ============================================================
 
 with f6:
@@ -1534,6 +1536,10 @@ with f6:
         label_visibility="collapsed"
     )
 
+
+# ============================================================
+# FECHAS
+# ============================================================
 
 if (
     isinstance(
@@ -1556,7 +1562,7 @@ else:
 
 
 # ============================================================
-# FILTRAR DATOS
+# FILTRADO FINANCIERO
 # ============================================================
 
 df_f = df[
@@ -1702,7 +1708,7 @@ resumen = (
 
 
 # ============================================================
-# NAVEGACIÓN
+# ESTADO DE NAVEGACIÓN
 # ============================================================
 
 if "vista_airbnb" not in st.session_state:
@@ -1712,7 +1718,6 @@ if "vista_airbnb" not in st.session_state:
 
 # ============================================================
 # INDICADORES + NAVEGACIÓN
-# MISMA FILA
 # ============================================================
 
 r1, r2, r3, r4, r5, r6 = st.columns(
@@ -1729,7 +1734,7 @@ r1, r2, r3, r4, r5, r6 = st.columns(
 
 
 # ============================================================
-# INGRESOS 2026
+# INGRESOS
 # ============================================================
 
 with r1:
@@ -1753,7 +1758,7 @@ INGRESOS 2026
 
 
 # ============================================================
-# FLUJO 2026
+# FLUJO
 # ============================================================
 
 with r2:
@@ -1777,12 +1782,12 @@ FLUJO 2026
 
 
 # ============================================================
-# RENTABILIDAD 2026
+# RENTABILIDAD
 # ============================================================
 
 with r3:
 
-    clase_ytd = (
+    clase = (
         "green"
         if rentabilidad_ytd >= 35
         else "red"
@@ -1796,7 +1801,7 @@ with r3:
 RENTABILIDAD 2026
 </div>
 
-<div class="top-value {clase_ytd}">
+<div class="top-value {clase}">
 {rentabilidad_ytd:.1f}%
 </div>
 
@@ -1817,9 +1822,7 @@ with r4:
         use_container_width=True
     ):
 
-        st.session_state.vista_airbnb = (
-            "Propiedades"
-        )
+        st.session_state.vista_airbnb = "Propiedades"
 
         st.rerun()
 
@@ -1835,9 +1838,7 @@ with r5:
         use_container_width=True
     ):
 
-        st.session_state.vista_airbnb = (
-            "Financiero"
-        )
+        st.session_state.vista_airbnb = "Financiero"
 
         st.rerun()
 
@@ -1853,9 +1854,7 @@ with r6:
         use_container_width=True
     ):
 
-        st.session_state.vista_airbnb = (
-            "Ocupación"
-        )
+        st.session_state.vista_airbnb = "Ocupación"
 
         st.rerun()
 
@@ -1915,20 +1914,8 @@ def tarjeta_propiedad(row):
                 f"{int(noches)} noches"
             )
 
-    clase_rent = (
-        "good"
-        if good
-        else "bad"
-    )
-
-    clase_card = (
-        ""
-        if good
-        else "negative"
-    )
-
     return f"""
-<div class="property-card {clase_card}">
+<div class="property-card {'negative' if not good else ''}">
 
 <div class="property-header">
 
@@ -1946,7 +1933,7 @@ def tarjeta_propiedad(row):
 
 <div class="property-profit">
 
-<div class="property-profit-value {clase_rent}">
+<div class="property-profit-value {'good' if good else 'bad'}">
 {rent:.1f}%
 </div>
 
@@ -2010,7 +1997,7 @@ Flujo
 Rentabilidad
 </div>
 
-<div class="profit-number {clase_rent}">
+<div class="profit-number {'good' if good else 'bad'}">
 {rent:.1f}%
 </div>
 
@@ -2158,7 +2145,7 @@ Desempeño financiero de tus propiedades Airbnb en el período seleccionado.
 
 
     # ========================================================
-    # KPI DEL PERÍODO
+    # KPI
     # ========================================================
 
     k1, k2, k3, k4 = st.columns(
@@ -2241,7 +2228,7 @@ Ingresos − gastos
 
     with k4:
 
-        clase_periodo = (
+        clase = (
             "green"
             if rentabilidad >= 35
             else "red"
@@ -2255,7 +2242,7 @@ Ingresos − gastos
 RENTABILIDAD
 </div>
 
-<div class="kpi-value {clase_periodo}">
+<div class="kpi-value {clase}">
 {rentabilidad:.1f}%
 </div>
 
@@ -2270,12 +2257,10 @@ Objetivo: 35%
 
 
     # ========================================================
-    # PROPIEDADES
+    # TARJETAS
     # ========================================================
 
-    cards_html = (
-        '<div class="properties-grid">'
-    )
+    cards_html = '<div class="properties-grid">'
 
     for _, row in resumen.iterrows():
 
@@ -2709,9 +2694,7 @@ De {int(total_disponibles)} disponibles
             )
 
 
-        cards_html = (
-            '<div class="properties-grid">'
-        )
+        cards_html = '<div class="properties-grid">'
 
 
         for _, row in ocupacion.iterrows():
