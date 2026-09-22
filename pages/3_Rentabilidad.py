@@ -25,56 +25,67 @@ st.set_page_config(
 st.markdown("""
 <style>
 
+/* ============================================================
+   APP
+   ============================================================ */
+
 .stApp {
     background: #F4F6F8;
 }
 
 .block-container {
-    padding-top: 5.5rem !important;
-    padding-bottom: 1.5rem !important;
+    padding-top: 1.7rem !important;
+    padding-bottom: 1.2rem !important;
     max-width: 1500px !important;
 }
 
 [data-testid="stHeader"] {
-    z-index: 999 !important;
-}
-
-[data-testid="stToolbar"] {
-    z-index: 1000 !important;
+    background: transparent !important;
 }
 
 
 /* ============================================================
-   HEADER
+   HEADER PRINCIPAL
    ============================================================ */
 
 .hero {
     background: white;
     border: 1px solid #E0E6ED;
-    border-radius: 24px;
-    padding: 20px 24px;
-    box-shadow: 0 5px 18px rgba(20,40,70,0.05);
-    margin-bottom: 25px;
+    border-radius: 22px;
+    padding: 13px 20px;
+    box-shadow: 0 4px 14px rgba(20,40,70,0.05);
+    margin-bottom: 18px;
 }
 
+
+/* ============================================================
+   LOGO
+   ============================================================ */
+
 .logo-box {
-    width: 78px;
-    height: 78px;
-    border-radius: 20px;
+    width: 66px;
+    height: 66px;
+    border-radius: 17px;
     background: #FF1F4B;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 43px;
+    font-size: 36px;
     flex-shrink: 0;
 }
 
+
+/* ============================================================
+   TITULO
+   ============================================================ */
+
 .main-title {
-    font-size: 34px;
+    font-size: 29px;
     font-weight: 800;
     color: #192F55;
-    line-height: 1.1;
+    line-height: 1.05;
     margin: 0;
+    white-space: nowrap;
 }
 
 .main-title .pink {
@@ -82,35 +93,36 @@ st.markdown("""
 }
 
 .subtitle {
-    font-size: 15px;
+    font-size: 13px;
     color: #71809A;
-    margin-top: 7px;
+    margin-top: 6px;
+    white-space: nowrap;
 }
 
 
 /* ============================================================
-   MINI INDICADORES
+   MINI KPIs DEL HEADER
    ============================================================ */
 
 .mini-card {
     background: #F7F9FB;
     border: 1px solid #E1E7EE;
-    border-radius: 16px;
-    padding: 12px 14px;
-    height: 80px;
+    border-radius: 14px;
+    padding: 9px 12px;
+    height: 68px;
     box-sizing: border-box;
     overflow: hidden;
 }
 
 .mini-label {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 9px;
+    font-weight: 700;
     color: #8190A7;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .mini-value {
-    font-size: 19px;
+    font-size: 17px;
     font-weight: 800;
     color: #19345C;
 }
@@ -121,28 +133,28 @@ st.markdown("""
 
 
 /* ============================================================
-   MINI GRÁFICOS
+   MINI GRAFICOS
    ============================================================ */
 
 .mini-chart-card {
     background: #F7F9FB;
     border: 1px solid #E1E7EE;
-    border-radius: 16px;
-    padding: 10px 12px;
-    height: 80px;
+    border-radius: 14px;
+    padding: 8px 11px;
+    height: 68px;
     box-sizing: border-box;
     overflow: hidden;
 }
 
 .mini-chart-title {
-    font-size: 10px;
-    font-weight: 600;
+    font-size: 9px;
+    font-weight: 700;
     color: #8190A7;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .mini-bars {
-    height: 35px;
+    height: 34px;
     width: 100%;
     display: flex;
     align-items: flex-end;
@@ -155,7 +167,7 @@ st.markdown("""
     background: #35B58C;
     border-radius: 2px 2px 0 0;
     min-width: 3px;
-    max-width: 10px;
+    max-width: 9px;
 }
 
 .mini-bar.purple {
@@ -165,9 +177,9 @@ st.markdown("""
 .mini-chart-footer {
     display: flex;
     justify-content: space-between;
-    font-size: 8px;
+    font-size: 7px;
     color: #8996AA;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 
@@ -178,7 +190,7 @@ st.markdown("""
 .filter-title {
     font-size: 13px;
     color: #71809A;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 div[data-baseweb="select"] > div {
@@ -189,15 +201,15 @@ div[data-baseweb="select"] > div {
 
 
 /* ============================================================
-   KPI
+   KPI PRINCIPALES
    ============================================================ */
 
 .kpi-card {
     background: white;
     border: 1px solid #E0E6ED;
     border-radius: 18px;
-    padding: 18px 20px;
-    min-height: 125px;
+    padding: 17px 20px;
+    min-height: 120px;
     box-shadow: 0 4px 14px rgba(20,40,70,0.04);
 }
 
@@ -208,10 +220,10 @@ div[data-baseweb="select"] > div {
 }
 
 .kpi-value {
-    font-size: 32px;
+    font-size: 31px;
     font-weight: 800;
     color: #19345C;
-    margin-top: 8px;
+    margin-top: 7px;
 }
 
 .kpi-value.green {
@@ -234,22 +246,22 @@ div[data-baseweb="select"] > div {
    ============================================================ */
 
 .section-title {
-    font-size: 29px;
+    font-size: 28px;
     font-weight: 800;
     color: #192F55;
-    margin-top: 22px;
+    margin-top: 18px;
     margin-bottom: 2px;
 }
 
 .section-subtitle {
-    font-size: 15px;
+    font-size: 14px;
     color: #71809A;
-    margin-bottom: 18px;
+    margin-bottom: 15px;
 }
 
 
 /* ============================================================
-   PROPIEDADES
+   TARJETAS PROPIEDADES
    ============================================================ */
 
 .property-card {
@@ -257,7 +269,7 @@ div[data-baseweb="select"] > div {
     border: 1px solid #DDE4EC;
     border-radius: 22px;
     padding: 20px;
-    min-height: 455px;
+    min-height: 445px;
     box-shadow: 0 5px 15px rgba(20,40,70,0.04);
 }
 
@@ -305,7 +317,7 @@ div[data-baseweb="select"] > div {
 
 
 /* ============================================================
-   MÉTRICAS
+   METRICAS
    ============================================================ */
 
 .metric-grid {
@@ -402,7 +414,7 @@ div[data-baseweb="select"] > div {
 
 
 /* ============================================================
-   OCUPACIÓN
+   OCUPACION
    ============================================================ */
 
 .occupancy-box {
@@ -616,14 +628,20 @@ def cargar_reservas(fecha_inicio, fecha_fin):
 
             LEAST(
                 Fecha_Fin,
-                DATE_ADD(@fecha_fin, INTERVAL 1 DAY)
+                DATE_ADD(
+                    @fecha_fin,
+                    INTERVAL 1 DAY
+                )
             ) AS Fin_Overlap
 
         FROM reservas
 
         WHERE
             Fecha_Inicio <
-                DATE_ADD(@fecha_fin, INTERVAL 1 DAY)
+                DATE_ADD(
+                    @fecha_fin,
+                    INTERVAL 1 DAY
+                )
 
             AND Fecha_Fin >
                 @fecha_inicio
@@ -649,7 +667,10 @@ def cargar_reservas(fecha_inicio, fecha_fin):
         ) AS Noches_Reservadas,
 
         DATE_DIFF(
-            DATE_ADD(@fecha_fin, INTERVAL 1 DAY),
+            DATE_ADD(
+                @fecha_fin,
+                INTERVAL 1 DAY
+            ),
             @fecha_inicio,
             DAY
         ) AS Noches_Disponibles
@@ -696,7 +717,10 @@ inicio_anio = pd.Timestamp(
     1
 )
 
-fin_hoy = pd.Timestamp(hoy) + pd.Timedelta(days=1)
+fin_hoy = (
+    pd.Timestamp(hoy)
+    + pd.Timedelta(days=1)
+)
 
 inicio_mes = date(
     hoy.year,
@@ -715,6 +739,7 @@ df_ytd = df[
 ].copy()
 
 ingresos_ytd = df_ytd["Ingreso"].sum()
+
 gastos_ytd = df_ytd["Gasto"].sum()
 
 flujo_ytd = (
@@ -730,7 +755,7 @@ rentabilidad_ytd = (
 
 
 # ============================================================
-# MINI GRÁFICO INGRESO MENSUAL
+# MINI GRAFICO INGRESO MENSUAL
 # ============================================================
 
 df_anio = df[
@@ -738,21 +763,31 @@ df_anio = df[
     (df["Fecha"] < fin_hoy)
 ].copy()
 
-df_anio["Mes"] = df_anio["Fecha"].dt.month
+df_anio["Mes"] = (
+    df_anio["Fecha"]
+    .dt.month
+)
 
 mensual = (
     df_anio
-    .groupby("Mes", as_index=False)
-    ["Ingreso"]
+    .groupby(
+        "Mes",
+        as_index=False
+    )["Ingreso"]
     .sum()
 )
 
 meses = list(
-    range(1, hoy.month + 1)
+    range(
+        1,
+        hoy.month + 1
+    )
 )
 
 mensual = (
-    pd.DataFrame({"Mes": meses})
+    pd.DataFrame(
+        {"Mes": meses}
+    )
     .merge(
         mensual,
         on="Mes",
@@ -761,14 +796,16 @@ mensual = (
     .fillna(0)
 )
 
-max_ingreso = mensual["Ingreso"].max()
+max_ingreso = (
+    mensual["Ingreso"].max()
+)
 
 if max_ingreso > 0:
 
     mensual["altura"] = (
         mensual["Ingreso"]
         / max_ingreso
-        * 32
+        * 30
     )
 
 else:
@@ -777,13 +814,16 @@ else:
 
 
 # ============================================================
-# MINI GRÁFICO PROMEDIO
+# MINI GRAFICO PROMEDIO
 # ============================================================
 
 promedio_propiedad = (
     df_anio
     .groupby(
-        ["Nombre_Propiedad", "Ciudad"],
+        [
+            "Nombre_Propiedad",
+            "Ciudad"
+        ],
         as_index=False
     )
     .agg(
@@ -803,7 +843,9 @@ promedio_propiedad = (
 )
 
 max_promedio = (
-    promedio_propiedad["Ingreso_Promedio"].max()
+    promedio_propiedad[
+        "Ingreso_Promedio"
+    ].max()
     if not promedio_propiedad.empty
     else 0
 )
@@ -815,7 +857,7 @@ if max_promedio > 0:
             "Ingreso_Promedio"
         ]
         / max_promedio
-        * 32
+        * 30
     )
 
 else:
@@ -824,7 +866,7 @@ else:
 
 
 # ============================================================
-# CREAR BARRAS DE FORMA SEGURA
+# BARRAS
 # ============================================================
 
 barras_ingreso = ""
@@ -834,7 +876,7 @@ for _, row in mensual.iterrows():
     altura = max(
         3,
         min(
-            32,
+            30,
             float(row["altura"])
         )
     )
@@ -852,7 +894,7 @@ for _, row in promedio_propiedad.iterrows():
     altura = max(
         3,
         min(
-            32,
+            30,
             float(row["altura"])
         )
     )
@@ -873,7 +915,7 @@ header_html = f"""
 <div style="
 display:flex;
 align-items:center;
-gap:18px;
+gap:16px;
 width:100%;
 ">
 
@@ -882,8 +924,8 @@ width:100%;
 </div>
 
 <div style="
-min-width:300px;
-flex:1.7;
+min-width:330px;
+flex:1.65;
 ">
 
 <div class="main-title">
@@ -896,7 +938,8 @@ Rentabilidad financiera · Solo Airbnb
 
 </div>
 
-<div class="mini-card" style="flex:1;">
+
+<div class="mini-card" style="flex:0.95;">
 
 <div class="mini-label">
 INGRESOS 2026
@@ -908,7 +951,8 @@ INGRESOS 2026
 
 </div>
 
-<div class="mini-card" style="flex:1;">
+
+<div class="mini-card" style="flex:0.95;">
 
 <div class="mini-label">
 FLUJO 2026
@@ -920,7 +964,8 @@ FLUJO 2026
 
 </div>
 
-<div class="mini-card" style="flex:1;">
+
+<div class="mini-card" style="flex:0.95;">
 
 <div class="mini-label">
 RENTABILIDAD 2026
@@ -932,7 +977,8 @@ RENTABILIDAD 2026
 
 </div>
 
-<div class="mini-chart-card" style="flex:1;">
+
+<div class="mini-chart-card" style="flex:0.95;">
 
 <div class="mini-chart-title">
 Ingreso mensual
@@ -949,7 +995,8 @@ Ingreso mensual
 
 </div>
 
-<div class="mini-chart-card" style="flex:1;">
+
+<div class="mini-chart-card" style="flex:0.95;">
 
 <div class="mini-chart-title">
 Promedio mensual
@@ -971,9 +1018,6 @@ Promedio mensual
 </div>
 """
 
-# MUY IMPORTANTE:
-# dedent elimina la indentación que podía hacer que Streamlit
-# interpretara el HTML como bloque de código.
 header_html = textwrap.dedent(
     header_html
 ).strip()
@@ -1068,7 +1112,10 @@ with col4:
     )
 
 
-if isinstance(periodo, tuple) and len(periodo) == 2:
+if (
+    isinstance(periodo, tuple)
+    and len(periodo) == 2
+):
 
     fecha_inicio = periodo[0]
     fecha_fin = periodo[1]
@@ -1115,6 +1162,7 @@ if socio != "Todos":
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
+
 gastos = df_f["Gasto"].sum()
 
 flujo = (
@@ -1238,7 +1286,7 @@ Objetivo: 35%
 
 
 # ============================================================
-# TÍTULO
+# TITULO PROPIEDADES
 # ============================================================
 
 st.markdown(
@@ -1263,7 +1311,10 @@ en el período seleccionado
 resumen = (
     df_f
     .groupby(
-        ["Nombre_Propiedad", "Ciudad"],
+        [
+            "Nombre_Propiedad",
+            "Ciudad"
+        ],
         as_index=False
     )
     .agg(
@@ -1279,7 +1330,9 @@ resumen["Flujo"] = (
 
 resumen["Rentabilidad"] = resumen.apply(
     lambda x:
-        x["Flujo"] / x["Ingresos"] * 100
+        x["Flujo"]
+        / x["Ingresos"]
+        * 100
         if x["Ingresos"] != 0
         else 0,
     axis=1
@@ -1312,20 +1365,31 @@ if meses_cerrados > 0:
     promedios = (
         df_cerrado
         .groupby(
-            ["Nombre_Propiedad", "Ciudad"],
+            [
+                "Nombre_Propiedad",
+                "Ciudad"
+            ],
             as_index=False
         )
         .agg(
-            Ingreso_Promedio=("Ingreso", "sum"),
-            Gasto_Promedio=("Gasto", "sum")
+            Ingreso_Promedio=(
+                "Ingreso",
+                "sum"
+            ),
+            Gasto_Promedio=(
+                "Gasto",
+                "sum"
+            )
         )
     )
 
     promedios["Ingreso_Promedio"] /= meses_cerrados
+
     promedios["Gasto_Promedio"] /= meses_cerrados
 
     promedios["Flujo_Promedio"] = (
-        promedios["Ingreso_Promedio"] -
+        promedios["Ingreso_Promedio"]
+        -
         promedios["Gasto_Promedio"]
     )
 
@@ -1353,7 +1417,7 @@ resumen = resumen.merge(
 
 
 # ============================================================
-# OCUPACIÓN
+# OCUPACION
 # ============================================================
 
 try:
@@ -1381,8 +1445,13 @@ if not df_ocupacion.empty:
     df_ocupacion[
         "Ocupacion_Porcentaje"
     ] = (
-        df_ocupacion["Noches_Reservadas"]
-        / df_ocupacion["Noches_Disponibles"]
+        df_ocupacion[
+            "Noches_Reservadas"
+        ]
+        /
+        df_ocupacion[
+            "Noches_Disponibles"
+        ]
         * 100
     )
 
@@ -1390,7 +1459,9 @@ else:
 
     df_ocupacion[
         "Ocupacion_Porcentaje"
-    ] = pd.Series(dtype=float)
+    ] = pd.Series(
+        dtype=float
+    )
 
 
 resumen = resumen.merge(
@@ -1414,7 +1485,7 @@ resumen = resumen.sort_values(
 
 
 # ============================================================
-# TARJETAS
+# TARJETAS DE PROPIEDADES
 # ============================================================
 
 for inicio in range(
@@ -1489,7 +1560,6 @@ for inicio in range(
             "Flujo_Promedio",
             0
         )
-
 
         ocupacion = row.get(
             "Ocupacion_Porcentaje",
@@ -1670,6 +1740,6 @@ Ocupación Airbnb
 
 
     st.markdown(
-        "<div style='height:18px'></div>",
+        "<div style='height:15px'></div>",
         unsafe_allow_html=True
     )
