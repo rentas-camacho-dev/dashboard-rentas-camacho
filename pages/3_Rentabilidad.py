@@ -24,9 +24,9 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* =========================
+/* ============================================================
    BASE
-========================= */
+============================================================ */
 
 .stApp {
     background: #F4F7FA;
@@ -34,7 +34,7 @@ st.markdown("""
 
 .block-container {
     max-width: 1500px !important;
-    padding-top: 0.8rem !important;
+    padding-top: 4.2rem !important;
     padding-bottom: 1rem !important;
 }
 
@@ -44,28 +44,29 @@ footer {
 }
 
 
-/* =========================
+/* ============================================================
    HEADER
-========================= */
+============================================================ */
 
 .header {
     background: #FFFFFF;
     border: 1px solid #DCE5EE;
-    border-radius: 18px;
-    padding: 11px 15px;
+    border-radius: 17px;
+    padding: 9px 14px;
     margin-bottom: 8px;
     box-shadow: 0 3px 14px rgba(24,52,94,.04);
 }
 
 .logo-box {
-    width: 54px;
-    height: 54px;
-    border-radius: 15px;
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
     background: #FF214B;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 27px;
+    flex-shrink: 0;
 }
 
 .brand-title {
@@ -116,74 +117,71 @@ footer {
 }
 
 
-/* =========================
-   NAVEGACIÓN
-========================= */
-
-.navbar {
-    height: 40px;
-    background: #FFFFFF;
-    border: 1px solid #DCE5EE;
-    border-radius: 11px;
-    padding: 2px 8px;
-    margin-bottom: 9px;
-    display: flex;
-    align-items: center;
-}
-
-.nav-brand {
-    color: #8290A4;
-    font-size: 9px;
-    font-weight: 600;
-}
-
-.nav-item {
-    color: #60738D;
-    font-size: 11px;
-    font-weight: 700;
-    text-align: center;
-}
-
-
-/* =========================
-   FILTROS
-========================= */
-
-.filter-box {
-    background: #FFFFFF;
-    border: 1px solid #DCE5EE;
-    border-radius: 12px;
-    padding: 7px 10px 2px 10px;
-    margin-bottom: 11px;
-}
+/* ============================================================
+   NAVEGACIÓN + FILTROS
+============================================================ */
 
 .filter-label {
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 800;
-    color: #75859B;
-    margin-bottom: 2px;
+    color: #667991;
+    margin-bottom: 3px;
 }
+
+
+/* botones navegación */
+
+div.stButton > button {
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 7px !important;
+    border: 1px solid #DCE5EE !important;
+    border-radius: 8px !important;
+    background: #FFFFFF !important;
+    color: #50637B !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+
+div.stButton > button:hover {
+    border-color: #17345E !important;
+    color: #17345E !important;
+}
+
+
+/* select */
 
 div[data-baseweb="select"] > div {
     background: #F2F5F8 !important;
-    border: none !important;
+    border: 1px solid #E0E6ED !important;
     border-radius: 8px !important;
     min-height: 36px !important;
+    height: 36px !important;
 }
+
+div[data-baseweb="select"] span {
+    font-size: 12px !important;
+}
+
+
+/* fecha */
 
 div[data-testid="stDateInput"] > div {
     background: #F2F5F8 !important;
+    border: 1px solid #E0E6ED !important;
     border-radius: 8px !important;
+    min-height: 36px !important;
+    height: 36px !important;
 }
 
 div[data-testid="stDateInput"] input {
-    font-size: 11px !important;
+    font-size: 12px !important;
 }
 
 
-/* =========================
-   TÍTULO
-========================= */
+/* ============================================================
+   TÍTULOS
+============================================================ */
 
 .section-title {
     font-size: 23px;
@@ -200,9 +198,9 @@ div[data-testid="stDateInput"] input {
 }
 
 
-/* =========================
-   KPI
-========================= */
+/* ============================================================
+   KPI DEL PERÍODO
+============================================================ */
 
 .kpi-card {
     background: #FFFFFF;
@@ -242,9 +240,9 @@ div[data-testid="stDateInput"] input {
 }
 
 
-/* =========================
-   GRID
-========================= */
+/* ============================================================
+   GRID PROPIEDADES
+============================================================ */
 
 .properties-grid {
     display: grid;
@@ -254,9 +252,9 @@ div[data-testid="stDateInput"] input {
 }
 
 
-/* =========================
-   TARJETAS
-========================= */
+/* ============================================================
+   TARJETA PROPIEDAD
+============================================================ */
 
 .property-card {
     background: #FFFFFF;
@@ -273,7 +271,7 @@ div[data-testid="stDateInput"] input {
 }
 
 
-/* header propiedad */
+/* encabezado */
 
 .property-header {
     height: 39px;
@@ -447,9 +445,9 @@ div[data-testid="stDateInput"] input {
 }
 
 
-/* =========================
-   PORTAFOLIO
-========================= */
+/* ============================================================
+   TARJETA PORTAFOLIO
+============================================================ */
 
 .portfolio-card {
     background: #17345E;
@@ -504,9 +502,9 @@ div[data-testid="stDateInput"] input {
 }
 
 
-/* =========================
+/* ============================================================
    PANELES INFERIORES
-========================= */
+============================================================ */
 
 .side-card {
     background: #FFFFFF;
@@ -527,6 +525,9 @@ div[data-testid="stDateInput"] input {
     color: #8A98AA;
     margin-top: 3px;
 }
+
+
+/* ranking */
 
 .rank {
     display: flex;
@@ -566,26 +567,32 @@ div[data-testid="stDateInput"] input {
 }
 
 
-/* =========================
+/* ============================================================
    RESPONSIVE
-========================= */
+============================================================ */
 
 @media (max-width: 1200px) {
+
     .properties-grid {
         grid-template-columns: repeat(3, 1fr);
     }
+
 }
 
 @media (max-width: 900px) {
+
     .properties-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
 }
 
 @media (max-width: 650px) {
+
     .properties-grid {
         grid-template-columns: 1fr;
     }
+
 }
 
 </style>
@@ -668,6 +675,7 @@ def cargar_datos_financieros():
         "Ciudad",
         "Nombre_Socio"
     ]:
+
         df[col] = (
             df[col]
             .fillna("Sin información")
@@ -678,7 +686,10 @@ def cargar_datos_financieros():
 
 
 @st.cache_data(ttl=300)
-def cargar_reservas(fecha_inicio, fecha_fin):
+def cargar_reservas(
+    fecha_inicio,
+    fecha_fin
+):
 
     query = """
     WITH mapa AS (
@@ -853,7 +864,7 @@ fin_hoy = (
 
 
 # ============================================================
-# HEADER YTD
+# YTD
 # ============================================================
 
 df_ytd = df[
@@ -862,23 +873,32 @@ df_ytd = df[
 ].copy()
 
 ingresos_ytd = df_ytd["Ingreso"].sum()
+
 gastos_ytd = df_ytd["Gasto"].sum()
-flujo_ytd = ingresos_ytd - gastos_ytd
+
+flujo_ytd = (
+    ingresos_ytd -
+    gastos_ytd
+)
 
 rentabilidad_ytd = (
-    flujo_ytd / ingresos_ytd * 100
+    flujo_ytd /
+    ingresos_ytd *
+    100
     if ingresos_ytd
     else 0
 )
 
 
 # ============================================================
-# MINI GRÁFICOS HEADER
+# MINI GRÁFICO INGRESO MENSUAL
 # ============================================================
 
 monthly_header = (
     df_ytd
-    .assign(Mes=df_ytd["Fecha"].dt.month)
+    .assign(
+        Mes=df_ytd["Fecha"].dt.month
+    )
     .groupby("Mes")["Ingreso"]
     .sum()
 )
@@ -891,13 +911,23 @@ max_month = (
 
 bars_month = ""
 
-for mes in range(1, hoy.month + 1):
+for mes in range(
+    1,
+    hoy.month + 1
+):
 
-    valor = monthly_header.get(mes, 0)
+    valor = monthly_header.get(
+        mes,
+        0
+    )
 
     altura = max(
         4,
-        int(valor / max_month * 29)
+        int(
+            valor /
+            max_month *
+            29
+        )
     )
 
     bars_month += f"""
@@ -910,11 +940,19 @@ for mes in range(1, hoy.month + 1):
     """
 
 
+# ============================================================
+# MINI GRÁFICO PROPIEDADES
+# ============================================================
+
 prop_header = (
     df_ytd
-    .groupby("Nombre_Propiedad")["Ingreso"]
+    .groupby(
+        "Nombre_Propiedad"
+    )["Ingreso"]
     .sum()
-    .sort_values(ascending=False)
+    .sort_values(
+        ascending=False
+    )
     .head(7)
 )
 
@@ -930,7 +968,11 @@ for valor in prop_header.values:
 
     altura = max(
         4,
-        int(valor / max_prop * 29)
+        int(
+            valor /
+            max_prop *
+            29
+        )
     )
 
     bars_prop += f"""
@@ -1062,72 +1104,103 @@ margin-top:2px;
 
 
 # ============================================================
-# NAVEGACIÓN
+# ESTADO DE LA VISTA
 # ============================================================
 
 if "vista_airbnb" not in st.session_state:
+
     st.session_state.vista_airbnb = "Resumen"
 
 
-n1, n2, n3, n4, n5 = st.columns(
-    [3, 1, 1, 1, 1],
+# ============================================================
+# NAVEGACIÓN + FILTROS
+# TODO EN UNA SOLA FILA
+# ============================================================
+
+nav = st.columns(
+    [
+        0.85,
+        1.05,
+        1.00,
+        0.95,
+        1.25,
+        1.45,
+        1.20,
+        1.75
+    ],
     gap="small"
 )
 
-with n1:
-    st.markdown(
-        '<div class="nav-brand">Airbnb Financial Hub · análisis del portafolio</div>',
-        unsafe_allow_html=True
-    )
 
-with n2:
+# ------------------------------------------------------------
+# RESUMEN
+# ------------------------------------------------------------
+
+with nav[0]:
+
     if st.button(
         "🏠 Resumen",
         use_container_width=True
     ):
+
         st.session_state.vista_airbnb = "Resumen"
+
         st.rerun()
 
-with n3:
+
+# ------------------------------------------------------------
+# PROPIEDADES
+# ------------------------------------------------------------
+
+with nav[1]:
+
     if st.button(
         "🏢 Propiedades",
         use_container_width=True
     ):
+
         st.session_state.vista_airbnb = "Propiedades"
+
         st.rerun()
 
-with n4:
+
+# ------------------------------------------------------------
+# FINANCIERO
+# ------------------------------------------------------------
+
+with nav[2]:
+
     if st.button(
         "💰 Financiero",
         use_container_width=True
     ):
+
         st.session_state.vista_airbnb = "Financiero"
+
         st.rerun()
 
-with n5:
+
+# ------------------------------------------------------------
+# OCUPACIÓN
+# ------------------------------------------------------------
+
+with nav[3]:
+
     if st.button(
         "📊 Ocupación",
         use_container_width=True
     ):
+
         st.session_state.vista_airbnb = "Ocupación"
+
         st.rerun()
 
 
-# ============================================================
-# FILTROS
-# ============================================================
+# ------------------------------------------------------------
+# CIUDAD
+# ------------------------------------------------------------
 
-st.markdown(
-    '<div class="filter-box">',
-    unsafe_allow_html=True
-)
-
-f1, f2, f3, f4 = st.columns(
-    [1, 1, 1, 1.15],
-    gap="small"
-)
-
-with f1:
+with nav[4]:
 
     st.markdown(
         '<div class="filter-label">📍 Ciudad</div>',
@@ -1137,11 +1210,18 @@ with f1:
     ciudad = st.selectbox(
         "Ciudad",
         ["Todas"] +
-        sorted(df["Ciudad"].unique()),
+        sorted(
+            df["Ciudad"].unique()
+        ),
         label_visibility="collapsed"
     )
 
-with f2:
+
+# ------------------------------------------------------------
+# PROPIEDAD
+# ------------------------------------------------------------
+
+with nav[5]:
 
     st.markdown(
         '<div class="filter-label">🏢 Propiedad</div>',
@@ -1151,11 +1231,18 @@ with f2:
     propiedad = st.selectbox(
         "Propiedad",
         ["Todas"] +
-        sorted(df["Nombre_Propiedad"].unique()),
+        sorted(
+            df["Nombre_Propiedad"].unique()
+        ),
         label_visibility="collapsed"
     )
 
-with f3:
+
+# ------------------------------------------------------------
+# SOCIO
+# ------------------------------------------------------------
+
+with nav[6]:
 
     st.markdown(
         '<div class="filter-label">👥 Socio</div>',
@@ -1165,41 +1252,51 @@ with f3:
     socio = st.selectbox(
         "Socio",
         ["Todos"] +
-        sorted(df["Nombre_Socio"].unique()),
+        sorted(
+            df["Nombre_Socio"].unique()
+        ),
         label_visibility="collapsed"
     )
 
-with f4:
+
+# ------------------------------------------------------------
+# PERÍODO
+# ------------------------------------------------------------
+
+with nav[7]:
 
     st.markdown(
-        '<div class="filter-label">📅 Período de análisis</div>',
+        '<div class="filter-label">📅 Período</div>',
         unsafe_allow_html=True
     )
 
     periodo = st.date_input(
         "Periodo",
-        value=(inicio_mes, hoy),
+        value=(
+            inicio_mes,
+            hoy
+        ),
         label_visibility="collapsed"
     )
-
-st.markdown(
-    '</div>',
-    unsafe_allow_html=True
-)
 
 
 # ============================================================
 # FECHAS
 # ============================================================
 
-if isinstance(periodo, tuple) and len(periodo) == 2:
+if (
+    isinstance(periodo, tuple)
+    and len(periodo) == 2
+):
 
     fecha_inicio = periodo[0]
+
     fecha_fin = periodo[1]
 
 else:
 
     fecha_inicio = inicio_mes
+
     fecha_fin = hoy
 
 
@@ -1212,39 +1309,52 @@ df_f = df[
     (df["Fecha"].dt.date <= fecha_fin)
 ].copy()
 
+
 if ciudad != "Todas":
+
     df_f = df_f[
         df_f["Ciudad"] == ciudad
     ]
 
+
 if propiedad != "Todas":
+
     df_f = df_f[
         df_f["Nombre_Propiedad"] == propiedad
     ]
 
+
 if socio != "Todos":
+
     df_f = df_f[
         df_f["Nombre_Socio"] == socio
     ]
 
 
 # ============================================================
-# KPI
+# KPIs
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
+
 gastos = df_f["Gasto"].sum()
-flujo = ingresos - gastos
+
+flujo = (
+    ingresos -
+    gastos
+)
 
 rentabilidad = (
-    flujo / ingresos * 100
+    flujo /
+    ingresos *
+    100
     if ingresos
     else 0
 )
 
 
 # ============================================================
-# RESUMEN PROPIEDADES
+# RESUMEN POR PROPIEDAD
 # ============================================================
 
 resumen = (
@@ -1257,8 +1367,14 @@ resumen = (
         as_index=False
     )
     .agg(
-        Ingresos=("Ingreso", "sum"),
-        Gastos=("Gasto", "sum")
+        Ingresos=(
+            "Ingreso",
+            "sum"
+        ),
+        Gastos=(
+            "Gasto",
+            "sum"
+        )
     )
 )
 
@@ -1269,7 +1385,11 @@ resumen["Flujo"] = (
 
 resumen["Rentabilidad"] = resumen.apply(
     lambda x:
-        x["Flujo"] / x["Ingresos"] * 100
+        (
+            x["Flujo"] /
+            x["Ingresos"] *
+            100
+        )
         if x["Ingresos"] != 0
         else 0,
     axis=1
@@ -1295,8 +1415,14 @@ except Exception:
 if not df_ocupacion.empty:
 
     df_ocupacion["Ocupacion"] = (
-        df_ocupacion["Noches_Reservadas"] /
-        df_ocupacion["Noches_Disponibles"] *
+        df_ocupacion[
+            "Noches_Reservadas"
+        ]
+        /
+        df_ocupacion[
+            "Noches_Disponibles"
+        ]
+        *
         100
     )
 
@@ -1323,19 +1449,25 @@ resumen = resumen.merge(
     how="left"
 )
 
-resumen = resumen.sort_values(
-    "Rentabilidad",
-    ascending=False
-).reset_index(drop=True)
+resumen = (
+    resumen
+    .sort_values(
+        "Rentabilidad",
+        ascending=False
+    )
+    .reset_index(drop=True)
+)
 
 
 # ============================================================
-# FUNCIÓN TARJETA
+# TARJETA PROPIEDAD
 # ============================================================
 
 def tarjeta_propiedad(row):
 
-    rent = float(row["Rentabilidad"])
+    rent = float(
+        row["Rentabilidad"]
+    )
 
     good = rent >= 35
 
@@ -1362,11 +1494,16 @@ def tarjeta_propiedad(row):
     if pd.isna(ocup):
 
         ocup_text = "—"
-        detalle = "Sin datos de Airbnb"
+
+        detalle = (
+            "Sin datos de Airbnb"
+        )
 
     else:
 
-        ocup_text = f"{float(ocup):.1f}%"
+        ocup_text = (
+            f"{float(ocup):.1f}%"
+        )
 
         if pd.isna(reservas):
 
@@ -1378,6 +1515,7 @@ def tarjeta_propiedad(row):
                 f"{int(reservas)} reservas · "
                 f"{int(noches)} noches"
             )
+
 
     return f"""
 
@@ -1396,6 +1534,7 @@ def tarjeta_propiedad(row):
 </div>
 
 </div>
+
 
 <div class="property-profit">
 
@@ -1426,6 +1565,7 @@ Ingresos
 
 </div>
 
+
 <div class="metric-box">
 
 <div class="metric-label">
@@ -1437,6 +1577,7 @@ Gastos
 </div>
 
 </div>
+
 
 <div class="metric-box">
 
@@ -1466,6 +1607,7 @@ Rentabilidad
 </div>
 
 </div>
+
 
 <div class="progress">
 
@@ -1504,7 +1646,7 @@ Ocupación Airbnb
 
 
 # ============================================================
-# PORTAFOLIO
+# TARJETA PORTAFOLIO
 # ============================================================
 
 def tarjeta_portafolio():
@@ -1521,6 +1663,7 @@ def tarjeta_portafolio():
 Todas las propiedades seleccionadas
 </div>
 
+
 <div class="portfolio-main">
 {dinero_corto(ingresos)}
 </div>
@@ -1528,6 +1671,7 @@ Todas las propiedades seleccionadas
 <div class="portfolio-main-label">
 Ingresos del período
 </div>
+
 
 <div class="portfolio-row">
 
@@ -1543,6 +1687,7 @@ Gastos
 
 </div>
 
+
 <div>
 
 <div class="portfolio-mini-label">
@@ -1557,6 +1702,7 @@ Flujo
 
 </div>
 
+
 <div class="portfolio-row">
 
 <div>
@@ -1570,6 +1716,7 @@ Rentabilidad
 </div>
 
 </div>
+
 
 <div>
 
@@ -1595,10 +1742,13 @@ Objetivo
 
 vista = st.session_state.vista_airbnb
 
+
 if vista == "Resumen":
 
     st.markdown(
         """
+<div style="margin-top:8px;">
+
 <div class="section-title">
 🏢 Tu portafolio
 </div>
@@ -1606,19 +1756,22 @@ if vista == "Resumen":
 <div class="section-subtitle">
 Desempeño financiero de tus propiedades Airbnb en el período seleccionado.
 </div>
+
+</div>
 """,
         unsafe_allow_html=True
     )
 
 
-    # -----------------------------------------
-    # KPIs
-    # -----------------------------------------
+    # --------------------------------------------------------
+    # KPI
+    # --------------------------------------------------------
 
     k1, k2, k3, k4 = st.columns(
         4,
         gap="small"
     )
+
 
     with k1:
 
@@ -1643,6 +1796,7 @@ Ingresos registrados
             unsafe_allow_html=True
         )
 
+
     with k2:
 
         st.markdown(
@@ -1666,6 +1820,7 @@ Egresos registrados
             unsafe_allow_html=True
         )
 
+
     with k3:
 
         st.markdown(
@@ -1688,6 +1843,7 @@ Ingresos − gastos
 """,
             unsafe_allow_html=True
         )
+
 
     with k4:
 
@@ -1713,20 +1869,31 @@ Objetivo: 35%
         )
 
 
-    # -----------------------------------------
+    # --------------------------------------------------------
     # TARJETAS
-    # -----------------------------------------
+    # --------------------------------------------------------
 
-    cards_html = '<div class="properties-grid">'
+    cards_html = (
+        '<div class="properties-grid">'
+    )
+
 
     for _, row in resumen.iterrows():
 
-        cards_html += tarjeta_propiedad(row)
+        cards_html += (
+            tarjeta_propiedad(row)
+        )
 
-    # tarjeta portafolio
-    cards_html += tarjeta_portafolio()
 
-    cards_html += "</div>"
+    cards_html += (
+        tarjeta_portafolio()
+    )
+
+
+    cards_html += (
+        "</div>"
+    )
+
 
     st.markdown(
         cards_html,
@@ -1734,14 +1901,9 @@ Objetivo: 35%
     )
 
 
-    # -----------------------------------------
-    # TOP INGRESOS + ACUMULADO
-    # -----------------------------------------
-
-    st.markdown(
-        "<div style='height:7px'></div>",
-        unsafe_allow_html=True
-    )
+    # --------------------------------------------------------
+    # TOP + ACUMULADO
+    # --------------------------------------------------------
 
     left, right = st.columns(
         [1.7, 1],
@@ -1778,11 +1940,14 @@ Período seleccionado
 </div>
 """
 
+
         for _, row in ranking.iterrows():
 
             width = (
-                row["Ingresos"] /
-                max_rank *
+                row["Ingresos"]
+                /
+                max_rank
+                *
                 100
                 if max_rank
                 else 0
@@ -1812,7 +1977,9 @@ style="width:{width:.1f}%;">
 </div>
 """
 
+
         html += "</div>"
+
 
         st.markdown(
             html,
@@ -1834,8 +2001,8 @@ style="width:{width:.1f}%;">
 Desde enero hasta hoy
 </div>
 
-<div class="side-value"
-style="
+
+<div style="
 font-size:25px;
 font-weight:850;
 color:#17345E;
@@ -1847,6 +2014,7 @@ margin-top:9px;
 <div class="side-subtitle">
 Ingresos
 </div>
+
 
 <div style="
 font-size:23px;
@@ -1886,13 +2054,21 @@ Detalle financiero y ocupación de cada propiedad.
         unsafe_allow_html=True
     )
 
-    cards_html = '<div class="properties-grid">'
+
+    cards_html = (
+        '<div class="properties-grid">'
+    )
+
 
     for _, row in resumen.iterrows():
 
-        cards_html += tarjeta_propiedad(row)
+        cards_html += (
+            tarjeta_propiedad(row)
+        )
+
 
     cards_html += "</div>"
+
 
     st.markdown(
         cards_html,
@@ -1919,10 +2095,12 @@ Evolución mensual de ingresos, gastos y flujo durante 2026.
         unsafe_allow_html=True
     )
 
+
     financiero = df[
         (df["Fecha"] >= inicio_anio) &
         (df["Fecha"] < fin_hoy)
     ].copy()
+
 
     financiero["Mes_Num"] = (
         financiero["Fecha"].dt.month
@@ -1932,6 +2110,7 @@ Evolución mensual de ingresos, gastos y flujo durante 2026.
         financiero["Fecha"]
         .dt.strftime("%b")
     )
+
 
     mensual = (
         financiero
@@ -1949,13 +2128,13 @@ Evolución mensual de ingresos, gastos y flujo durante 2026.
         .sort_values("Mes_Num")
     )
 
+
     mensual["Flujo"] = (
         mensual["Ingresos"] -
         mensual["Gastos"]
     )
 
 
-    # Tabla
     html = """
 <div class="side-card">
 
@@ -1973,7 +2152,7 @@ margin-top:8px;
 
 <th style="
 text-align:left;
-font-size:8px;
+font-size:9px;
 color:#8290A4;
 padding:6px;
 ">
@@ -1982,7 +2161,7 @@ Mes
 
 <th style="
 text-align:right;
-font-size:8px;
+font-size:9px;
 color:#8290A4;
 padding:6px;
 ">
@@ -1991,7 +2170,7 @@ Ingresos
 
 <th style="
 text-align:right;
-font-size:8px;
+font-size:9px;
 color:#8290A4;
 padding:6px;
 ">
@@ -2000,7 +2179,7 @@ Gastos
 
 <th style="
 text-align:right;
-font-size:8px;
+font-size:9px;
 color:#8290A4;
 padding:6px;
 ">
@@ -2010,6 +2189,7 @@ Flujo
 </tr>
 """
 
+
     for _, row in mensual.iterrows():
 
         html += f"""
@@ -2017,7 +2197,7 @@ Flujo
 <tr>
 
 <td style="
-font-size:9px;
+font-size:10px;
 padding:6px;
 color:#17345E;
 font-weight:700;
@@ -2026,7 +2206,7 @@ font-weight:700;
 </td>
 
 <td style="
-font-size:9px;
+font-size:10px;
 padding:6px;
 text-align:right;
 color:#009B70;
@@ -2036,7 +2216,7 @@ font-weight:800;
 </td>
 
 <td style="
-font-size:9px;
+font-size:10px;
 padding:6px;
 text-align:right;
 color:#EF4338;
@@ -2046,7 +2226,7 @@ font-weight:800;
 </td>
 
 <td style="
-font-size:9px;
+font-size:10px;
 padding:6px;
 text-align:right;
 color:#0878D2;
@@ -2058,7 +2238,9 @@ font-weight:800;
 </tr>
 """
 
+
     html += "</table></div>"
+
 
     st.markdown(
         html,
@@ -2085,6 +2267,7 @@ Reservas y noches ocupadas en el período seleccionado.
         unsafe_allow_html=True
     )
 
+
     try:
 
         ocupacion = cargar_reservas(
@@ -2106,22 +2289,34 @@ Reservas y noches ocupadas en el período seleccionado.
     else:
 
         ocupacion["Ocupacion"] = (
-            ocupacion["Noches_Reservadas"] /
-            ocupacion["Noches_Disponibles"] *
+            ocupacion[
+                "Noches_Reservadas"
+            ]
+            /
+            ocupacion[
+                "Noches_Disponibles"
+            ]
+            *
             100
         )
+
 
         total_reservas = (
             ocupacion["Reservas"].sum()
         )
 
         total_noches = (
-            ocupacion["Noches_Reservadas"].sum()
+            ocupacion[
+                "Noches_Reservadas"
+            ].sum()
         )
 
         total_disponibles = (
-            ocupacion["Noches_Disponibles"].sum()
+            ocupacion[
+                "Noches_Disponibles"
+            ].sum()
         )
+
 
         ocupacion_total = (
             total_noches /
@@ -2132,7 +2327,10 @@ Reservas y noches ocupadas en el período seleccionado.
         )
 
 
-        a, b, c = st.columns(3)
+        a, b, c = st.columns(
+            3
+        )
+
 
         with a:
 
@@ -2158,6 +2356,7 @@ Noches ocupadas / disponibles
                 unsafe_allow_html=True
             )
 
+
         with b:
 
             st.markdown(
@@ -2180,6 +2379,7 @@ Período seleccionado
 """,
                 unsafe_allow_html=True
             )
+
 
         with c:
 
@@ -2210,7 +2410,11 @@ De {int(total_disponibles)} disponibles
             ascending=False
         )
 
-        cards_html = '<div class="properties-grid">'
+
+        cards_html = (
+            '<div class="properties-grid">'
+        )
+
 
         for _, row in ocupacion.iterrows():
 
@@ -2222,6 +2426,7 @@ De {int(total_disponibles)} disponibles
                 max(porcentaje, 0),
                 100
             )
+
 
             cards_html += f"""
 
@@ -2240,6 +2445,7 @@ De {int(total_disponibles)} disponibles
 </div>
 
 </div>
+
 
 <div class="property-profit">
 
@@ -2294,6 +2500,7 @@ style="color:#6954E6;">
 
 </div>
 
+
 <div class="progress">
 
 <div
@@ -2325,7 +2532,8 @@ class="occupancy-value">
 </div>
 
 <div class="occupancy-detail">
-{int(row["Noches_Disponibles"])} noches disponibles
+{int(row["Noches_Disponibles"])}
+noches disponibles
 </div>
 
 </div>
@@ -2333,7 +2541,9 @@ class="occupancy-value">
 </div>
 """
 
+
         cards_html += "</div>"
+
 
         st.markdown(
             cards_html,
