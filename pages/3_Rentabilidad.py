@@ -24,12 +24,16 @@ st.set_page_config(
 st.markdown("""
 <style>
 
+/* ============================================================
+   GENERAL
+   ============================================================ */
+
 .stApp {
     background: #F4F6F8;
 }
 
 .block-container {
-    padding-top: 4.8rem !important;
+    padding-top: 4.5rem !important;
     padding-bottom: 1.5rem !important;
     max-width: 1500px !important;
 }
@@ -66,6 +70,7 @@ st.markdown("""
     font-weight: 700;
     line-height: 1.05;
     margin-top: 4px;
+    white-space: nowrap;
 }
 
 .app-name span {
@@ -76,6 +81,7 @@ st.markdown("""
     color: #6B778C;
     font-size: 11px;
     margin-top: 5px;
+    white-space: nowrap;
 }
 
 
@@ -97,6 +103,7 @@ st.markdown("""
     font-size: 9px;
     font-weight: 600;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .annual-value {
@@ -109,30 +116,75 @@ st.markdown("""
 
 
 /* ============================================================
-   BOTONES DE GRÁFICOS
+   TARJETAS INTERACTIVAS DE GRÁFICOS
    ============================================================ */
 
 div[data-testid="stPopover"] > button {
     width: 100% !important;
     height: 64px !important;
+
     border-radius: 11px !important;
+
     border: 1px solid #E7EBF0 !important;
+
     background: #F7F9FB !important;
-    color: #6B778C !important;
+
+    color: #172B4D !important;
+
     font-size: 10px !important;
+
     font-weight: 600 !important;
+
     text-align: left !important;
+
     padding: 8px 12px !important;
+
+    box-shadow: none !important;
+
+    white-space: nowrap !important;
+
+    overflow: hidden !important;
+
+    text-overflow: ellipsis !important;
 }
 
 div[data-testid="stPopover"] > button:hover {
-    border-color: #FF385C !important;
-    color: #FF385C !important;
+    border-color: #D5DCE5 !important;
+
+    background: #F7F9FB !important;
+
+    color: #172B4D !important;
 }
 
 
 /* ============================================================
-   STATUS
+   POPUP
+   ============================================================ */
+
+div[data-testid="stPopoverBody"] {
+    background: #FFFFFF !important;
+    border-radius: 16px !important;
+    border: 1px solid #E3E8EF !important;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.10) !important;
+    padding: 18px !important;
+}
+
+.chart-popup-title {
+    color: #172B4D;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.chart-popup-subtitle {
+    color: #8A94A6;
+    font-size: 11px;
+    margin-bottom: 12px;
+}
+
+
+/* ============================================================
+   ESTADO
    ============================================================ */
 
 .header-status {
@@ -895,7 +947,7 @@ color_rentabilidad_ytd = (
 
 
 # ============================================================
-# DATOS PARA GRÁFICO MENSUAL
+# GRÁFICO INGRESO MENSUAL
 # ============================================================
 
 df_mensual = df.copy()
@@ -1025,21 +1077,21 @@ st.markdown(
 header_cols = st.columns(
     [
         0.34,
-        1.55,
+        1.65,
         1.0,
         1.0,
         1.0,
-        1.12,
-        1.12,
-        0.75
+        1.05,
+        1.05,
+        0.78
     ],
     gap="small"
 )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # ICONO
-# ------------------------------------------------------------
+# ============================================================
 
 with header_cols[0]:
 
@@ -1049,9 +1101,9 @@ with header_cols[0]:
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # NOMBRE
-# ------------------------------------------------------------
+# ============================================================
 
 with header_cols[1]:
 
@@ -1059,120 +1111,146 @@ with header_cols[1]:
         '<div class="app-name">'
         'Airbnb <span>Financial Hub</span>'
         '</div>'
+
         '<div class="app-subtitle">'
         'Rentabilidad financiera · Solo Airbnb'
         '</div>',
+
         unsafe_allow_html=True
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # INGRESOS 2026
-# ------------------------------------------------------------
+# ============================================================
 
 with header_cols[2]:
 
     st.markdown(
         '<div class="annual-card">'
+
         '<div class="annual-label">'
         f'Ingresos {hoy.year}'
         '</div>'
+
         '<div class="annual-value">'
         f'{dinero(ingresos_ytd)}'
         '</div>'
+
         '</div>',
+
         unsafe_allow_html=True
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # FLUJO 2026
-# ------------------------------------------------------------
+# ============================================================
 
 with header_cols[3]:
 
     st.markdown(
         '<div class="annual-card">'
+
         '<div class="annual-label">'
         f'Flujo {hoy.year}'
         '</div>'
+
         f'<div class="annual-value" '
         f'style="color:{color_flujo_ytd};">'
         f'{dinero(flujo_ytd)}'
         '</div>'
+
         '</div>',
+
         unsafe_allow_html=True
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # RENTABILIDAD 2026
-# ------------------------------------------------------------
+# ============================================================
 
 with header_cols[4]:
 
     st.markdown(
         '<div class="annual-card">'
+
         '<div class="annual-label">'
         f'Rentabilidad {hoy.year}'
         '</div>'
+
         f'<div class="annual-value" '
         f'style="color:{color_rentabilidad_ytd};">'
         f'{rentabilidad_ytd:.1f}%'
         '</div>'
+
         '</div>',
+
         unsafe_allow_html=True
     )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # POPUP INGRESO MENSUAL
-# ------------------------------------------------------------
+# ============================================================
 
 with header_cols[5]:
 
     with st.popover(
-        "📈 Ingreso mensual",
+        "Ingreso mensual",
         use_container_width=True
     ):
 
         st.markdown(
-            "### Ingreso mensual"
+            '<div class="chart-popup-title">'
+            'Ingreso mensual'
+            '</div>',
+
+            unsafe_allow_html=True
         )
 
-        st.caption(
-            "Comparación de ingresos mensuales "
-            "entre 2025 y 2026."
+        st.markdown(
+            '<div class="chart-popup-subtitle">'
+            'Comparación de ingresos mensuales · '
+            '2025 vs 2026'
+            '</div>',
+
+            unsafe_allow_html=True
         )
 
         st.line_chart(
             tabla_mensual,
-            height=280
-        )
-
-        st.caption(
-            "Valores expresados en pesos colombianos."
+            height=300
         )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # POPUP PROMEDIO MENSUAL
-# ------------------------------------------------------------
+# ============================================================
 
 with header_cols[6]:
 
     with st.popover(
-        "📊 Promedio mensual",
+        "Promedio mensual",
         use_container_width=True
     ):
 
         st.markdown(
-            "### Ingreso promedio mensual"
+            '<div class="chart-popup-title">'
+            'Promedio mensual'
+            '</div>',
+
+            unsafe_allow_html=True
         )
 
-        st.caption(
-            f"Promedio de los meses cerrados de "
-            f"{hoy.year} por propiedad."
+        st.markdown(
+            f'<div class="chart-popup-subtitle">'
+            f'Ingreso promedio mensual por propiedad · '
+            f'{hoy.year}'
+            f'</div>',
+
+            unsafe_allow_html=True
         )
 
         if not promedio_header.empty:
@@ -1193,7 +1271,11 @@ with header_cols[6]:
                 height=320
             )
 
-            st.dataframe(
+            st.markdown(
+                "### Detalle por propiedad"
+            )
+
+            tabla_popup = (
                 promedio_header[
                     [
                         "Nombre_Propiedad",
@@ -1209,10 +1291,15 @@ with header_cols[6]:
                     columns={
                         "Nombre_Propiedad":
                             "Propiedad",
+
                         "Ingreso_Promedio":
                             "Promedio mensual"
                     }
-                ),
+                )
+            )
+
+            st.dataframe(
+                tabla_popup,
                 hide_index=True,
                 use_container_width=True
             )
@@ -1225,9 +1312,9 @@ with header_cols[6]:
             )
 
 
-# ------------------------------------------------------------
-# ESTADO
-# ------------------------------------------------------------
+# ============================================================
+# INFORMACIÓN ACTUALIZADA
+# ============================================================
 
 with header_cols[7]:
 
@@ -1235,6 +1322,7 @@ with header_cols[7]:
         '<div class="header-status">'
         '● Información actualizada'
         '</div>',
+
         unsafe_allow_html=True
     )
 
@@ -1328,13 +1416,18 @@ with col4:
 
     fechas = st.date_input(
         "Período de análisis",
+
         value=(
             inicio_mes,
             hoy
         ),
+
         min_value=fecha_min,
+
         max_value=fecha_max,
+
         format="DD/MM/YYYY",
+
         key="periodo_analisis"
     )
 
@@ -1381,11 +1474,13 @@ df_f = df[
     (df["Fecha"] < fecha_fin)
 ].copy()
 
+
 if ciudad != "Todas":
 
     df_f = df_f[
         df_f["Ciudad"] == ciudad
     ]
+
 
 if propiedad != "Todas":
 
@@ -1393,6 +1488,7 @@ if propiedad != "Todas":
         df_f["Nombre_Propiedad"]
         == propiedad
     ]
+
 
 if socio != "Todos":
 
@@ -1456,7 +1552,9 @@ rentabilidad = (
     ingresos
     *
     100
+
     if ingresos != 0
+
     else 0
 )
 
@@ -1486,6 +1584,7 @@ with k1:
         '</div>'
 
         '</div>',
+
         unsafe_allow_html=True
     )
 
@@ -1508,6 +1607,7 @@ with k2:
         '</div>'
 
         '</div>',
+
         unsafe_allow_html=True
     )
 
@@ -1539,6 +1639,7 @@ with k3:
         '</div>'
 
         '</div>',
+
         unsafe_allow_html=True
     )
 
@@ -1570,6 +1671,7 @@ with k4:
         '</div>'
 
         '</div>',
+
         unsafe_allow_html=True
     )
 
@@ -1741,6 +1843,7 @@ resumen = resumen.merge(
     how="left"
 )
 
+
 resumen = resumen.merge(
     resumen_ytd[
         [
@@ -1758,6 +1861,7 @@ resumen = resumen.merge(
     ],
     how="left"
 )
+
 
 resumen = resumen.merge(
     df_ocupacion[
@@ -1801,6 +1905,7 @@ st.markdown(
     'Desempeño financiero de cada propiedad '
     'en el período seleccionado'
     '</div>',
+
     unsafe_allow_html=True
 )
 
