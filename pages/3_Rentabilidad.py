@@ -39,32 +39,25 @@ st.markdown("""
    HEADER
    ============================================================ */
 
-.app-header {
+.header-container {
     background: #FFFFFF;
     border: 1px solid #E3E8EF;
     border-radius: 18px;
     padding: 12px 18px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    margin-bottom: 18px;
     box-shadow: 0 3px 12px rgba(0,0,0,0.04);
 }
 
-.app-icon {
+.header-icon {
     width: 52px;
     height: 52px;
-    min-width: 52px;
     border-radius: 14px;
     background: linear-gradient(135deg,#FF385C,#FF0A45);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 26px;
-}
-
-.app-title-block {
-    min-width: 225px;
+    margin-top: 2px;
 }
 
 .app-name {
@@ -72,6 +65,7 @@ st.markdown("""
     font-size: 23px;
     font-weight: 700;
     line-height: 1.05;
+    margin-top: 4px;
 }
 
 .app-name span {
@@ -81,22 +75,21 @@ st.markdown("""
 .app-subtitle {
     color: #6B778C;
     font-size: 11px;
-    margin-top: 4px;
+    margin-top: 5px;
 }
 
-.header-annual {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    flex-shrink: 0;
-}
+
+/* ============================================================
+   INDICADORES ANUALES
+   ============================================================ */
 
 .annual-card {
     background: #F7F9FB;
     border: 1px solid #E7EBF0;
     border-radius: 11px;
-    padding: 7px 12px;
-    min-width: 125px;
+    padding: 8px 12px;
+    height: 64px;
+    box-sizing: border-box;
 }
 
 .annual-label {
@@ -110,73 +103,43 @@ st.markdown("""
     color: #172B4D;
     font-size: 14px;
     font-weight: 700;
-    margin-top: 2px;
+    margin-top: 5px;
     white-space: nowrap;
 }
 
 
 /* ============================================================
-   MINI GRÁFICOS
+   BOTONES DE GRÁFICOS
    ============================================================ */
 
-.header-minicharts {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: 3px;
-    flex-shrink: 0;
+div[data-testid="stPopover"] > button {
+    width: 100% !important;
+    height: 64px !important;
+    border-radius: 11px !important;
+    border: 1px solid #E7EBF0 !important;
+    background: #F7F9FB !important;
+    color: #6B778C !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    padding: 8px 12px !important;
 }
 
-.mini-chart {
-    background: #F7F9FB;
-    border: 1px solid #E7EBF0;
-    border-radius: 10px;
-    padding: 5px 8px;
-    width: 145px;
-    height: 52px;
-    box-sizing: border-box;
-    overflow: hidden;
+div[data-testid="stPopover"] > button:hover {
+    border-color: #FF385C !important;
+    color: #FF385C !important;
 }
 
-.mini-chart-title {
-    color: #8A94A6;
-    font-size: 8px;
-    font-weight: 600;
-    margin-bottom: 1px;
-    white-space: nowrap;
-}
 
-.sparkline-text {
-    color: #35B58A;
-    font-family: monospace;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -2px;
-    line-height: 18px;
-    white-space: nowrap;
-    overflow: hidden;
-    margin-top: 2px;
-}
-
-.sparkline-purple {
-    color: #7462D8;
-    font-size: 17px;
-    letter-spacing: -1px;
-}
-
-.mini-chart-legend {
-    color: #8A94A6;
-    font-size: 7px;
-    text-align: right;
-    margin-top: -1px;
-    white-space: nowrap;
-}
+/* ============================================================
+   STATUS
+   ============================================================ */
 
 .header-status {
     color: #6B778C;
     font-size: 10px;
     white-space: nowrap;
-    margin-left: auto;
+    padding-top: 24px;
 }
 
 
@@ -731,9 +694,7 @@ def cargar_ocupacion(
 
     """
 
-
     job_config = bigquery.QueryJobConfig(
-
         query_parameters=[
 
             bigquery.ScalarQueryParameter(
@@ -749,9 +710,7 @@ def cargar_ocupacion(
             )
 
         ]
-
     )
-
 
     return client.query(
         query,
@@ -786,152 +745,10 @@ def dinero_corto(valor):
 
         return f"${valor / 1_000:.0f}k"
 
-    else:
-
-        return f"${valor:,.0f}".replace(
-            ",",
-            "."
-        )
-
-
-# ============================================================
-# MINI GRÁFICO DE INGRESOS
-# ============================================================
-
-def crear_sparkline(df_grafico):
-
-    if df_grafico.empty:
-        return ""
-
-    df_grafico = df_grafico.copy()
-
-    if "2025" not in df_grafico.columns:
-        df_grafico["2025"] = 0
-
-    if "2026" not in df_grafico.columns:
-        df_grafico["2026"] = 0
-
-    valores_2025 = (
-        pd.to_numeric(
-            df_grafico["2025"],
-            errors="coerce"
-        )
-        .fillna(0)
-        .tolist()
+    return f"${valor:,.0f}".replace(
+        ",",
+        "."
     )
-
-    valores_2026 = (
-        pd.to_numeric(
-            df_grafico["2026"],
-            errors="coerce"
-        )
-        .fillna(0)
-        .tolist()
-    )
-
-    valores_2025 = valores_2025[:9]
-    valores_2026 = valores_2026[:9]
-
-    while len(valores_2025) < 9:
-        valores_2025.append(0)
-
-    while len(valores_2026) < 9:
-        valores_2026.append(0)
-
-    max_valor = max(
-        max(valores_2025),
-        max(valores_2026),
-        1
-    )
-
-    bloques = "▁▂▃▄▅▆▇█"
-
-    def linea(valores):
-
-        resultado = ""
-
-        for valor in valores:
-
-            proporcion = (
-                valor / max_valor
-                if max_valor > 0
-                else 0
-            )
-
-            indice = int(
-                proporcion * 7
-            )
-
-            resultado += bloques[indice]
-
-        return resultado
-
-    return (
-        linea(valores_2026)
-        + " "
-        + linea(valores_2025)
-    )
-
-
-# ============================================================
-# MINI GRÁFICO DE PROMEDIOS POR PROPIEDAD
-# ============================================================
-
-def crear_barras_propiedades(
-    df_propiedades
-):
-
-    if df_propiedades.empty:
-        return ""
-
-    df_propiedades = (
-        df_propiedades
-        .sort_values(
-            "Ingreso_Promedio",
-            ascending=False
-        )
-        .head(6)
-        .copy()
-    )
-
-    valores = (
-        pd.to_numeric(
-            df_propiedades[
-                "Ingreso_Promedio"
-            ],
-            errors="coerce"
-        )
-        .fillna(0)
-        .tolist()
-    )
-
-    if not valores:
-        return ""
-
-    max_valor = max(
-        max(valores),
-        1
-    )
-
-    bloques = "▁▂▃▄▅▆▇█"
-
-    resultado = ""
-
-    for valor in valores:
-
-        proporcion = (
-            valor / max_valor
-            if max_valor > 0
-            else 0
-        )
-
-        indice = int(
-            proporcion * 7
-        )
-
-        resultado += bloques[indice]
-
-    return resultado
 
 
 # ============================================================
@@ -1078,26 +895,23 @@ color_rentabilidad_ytd = (
 
 
 # ============================================================
-# DATOS DEL MINI GRÁFICO MENSUAL
+# DATOS PARA GRÁFICO MENSUAL
 # ============================================================
 
-df_grafico_mensual = df.copy()
+df_mensual = df.copy()
 
-df_grafico_mensual["Año"] = (
-    df_grafico_mensual["Fecha"].dt.year
+df_mensual["Año"] = (
+    df_mensual["Fecha"].dt.year
 )
 
-df_grafico_mensual["Mes"] = (
-    df_grafico_mensual["Fecha"].dt.month
+df_mensual["Mes"] = (
+    df_mensual["Fecha"].dt.month
 )
 
 grafico_mensual = (
-    df_grafico_mensual
+    df_mensual
     .groupby(
-        [
-            "Año",
-            "Mes"
-        ],
+        ["Año", "Mes"],
         as_index=False
     )
     .agg(
@@ -1126,20 +940,25 @@ for año in [2025, 2026]:
 tabla_mensual = (
     tabla_mensual
     .reindex(
-        range(1, 10),
+        range(1, 13),
         fill_value=0
     )
 )
 
-tabla_mensual[2025] = pd.to_numeric(
-    tabla_mensual[2025],
-    errors="coerce"
-).fillna(0)
-
-tabla_mensual[2026] = pd.to_numeric(
-    tabla_mensual[2026],
-    errors="coerce"
-).fillna(0)
+tabla_mensual.index = [
+    "Ene",
+    "Feb",
+    "Mar",
+    "Abr",
+    "May",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dic"
+]
 
 tabla_mensual = tabla_mensual[
     [2025, 2026]
@@ -1150,7 +969,7 @@ tabla_mensual = tabla_mensual[
 # PROMEDIO MENSUAL POR PROPIEDAD
 # ============================================================
 
-df_promedio_header = df[
+df_cerrado_header = df[
     (df["Fecha"] >= inicio_anio)
     &
     (df["Fecha"] < inicio_mes_actual)
@@ -1159,7 +978,7 @@ df_promedio_header = df[
 if meses_cerrados > 0:
 
     promedio_header = (
-        df_promedio_header
+        df_cerrado_header
         .groupby(
             [
                 "Nombre_Propiedad",
@@ -1195,154 +1014,233 @@ else:
 
 
 # ============================================================
-# CREAR MINI GRÁFICOS
-# ============================================================
-
-sparkline = crear_sparkline(
-    tabla_mensual
-)
-
-barras_propiedades = (
-    crear_barras_propiedades(
-        promedio_header
-    )
-)
-
-
-# ============================================================
 # HEADER
 # ============================================================
 
-header_html = (
-
-    '<div class="app-header">'
-
-    '<div class="app-icon">'
-    '🏢'
-    '</div>'
-
-    '<div class="app-title-block">'
-
-    '<div class="app-name">'
-    'Airbnb '
-    '<span>Financial Hub</span>'
-    '</div>'
-
-    '<div class="app-subtitle">'
-    'Rentabilidad financiera · Solo Airbnb'
-    '</div>'
-
-    '</div>'
-
-
-    # --------------------------------------------------------
-    # INDICADORES ANUALES
-    # --------------------------------------------------------
-
-    '<div class="header-annual">'
-
-    '<div class="annual-card">'
-
-    '<div class="annual-label">'
-    f'Ingresos {hoy.year}'
-    '</div>'
-
-    '<div class="annual-value">'
-    f'{dinero(ingresos_ytd)}'
-    '</div>'
-
-    '</div>'
-
-
-    '<div class="annual-card">'
-
-    '<div class="annual-label">'
-    f'Flujo {hoy.year}'
-    '</div>'
-
-    f'<div class="annual-value" '
-    f'style="color:{color_flujo_ytd};">'
-
-    f'{dinero(flujo_ytd)}'
-
-    '</div>'
-
-    '</div>'
-
-
-    '<div class="annual-card">'
-
-    '<div class="annual-label">'
-    f'Rentabilidad {hoy.year}'
-    '</div>'
-
-    f'<div class="annual-value" '
-    f'style="color:{color_rentabilidad_ytd};">'
-
-    f'{rentabilidad_ytd:.1f}%'
-
-    '</div>'
-
-    '</div>'
-
-    '</div>'
-
-
-    # --------------------------------------------------------
-    # MINI GRÁFICOS
-    # --------------------------------------------------------
-
-    '<div class="header-minicharts">'
-
-    '<div class="mini-chart">'
-
-    '<div class="mini-chart-title">'
-    'Ingreso mensual'
-    '</div>'
-
-    f'<div class="sparkline-text">'
-    f'{sparkline}'
-    f'</div>'
-
-    '<div class="mini-chart-legend">'
-    '2026 · 2025'
-    '</div>'
-
-    '</div>'
-
-
-    '<div class="mini-chart">'
-
-    '<div class="mini-chart-title">'
-    'Promedio mensual'
-    '</div>'
-
-    f'<div class="sparkline-text sparkline-purple">'
-    f'{barras_propiedades}'
-    f'</div>'
-
-    '<div class="mini-chart-legend">'
-    'Por propiedad'
-    '</div>'
-
-    '</div>'
-
-    '</div>'
-
-
-    # --------------------------------------------------------
-    # ESTADO
-    # --------------------------------------------------------
-
-    '<div class="header-status">'
-    '● Información actualizada'
-    '</div>'
-
-    '</div>'
+st.markdown(
+    '<div class="header-container">',
+    unsafe_allow_html=True
 )
 
+header_cols = st.columns(
+    [
+        0.34,
+        1.55,
+        1.0,
+        1.0,
+        1.0,
+        1.12,
+        1.12,
+        0.75
+    ],
+    gap="small"
+)
+
+
+# ------------------------------------------------------------
+# ICONO
+# ------------------------------------------------------------
+
+with header_cols[0]:
+
+    st.markdown(
+        '<div class="header-icon">🏢</div>',
+        unsafe_allow_html=True
+    )
+
+
+# ------------------------------------------------------------
+# NOMBRE
+# ------------------------------------------------------------
+
+with header_cols[1]:
+
+    st.markdown(
+        '<div class="app-name">'
+        'Airbnb <span>Financial Hub</span>'
+        '</div>'
+        '<div class="app-subtitle">'
+        'Rentabilidad financiera · Solo Airbnb'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+# ------------------------------------------------------------
+# INGRESOS 2026
+# ------------------------------------------------------------
+
+with header_cols[2]:
+
+    st.markdown(
+        '<div class="annual-card">'
+        '<div class="annual-label">'
+        f'Ingresos {hoy.year}'
+        '</div>'
+        '<div class="annual-value">'
+        f'{dinero(ingresos_ytd)}'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+# ------------------------------------------------------------
+# FLUJO 2026
+# ------------------------------------------------------------
+
+with header_cols[3]:
+
+    st.markdown(
+        '<div class="annual-card">'
+        '<div class="annual-label">'
+        f'Flujo {hoy.year}'
+        '</div>'
+        f'<div class="annual-value" '
+        f'style="color:{color_flujo_ytd};">'
+        f'{dinero(flujo_ytd)}'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+# ------------------------------------------------------------
+# RENTABILIDAD 2026
+# ------------------------------------------------------------
+
+with header_cols[4]:
+
+    st.markdown(
+        '<div class="annual-card">'
+        '<div class="annual-label">'
+        f'Rentabilidad {hoy.year}'
+        '</div>'
+        f'<div class="annual-value" '
+        f'style="color:{color_rentabilidad_ytd};">'
+        f'{rentabilidad_ytd:.1f}%'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+# ------------------------------------------------------------
+# POPUP INGRESO MENSUAL
+# ------------------------------------------------------------
+
+with header_cols[5]:
+
+    with st.popover(
+        "📈 Ingreso mensual",
+        use_container_width=True
+    ):
+
+        st.markdown(
+            "### Ingreso mensual"
+        )
+
+        st.caption(
+            "Comparación de ingresos mensuales "
+            "entre 2025 y 2026."
+        )
+
+        st.line_chart(
+            tabla_mensual,
+            height=280
+        )
+
+        st.caption(
+            "Valores expresados en pesos colombianos."
+        )
+
+
+# ------------------------------------------------------------
+# POPUP PROMEDIO MENSUAL
+# ------------------------------------------------------------
+
+with header_cols[6]:
+
+    with st.popover(
+        "📊 Promedio mensual",
+        use_container_width=True
+    ):
+
+        st.markdown(
+            "### Ingreso promedio mensual"
+        )
+
+        st.caption(
+            f"Promedio de los meses cerrados de "
+            f"{hoy.year} por propiedad."
+        )
+
+        if not promedio_header.empty:
+
+            grafico_propiedades = (
+                promedio_header
+                .sort_values(
+                    "Ingreso_Promedio",
+                    ascending=False
+                )
+                .set_index(
+                    "Nombre_Propiedad"
+                )[["Ingreso_Promedio"]]
+            )
+
+            st.bar_chart(
+                grafico_propiedades,
+                height=320
+            )
+
+            st.dataframe(
+                promedio_header[
+                    [
+                        "Nombre_Propiedad",
+                        "Ciudad",
+                        "Ingreso_Promedio"
+                    ]
+                ]
+                .sort_values(
+                    "Ingreso_Promedio",
+                    ascending=False
+                )
+                .rename(
+                    columns={
+                        "Nombre_Propiedad":
+                            "Propiedad",
+                        "Ingreso_Promedio":
+                            "Promedio mensual"
+                    }
+                ),
+                hide_index=True,
+                use_container_width=True
+            )
+
+        else:
+
+            st.info(
+                "Todavía no hay meses cerrados "
+                "para calcular el promedio."
+            )
+
+
+# ------------------------------------------------------------
+# ESTADO
+# ------------------------------------------------------------
+
+with header_cols[7]:
+
+    st.markdown(
+        '<div class="header-status">'
+        '● Información actualizada'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
 st.markdown(
-    header_html,
+    '</div>',
     unsafe_allow_html=True
 )
 
@@ -1502,6 +1400,7 @@ if socio != "Todos":
         df_f["Nombre_Socio"]
         == socio
     ]
+
 
 if df_f.empty:
 
@@ -1988,9 +1887,9 @@ for inicio in range(
         )
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # OCUPACIÓN
-        # ====================================================
+        # ----------------------------------------------------
 
         reservas_prop = (
             0
@@ -2038,37 +1937,29 @@ for inicio in range(
             )
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # COLORES
-        # ====================================================
+        # ----------------------------------------------------
 
         if margen_prop >= 35:
 
             color = "#00A878"
 
-            estado = (
-                "✓ Sobre objetivo"
-            )
+            estado = "✓ Sobre objetivo"
 
             clase_tarjeta = ""
 
-            clase_estado = (
-                "status-ok"
-            )
+            clase_estado = "status-ok"
 
         else:
 
             color = "#EF4444"
 
-            estado = (
-                "⚠ Bajo objetivo"
-            )
+            estado = "⚠ Bajo objetivo"
 
             clase_tarjeta = "alert"
 
-            clase_estado = (
-                "status-alert"
-            )
+            clase_estado = "status-alert"
 
 
         color_ytd = (
@@ -2087,9 +1978,9 @@ for inicio in range(
         )
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # TARJETA
-        # ====================================================
+        # ----------------------------------------------------
 
         tarjeta = (
 
@@ -2195,7 +2086,7 @@ for inicio in range(
 
 
             # ------------------------------------------------
-            # RENTABILIDAD DEL PERÍODO
+            # RENTABILIDAD
             # ------------------------------------------------
 
             '<div class="margin-row">'
