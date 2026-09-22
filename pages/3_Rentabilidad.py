@@ -78,7 +78,7 @@ div[data-testid="stDecoration"] {
    MARCA
 ============================================================ */
 
-.brand-mini {
+..brand-mini {     height: 72px;     background: #FFFFFF;     border: 1px solid #DCE5EE;     border-radius: 13px;     padding: 10px 12px;     display: flex;     align-items: center;     box-sizing: border-box; } {
     height: 72px;
     background: #FFFFFF;
     border: 1px solid #DCE5EE;
@@ -87,6 +87,7 @@ div[data-testid="stDecoration"] {
     display: flex;
     align-items: center;
     box-sizing: border-box;
+    margin-top: 8px;
 }
 
 .logo-mini {
@@ -102,7 +103,7 @@ div[data-testid="stDecoration"] {
     margin-right: 10px;
 }
 
-.brand-mini-title {
+..brand-mini {     height: 72px;     background: #FFFFFF;     border: 1px solid #DCE5EE;     border-radius: 13px;     padding: 10px 12px;     display: flex;     align-items: center;     box-sizing: border-box; }-title {
     font-size: 17px;
     line-height: 1.05;
     font-weight: 850;
@@ -110,11 +111,11 @@ div[data-testid="stDecoration"] {
     white-space: nowrap;
 }
 
-.brand-mini-title span {
+..brand-mini {     height: 72px;     background: #FFFFFF;     border: 1px solid #DCE5EE;     border-radius: 13px;     padding: 10px 12px;     display: flex;     align-items: center;     box-sizing: border-box; }-title span {
     color: #FF3155;
 }
 
-.brand-mini-sub {
+..brand-mini {     height: 72px;     background: #FFFFFF;     border: 1px solid #DCE5EE;     border-radius: 13px;     padding: 10px 12px;     display: flex;     align-items: center;     box-sizing: border-box; }-sub {
     font-size: 9px;
     color: #8290A4;
     margin-top: 5px;
@@ -674,7 +675,7 @@ div.stButton > button:hover {
         grid-template-columns: 1fr;
     }
 
-    .brand-mini-title {
+    ..brand-mini {     height: 72px;     background: #FFFFFF;     border: 1px solid #DCE5EE;     border-radius: 13px;     padding: 10px 12px;     display: flex;     align-items: center;     box-sizing: border-box; }-title {
         font-size: 14px;
     }
 }
@@ -1009,11 +1010,11 @@ f1, f2, f3, f4, f5, f6 = st.columns(
 with f1:
 
     st.markdown(
-        """<div class="brand-mini">
+        """<div class=".brand-mini {     height: 72px;     background: #FFFFFF;     border: 1px solid #DCE5EE;     border-radius: 13px;     padding: 10px 12px;     display: flex;     align-items: center;     box-sizing: border-box; }">
 <div class="logo-mini">🏢</div>
 <div>
-<div class="brand-mini-title">Airbnb <span>Financial Hub</span></div>
-<div class="brand-mini-sub">Rentabilidad financiera · Solo Airbnb</div>
+<div class=".brand-mini {     height: 72px;     background: #FFFFFF;     border: 1px solid #DCE5EE;     border-radius: 13px;     padding: 10px 12px;     display: flex;     align-items: center;     box-sizing: border-box; }-title">Airbnb <span>Financial Hub</span></div>
+<div class=".brand-mini {     height: 72px;     background: #FFFFFF;     border: 1px solid #DCE5EE;     border-radius: 13px;     padding: 10px 12px;     display: flex;     align-items: center;     box-sizing: border-box; }-sub">Rentabilidad financiera · Solo Airbnb</div>
 </div>
 </div>""",
         unsafe_allow_html=True
