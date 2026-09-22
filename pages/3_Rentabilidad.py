@@ -30,7 +30,7 @@ st.markdown("""
 }
 
 .block-container {
-    padding-top: 3.8rem !important;
+    padding-top: 3.7rem !important;
     padding-bottom: 1rem !important;
     max-width: 1500px !important;
 }
@@ -81,7 +81,7 @@ st.markdown("""
 
 
 /* ============================================================
-   MINI INDICADORES
+   MINI INDICADORES HEADER
    ============================================================ */
 
 .mini-card {
@@ -186,48 +186,66 @@ div[data-testid="stDateInput"] > div {
 
 
 /* ============================================================
-   KPI
+   LAYOUT PRINCIPAL
    ============================================================ */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+
+/* ============================================================
+   COLUMNA KPI
+   ============================================================ */
+
+.kpi-column {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
 
 .kpi-card {
     background: white;
     border: 1px solid #E0E6ED;
-    border-radius: 14px;
-    padding: 12px 14px;
-    min-height: 94px;
-    box-shadow: 0 3px 10px rgba(20,40,70,0.035);
+    border-radius: 13px;
+    padding: 12px 13px;
+    min-height: 83px;
+    box-shadow: 0 3px 9px rgba(20,40,70,0.035);
 }
 
 .kpi-title {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     color: #71809A;
 }
 
 .kpi-value {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
     color: #19345C;
     margin-top: 5px;
+    white-space: nowrap;
 }
 
 .kpi-sub {
-    font-size: 10px;
+    font-size: 9px;
     color: #8B99AD;
     margin-top: 2px;
 }
 
 
 /* ============================================================
-   SECCIÓN
+   TÍTULO PROPIEDADES
    ============================================================ */
 
 .section-title {
     font-size: 22px;
     font-weight: 800;
     color: #192F55;
-    margin-top: 13px;
-    margin-bottom: 1px;
+    margin: 0 0 1px 0;
 }
 
 .section-subtitle {
@@ -238,29 +256,26 @@ div[data-testid="stDateInput"] > div {
 
 
 /* ============================================================
-   TARJETAS DE PROPIEDADES
+   TARJETAS PROPIEDADES
    ============================================================ */
 
 .property-card {
     background: white;
     border: 1px solid #DDE4EC;
     border-radius: 15px;
-    padding: 13px 13px 12px 13px;
+    padding: 13px 13px 11px 13px;
     box-shadow: 0 3px 10px rgba(20,40,70,0.035);
 }
 
 .property-card.bad {
-    border: 1px solid #FF8A8A;
+    border: 1px solid #FF9A9A;
 }
-
-
-/* CABECERA PROPIEDAD */
 
 .property-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 6px;
+    gap: 5px;
 }
 
 .property-name {
@@ -299,7 +314,7 @@ div[data-testid="stDateInput"] > div {
 
 
 /* ============================================================
-   MÉTRICAS
+   MÉTRICAS PROPIEDAD
    ============================================================ */
 
 .metric-grid {
@@ -431,6 +446,20 @@ div[data-testid="stDateInput"] > div {
 
 
 /* ============================================================
+   SEPARADOR
+   ============================================================ */
+
+.kpi-column-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: #8190A7;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+}
+
+
+/* ============================================================
    STREAMLIT
    ============================================================ */
 
@@ -465,7 +494,7 @@ client = bigquery.Client(
 
 
 # ============================================================
-# FUNCIONES DE FORMATO
+# FUNCIONES
 # ============================================================
 
 def dinero(valor):
@@ -729,7 +758,7 @@ inicio_mes = date(
 
 
 # ============================================================
-# INDICADORES YTD
+# YTD
 # ============================================================
 
 df_ytd = df[
@@ -1173,141 +1202,6 @@ rentabilidad = (
 )
 
 
-k1, k2, k3, k4 = st.columns(4)
-
-
-with k1:
-
-    st.markdown(
-        f"""
-<div class="kpi-card">
-
-<div class="kpi-title">
-🤑 INGRESOS BRUTOS
-</div>
-
-<div class="kpi-value">
-{dinero(ingresos)}
-</div>
-
-<div class="kpi-sub">
-Ingresos registrados
-</div>
-
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-
-with k2:
-
-    st.markdown(
-        f"""
-<div class="kpi-card">
-
-<div class="kpi-title">
-🧾 GASTOS OPERATIVOS
-</div>
-
-<div class="kpi-value">
-{dinero(gastos)}
-</div>
-
-<div class="kpi-sub">
-Egresos registrados
-</div>
-
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-
-with k3:
-
-    flujo_color = (
-        "#008F63"
-        if flujo >= 0
-        else "#E53B24"
-    )
-
-    st.markdown(
-        f"""
-<div class="kpi-card">
-
-<div class="kpi-title">
-💵 FLUJO
-</div>
-
-<div
-class="kpi-value"
-style="color:{flujo_color};"
->
-{dinero(flujo)}
-</div>
-
-<div class="kpi-sub">
-Ingresos − gastos
-</div>
-
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-
-with k4:
-
-    color = (
-        "#008F63"
-        if rentabilidad >= 35
-        else "#E53B24"
-    )
-
-    st.markdown(
-        f"""
-<div class="kpi-card">
-
-<div class="kpi-title">
-🎯 RENTABILIDAD
-</div>
-
-<div
-class="kpi-value"
-style="color:{color};"
->
-{rentabilidad:.1f}%
-</div>
-
-<div class="kpi-sub">
-Objetivo: 35%
-</div>
-
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-
-# ============================================================
-# TÍTULO
-# ============================================================
-
-st.markdown(
-    """
-<div class="section-title">
-🏢 Rentabilidad por propiedad
-</div>
-
-<div class="section-subtitle">
-Desempeño financiero de cada propiedad en el período seleccionado
-</div>
-""",
-    unsafe_allow_html=True
-)
-
-
 # ============================================================
 # RESUMEN PROPIEDADES
 # ============================================================
@@ -1431,7 +1325,7 @@ resumen = resumen.merge(
 
 
 # ============================================================
-# OCUPACIÓN AIRBNB
+# OCUPACIÓN
 # ============================================================
 
 try:
@@ -1499,131 +1393,291 @@ resumen = resumen.sort_values(
 
 
 # ============================================================
-# TARJETAS — 4 POR FILA
+# LAYOUT PRINCIPAL
 # ============================================================
 
-for inicio in range(
-    0,
-    len(resumen),
-    4
-):
+left, right = st.columns(
+    [0.15, 0.85],
+    gap="medium"
+)
 
-    fila = resumen.iloc[
-        inicio:inicio + 4
-    ]
 
-    cols = st.columns(4)
+# ============================================================
+# COLUMNA IZQUIERDA — KPIs
+# ============================================================
 
-    for col, (_, row) in zip(
-        cols,
-        fila.iterrows()
+with left:
+
+    st.markdown(
+        '<div class="kpi-column-title">Resumen</div>',
+        unsafe_allow_html=True
+    )
+
+
+    # INGRESOS
+
+    st.markdown(
+        f"""
+<div class="kpi-card">
+
+<div class="kpi-title">
+🤑 INGRESOS
+</div>
+
+<div class="kpi-value">
+{dinero_corto(ingresos)}
+</div>
+
+<div class="kpi-sub">
+Ingresos registrados
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    # GASTOS
+
+    st.markdown(
+        f"""
+<div class="kpi-card">
+
+<div class="kpi-title">
+🧾 GASTOS
+</div>
+
+<div class="kpi-value">
+{dinero_corto(gastos)}
+</div>
+
+<div class="kpi-sub">
+Egresos registrados
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    # FLUJO
+
+    flujo_color = (
+        "#008F63"
+        if flujo >= 0
+        else "#E53B24"
+    )
+
+    st.markdown(
+        f"""
+<div class="kpi-card">
+
+<div class="kpi-title">
+💵 FLUJO
+</div>
+
+<div
+class="kpi-value"
+style="color:{flujo_color};"
+>
+{dinero_corto(flujo)}
+</div>
+
+<div class="kpi-sub">
+Ingresos − gastos
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    # RENTABILIDAD
+
+    rent_color = (
+        "#008F63"
+        if rentabilidad >= 35
+        else "#E53B24"
+    )
+
+    st.markdown(
+        f"""
+<div class="kpi-card">
+
+<div class="kpi-title">
+🎯 RENTABILIDAD
+</div>
+
+<div
+class="kpi-value"
+style="color:{rent_color};"
+>
+{rentabilidad:.1f}%
+</div>
+
+<div class="kpi-sub">
+Objetivo: 35%
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+# ============================================================
+# COLUMNA DERECHA — PROPIEDADES
+# ============================================================
+
+with right:
+
+    st.markdown(
+        """
+<div class="section-title">
+🏢 Rentabilidad por propiedad
+</div>
+
+<div class="section-subtitle">
+Desempeño financiero de cada propiedad en el período seleccionado
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    # --------------------------------------------------------
+    # 3 PROPIEDADES POR FILA
+    # --------------------------------------------------------
+
+    for inicio in range(
+        0,
+        len(resumen),
+        3
     ):
 
-        rent = float(
-            row["Rentabilidad"]
-        )
+        fila = resumen.iloc[
+            inicio:inicio + 3
+        ]
 
-        es_buena = rent >= 35
+        cols = st.columns(3)
 
-        card_class = (
-            "good"
-            if es_buena
-            else "bad"
-        )
+        for col, (_, row) in zip(
+            cols,
+            fila.iterrows()
+        ):
 
-        profit_class = (
-            "good"
-            if es_buena
-            else "bad"
-        )
+            rent = float(
+                row["Rentabilidad"]
+            )
 
-        progress = min(
-            max(rent, 0),
-            100
-        )
+            es_buena = rent >= 35
+
+            card_class = (
+                "good"
+                if es_buena
+                else "bad"
+            )
+
+            profit_class = (
+                "good"
+                if es_buena
+                else "bad"
+            )
+
+            progress = min(
+                max(rent, 0),
+                100
+            )
 
 
-        if es_buena:
+            # ------------------------------------------------
+            # OBJETIVO
+            # ------------------------------------------------
 
-            objetivo = """
+            if es_buena:
+
+                objetivo = """
 <div class="target-good">
 ✓ Sobre objetivo
 </div>
 """
 
-        else:
+            else:
 
-            objetivo = """
+                objetivo = """
 <div class="target-bad">
 ⚠ Bajo objetivo
 </div>
 """
 
 
-        # ----------------------------------------------------
-        # PROMEDIOS
-        # ----------------------------------------------------
+            # ------------------------------------------------
+            # PROMEDIOS
+            # ------------------------------------------------
 
-        ingreso_prom = row.get(
-            "Ingreso_Promedio",
-            0
-        )
+            ingreso_prom = row.get(
+                "Ingreso_Promedio",
+                0
+            )
 
-        gasto_prom = row.get(
-            "Gasto_Promedio",
-            0
-        )
+            gasto_prom = row.get(
+                "Gasto_Promedio",
+                0
+            )
 
-        flujo_prom = row.get(
-            "Flujo_Promedio",
-            0
-        )
-
-
-        # ----------------------------------------------------
-        # OCUPACIÓN
-        # ----------------------------------------------------
-
-        ocupacion = row.get(
-            "Ocupacion_Porcentaje",
-            None
-        )
-
-        reservas = row.get(
-            "Reservas",
-            None
-        )
-
-        noches = row.get(
-            "Noches_Reservadas",
-            None
-        )
+            flujo_prom = row.get(
+                "Flujo_Promedio",
+                0
+            )
 
 
-        ocupacion_txt = (
-            "—"
-            if pd.isna(ocupacion)
-            else f"{float(ocupacion):.1f}%"
-        )
+            # ------------------------------------------------
+            # OCUPACIÓN
+            # ------------------------------------------------
 
-        reservas_txt = (
-            "—"
-            if pd.isna(reservas)
-            else f"{int(reservas)} reservas"
-        )
+            ocupacion = row.get(
+                "Ocupacion_Porcentaje",
+                None
+            )
 
-        noches_txt = (
-            "—"
-            if pd.isna(noches)
-            else f"{int(noches)} noches"
-        )
+            reservas = row.get(
+                "Reservas",
+                None
+            )
+
+            noches = row.get(
+                "Noches_Reservadas",
+                None
+            )
 
 
-        # ----------------------------------------------------
-        # TARJETA
-        # ----------------------------------------------------
+            ocupacion_txt = (
+                "—"
+                if pd.isna(ocupacion)
+                else f"{float(ocupacion):.1f}%"
+            )
 
-        html_card = f"""
+            reservas_txt = (
+                "—"
+                if pd.isna(reservas)
+                else f"{int(reservas)} reservas"
+            )
+
+            noches_txt = (
+                "—"
+                if pd.isna(noches)
+                else f"{int(noches)} noches"
+            )
+
+
+            # ------------------------------------------------
+            # TARJETA
+            # ------------------------------------------------
+
+            html_card = f"""
 <div class="property-card {card_class}">
 
 <div class="property-header">
@@ -1762,19 +1816,19 @@ Ocupación Airbnb
 </div>
 """
 
-        html_card = textwrap.dedent(
-            html_card
-        ).strip()
+            html_card = textwrap.dedent(
+                html_card
+            ).strip()
 
-        with col:
+            with col:
 
-            st.markdown(
-                html_card,
-                unsafe_allow_html=True
-            )
+                st.markdown(
+                    html_card,
+                    unsafe_allow_html=True
+                )
 
 
-    st.markdown(
-        "<div style='height:9px'></div>",
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            "<div style='height:9px'></div>",
+            unsafe_allow_html=True
+        )
