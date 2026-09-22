@@ -47,7 +47,7 @@ st.markdown("""
     width: 52px;
     height: 52px;
     border-radius: 14px;
-    background: linear-gradient(135deg,#FF385C,#FF0A45);
+    background: linear-gradient(135deg, #FF385C, #FF0A45);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -77,7 +77,7 @@ st.markdown("""
 
 
 /* ============================================================
-   INDICADORES ANUALES
+   TARJETAS ANUALES
    ============================================================ */
 
 .annual-card {
@@ -107,12 +107,16 @@ st.markdown("""
 
 
 /* ============================================================
-   TARJETAS INTERACTIVAS DE GRÁFICOS
+   BOTONES MINI DE GRÁFICOS
    ============================================================ */
 
-div[data-testid="stPopover"] > button {
-    width: 100% !important;
+.chart-button-wrapper {
+    height: 64px;
+}
+
+div[data-testid="stButton"] > button {
     height: 64px !important;
+    min-height: 64px !important;
 
     border-radius: 11px !important;
 
@@ -139,7 +143,7 @@ div[data-testid="stPopover"] > button {
     text-overflow: ellipsis !important;
 }
 
-div[data-testid="stPopover"] > button:hover {
+div[data-testid="stButton"] > button:hover {
     border-color: #D5DCE5 !important;
 
     background: #F7F9FB !important;
@@ -147,30 +151,21 @@ div[data-testid="stPopover"] > button:hover {
     color: #172B4D !important;
 }
 
+div[data-testid="stButton"] > button:focus {
+    box-shadow: none !important;
+}
+
 
 /* ============================================================
-   POPUP
+   DIÁLOGOS / POPUPS
    ============================================================ */
 
-div[data-testid="stPopoverBody"] {
-    background: #FFFFFF !important;
-    border-radius: 16px !important;
-    border: 1px solid #E3E8EF !important;
-    box-shadow: 0 12px 35px rgba(0,0,0,0.10) !important;
-    padding: 18px !important;
+div[data-testid="stDialog"] {
+    border-radius: 18px !important;
 }
 
-.chart-popup-title {
-    color: #172B4D;
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 2px;
-}
-
-.chart-popup-subtitle {
-    color: #8A94A6;
-    font-size: 11px;
-    margin-bottom: 12px;
+div[data-testid="stDialog"] > div {
+    border-radius: 18px !important;
 }
 
 
@@ -221,7 +216,7 @@ div[data-testid="stDateInput"] label {
 
 
 /* ============================================================
-   SECCIÓN
+   SECCIONES
    ============================================================ */
 
 .section-title {
@@ -1045,6 +1040,129 @@ else:
 
 
 # ============================================================
+# DIÁLOGO — INGRESO MENSUAL
+# ============================================================
+
+@st.dialog("Ingreso mensual")
+def mostrar_ingreso_mensual():
+
+    st.markdown(
+        """
+        <div style="
+            font-size:22px;
+            font-weight:700;
+            color:#172B4D;
+            margin-bottom:4px;
+        ">
+            Ingreso mensual
+        </div>
+
+        <div style="
+            font-size:12px;
+            color:#6B778C;
+            margin-bottom:15px;
+        ">
+            Comparación de ingresos mensuales · 2025 vs 2026
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.line_chart(
+        tabla_mensual,
+        height=350
+    )
+
+
+# ============================================================
+# DIÁLOGO — PROMEDIO MENSUAL
+# ============================================================
+
+@st.dialog("Promedio mensual")
+def mostrar_promedio_mensual():
+
+    st.markdown(
+        """
+        <div style="
+            font-size:22px;
+            font-weight:700;
+            color:#172B4D;
+            margin-bottom:4px;
+        ">
+            Promedio mensual por propiedad
+        </div>
+
+        <div style="
+            font-size:12px;
+            color:#6B778C;
+            margin-bottom:15px;
+        ">
+            Ingreso promedio mensual de los meses cerrados
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    if not promedio_header.empty:
+
+        grafico_propiedades = (
+            promedio_header
+            .sort_values(
+                "Ingreso_Promedio",
+                ascending=False
+            )
+            .set_index(
+                "Nombre_Propiedad"
+            )[["Ingreso_Promedio"]]
+        )
+
+        st.bar_chart(
+            grafico_propiedades,
+            height=380
+        )
+
+        st.markdown(
+            "### Detalle por propiedad"
+        )
+
+        tabla_popup = (
+            promedio_header[
+                [
+                    "Nombre_Propiedad",
+                    "Ciudad",
+                    "Ingreso_Promedio"
+                ]
+            ]
+            .sort_values(
+                "Ingreso_Promedio",
+                ascending=False
+            )
+            .rename(
+                columns={
+                    "Nombre_Propiedad":
+                        "Propiedad",
+
+                    "Ingreso_Promedio":
+                        "Promedio mensual"
+                }
+            )
+        )
+
+        st.dataframe(
+            tabla_popup,
+            hide_index=True,
+            use_container_width=True
+        )
+
+    else:
+
+        st.info(
+            "Todavía no hay meses cerrados "
+            "para calcular el promedio."
+        )
+
+
+# ============================================================
 # HEADER
 # ============================================================
 
@@ -1165,124 +1283,33 @@ with header_cols[4]:
 
 
 # ============================================================
-# POPUP INGRESO MENSUAL
+# MINI TARJETA — INGRESO MENSUAL
 # ============================================================
 
 with header_cols[5]:
 
-    with st.popover(
-        "Ingreso mensual",
+    if st.button(
+        "📈  Ingreso mensual",
+        key="btn_ingreso_mensual",
         use_container_width=True
     ):
 
-        st.markdown(
-            '<div class="chart-popup-title">'
-            'Ingreso mensual'
-            '</div>',
-
-            unsafe_allow_html=True
-        )
-
-        st.markdown(
-            '<div class="chart-popup-subtitle">'
-            'Comparación de ingresos mensuales · '
-            '2025 vs 2026'
-            '</div>',
-
-            unsafe_allow_html=True
-        )
-
-        st.line_chart(
-            tabla_mensual,
-            height=300
-        )
+        mostrar_ingreso_mensual()
 
 
 # ============================================================
-# POPUP PROMEDIO MENSUAL
+# MINI TARJETA — PROMEDIO MENSUAL
 # ============================================================
 
 with header_cols[6]:
 
-    with st.popover(
-        "Promedio mensual",
+    if st.button(
+        "📊  Promedio mensual",
+        key="btn_promedio_mensual",
         use_container_width=True
     ):
 
-        st.markdown(
-            '<div class="chart-popup-title">'
-            'Promedio mensual'
-            '</div>',
-
-            unsafe_allow_html=True
-        )
-
-        st.markdown(
-            f'<div class="chart-popup-subtitle">'
-            f'Ingreso promedio mensual por propiedad · '
-            f'{hoy.year}'
-            f'</div>',
-
-            unsafe_allow_html=True
-        )
-
-        if not promedio_header.empty:
-
-            grafico_propiedades = (
-                promedio_header
-                .sort_values(
-                    "Ingreso_Promedio",
-                    ascending=False
-                )
-                .set_index(
-                    "Nombre_Propiedad"
-                )[["Ingreso_Promedio"]]
-            )
-
-            st.bar_chart(
-                grafico_propiedades,
-                height=320
-            )
-
-            st.markdown(
-                "### Detalle por propiedad"
-            )
-
-            tabla_popup = (
-                promedio_header[
-                    [
-                        "Nombre_Propiedad",
-                        "Ciudad",
-                        "Ingreso_Promedio"
-                    ]
-                ]
-                .sort_values(
-                    "Ingreso_Promedio",
-                    ascending=False
-                )
-                .rename(
-                    columns={
-                        "Nombre_Propiedad":
-                            "Propiedad",
-
-                        "Ingreso_Promedio":
-                            "Promedio mensual"
-                    }
-                )
-            )
-
-            st.dataframe(
-                tabla_popup,
-                hide_index=True,
-                use_container_width=True
-            )
-
-        else:
-
-            st.info(
-                "Todavía no hay meses cerrados "
-                "para calcular el promedio."
-            )
+        mostrar_promedio_mensual()
 
 
 # ============================================================
@@ -1504,9 +1531,7 @@ rentabilidad = (
     ingresos
     *
     100
-
     if ingresos != 0
-
     else 0
 )
 
@@ -1795,7 +1820,6 @@ resumen = resumen.merge(
     how="left"
 )
 
-
 resumen = resumen.merge(
     resumen_ytd[
         [
@@ -1813,7 +1837,6 @@ resumen = resumen.merge(
     ],
     how="left"
 )
-
 
 resumen = resumen.merge(
     df_ocupacion[
@@ -2024,7 +2047,6 @@ for inicio in range(
             if margen_ytd >= 35
             else "#EF4444"
         )
-
 
         progreso = max(
             0,
