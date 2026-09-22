@@ -1044,6 +1044,31 @@ with f2:
         .sort_values("Mes_Num")
     )
 
+    # INGRESOS 2025
+    df_2025 = df[
+        (df["Fecha"].dt.year == hoy.year - 1)
+        &
+        (df["Fecha"].dt.month <= hoy.month)
+    ].copy()
+
+    mensual_2025 = (
+        df_2025
+        .assign(
+            Mes_Num=df_2025["Fecha"].dt.month
+        )
+        .groupby(
+            "Mes_Num",
+            as_index=False
+        )
+        .agg(
+            Ingresos=(
+                "Ingreso",
+                "sum"
+            )
+        )
+        .sort_values("Mes_Num")
+    )
+
     nombres_meses = {
         1: "Ene",
         2: "Feb",
@@ -1059,15 +1084,24 @@ with f2:
         12: "Dic"
     }
 
-    mensual["Mes"] = (
-        mensual["Mes_Num"]
-        .map(nombres_meses)
+    meses = list(range(1, hoy.month + 1))
+
+    mensual = (
+        mensual
+        .set_index("Mes_Num")
+        .reindex(meses, fill_value=0)
+        .reset_index()
     )
 
-    mensual["Acumulado"] = (
-        mensual["Ingresos"]
-        .cumsum()
+    mensual_2025 = (
+        mensual_2025
+        .set_index("Mes_Num")
+        .reindex(meses, fill_value=0)
+        .reset_index()
     )
+
+    mensual["Mes"] = mensual["Mes_Num"].map(nombres_meses)
+    mensual_2025["Mes"] = mensual_2025["Mes_Num"].map(nombres_meses)
 
     with st.popover(
         "📊  Ingreso mensual",
@@ -1079,66 +1113,103 @@ with f2:
         )
 
         st.caption(
-            "Barras = ingreso mensual · "
-            "Línea = acumulado 2026"
+            "Barras = 2026 · Línea = 2025"
         )
 
         fig = go.Figure()
 
+        # BARRAS 2026
         fig.add_trace(
             go.Bar(
                 x=mensual["Mes"],
                 y=mensual["Ingresos"],
-                name="Ingresos",
-                marker_color="#27B68D"
+                name="2026",
+                marker_color="#35B58F"
             )
         )
 
+        # LÍNEA 2025
         fig.add_trace(
             go.Scatter(
-                x=mensual["Mes"],
-                y=mensual["Acumulado"],
-                name="Acumulado",
+                x=mensual_2025["Mes"],
+                y=mensual_2025["Ingresos"],
+                name="2025",
                 mode="lines+markers",
                 line=dict(
-                    color="#17345E",
+                    color="#1769D1",
                     width=3
                 ),
                 marker=dict(
                     size=7
-                ),
-                yaxis="y2"
+                )
+            )
+        )
+
+        max_val = max(
+            mensual["Ingresos"].max()
+            if not mensual.empty else 0,
+            mensual_2025["Ingresos"].max()
+            if not mensual_2025.empty else 0
+        )
+
+        paso = 5_000_000
+
+        max_tick = max(
+            paso,
+            int((max_val / paso) + 1) * paso
+        )
+
+        tickvals = list(
+            range(
+                0,
+                max_tick + paso,
+                paso
             )
         )
 
         fig.update_layout(
             height=390,
+
             margin=dict(
-                l=50,
-                r=50,
-                t=30,
+                l=55,
+                r=25,
+                t=25,
                 b=45
             ),
+
             plot_bgcolor="white",
             paper_bgcolor="white",
+
+            bargap=0.25,
+
             xaxis=dict(
-                showgrid=False
-            ),
-            yaxis=dict(
-                tickprefix="$",
-                tickformat=",.0f",
-                gridcolor="#E9EEF3"
-            ),
-            yaxis2=dict(
-                overlaying="y",
-                side="right",
                 showgrid=False,
-                tickprefix="$",
-                tickformat=",.0f"
+                fixedrange=True
             ),
+
+            yaxis=dict(
+                tickmode="array",
+                tickvals=tickvals,
+                ticktext=[
+                    "$0"
+                    if v == 0
+                    else f"${v / 1_000_000:.0f}M"
+                    for v in tickvals
+                ],
+                gridcolor="#E9EEF3",
+                fixedrange=True,
+                zeroline=False
+            ),
+
             legend=dict(
-                orientation="h"
-            )
+                orientation="h",
+                yanchor="bottom",
+                y=1.01,
+                xanchor="right",
+                x=1
+            ),
+
+            hovermode="x unified"
         )
 
         st.plotly_chart(
@@ -1148,7 +1219,6 @@ with f2:
                 "displayModeBar": False
             }
         )
-
 
 # ============================================================
 # GRÁFICO INGRESOS POR PROPIEDAD
