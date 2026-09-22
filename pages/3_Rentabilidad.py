@@ -787,7 +787,7 @@ def dinero_corto(valor):
 
 
 # ============================================================
-# FUNCIONES MINI GRÁFICOS
+# MINI GRÁFICO — INGRESO MENSUAL
 # ============================================================
 
 def crear_sparkline(df_grafico):
@@ -795,17 +795,58 @@ def crear_sparkline(df_grafico):
     if df_grafico.empty:
         return ""
 
+    df_grafico = df_grafico.copy()
+
+    # MUY IMPORTANTE:
+    # pandas puede crear las columnas como 2025 y 2026
+    # numéricos, no como "2025" y "2026".
+    # Las convertimos a texto para evitar KeyError.
+
+    df_grafico.columns = [
+        str(col)
+        for col in df_grafico.columns
+    ]
+
+
+    # Si algún año no existe, lo creamos.
+
+    if "2025" not in df_grafico.columns:
+
+        df_grafico["2025"] = 0
+
+
+    if "2026" not in df_grafico.columns:
+
+        df_grafico["2026"] = 0
+
+
     valores_2025 = (
-        df_grafico["2025"]
-        .astype(float)
+
+        pd.to_numeric(
+            df_grafico["2025"],
+            errors="coerce"
+        )
+
+        .fillna(0)
+
         .tolist()
+
     )
 
+
     valores_2026 = (
-        df_grafico["2026"]
-        .astype(float)
+
+        pd.to_numeric(
+            df_grafico["2026"],
+            errors="coerce"
+        )
+
+        .fillna(0)
+
         .tolist()
+
     )
+
 
     todos = (
         valores_2025
@@ -813,33 +854,49 @@ def crear_sparkline(df_grafico):
         valores_2026
     )
 
+
     max_valor = (
+
         max(todos)
+
         if todos
+
         else 1
+
     )
 
-    if max_valor == 0:
+
+    if max_valor <= 0:
+
         max_valor = 1
+
 
     ancho = 130
     alto = 27
+
 
     def puntos(valores):
 
         resultado = []
 
-        for i, valor in enumerate(valores):
+
+        for i, valor in enumerate(
+            valores
+        ):
 
             x = (
+
                 i
                 *
                 ancho
                 /
                 8
+
             )
 
+
             y = (
+
                 alto
                 -
                 (
@@ -851,25 +908,32 @@ def crear_sparkline(df_grafico):
                 )
                 -
                 2
+
             )
+
 
             resultado.append(
                 f"{x:.1f},{y:.1f}"
             )
 
-        return " ".join(resultado)
 
+        return " ".join(
+            resultado
+        )
 
-    puntos_2026 = puntos(
-        valores_2026
-    )
 
     puntos_2025 = puntos(
         valores_2025
     )
 
 
+    puntos_2026 = puntos(
+        valores_2026
+    )
+
+
     return f"""
+
     <svg
         viewBox="0 0 {ancho} {alto}"
         preserveAspectRatio="none"
@@ -895,8 +959,13 @@ def crear_sparkline(df_grafico):
         />
 
     </svg>
+
     """
 
+
+# ============================================================
+# MINI GRÁFICO — PROMEDIO POR PROPIEDAD
+# ============================================================
 
 def crear_barras_propiedades(
     df_propiedades
@@ -905,22 +974,31 @@ def crear_barras_propiedades(
     if df_propiedades.empty:
         return ""
 
+
     df_propiedades = (
+
         df_propiedades
+
         .sort_values(
             "Ingreso_Promedio",
             ascending=False
         )
+
         .head(6)
+
     )
 
 
     valores = (
+
         df_propiedades[
             "Ingreso_Promedio"
         ]
+
         .astype(float)
+
         .tolist()
+
     )
 
 
@@ -932,21 +1010,25 @@ def crear_barras_propiedades(
         valores
     )
 
-    if max_valor == 0:
+
+    if max_valor <= 0:
         max_valor = 1
 
 
     html = """
+
     <svg
         viewBox="0 0 140 30"
         preserveAspectRatio="none"
     >
+
     """
 
 
     cantidad = len(
         valores
     )
+
 
     ancho_barra = (
         130
@@ -960,41 +1042,63 @@ def crear_barras_propiedades(
     ):
 
         altura = (
+
             valor
             /
             max_valor
             *
             22
+
         )
 
+
         x = (
+
             i
             *
             ancho_barra
             +
             2
+
         )
 
+
         y = (
+
             27
             -
             altura
+
         )
 
 
         html += f"""
+
         <rect
+
             x="{x:.1f}"
+
             y="{y:.1f}"
+
             width="{max(ancho_barra - 4, 3):.1f}"
+
             height="{altura:.1f}"
+
             rx="2"
+
             fill="#7462D8"
+
         />
+
         """
 
 
-    html += "</svg>"
+    html += """
+
+    </svg>
+
+    """
+
 
     return html
 
@@ -1010,7 +1114,9 @@ try:
 except Exception as e:
 
     st.error(
-        f"Error consultando Movimientos_Operativos_Reparto: {e}"
+        "Error consultando "
+        "Movimientos_Operativos_Reparto: "
+        f"{e}"
     )
 
     st.stop()
@@ -1034,33 +1140,51 @@ df["Fecha"] = pd.to_datetime(
     errors="coerce"
 )
 
+
 df["Ingreso"] = pd.to_numeric(
     df["Ingreso"],
     errors="coerce"
 ).fillna(0)
+
 
 df["Gasto"] = pd.to_numeric(
     df["Gasto"],
     errors="coerce"
 ).fillna(0)
 
+
 df["Nombre_Propiedad"] = (
+
     df["Nombre_Propiedad"]
+
     .fillna("Sin propiedad")
+
     .astype(str)
+
 )
+
 
 df["Ciudad"] = (
+
     df["Ciudad"]
+
     .fillna("Sin ciudad")
+
     .astype(str)
+
 )
 
+
 df["Nombre_Socio"] = (
+
     df["Nombre_Socio"]
+
     .fillna("Sin socio")
+
     .astype(str)
+
 )
+
 
 df = df.dropna(
     subset=["Fecha"]
@@ -1073,22 +1197,29 @@ df = df.dropna(
 
 hoy = date.today()
 
+
 inicio_anio = pd.Timestamp(
     hoy.year,
     1,
     1
 )
 
+
 fin_hoy = (
+
     pd.Timestamp(hoy)
+
     +
     pd.Timedelta(days=1)
+
 )
+
 
 meses_cerrados = max(
     hoy.month - 1,
     0
 )
+
 
 inicio_mes_actual = pd.Timestamp(
     hoy.year,
@@ -1112,15 +1243,20 @@ ingresos_ytd = (
     df_ytd["Ingreso"].sum()
 )
 
+
 gastos_ytd = (
     df_ytd["Gasto"].sum()
 )
 
+
 flujo_ytd = (
+
     ingresos_ytd
     -
     gastos_ytd
+
 )
+
 
 rentabilidad_ytd = (
 
@@ -1133,19 +1269,29 @@ rentabilidad_ytd = (
     if ingresos_ytd != 0
 
     else 0
+
 )
 
 
 color_flujo_ytd = (
+
     "#00875A"
+
     if flujo_ytd >= 0
+
     else "#DE350B"
+
 )
 
+
 color_rentabilidad_ytd = (
+
     "#00875A"
+
     if rentabilidad_ytd >= 0
+
     else "#DE350B"
+
 )
 
 
@@ -1155,14 +1301,22 @@ color_rentabilidad_ytd = (
 
 df_grafico_mensual = df.copy()
 
+
 df_grafico_mensual["Año"] = (
+
     df_grafico_mensual["Fecha"]
+
     .dt.year
+
 )
 
+
 df_grafico_mensual["Mes"] = (
+
     df_grafico_mensual["Fecha"]
+
     .dt.month
+
 )
 
 
@@ -1184,6 +1338,7 @@ grafico_mensual = (
             "sum"
         )
     )
+
 )
 
 
@@ -1198,8 +1353,13 @@ tabla_mensual = (
     )
 
     .fillna(0)
+
 )
 
+
+# ============================================================
+# ASEGURAR 2025 Y 2026
+# ============================================================
 
 for año in [2025, 2026]:
 
@@ -1208,11 +1368,13 @@ for año in [2025, 2026]:
         tabla_mensual[año] = 0
 
 
+# ============================================================
+# ASEGURAR MESES EN ORDEN
+# ============================================================
+
 tabla_mensual = (
 
     tabla_mensual
-
-    .sort_index()
 
     .reindex(
         range(1, 10),
@@ -1220,6 +1382,21 @@ tabla_mensual = (
     )
 
 )
+
+
+# Convertimos explícitamente las columnas
+# a enteros para el acceso posterior.
+
+tabla_mensual[2025] = pd.to_numeric(
+    tabla_mensual[2025],
+    errors="coerce"
+).fillna(0)
+
+
+tabla_mensual[2026] = pd.to_numeric(
+    tabla_mensual[2026],
+    errors="coerce"
+).fillna(0)
 
 
 tabla_mensual = tabla_mensual[
@@ -1235,11 +1412,17 @@ df_promedio_header = df.copy()
 
 
 df_promedio_header = (
+
     df_promedio_header[
+
         (df_promedio_header["Fecha"] >= inicio_anio)
+
         &
+
         (df_promedio_header["Fecha"] < inicio_mes_actual)
+
     ]
+
 )
 
 
@@ -1281,16 +1464,23 @@ if meses_cerrados > 0:
 
     )
 
+
 else:
 
     promedio_header = pd.DataFrame(
+
         columns=[
             "Nombre_Propiedad",
             "Ciudad",
             "Ingreso_Promedio"
         ]
+
     )
 
+
+# ============================================================
+# CREAR MINI GRÁFICOS
+# ============================================================
 
 sparkline = crear_sparkline(
     tabla_mensual
@@ -1298,9 +1488,11 @@ sparkline = crear_sparkline(
 
 
 barras_propiedades = (
+
     crear_barras_propiedades(
         promedio_header
     )
+
 )
 
 
@@ -1312,7 +1504,11 @@ header_html = (
 
     '<div class="app-header">'
 
-    '<div class="app-icon">🏢</div>'
+
+    '<div class="app-icon">'
+    '🏢'
+    '</div>'
+
 
     '<div class="app-title-block">'
 
@@ -1328,11 +1524,12 @@ header_html = (
     '</div>'
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # INDICADORES ANUALES
-    # --------------------------------------------------------
+    # ========================================================
 
     '<div class="header-annual">'
+
 
     '<div class="annual-card">'
 
@@ -1378,15 +1575,18 @@ header_html = (
 
     '</div>'
 
+
     '</div>'
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # MINI GRÁFICOS
-    # --------------------------------------------------------
+    # ========================================================
 
     '<div class="header-minicharts">'
 
+
+    # MINI GRÁFICO 1
 
     '<div class="mini-chart">'
 
@@ -1402,6 +1602,8 @@ header_html = (
 
     '</div>'
 
+
+    # MINI GRÁFICO 2
 
     '<div class="mini-chart">'
 
@@ -1421,12 +1623,17 @@ header_html = (
     '</div>'
 
 
+    # ========================================================
+    # ESTADO
+    # ========================================================
+
     '<div class="header-status">'
     '● Información actualizada'
     '</div>'
 
 
     '</div>'
+
 )
 
 
@@ -1446,15 +1653,20 @@ col1, col2, col3, col4 = st.columns(4)
 with col1:
 
     ciudades = (
+
         ["Todas"]
+
         +
+
         sorted(
             df["Ciudad"]
             .dropna()
             .unique()
             .tolist()
         )
+
     )
+
 
     ciudad = st.selectbox(
         "Ciudad",
@@ -1465,15 +1677,20 @@ with col1:
 with col2:
 
     propiedades = (
+
         ["Todas"]
+
         +
+
         sorted(
             df["Nombre_Propiedad"]
             .dropna()
             .unique()
             .tolist()
         )
+
     )
+
 
     propiedad = st.selectbox(
         "Propiedad",
@@ -1484,15 +1701,20 @@ with col2:
 with col3:
 
     socios = (
+
         ["Todos"]
+
         +
+
         sorted(
             df["Nombre_Socio"]
             .dropna()
             .unique()
             .tolist()
         )
+
     )
+
 
     socio = st.selectbox(
         "Socio",
@@ -1506,11 +1728,13 @@ with col4:
         day=1
     )
 
+
     fecha_min = (
         df["Fecha"]
         .min()
         .date()
     )
+
 
     fecha_max = max(
         df["Fecha"]
@@ -1519,16 +1743,24 @@ with col4:
         hoy
     )
 
+
     fechas = st.date_input(
+
         "Período de análisis",
+
         value=(
             inicio_mes,
             hoy
         ),
+
         min_value=fecha_min,
+
         max_value=fecha_max,
+
         format="DD/MM/YYYY",
+
         key="periodo_analisis"
+
     )
 
 
@@ -1537,8 +1769,13 @@ with col4:
 # ============================================================
 
 if (
+
     isinstance(fechas, tuple)
-    and len(fechas) == 2
+
+    and
+
+    len(fechas) == 2
+
 ):
 
     fecha_inicio = pd.Timestamp(
@@ -1546,9 +1783,12 @@ if (
     )
 
     fecha_fin = (
+
         pd.Timestamp(fechas[1])
+
         +
         pd.Timedelta(days=1)
+
     )
 
 else:
@@ -1558,9 +1798,12 @@ else:
     )
 
     fecha_fin = (
+
         fecha_inicio
+
         +
         pd.Timedelta(days=1)
+
     )
 
 
@@ -1578,7 +1821,8 @@ df_f = df[
 if ciudad != "Todas":
 
     df_f = df_f[
-        df_f["Ciudad"] == ciudad
+        df_f["Ciudad"]
+        == ciudad
     ]
 
 
@@ -1614,13 +1858,17 @@ if df_f.empty:
 try:
 
     df_ocupacion = cargar_ocupacion(
+
         fecha_inicio.date(),
+
         fecha_fin.date()
+
     )
 
 except Exception:
 
     df_ocupacion = pd.DataFrame(
+
         columns=[
             "Nombre_Propiedad",
             "Ciudad",
@@ -1629,6 +1877,7 @@ except Exception:
             "Noches_Disponibles",
             "Ocupacion_Porcentaje"
         ]
+
     )
 
 
@@ -1640,15 +1889,20 @@ ingresos = (
     df_f["Ingreso"].sum()
 )
 
+
 gastos = (
     df_f["Gasto"].sum()
 )
 
+
 flujo = (
+
     ingresos
     -
     gastos
+
 )
+
 
 rentabilidad = (
 
@@ -1661,6 +1915,7 @@ rentabilidad = (
     if ingresos != 0
 
     else 0
+
 )
 
 
@@ -1674,64 +1929,128 @@ k1, k2, k3, k4 = st.columns(4)
 with k1:
 
     st.markdown(
+
         '<div class="kpi-card">'
-        '<div class="kpi-label">💰 INGRESOS BRUTOS</div>'
-        f'<div class="kpi-value">{dinero(ingresos)}</div>'
-        '<div class="kpi-sub">Ingresos registrados</div>'
+
+        '<div class="kpi-label">'
+        '💰 INGRESOS BRUTOS'
+        '</div>'
+
+        f'<div class="kpi-value">'
+        f'{dinero(ingresos)}'
+        f'</div>'
+
+        '<div class="kpi-sub">'
+        'Ingresos registrados'
+        '</div>'
+
         '</div>',
+
         unsafe_allow_html=True
+
     )
 
 
 with k2:
 
     st.markdown(
+
         '<div class="kpi-card">'
-        '<div class="kpi-label">🧾 GASTOS OPERATIVOS</div>'
-        f'<div class="kpi-value">{dinero(gastos)}</div>'
-        '<div class="kpi-sub">Egresos registrados</div>'
+
+        '<div class="kpi-label">'
+        '🧾 GASTOS OPERATIVOS'
+        '</div>'
+
+        f'<div class="kpi-value">'
+        f'{dinero(gastos)}'
+        f'</div>'
+
+        '<div class="kpi-sub">'
+        'Egresos registrados'
+        '</div>'
+
         '</div>',
+
         unsafe_allow_html=True
+
     )
 
 
 with k3:
 
     color_flujo = (
+
         "#00875A"
+
         if flujo >= 0
+
         else "#DE350B"
+
     )
 
+
     st.markdown(
+
         '<div class="kpi-card">'
-        '<div class="kpi-label">💵 FLUJO</div>'
-        f'<div class="kpi-value" style="color:{color_flujo};">'
-        f'{dinero(flujo)}'
+
+        '<div class="kpi-label">'
+        '💵 FLUJO'
         '</div>'
-        '<div class="kpi-sub">Ingresos − gastos</div>'
+
+        f'<div class="kpi-value" '
+        f'style="color:{color_flujo};">'
+
+        f'{dinero(flujo)}'
+
+        '</div>'
+
+        '<div class="kpi-sub">'
+        'Ingresos − gastos'
+        '</div>'
+
         '</div>',
+
         unsafe_allow_html=True
+
     )
 
 
 with k4:
 
     color_rentabilidad = (
+
         "#00875A"
+
         if rentabilidad >= 35
+
         else "#DE350B"
+
     )
 
+
     st.markdown(
+
         '<div class="kpi-card">'
-        '<div class="kpi-label">🎯 RENTABILIDAD</div>'
-        f'<div class="kpi-value" style="color:{color_rentabilidad};">'
-        f'{rentabilidad:.1f}%'
+
+        '<div class="kpi-label">'
+        '🎯 RENTABILIDAD'
         '</div>'
-        '<div class="kpi-sub">Objetivo: 35%</div>'
+
+        f'<div class="kpi-value" '
+        f'style="color:{color_rentabilidad};">'
+
+        f'{rentabilidad:.1f}%'
+
+        '</div>'
+
+        '<div class="kpi-sub">'
+        'Objetivo: 35%'
+        '</div>'
+
         '</div>',
+
         unsafe_allow_html=True
+
     )
 
 
@@ -1777,35 +2096,56 @@ if meses_cerrados > 0:
     )
 
 
-    promedios["Ingreso_Promedio"] = (
+    promedios[
+        "Ingreso_Promedio"
+    ] = (
 
-        promedios["Ingreso_Promedio"]
+        promedios[
+            "Ingreso_Promedio"
+        ]
+
         /
+
         meses_cerrados
 
     )
 
 
-    promedios["Gasto_Promedio"] = (
+    promedios[
+        "Gasto_Promedio"
+    ] = (
 
-        promedios["Gasto_Promedio"]
+        promedios[
+            "Gasto_Promedio"
+        ]
+
         /
+
         meses_cerrados
 
     )
 
 
-    promedios["Flujo_Promedio"] = (
+    promedios[
+        "Flujo_Promedio"
+    ] = (
 
-        promedios["Ingreso_Promedio"]
+        promedios[
+            "Ingreso_Promedio"
+        ]
+
         -
-        promedios["Gasto_Promedio"]
+
+        promedios[
+            "Gasto_Promedio"
+        ]
 
     )
 
 else:
 
     promedios = pd.DataFrame(
+
         columns=[
             "Nombre_Propiedad",
             "Ciudad",
@@ -1813,6 +2153,7 @@ else:
             "Gasto_Promedio",
             "Flujo_Promedio"
         ]
+
     )
 
 
@@ -1850,18 +2191,26 @@ resumen = (
 
 
 resumen["Flujo"] = (
+
     resumen["Ingreso"]
+
     -
+
     resumen["Gasto"]
+
 )
 
 
 resumen["Rentabilidad"] = (
 
     resumen["Flujo"]
+
     /
+
     resumen["Ingreso"]
+
     *
+
     100
 
 ).fillna(0)
@@ -1903,7 +2252,9 @@ resumen_ytd = (
 resumen_ytd["Flujo_YTD"] = (
 
     resumen_ytd["Ingreso_YTD"]
+
     -
+
     resumen_ytd["Gasto_YTD"]
 
 )
@@ -1912,9 +2263,13 @@ resumen_ytd["Flujo_YTD"] = (
 resumen_ytd["Rentabilidad_YTD"] = (
 
     resumen_ytd["Flujo_YTD"]
+
     /
+
     resumen_ytd["Ingreso_YTD"]
+
     *
+
     100
 
 ).fillna(0)
@@ -1925,12 +2280,16 @@ resumen_ytd["Rentabilidad_YTD"] = (
 # ============================================================
 
 resumen = resumen.merge(
+
     promedios,
+
     on=[
         "Nombre_Propiedad",
         "Ciudad"
     ],
+
     how="left"
+
 )
 
 
@@ -1981,7 +2340,7 @@ resumen = resumen.merge(
 
 
 # ============================================================
-# ORDEN
+# ORDENAR
 # ============================================================
 
 resumen = resumen.sort_values(
@@ -2006,6 +2365,7 @@ st.markdown(
     '</div>',
 
     unsafe_allow_html=True
+
 )
 
 
@@ -2025,13 +2385,16 @@ for inicio in range(
     for posicion in range(3):
 
         indice = (
+
             inicio
             +
             posicion
+
         )
 
 
         if indice >= len(resumen):
+
             continue
 
 
@@ -2069,10 +2432,6 @@ for inicio in range(
             fila["Rentabilidad"]
         )
 
-
-        # ----------------------------------------------------
-        # ACUMULADO
-        # ----------------------------------------------------
 
         margen_ytd = float(
             fila["Rentabilidad_YTD"]
@@ -2118,16 +2477,18 @@ for inicio in range(
         )
 
 
-        # ----------------------------------------------------
+        # ====================================================
         # OCUPACIÓN
-        # ----------------------------------------------------
+        # ====================================================
 
         reservas_prop = (
 
             0
 
             if pd.isna(
-                fila.get("Reservas")
+                fila.get(
+                    "Reservas"
+                )
             )
 
             else int(
@@ -2185,9 +2546,9 @@ for inicio in range(
             )
 
 
-        # ----------------------------------------------------
-        # COLOR RENTABILIDAD
-        # ----------------------------------------------------
+        # ====================================================
+        # COLORES RENTABILIDAD
+        # ====================================================
 
         if margen_prop >= 35:
 
@@ -2218,10 +2579,6 @@ for inicio in range(
             )
 
 
-        # ----------------------------------------------------
-        # COLOR ACUMULADO
-        # ----------------------------------------------------
-
         color_ytd = (
 
             "#00A878"
@@ -2232,10 +2589,6 @@ for inicio in range(
 
         )
 
-
-        # ----------------------------------------------------
-        # PROGRESO
-        # ----------------------------------------------------
 
         progreso = max(
 
@@ -2249,9 +2602,9 @@ for inicio in range(
         )
 
 
-        # ----------------------------------------------------
-        # TARJETA
-        # ----------------------------------------------------
+        # ====================================================
+        # TARJETA HTML
+        # ====================================================
 
         tarjeta = (
 
@@ -2299,7 +2652,7 @@ for inicio in range(
 
 
             # ------------------------------------------------
-            # INGRESOS / GASTOS / FLUJO
+            # MÉTRICAS
             # ------------------------------------------------
 
             '<div class="property-metrics">'
@@ -2402,7 +2755,7 @@ for inicio in range(
 
 
             # ------------------------------------------------
-            # OCUPACIÓN AIRBNB
+            # OCUPACIÓN
             # ------------------------------------------------
 
             '<div class="occupancy-row">'
@@ -2444,6 +2797,7 @@ for inicio in range(
 # ============================================================
 
 st.markdown("---")
+
 
 st.caption(
 
