@@ -33,7 +33,7 @@ st.markdown("""
 }
 
 .block-container {
-    padding-top: 4.5rem !important;
+    padding-top: 1.2rem !important;
     padding-bottom: 1.5rem !important;
     max-width: 1500px !important;
 }
@@ -42,15 +42,6 @@ st.markdown("""
 /* ============================================================
    HEADER
    ============================================================ */
-
-.header-container {
-    background: #FFFFFF;
-    border: 1px solid #E3E8EF;
-    border-radius: 18px;
-    padding: 12px 18px;
-    margin-bottom: 18px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.04);
-}
 
 .header-icon {
     width: 52px;
@@ -180,18 +171,6 @@ div[data-testid="stPopoverBody"] {
     color: #8A94A6;
     font-size: 11px;
     margin-bottom: 12px;
-}
-
-
-/* ============================================================
-   ESTADO
-   ============================================================ */
-
-.header-status {
-    color: #6B778C;
-    font-size: 10px;
-    white-space: nowrap;
-    padding-top: 24px;
 }
 
 
@@ -1069,11 +1048,6 @@ else:
 # HEADER
 # ============================================================
 
-st.markdown(
-    '<div class="header-container">',
-    unsafe_allow_html=True
-)
-
 header_cols = st.columns(
     [
         0.34,
@@ -1082,8 +1056,7 @@ header_cols = st.columns(
         1.0,
         1.0,
         1.05,
-        1.05,
-        0.78
+        1.05
     ],
     gap="small"
 )
@@ -1310,27 +1283,6 @@ with header_cols[6]:
                 "Todavía no hay meses cerrados "
                 "para calcular el promedio."
             )
-
-
-# ============================================================
-# INFORMACIÓN ACTUALIZADA
-# ============================================================
-
-with header_cols[7]:
-
-    st.markdown(
-        '<div class="header-status">'
-        '● Información actualizada'
-        '</div>',
-
-        unsafe_allow_html=True
-    )
-
-
-st.markdown(
-    '</div>',
-    unsafe_allow_html=True
-)
 
 
 # ============================================================
