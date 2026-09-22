@@ -37,7 +37,11 @@ st.markdown("""
 .block-container {
     max-width: 1500px !important;
 
-    padding-top: 1.8rem !important;
+    /* SOLO AJUSTE REALIZADO:
+       bajamos todo un poco para que la barra superior
+       no tape el contenido */
+    padding-top: 3rem !important;
+
     padding-bottom: 1rem !important;
     padding-left: 3rem !important;
     padding-right: 3rem !important;
@@ -75,7 +79,6 @@ div[data-testid="stDecoration"] {
 
 /* ============================================================
    PRIMERA FILA
-   MARCA + GRÁFICOS + FILTROS
 ============================================================ */
 
 .brand-mini {
@@ -491,7 +494,7 @@ div.stButton > button:hover {
 
 
 /* ============================================================
-   MÉTRICAS DE PROPIEDAD
+   MÉTRICAS
 ============================================================ */
 
 .metrics-grid {
@@ -1169,7 +1172,6 @@ rentabilidad_ytd = (
 
 # ============================================================
 # FILA SUPERIOR
-# MARCA + GRÁFICOS + FILTROS
 # ============================================================
 
 f1, f2, f3, f4, f5, f6 = st.columns(
@@ -1192,14 +1194,27 @@ f1, f2, f3, f4, f5, f6 = st.columns(
 with f1:
 
     st.markdown(
-        """<div class="brand-mini"><div class="logo-mini">🏢</div><div><div class="brand-mini-title">Airbnb <span>Financial Hub</span></div><div class="brand-mini-sub">Rentabilidad financiera · Solo Airbnb</div></div></div>""",
+        """
+<div class="brand-mini">
+    <div class="logo-mini">🏢</div>
+
+    <div>
+        <div class="brand-mini-title">
+            Airbnb <span>Financial Hub</span>
+        </div>
+
+        <div class="brand-mini-sub">
+            Rentabilidad financiera · Solo Airbnb
+        </div>
+    </div>
+</div>
+""",
         unsafe_allow_html=True
     )
 
 
 # ============================================================
-# GRÁFICO 1
-# INGRESO MENSUAL + ACUMULADO
+# GRÁFICO INGRESO MENSUAL
 # ============================================================
 
 with f2:
@@ -1243,8 +1258,7 @@ with f2:
     )
 
     mensual["Acumulado"] = (
-        mensual["Ingresos"]
-        .cumsum()
+        mensual["Ingresos"].cumsum()
     )
 
     with st.popover(
@@ -1329,8 +1343,7 @@ with f2:
 
 
 # ============================================================
-# GRÁFICO 2
-# INGRESOS POR PROPIEDAD + PROMEDIO
+# GRÁFICO INGRESOS POR PROPIEDAD
 # ============================================================
 
 with f3:
@@ -1395,8 +1408,7 @@ with f3:
                 ],
                 y=[
                     promedio_propiedad
-                ] *
-                len(
+                ] * len(
                     propiedades_grafico
                 ),
                 name="Promedio",
@@ -1527,18 +1539,16 @@ if (
 ):
 
     fecha_inicio = periodo[0]
-
     fecha_fin = periodo[1]
 
 else:
 
     fecha_inicio = inicio_mes
-
     fecha_fin = hoy
 
 
 # ============================================================
-# FILTRADO FINANCIERO
+# FILTRADO
 # ============================================================
 
 df_f = df[
@@ -1563,22 +1573,17 @@ if propiedad != "Todas":
 
 
 # ============================================================
-# TOTALES DEL PERÍODO
+# TOTALES
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
 
 gastos = df_f["Gasto"].sum()
 
-flujo = (
-    ingresos -
-    gastos
-)
+flujo = ingresos - gastos
 
 rentabilidad = (
-    flujo /
-    ingresos *
-    100
+    flujo / ingresos * 100
     if ingresos
     else 0
 )
@@ -1684,7 +1689,7 @@ resumen = (
 
 
 # ============================================================
-# ESTADO DE NAVEGACIÓN
+# NAVEGACIÓN
 # ============================================================
 
 if "vista_airbnb" not in st.session_state:
@@ -1693,7 +1698,7 @@ if "vista_airbnb" not in st.session_state:
 
 
 # ============================================================
-# FILA INDICADORES + NAVEGACIÓN
+# INDICADORES + NAVEGACIÓN
 # ============================================================
 
 r1, r2, r3, r4, r5, r6 = st.columns(
@@ -1708,10 +1713,6 @@ r1, r2, r3, r4, r5, r6 = st.columns(
     gap="small"
 )
 
-
-# ============================================================
-# INGRESOS 2026
-# ============================================================
 
 with r1:
 
@@ -1733,10 +1734,6 @@ INGRESOS 2026
     )
 
 
-# ============================================================
-# FLUJO 2026
-# ============================================================
-
 with r2:
 
     st.markdown(
@@ -1756,10 +1753,6 @@ FLUJO 2026
         unsafe_allow_html=True
     )
 
-
-# ============================================================
-# RENTABILIDAD 2026
-# ============================================================
 
 with r3:
 
@@ -1787,10 +1780,6 @@ RENTABILIDAD 2026
     )
 
 
-# ============================================================
-# BOTÓN PROPIEDADES
-# ============================================================
-
 with r4:
 
     if st.button(
@@ -1803,10 +1792,6 @@ with r4:
         st.rerun()
 
 
-# ============================================================
-# BOTÓN FINANCIERO
-# ============================================================
-
 with r5:
 
     if st.button(
@@ -1818,10 +1803,6 @@ with r5:
 
         st.rerun()
 
-
-# ============================================================
-# BOTÓN OCUPACIÓN
-# ============================================================
 
 with r6:
 
@@ -1875,9 +1856,7 @@ def tarjeta_propiedad(row):
 
     else:
 
-        ocup_text = (
-            f"{float(ocup):.1f}%"
-        )
+        ocup_text = f"{float(ocup):.1f}%"
 
         if pd.isna(reservas):
 
@@ -1889,7 +1868,6 @@ def tarjeta_propiedad(row):
                 f"{int(reservas)} reservas · "
                 f"{int(noches)} noches"
             )
-
 
     return f"""
 <div class="property-card {'negative' if not good else ''}">
@@ -2120,10 +2098,6 @@ Desempeño financiero de tus propiedades Airbnb en el período seleccionado.
         unsafe_allow_html=True
     )
 
-
-    # ========================================================
-    # KPI DEL PERÍODO
-    # ========================================================
 
     k1, k2, k3, k4 = st.columns(
         4,
