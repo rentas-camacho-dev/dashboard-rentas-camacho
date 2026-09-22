@@ -18,7 +18,7 @@ st.set_page_config(
 
 
 # ============================================================
-# CSS GENERAL
+# CSS
 # ============================================================
 
 st.markdown("""
@@ -29,238 +29,14 @@ st.markdown("""
    ============================================================ */
 
 .stApp {
-    background: #F4F6F8;
+    background: #F4F7FA;
 }
 
 .block-container {
-    padding-top: 3.6rem !important;
-    padding-bottom: 1rem !important;
-    max-width: 1500px !important;
+    padding-top: 2.8rem !important;
+    padding-bottom: 1.2rem !important;
+    max-width: 1550px !important;
 }
-
-
-/* ============================================================
-   HEADER
-   ============================================================ */
-
-.hero {
-    background: white;
-    border: 1px solid #E0E6ED;
-    border-radius: 18px;
-    padding: 13px 17px;
-    box-shadow: 0 3px 12px rgba(20,40,70,0.04);
-    margin-bottom: 13px;
-}
-
-.logo-box {
-    width: 60px;
-    height: 60px;
-    border-radius: 15px;
-    background: #FF1F4B;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 31px;
-    flex-shrink: 0;
-}
-
-.main-title {
-    font-size: 27px;
-    font-weight: 800;
-    color: #192F55;
-    line-height: 1.05;
-    margin: 0;
-    white-space: nowrap;
-}
-
-.main-title .pink {
-    color: #FF3657;
-}
-
-.subtitle {
-    font-size: 12px;
-    color: #71809A;
-    margin-top: 5px;
-    white-space: nowrap;
-}
-
-
-/* ============================================================
-   MINI CARDS HEADER
-   ============================================================ */
-
-.mini-card {
-    background: #F7F9FB;
-    border: 1px solid #E1E7EE;
-    border-radius: 11px;
-    padding: 8px 10px;
-    height: 62px;
-    box-sizing: border-box;
-}
-
-.mini-label {
-    font-size: 9px;
-    font-weight: 700;
-    color: #8190A7;
-    margin-bottom: 3px;
-}
-
-.mini-value {
-    font-size: 15px;
-    font-weight: 800;
-    color: #19345C;
-}
-
-.mini-value.green {
-    color: #008F63;
-}
-
-.mini-value.red {
-    color: #E53B24;
-}
-
-
-/* ============================================================
-   MINI GRÁFICOS
-   ============================================================ */
-
-.mini-chart-card {
-    background: #F7F9FB;
-    border: 1px solid #E1E7EE;
-    border-radius: 11px;
-    padding: 7px 9px;
-    height: 62px;
-    box-sizing: border-box;
-}
-
-.mini-chart-title {
-    font-size: 9px;
-    font-weight: 700;
-    color: #8190A7;
-    margin-bottom: 2px;
-}
-
-.mini-bars {
-    height: 25px;
-    width: 100%;
-    display: flex;
-    align-items: flex-end;
-    gap: 2px;
-    overflow: hidden;
-}
-
-.mini-bar {
-    flex: 1;
-    background: #35B58C;
-    border-radius: 2px 2px 0 0;
-    min-width: 3px;
-    max-width: 9px;
-}
-
-.mini-bar.purple {
-    background: #7563D9;
-}
-
-.mini-chart-footer {
-    display: flex;
-    justify-content: space-between;
-    font-size: 7px;
-    color: #8996AA;
-    margin-top: 1px;
-}
-
-
-/* ============================================================
-   FILTROS
-   ============================================================ */
-
-.filter-title {
-    font-size: 11px;
-    color: #71809A;
-    margin-bottom: 4px;
-}
-
-div[data-baseweb="select"] > div {
-    background-color: #F0F3F7;
-    border: none;
-    border-radius: 9px;
-}
-
-div[data-testid="stDateInput"] > div {
-    background-color: #F0F3F7;
-    border-radius: 9px;
-}
-
-
-/* ============================================================
-   COLUMNA RESUMEN
-   ============================================================ */
-
-.kpi-column-title {
-    font-size: 10px;
-    font-weight: 800;
-    color: #8190A7;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 7px;
-}
-
-.kpi-card {
-    background: white;
-    border: 1px solid #E0E6ED;
-    border-radius: 13px;
-    padding: 12px 13px;
-    height: 91px;
-    box-sizing: border-box;
-    box-shadow: 0 3px 9px rgba(20,40,70,0.035);
-    margin-bottom: 9px;
-}
-
-.kpi-title {
-    font-size: 10px;
-    font-weight: 800;
-    color: #71809A;
-}
-
-.kpi-value {
-    font-size: 22px;
-    font-weight: 800;
-    color: #19345C;
-    margin-top: 6px;
-    line-height: 1;
-    white-space: nowrap;
-}
-
-.kpi-sub {
-    font-size: 9px;
-    color: #8B99AD;
-    margin-top: 6px;
-}
-
-
-/* ============================================================
-   SECCIÓN PROPIEDADES
-   ============================================================ */
-
-.section-title {
-    font-size: 22px;
-    font-weight: 800;
-    color: #192F55;
-    margin: 0;
-    line-height: 1.1;
-}
-
-.section-subtitle {
-    font-size: 11px;
-    color: #71809A;
-    margin-top: 5px;
-    margin-bottom: 10px;
-}
-
-
-/* ============================================================
-   STREAMLIT
-   ============================================================ */
 
 #MainMenu {
     visibility: hidden;
@@ -270,12 +46,793 @@ footer {
     visibility: hidden;
 }
 
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.top-header {
+    background: #FFFFFF;
+    border: 1px solid #DFE6EE;
+    border-radius: 17px;
+    padding: 13px 15px;
+    box-shadow: 0 4px 14px rgba(25, 47, 85, 0.045);
+    margin-bottom: 12px;
+}
+
+.logo {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: #FF1F4B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.brand {
+    font-size: 24px;
+    font-weight: 850;
+    color: #142F59;
+    line-height: 1.05;
+}
+
+.brand-pink {
+    color: #FF3155;
+}
+
+.brand-subtitle {
+    font-size: 10px;
+    color: #7B8BA3;
+    margin-top: 4px;
+}
+
+
+/* ============================================================
+   KPI
+   ============================================================ */
+
+.header-kpi {
+    height: 66px;
+    background: #F7F9FC;
+    border: 1px solid #E2E8EF;
+    border-radius: 11px;
+    padding: 8px 11px;
+    box-sizing: border-box;
+}
+
+.header-kpi-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: #8291A8;
+}
+
+.header-kpi-value {
+    font-size: 16px;
+    font-weight: 850;
+    color: #18355F;
+    margin-top: 4px;
+}
+
+.header-kpi-value.green {
+    color: #009B70;
+}
+
+.header-kpi-value.red {
+    color: #E83B2D;
+}
+
+.header-kpi-change {
+    font-size: 8px;
+    color: #009B70;
+    margin-top: 2px;
+}
+
+
+/* ============================================================
+   FILTROS
+   ============================================================ */
+
+.filter-panel {
+    background: #FFFFFF;
+    border: 1px solid #DFE6EE;
+    border-radius: 14px;
+    padding: 9px 12px 4px 12px;
+    margin-bottom: 12px;
+}
+
+.filter-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #71829A;
+    margin-bottom: 3px;
+}
+
+div[data-baseweb="select"] > div {
+    background: #F3F6F9;
+    border: none;
+    border-radius: 8px;
+}
+
+div[data-testid="stDateInput"] > div {
+    background: #F3F6F9;
+    border-radius: 8px;
+}
+
+
+/* ============================================================
+   NAVEGACIÓN
+   ============================================================ */
+
+.nav-panel {
+    background: #FFFFFF;
+    border: 1px solid #DFE6EE;
+    border-radius: 14px;
+    padding: 11px;
+    min-height: 570px;
+    box-shadow: 0 3px 12px rgba(25,47,85,0.03);
+}
+
+.nav-title {
+    font-size: 12px;
+    font-weight: 850;
+    color: #17335D;
+    margin-bottom: 9px;
+}
+
+.nav-item {
+    height: 34px;
+    border-radius: 8px;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    font-size: 10px;
+    color: #61728C;
+    margin-bottom: 3px;
+}
+
+.nav-item.active {
+    background: #FFF0F3;
+    color: #FF3155;
+    font-weight: 750;
+}
+
+.nav-separator {
+    height: 1px;
+    background: #EDF1F5;
+    margin: 11px 0;
+}
+
+.nav-small {
+    font-size: 8px;
+    color: #8A98AB;
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   RESUMEN LATERAL
+   ============================================================ */
+
+.summary-title {
+    font-size: 13px;
+    font-weight: 850;
+    color: #17335D;
+    margin-bottom: 8px;
+}
+
+.summary-card {
+    border-radius: 11px;
+    padding: 10px;
+    margin-bottom: 7px;
+    background: #F7FAFC;
+    border-left: 3px solid #00A879;
+}
+
+.summary-card.expense {
+    border-left-color: #FF4B43;
+}
+
+.summary-card.flow {
+    border-left-color: #1478D4;
+}
+
+.summary-card.profit {
+    border-left-color: #7655E8;
+}
+
+.summary-label {
+    font-size: 8px;
+    color: #75859C;
+    font-weight: 700;
+}
+
+.summary-value {
+    font-size: 20px;
+    color: #17355F;
+    font-weight: 850;
+    margin-top: 2px;
+}
+
+.summary-sub {
+    font-size: 8px;
+    color: #8A98AA;
+    margin-top: 2px;
+}
+
+
+/* ============================================================
+   SECCIÓN
+   ============================================================ */
+
+.section-title {
+    font-size: 20px;
+    font-weight: 850;
+    color: #142F59;
+    line-height: 1.1;
+}
+
+.section-subtitle {
+    font-size: 9px;
+    color: #7A8BA3;
+    margin-top: 4px;
+}
+
+
+/* ============================================================
+   CONTROLES
+   ============================================================ */
+
+.sort-box {
+    background: #FFFFFF;
+    border: 1px solid #DFE6EE;
+    border-radius: 9px;
+    padding: 8px 10px;
+    font-size: 9px;
+    color: #53657F;
+}
+
+
+/* ============================================================
+   TARJETAS PROPIEDADES
+   ============================================================ */
+
+.property-card {
+    background: #FFFFFF;
+    border: 1px solid #DDE5ED;
+    border-radius: 14px;
+    padding: 10px;
+    height: 248px;
+    box-sizing: border-box;
+    box-shadow: 0 3px 10px rgba(25,47,85,0.035);
+    overflow: hidden;
+}
+
+.property-card.loss {
+    border-color: #FFAAA6;
+}
+
+.property-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.property-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 9px;
+    background: linear-gradient(135deg,#DDEEFF,#F4F8FC);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    float: left;
+    margin-right: 8px;
+}
+
+.property-name {
+    font-size: 13px;
+    font-weight: 850;
+    color: #17345E;
+    line-height: 1.15;
+    margin-top: 1px;
+}
+
+.property-city {
+    font-size: 8px;
+    color: #71829A;
+    margin-top: 4px;
+}
+
+.property-profit {
+    font-size: 14px;
+    font-weight: 850;
+    color: #00A879;
+    white-space: nowrap;
+}
+
+.property-profit.loss {
+    color: #EF3E32;
+}
+
+.property-year {
+    font-size: 7px;
+    color: #8796A9;
+    text-align: right;
+    margin-top: 2px;
+}
+
+
+/* ============================================================
+   MÉTRICAS
+   ============================================================ */
+
+.property-metrics {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 4px;
+    margin-top: 10px;
+}
+
+.property-metric {
+    background: #F5F8FA;
+    border-radius: 7px;
+    padding: 6px;
+    height: 47px;
+    box-sizing: border-box;
+}
+
+.property-metric-label {
+    font-size: 7px;
+    color: #7788A0;
+}
+
+.property-metric-value {
+    font-size: 11px;
+    font-weight: 850;
+    margin-top: 3px;
+}
+
+.income {
+    color: #009B70;
+}
+
+.expense {
+    color: #EF3E32;
+}
+
+.flow {
+    color: #0878D2;
+}
+
+.property-average {
+    font-size: 6.5px;
+    color: #8A98AA;
+    margin-top: 2px;
+}
+
+
+/* ============================================================
+   BARRA RENTABILIDAD
+   ============================================================ */
+
+.profit-line {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.profit-line-label {
+    font-size: 8px;
+    color: #71829A;
+}
+
+.profit-line-value {
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.progress-background {
+    height: 5px;
+    background: #E8EDF2;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 3px;
+}
+
+.progress-positive {
+    height: 100%;
+    background: #00B486;
+    border-radius: 8px;
+}
+
+.progress-negative {
+    height: 100%;
+    background: #F0443A;
+    border-radius: 8px;
+}
+
+
+/* ============================================================
+   OCUPACIÓN
+   ============================================================ */
+
+.occupancy {
+    margin-top: 8px;
+    height: 43px;
+    background: #F5F7FB;
+    border-radius: 8px;
+    padding: 6px 8px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.occupancy-label {
+    font-size: 7px;
+    color: #71829A;
+}
+
+.occupancy-value {
+    font-size: 13px;
+    font-weight: 850;
+    color: #6B4FE8;
+    margin-top: 2px;
+}
+
+.occupancy-detail {
+    text-align: right;
+    font-size: 7px;
+    color: #7D8DA2;
+    line-height: 1.4;
+}
+
+
+/* ============================================================
+   PLACEHOLDER
+   ============================================================ */
+
+.add-card {
+    height: 248px;
+    border: 1px dashed #B8C7D8;
+    border-radius: 14px;
+    background: #FAFCFE;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #7890AE;
+    text-align: center;
+}
+
+.add-plus {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #EAF0F6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    color: #7890AE;
+}
+
+.add-title {
+    font-size: 11px;
+    font-weight: 750;
+    margin-top: 8px;
+}
+
+.add-sub {
+    font-size: 8px;
+    margin-top: 4px;
+}
+
+
+/* ============================================================
+   CHART CARDS
+   ============================================================ */
+
+.chart-card {
+    background: #FFFFFF;
+    border: 1px solid #DFE6EE;
+    border-radius: 13px;
+    padding: 11px;
+    box-sizing: border-box;
+    margin-bottom: 9px;
+}
+
+.chart-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: #17345E;
+}
+
+.chart-subtitle {
+    font-size: 7px;
+    color: #8492A6;
+    margin-top: 2px;
+}
+
+.bar-chart {
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    margin-top: 10px;
+    padding: 0 3px;
+}
+
+.bar-wrapper {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.bar {
+    width: 100%;
+    max-width: 18px;
+    background: #22B68D;
+    border-radius: 3px 3px 0 0;
+}
+
+.bar-label {
+    font-size: 6px;
+    color: #8997A9;
+    margin-top: 3px;
+    text-align: center;
+}
+
+
+/* ============================================================
+   RANKING
+   ============================================================ */
+
+.rank-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 7px;
+}
+
+.rank-name {
+    width: 65px;
+    font-size: 7px;
+    color: #5F718A;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rank-background {
+    flex: 1;
+    height: 7px;
+    background: #EEF1F5;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.rank-bar {
+    height: 100%;
+    background: #8067E8;
+    border-radius: 6px;
+}
+
+.rank-value {
+    width: 33px;
+    text-align: right;
+    font-size: 7px;
+    color: #6D7D94;
+}
+
+
+/* ============================================================
+   DONUT
+   ============================================================ */
+
+.donut-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 9px;
+}
+
+.donut {
+    width: 94px;
+    height: 94px;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.donut-center {
+    position: absolute;
+    inset: 20px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.donut-total {
+    font-size: 13px;
+    font-weight: 850;
+    color: #17345E;
+}
+
+.donut-label {
+    font-size: 6px;
+    color: #8290A3;
+}
+
+.legend {
+    flex: 1;
+}
+
+.legend-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 5px;
+}
+
+.legend-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.legend-name {
+    flex: 1;
+    font-size: 6.5px;
+    color: #65758D;
+}
+
+.legend-value {
+    font-size: 6.5px;
+    color: #65758D;
+}
+
+
+/* ============================================================
+   INSIGHTS
+   ============================================================ */
+
+.insight {
+    display: flex;
+    gap: 7px;
+    align-items: flex-start;
+    margin-top: 8px;
+}
+
+.insight-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.insight-text {
+    font-size: 8px;
+    line-height: 1.4;
+    color: #5F718A;
+}
+
+
+/* ============================================================
+   TABLA
+   ============================================================ */
+
+.table-card {
+    background: #FFFFFF;
+    border: 1px solid #DFE6EE;
+    border-radius: 13px;
+    padding: 11px;
+    margin-top: 10px;
+}
+
+.table-title {
+    font-size: 12px;
+    font-weight: 850;
+    color: #17345E;
+    margin-bottom: 8px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    font-size: 7px;
+    color: #8391A5;
+    font-weight: 700;
+    text-align: left;
+    padding: 6px;
+    border-bottom: 1px solid #E8EDF2;
+}
+
+.data-table td {
+    font-size: 8px;
+    color: #52647E;
+    padding: 6px;
+    border-bottom: 1px solid #F0F3F6;
+}
+
+.data-table td.name {
+    font-weight: 800;
+    color: #17345E;
+}
+
+.data-table td.green {
+    color: #009B70;
+    font-weight: 750;
+}
+
+.data-table td.red {
+    color: #EF3E32;
+    font-weight: 750;
+}
+
+.data-table td.blue {
+    color: #0878D2;
+    font-weight: 750;
+}
+
+
+/* ============================================================
+   OBJETIVO
+   ============================================================ */
+
+.target-card {
+    background: #FFFFFF;
+    border: 1px solid #DFE6EE;
+    border-radius: 12px;
+    padding: 10px;
+    margin-top: 9px;
+}
+
+.target-title {
+    font-size: 8px;
+    color: #71829A;
+}
+
+.target-value {
+    font-size: 20px;
+    font-weight: 850;
+    color: #17345E;
+    margin-top: 2px;
+}
+
+.target-background {
+    height: 6px;
+    background: #E8EDF2;
+    border-radius: 8px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.target-progress {
+    height: 100%;
+    width: 67%;
+    background: #00B486;
+    border-radius: 8px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 
 # ============================================================
-# CREDENCIALES BIGQUERY
+# BIGQUERY
 # ============================================================
 
 credentials = service_account.Credentials.from_service_account_info(
@@ -293,16 +850,8 @@ client = bigquery.Client(
 
 
 # ============================================================
-# FUNCIONES DE FORMATO
+# FORMATO
 # ============================================================
-
-def dinero(valor):
-
-    if pd.isna(valor):
-        valor = 0
-
-    return f"${valor:,.0f}".replace(",", ".")
-
 
 def dinero_corto(valor):
 
@@ -316,16 +865,24 @@ def dinero_corto(valor):
     valor = abs(valor)
 
     if valor >= 1_000_000:
-        return f"{signo}${valor / 1_000_000:.1f}M"
+        return f"{signo}${valor/1_000_000:.1f}M"
 
     if valor >= 1_000:
-        return f"{signo}${valor / 1_000:.0f}k"
+        return f"{signo}${valor/1_000:.0f}k"
 
     return f"{signo}${valor:,.0f}".replace(",", ".")
 
 
+def dinero(valor):
+
+    if pd.isna(valor):
+        valor = 0
+
+    return f"${valor:,.0f}".replace(",", ".")
+
+
 # ============================================================
-# DATOS FINANCIEROS
+# FINANCIERO
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -385,7 +942,7 @@ def cargar_datos_financieros():
 
 
 # ============================================================
-# RESERVAS AIRBNB
+# RESERVAS
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -532,7 +1089,7 @@ def cargar_reservas(fecha_inicio, fecha_fin):
 
 
 # ============================================================
-# CARGAR DATOS
+# CARGAR
 # ============================================================
 
 df = cargar_datos_financieros()
@@ -558,172 +1115,78 @@ inicio_mes = date(
 
 
 # ============================================================
-# INDICADORES YTD
+# FILTROS
 # ============================================================
 
-df_ytd = df[
-    (df["Fecha"] >= inicio_anio) &
-    (df["Fecha"] < fin_hoy)
-].copy()
-
-ingresos_ytd = df_ytd["Ingreso"].sum()
-
-gastos_ytd = df_ytd["Gasto"].sum()
-
-flujo_ytd = (
-    ingresos_ytd -
-    gastos_ytd
+col1, col2, col3, col4 = st.columns(
+    [1.1, 1.1, 1.1, 1.3]
 )
 
-rentabilidad_ytd = (
-    flujo_ytd / ingresos_ytd * 100
-    if ingresos_ytd != 0
-    else 0
-)
+with col1:
 
-
-# ============================================================
-# MINI GRÁFICO INGRESO MENSUAL
-# ============================================================
-
-df_anio = df[
-    (df["Fecha"] >= inicio_anio) &
-    (df["Fecha"] < fin_hoy)
-].copy()
-
-df_anio["Mes"] = (
-    df_anio["Fecha"].dt.month
-)
-
-mensual = (
-    df_anio
-    .groupby(
-        "Mes",
-        as_index=False
-    )["Ingreso"]
-    .sum()
-)
-
-meses = list(
-    range(
-        1,
-        hoy.month + 1
-    )
-)
-
-mensual = (
-    pd.DataFrame(
-        {"Mes": meses}
-    )
-    .merge(
-        mensual,
-        on="Mes",
-        how="left"
-    )
-    .fillna(0)
-)
-
-max_ingreso = mensual["Ingreso"].max()
-
-if max_ingreso > 0:
-
-    mensual["altura"] = (
-        mensual["Ingreso"]
-        / max_ingreso
-        * 25
+    st.markdown(
+        '<div class="filter-label">📍 Ciudad</div>',
+        unsafe_allow_html=True
     )
 
-else:
-
-    mensual["altura"] = 4
-
-
-# ============================================================
-# MINI GRÁFICO PROMEDIO
-# ============================================================
-
-promedio_propiedad = (
-    df_anio
-    .groupby(
-        [
-            "Nombre_Propiedad",
-            "Ciudad"
-        ],
-        as_index=False
-    )
-    .agg(
-        Ingreso_Promedio=(
-            "Ingreso",
-            "mean"
-        )
-    )
-    .sort_values(
-        "Ingreso_Promedio",
-        ascending=False
-    )
-    .head(6)
-)
-
-max_promedio = (
-    promedio_propiedad[
-        "Ingreso_Promedio"
-    ].max()
-    if not promedio_propiedad.empty
-    else 0
-)
-
-if max_promedio > 0:
-
-    promedio_propiedad["altura"] = (
-        promedio_propiedad[
-            "Ingreso_Promedio"
-        ]
-        / max_promedio
-        * 25
+    ciudades = sorted(
+        df["Ciudad"].unique()
     )
 
-else:
-
-    promedio_propiedad["altura"] = 4
-
-
-# ============================================================
-# BARRAS MINI GRÁFICOS
-# ============================================================
-
-barras_ingreso = ""
-
-for _, row in mensual.iterrows():
-
-    altura = max(
-        3,
-        min(
-            25,
-            float(row["altura"])
-        )
-    )
-
-    barras_ingreso += (
-        '<div class="mini-bar" '
-        f'style="height:{altura:.0f}px;"></div>'
+    ciudad = st.selectbox(
+        "Ciudad",
+        ["Todas"] + ciudades,
+        label_visibility="collapsed"
     )
 
 
-barras_promedio = ""
+with col2:
 
-for _, row in promedio_propiedad.iterrows():
-
-    altura = max(
-        3,
-        min(
-            25,
-            float(row["altura"])
-        )
+    st.markdown(
+        '<div class="filter-label">🏢 Propiedad</div>',
+        unsafe_allow_html=True
     )
 
-    barras_promedio += (
-        '<div class="mini-bar purple" '
-        f'style="height:{altura:.0f}px;"></div>'
+    propiedades = sorted(
+        df["Nombre_Propiedad"].unique()
+    )
+
+    propiedad = st.selectbox(
+        "Propiedad",
+        ["Todas"] + propiedades,
+        label_visibility="collapsed"
+    )
+
+
+with col3:
+
+    st.markdown(
+        '<div class="filter-label">👥 Socio</div>',
+        unsafe_allow_html=True
+    )
+
+    socios = sorted(
+        df["Nombre_Socio"].unique()
+    )
+
+    socio = st.selectbox(
+        "Socio",
+        ["Todos"] + socios,
+        label_visibility="collapsed"
+    )
+
+
+with col4:
+
+    st.markdown(
+        '<div class="filter-label">📅 Período de análisis</div>',
+        unsafe_allow_html=True
+    )
+
+    periodo = st.date_input(
+        "Periodo",
+        value=(inicio_mes, hoy),
+        label_visibility="collapsed"
     )
 
 
@@ -731,107 +1194,219 @@ for _, row in promedio_propiedad.iterrows():
 # HEADER
 # ============================================================
 
-color_rent_ytd = (
+df_ytd = df[
+    (df["Fecha"] >= inicio_anio) &
+    (df["Fecha"] < fin_hoy)
+]
+
+ingresos_ytd = df_ytd["Ingreso"].sum()
+gastos_ytd = df_ytd["Gasto"].sum()
+flujo_ytd = ingresos_ytd - gastos_ytd
+
+rentabilidad_ytd = (
+    flujo_ytd / ingresos_ytd * 100
+    if ingresos_ytd
+    else 0
+)
+
+rent_color = (
     "green"
     if rentabilidad_ytd >= 35
     else "red"
 )
 
 header_html = f"""
-<div class="hero">
+<div class="top-header">
 
 <div style="
 display:flex;
 align-items:center;
-gap:13px;
-width:100%;
+gap:12px;
 ">
 
-<div class="logo-box">
+<div class="logo">
 🏢
 </div>
 
 <div style="
-width:315px;
+width:260px;
 flex-shrink:0;
 ">
 
-<div class="main-title">
-Airbnb <span class="pink">Financial Hub</span>
+<div class="brand">
+Airbnb <span class="brand-pink">Financial Hub</span>
 </div>
 
-<div class="subtitle">
+<div class="brand-subtitle">
 Rentabilidad financiera · Solo Airbnb
 </div>
 
 </div>
 
-<div class="mini-card" style="flex:1;">
 
-<div class="mini-label">
+<div class="header-kpi" style="flex:1;">
+
+<div class="header-kpi-label">
 INGRESOS 2026
 </div>
 
-<div class="mini-value">
+<div class="header-kpi-value">
 {dinero_corto(ingresos_ytd)}
 </div>
 
 </div>
 
-<div class="mini-card" style="flex:1;">
 
-<div class="mini-label">
+<div class="header-kpi" style="flex:1;">
+
+<div class="header-kpi-label">
 FLUJO 2026
 </div>
 
-<div class="mini-value green">
+<div class="header-kpi-value green">
 {dinero_corto(flujo_ytd)}
 </div>
 
 </div>
 
-<div class="mini-card" style="flex:1;">
 
-<div class="mini-label">
+<div class="header-kpi" style="flex:1;">
+
+<div class="header-kpi-label">
 RENTABILIDAD 2026
 </div>
 
-<div class="mini-value {color_rent_ytd}">
+<div class="header-kpi-value {rent_color}">
 {rentabilidad_ytd:.1f}%
 </div>
 
 </div>
 
-<div class="mini-chart-card" style="flex:1;">
 
-<div class="mini-chart-title">
-Ingreso mensual
+<div class="header-kpi" style="flex:1;">
+
+<div class="header-kpi-label">
+INGRESO MENSUAL
 </div>
 
-<div class="mini-bars">
-{barras_ingreso}
+<div style="
+display:flex;
+align-items:flex-end;
+gap:3px;
+height:28px;
+margin-top:2px;
+">
+"""
+
+# ============================================================
+# MINI BARRAS
+# ============================================================
+
+df_chart = df_ytd.copy()
+
+df_chart["Mes"] = df_chart["Fecha"].dt.month
+
+monthly = (
+    df_chart
+    .groupby("Mes")["Ingreso"]
+    .sum()
+)
+
+max_month = (
+    monthly.max()
+    if not monthly.empty
+    else 1
+)
+
+for month in range(1, hoy.month + 1):
+
+    value = monthly.get(
+        month,
+        0
+    )
+
+    height = (
+        max(
+            3,
+            int(
+                value /
+                max_month *
+                27
+            )
+        )
+        if max_month > 0
+        else 3
+    )
+
+    header_html += f"""
+<div style="
+width:7px;
+height:{height}px;
+background:#27B68C;
+border-radius:2px 2px 0 0;
+"></div>
+"""
+
+header_html += """
 </div>
 
-<div class="mini-chart-footer">
-<span>2026</span>
-<span>Mes</span>
 </div>
 
+
+<div class="header-kpi" style="flex:1;">
+
+<div class="header-kpi-label">
+PROMEDIO POR PROPIEDAD
 </div>
 
-<div class="mini-chart-card" style="flex:1;">
+<div style="
+display:flex;
+align-items:flex-end;
+gap:3px;
+height:28px;
+margin-top:2px;
+">
+"""
 
-<div class="mini-chart-title">
-Promedio mensual
-</div>
+# ============================================================
+# PROMEDIO POR PROPIEDAD
+# ============================================================
 
-<div class="mini-bars">
-{barras_promedio}
-</div>
+promedio_header = (
+    df_ytd
+    .groupby("Nombre_Propiedad")["Ingreso"]
+    .sum()
+    .sort_values(ascending=False)
+    .head(6)
+)
 
-<div class="mini-chart-footer">
-<span>Propiedades</span>
-<span>2026</span>
+max_prom = (
+    promedio_header.max()
+    if not promedio_header.empty
+    else 1
+)
+
+for value in promedio_header.values:
+
+    height = max(
+        4,
+        int(
+            value /
+            max_prom *
+            27
+        )
+    )
+
+    header_html += f"""
+<div style="
+width:7px;
+height:{height}px;
+background:#7965D9;
+border-radius:2px 2px 0 0;
+"></div>
+"""
+
+header_html += """
 </div>
 
 </div>
@@ -848,94 +1423,7 @@ st.markdown(
 
 
 # ============================================================
-# FILTROS
-# ============================================================
-
-col1, col2, col3, col4 = st.columns(4)
-
-
-with col1:
-
-    st.markdown(
-        '<div class="filter-title">Ciudad</div>',
-        unsafe_allow_html=True
-    )
-
-    ciudades = sorted(
-        df["Ciudad"]
-        .dropna()
-        .astype(str)
-        .unique()
-    )
-
-    ciudad = st.selectbox(
-        "Ciudad",
-        ["Todas"] + ciudades,
-        label_visibility="collapsed"
-    )
-
-
-with col2:
-
-    st.markdown(
-        '<div class="filter-title">Propiedad</div>',
-        unsafe_allow_html=True
-    )
-
-    propiedades = sorted(
-        df["Nombre_Propiedad"]
-        .dropna()
-        .astype(str)
-        .unique()
-    )
-
-    propiedad = st.selectbox(
-        "Propiedad",
-        ["Todas"] + propiedades,
-        label_visibility="collapsed"
-    )
-
-
-with col3:
-
-    st.markdown(
-        '<div class="filter-title">Socio</div>',
-        unsafe_allow_html=True
-    )
-
-    socios = sorted(
-        df["Nombre_Socio"]
-        .dropna()
-        .astype(str)
-        .unique()
-    )
-
-    socio = st.selectbox(
-        "Socio",
-        ["Todos"] + socios,
-        label_visibility="collapsed"
-    )
-
-
-with col4:
-
-    st.markdown(
-        '<div class="filter-title">Período de análisis</div>',
-        unsafe_allow_html=True
-    )
-
-    periodo = st.date_input(
-        "Período",
-        value=(
-            inicio_mes,
-            hoy
-        ),
-        label_visibility="collapsed"
-    )
-
-
-# ============================================================
-# PERÍODO
+# PERIODO
 # ============================================================
 
 if (
@@ -953,7 +1441,7 @@ else:
 
 
 # ============================================================
-# FILTRO FINANCIERO
+# FILTRAR FINANCIERO
 # ============================================================
 
 df_f = df[
@@ -984,27 +1472,24 @@ if socio != "Todos":
 
 
 # ============================================================
-# KPIs PERÍODO
+# KPIs PERIODO
 # ============================================================
 
 ingresos = df_f["Ingreso"].sum()
 
 gastos = df_f["Gasto"].sum()
 
-flujo = (
-    ingresos -
-    gastos
-)
+flujo = ingresos - gastos
 
 rentabilidad = (
     flujo / ingresos * 100
-    if ingresos != 0
+    if ingresos
     else 0
 )
 
 
 # ============================================================
-# RESUMEN POR PROPIEDAD
+# RESUMEN PROPIEDADES
 # ============================================================
 
 resumen = (
@@ -1017,14 +1502,8 @@ resumen = (
         as_index=False
     )
     .agg(
-        Ingresos=(
-            "Ingreso",
-            "sum"
-        ),
-        Gastos=(
-            "Gasto",
-            "sum"
-        )
+        Ingresos=("Ingreso", "sum"),
+        Gastos=("Gasto", "sum")
     )
 )
 
@@ -1034,23 +1513,23 @@ resumen["Flujo"] = (
 )
 
 resumen["Rentabilidad"] = resumen.apply(
-    lambda x:
-        x["Flujo"]
-        / x["Ingresos"]
-        * 100
-        if x["Ingresos"] != 0
+    lambda r:
+        r["Flujo"] /
+        r["Ingresos"] *
+        100
+        if r["Ingresos"] != 0
         else 0,
     axis=1
 )
 
 
 # ============================================================
-# PROMEDIOS MENSUALES
+# PROMEDIOS
 # ============================================================
 
 meses_cerrados = max(
     hoy.month - 1,
-    0
+    1
 )
 
 inicio_mes_actual = pd.Timestamp(
@@ -1062,58 +1541,37 @@ inicio_mes_actual = pd.Timestamp(
 df_cerrado = df[
     (df["Fecha"] >= inicio_anio) &
     (df["Fecha"] < inicio_mes_actual)
-].copy()
+]
 
-
-if meses_cerrados > 0:
-
-    promedios = (
-        df_cerrado
-        .groupby(
-            [
-                "Nombre_Propiedad",
-                "Ciudad"
-            ],
-            as_index=False
-        )
-        .agg(
-            Ingreso_Promedio=(
-                "Ingreso",
-                "sum"
-            ),
-            Gasto_Promedio=(
-                "Gasto",
-                "sum"
-            )
-        )
-    )
-
-    promedios["Ingreso_Promedio"] /= (
-        meses_cerrados
-    )
-
-    promedios["Gasto_Promedio"] /= (
-        meses_cerrados
-    )
-
-    promedios["Flujo_Promedio"] = (
-        promedios["Ingreso_Promedio"]
-        -
-        promedios["Gasto_Promedio"]
-    )
-
-else:
-
-    promedios = pd.DataFrame(
-        columns=[
+promedios = (
+    df_cerrado
+    .groupby(
+        [
             "Nombre_Propiedad",
-            "Ciudad",
-            "Ingreso_Promedio",
-            "Gasto_Promedio",
-            "Flujo_Promedio"
-        ]
+            "Ciudad"
+        ],
+        as_index=False
     )
+    .agg(
+        Ingreso_Promedio=(
+            "Ingreso",
+            "sum"
+        ),
+        Gasto_Promedio=(
+            "Gasto",
+            "sum"
+        )
+    )
+)
 
+promedios["Ingreso_Promedio"] /= meses_cerrados
+
+promedios["Gasto_Promedio"] /= meses_cerrados
+
+promedios["Flujo_Promedio"] = (
+    promedios["Ingreso_Promedio"] -
+    promedios["Gasto_Promedio"]
+)
 
 resumen = resumen.merge(
     promedios,
@@ -1126,7 +1584,7 @@ resumen = resumen.merge(
 
 
 # ============================================================
-# OCUPACIÓN AIRBNB
+# OCUPACIÓN
 # ============================================================
 
 try:
@@ -1151,24 +1609,16 @@ except Exception:
 
 if not df_ocupacion.empty:
 
-    df_ocupacion[
-        "Ocupacion_Porcentaje"
-    ] = (
-        df_ocupacion[
-            "Noches_Reservadas"
-        ]
+    df_ocupacion["Ocupacion"] = (
+        df_ocupacion["Noches_Reservadas"]
         /
-        df_ocupacion[
-            "Noches_Disponibles"
-        ]
+        df_ocupacion["Noches_Disponibles"]
         * 100
     )
 
 else:
 
-    df_ocupacion[
-        "Ocupacion_Porcentaje"
-    ] = pd.Series(
+    df_ocupacion["Ocupacion"] = pd.Series(
         dtype=float
     )
 
@@ -1184,285 +1634,195 @@ resumen = resumen.merge(
 
 
 # ============================================================
-# ORDENAR PROPIEDADES
+# ORDEN
 # ============================================================
 
 resumen = resumen.sort_values(
     "Rentabilidad",
     ascending=False
+).reset_index(drop=True)
+
+
+# ============================================================
+# LAYOUT PRINCIPAL
+# ============================================================
+
+nav_col, main_col, right_col = st.columns(
+    [0.12, 0.67, 0.21],
+    gap="small"
 )
 
 
 # ============================================================
-# LAYOUT
+# NAVEGACIÓN
 # ============================================================
 
-left, right = st.columns(
-    [0.15, 0.85],
-    gap="medium"
-)
+with nav_col:
 
+    nav_html = """
+<div class="nav-panel">
 
-# ============================================================
-# COLUMNA IZQUIERDA
-# ============================================================
+<div class="nav-title">
+Airbnb Financial
+</div>
 
-with left:
+<div class="nav-item active">
+▣ &nbsp; Resumen
+</div>
+
+<div class="nav-item">
+▦ &nbsp; Propiedades
+</div>
+
+<div class="nav-item">
+↗ &nbsp; Ingresos
+</div>
+
+<div class="nav-item">
+▣ &nbsp; Gastos
+</div>
+
+<div class="nav-item">
+◉ &nbsp; Ocupación
+</div>
+
+<div class="nav-item">
+⌁ &nbsp; Tendencias
+</div>
+
+<div class="nav-item">
+⇩ &nbsp; Descargas
+</div>
+
+<div class="nav-separator"></div>
+
+<div class="nav-small">
+Última actualización
+</div>
+
+<div class="nav-small">
+22 sep 2026
+</div>
+
+<div class="nav-small">
+Información actualizada
+</div>
+
+<div class="target-card">
+
+<div class="target-title">
+Objetivo de rentabilidad
+</div>
+
+<div class="target-value">
+35%
+</div>
+
+<div class="target-background">
+<div class="target-progress"></div>
+</div>
+
+</div>
+
+</div>
+"""
 
     st.markdown(
-        '<div class="kpi-column-title">Resumen</div>',
-        unsafe_allow_html=True
-    )
-
-
-    # --------------------------------------------------------
-    # INGRESOS
-    # --------------------------------------------------------
-
-    st.markdown(
-        f"""
-<div class="kpi-card">
-
-<div class="kpi-title">
-🤑 INGRESOS
-</div>
-
-<div class="kpi-value">
-{dinero_corto(ingresos)}
-</div>
-
-<div class="kpi-sub">
-Ingresos registrados
-</div>
-
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-
-    # --------------------------------------------------------
-    # GASTOS
-    # --------------------------------------------------------
-
-    st.markdown(
-        f"""
-<div class="kpi-card">
-
-<div class="kpi-title">
-🧾 GASTOS
-</div>
-
-<div class="kpi-value">
-{dinero_corto(gastos)}
-</div>
-
-<div class="kpi-sub">
-Egresos registrados
-</div>
-
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-
-    # --------------------------------------------------------
-    # FLUJO
-    # --------------------------------------------------------
-
-    flujo_color = (
-        "#008F63"
-        if flujo >= 0
-        else "#E53B24"
-    )
-
-    st.markdown(
-        f"""
-<div class="kpi-card">
-
-<div class="kpi-title">
-💵 FLUJO
-</div>
-
-<div
-class="kpi-value"
-style="color:{flujo_color};"
->
-{dinero_corto(flujo)}
-</div>
-
-<div class="kpi-sub">
-Ingresos − gastos
-</div>
-
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-
-    # --------------------------------------------------------
-    # RENTABILIDAD
-    # --------------------------------------------------------
-
-    rent_color = (
-        "#008F63"
-        if rentabilidad >= 35
-        else "#E53B24"
-    )
-
-    st.markdown(
-        f"""
-<div class="kpi-card">
-
-<div class="kpi-title">
-🎯 RENTABILIDAD
-</div>
-
-<div
-class="kpi-value"
-style="color:{rent_color};"
->
-{rentabilidad:.1f}%
-</div>
-
-<div class="kpi-sub">
-Objetivo: 35%
-</div>
-
-</div>
-""",
+        nav_html,
         unsafe_allow_html=True
     )
 
 
 # ============================================================
-# COLUMNA DERECHA
+# MAIN
 # ============================================================
 
-with right:
+with main_col:
 
-    st.markdown(
-        """
+    # --------------------------------------------------------
+    # TÍTULO
+    # --------------------------------------------------------
+
+    title_col, control_col = st.columns(
+        [0.65, 0.35]
+    )
+
+    with title_col:
+
+        st.markdown(
+            """
 <div class="section-title">
-🏢 Rentabilidad por propiedad
+🏢 Desempeño por propiedad
 </div>
 
 <div class="section-subtitle">
-Desempeño financiero de cada propiedad en el período seleccionado
+Rentabilidad, flujo y ocupación de cada propiedad
 </div>
 """,
-        unsafe_allow_html=True
-    )
+            unsafe_allow_html=True
+        )
+
+    with control_col:
+
+        st.markdown(
+            f"""
+<div class="sort-box">
+7 propiedades · Ordenadas por rentabilidad
+</div>
+""",
+            unsafe_allow_html=True
+        )
 
 
-    # ========================================================
-    # 3 PROPIEDADES POR FILA
-    # ========================================================
+    # --------------------------------------------------------
+    # TARJETAS
+    # --------------------------------------------------------
 
     for inicio in range(
         0,
         len(resumen),
-        3
+        4
     ):
 
         fila = resumen.iloc[
-            inicio:inicio + 3
+            inicio:inicio + 4
         ]
 
-        cols = st.columns(
-            3,
+        cards = st.columns(
+            4,
             gap="small"
         )
 
-
         for col, (_, row) in zip(
-            cols,
+            cards,
             fila.iterrows()
         ):
-
-            # ------------------------------------------------
-            # DATOS
-            # ------------------------------------------------
 
             rent = float(
                 row["Rentabilidad"]
             )
 
-            es_buena = rent >= 35
+            es_positiva = rent >= 35
+
+            card_class = (
+                ""
+                if es_positiva
+                else "loss"
+            )
+
+            profit_class = (
+                ""
+                if es_positiva
+                else "loss"
+            )
 
             progress = min(
                 max(rent, 0),
                 100
             )
 
-
-            # ------------------------------------------------
-            # CLASES
-            # ------------------------------------------------
-
-            if es_buena:
-
-                card_border = "#DDE4EC"
-                profit_color = "#00A878"
-                progress_color = "#00A878"
-
-                objetivo_html = """
-<div style="
-font-size:9px;
-font-weight:700;
-color:#009A6C;
-margin-top:5px;
-">
-✓ Sobre objetivo
-</div>
-"""
-
-            else:
-
-                card_border = "#FF9999"
-                profit_color = "#E53B24"
-                progress_color = "#E53B24"
-
-                objetivo_html = """
-<div style="
-font-size:9px;
-font-weight:700;
-color:#E53B24;
-margin-top:5px;
-">
-⚠ Bajo objetivo
-</div>
-"""
-
-
-            # ------------------------------------------------
-            # PROMEDIOS
-            # ------------------------------------------------
-
-            ingreso_prom = row.get(
-                "Ingreso_Promedio",
-                0
-            )
-
-            gasto_prom = row.get(
-                "Gasto_Promedio",
-                0
-            )
-
-            flujo_prom = row.get(
-                "Flujo_Promedio",
-                0
-            )
-
-
-            # ------------------------------------------------
-            # OCUPACIÓN
-            # ------------------------------------------------
-
             ocupacion = row.get(
-                "Ocupacion_Porcentaje",
+                "Ocupacion",
                 None
             )
 
@@ -1476,370 +1836,834 @@ margin-top:5px;
                 None
             )
 
+            ocupacion_txt = (
+                "—"
+                if pd.isna(ocupacion)
+                else f"{float(ocupacion):.1f}%"
+            )
 
-            if pd.isna(ocupacion):
+            reservas_txt = (
+                "—"
+                if pd.isna(reservas)
+                else str(int(reservas))
+            )
 
-                ocupacion_txt = "—"
+            noches_txt = (
+                "—"
+                if pd.isna(noches)
+                else str(int(noches))
+            )
 
-            else:
+            income_avg = row.get(
+                "Ingreso_Promedio",
+                0
+            )
 
-                ocupacion_txt = (
-                    f"{float(ocupacion):.1f}%"
+            expense_avg = row.get(
+                "Gasto_Promedio",
+                0
+            )
+
+            flow_avg = row.get(
+                "Flujo_Promedio",
+                0
+            )
+
+
+            card_html = f"""
+<div class="property-card {card_class}">
+
+<div class="property-top">
+
+<div>
+
+<div class="property-icon">
+🏢
+</div>
+
+<div style="
+margin-left:50px;
+">
+
+<div class="property-name">
+{row["Nombre_Propiedad"]}
+</div>
+
+<div class="property-city">
+📍 {row["Ciudad"]}
+</div>
+
+</div>
+
+</div>
+
+
+<div>
+
+<div class="property-profit {profit_class}">
+{rent:.1f}%
+</div>
+
+<div class="property-year">
+Acumulada 2026
+</div>
+
+</div>
+
+</div>
+
+
+<div class="property-metrics">
+
+
+<div class="property-metric">
+
+<div class="property-metric-label">
+Ingresos
+</div>
+
+<div class="property-metric-value income">
+{dinero_corto(row["Ingresos"])}
+</div>
+
+<div class="property-average">
+{dinero_corto(income_avg)}/mes
+</div>
+
+</div>
+
+
+<div class="property-metric">
+
+<div class="property-metric-label">
+Gastos
+</div>
+
+<div class="property-metric-value expense">
+{dinero_corto(row["Gastos"])}
+</div>
+
+<div class="property-average">
+{dinero_corto(expense_avg)}/mes
+</div>
+
+</div>
+
+
+<div class="property-metric">
+
+<div class="property-metric-label">
+Flujo
+</div>
+
+<div class="property-metric-value flow">
+{dinero_corto(row["Flujo"])}
+</div>
+
+<div class="property-average">
+{dinero_corto(flow_avg)}/mes
+</div>
+
+</div>
+
+
+</div>
+
+
+<div class="profit-line">
+
+<div class="profit-line-label">
+Rentabilidad
+</div>
+
+<div
+class="profit-line-value"
+style="color:{'#00A879' if es_positiva else '#EF3E32'};"
+>
+{rent:.1f}%
+</div>
+
+</div>
+
+
+<div class="progress-background">
+
+<div
+class="{'progress-positive' if es_positiva else 'progress-negative'}"
+style="width:{progress:.1f}%;">
+</div>
+
+</div>
+
+
+<div
+style="
+font-size:7px;
+font-weight:700;
+color:{'#009B70' if es_positiva else '#EF3E32'};
+margin-top:4px;
+"
+>
+{'✓ Sobre objetivo' if es_positiva else '⚠ Bajo objetivo'}
+</div>
+
+
+<div class="occupancy">
+
+<div>
+
+<div class="occupancy-label">
+Ocupación Airbnb
+</div>
+
+<div class="occupancy-value">
+{ocupacion_txt}
+</div>
+
+</div>
+
+
+<div class="occupancy-detail">
+{reservas_txt} reservas<br>
+{noches_txt} noches
+</div>
+
+</div>
+
+</div>
+"""
+
+            with col:
+
+                st.html(
+                    card_html
                 )
 
 
-            if pd.isna(reservas):
+        st.markdown(
+            "<div style='height:7px'></div>",
+            unsafe_allow_html=True
+        )
 
-                reservas_txt = "—"
 
-            else:
+    # --------------------------------------------------------
+    # TABLA
+    # --------------------------------------------------------
 
-                reservas_txt = (
-                    f"{int(reservas)} reservas"
+    table_html = """
+<div class="table-card">
+
+<div class="table-title">
+🏢 Tabla de propiedades
+</div>
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+
+<th>Propiedad</th>
+<th>Ciudad</th>
+<th>Ingresos</th>
+<th>Gastos</th>
+<th>Flujo</th>
+<th>Rentabilidad</th>
+<th>Ocupación</th>
+<th>Reservas</th>
+<th>Noches</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+"""
+
+    for _, row in resumen.iterrows():
+
+        rent = float(
+            row["Rentabilidad"]
+        )
+
+        rent_class = (
+            "green"
+            if rent >= 0
+            else "red"
+        )
+
+        flujo_class = (
+            "blue"
+            if row["Flujo"] >= 0
+            else "red"
+        )
+
+        ocup = row.get(
+            "Ocupacion",
+            None
+        )
+
+        ocup_txt = (
+            "—"
+            if pd.isna(ocup)
+            else f"{float(ocup):.1f}%"
+        )
+
+        reservas = row.get(
+            "Reservas",
+            None
+        )
+
+        noches = row.get(
+            "Noches_Reservadas",
+            None
+        )
+
+        reservas_txt = (
+            "—"
+            if pd.isna(reservas)
+            else str(int(reservas))
+        )
+
+        noches_txt = (
+            "—"
+            if pd.isna(noches)
+            else str(int(noches))
+        )
+
+        table_html += f"""
+
+<tr>
+
+<td class="name">
+{row["Nombre_Propiedad"]}
+</td>
+
+<td>
+{row["Ciudad"]}
+</td>
+
+<td class="green">
+{dinero_corto(row["Ingresos"])}
+</td>
+
+<td class="red">
+{dinero_corto(row["Gastos"])}
+</td>
+
+<td class="{flujo_class}">
+{dinero_corto(row["Flujo"])}
+</td>
+
+<td class="{rent_class}">
+{rent:.1f}%
+</td>
+
+<td>
+{ocup_txt}
+</td>
+
+<td>
+{reservas_txt}
+</td>
+
+<td>
+{noches_txt}
+</td>
+
+</tr>
+"""
+
+    table_html += f"""
+
+<tr>
+
+<td class="name">
+TOTAL
+</td>
+
+<td>
+—
+</td>
+
+<td class="green">
+{dinero_corto(ingresos)}
+</td>
+
+<td class="red">
+{dinero_corto(gastos)}
+</td>
+
+<td class="blue">
+{dinero_corto(flujo)}
+</td>
+
+<td class="{'green' if rentabilidad >= 0 else 'red'}">
+{rentabilidad:.1f}%
+</td>
+
+<td>
+—
+</td>
+
+<td>
+—
+</td>
+
+<td>
+—
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+"""
+
+    st.html(
+        table_html
+    )
+
+
+# ============================================================
+# COLUMNA DERECHA
+# ============================================================
+
+with right_col:
+
+    # --------------------------------------------------------
+    # RESUMEN
+    # --------------------------------------------------------
+
+    st.markdown(
+        """
+<div class="summary-title">
+Resumen del período
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    st.markdown(
+        f"""
+<div class="summary-card">
+
+<div class="summary-label">
+INGRESOS
+</div>
+
+<div class="summary-value">
+{dinero_corto(ingresos)}
+</div>
+
+<div class="summary-sub">
+Ingresos registrados
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    st.markdown(
+        f"""
+<div class="summary-card expense">
+
+<div class="summary-label">
+GASTOS
+</div>
+
+<div class="summary-value">
+{dinero_corto(gastos)}
+</div>
+
+<div class="summary-sub">
+Egresos registrados
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    st.markdown(
+        f"""
+<div class="summary-card flow">
+
+<div class="summary-label">
+FLUJO
+</div>
+
+<div class="summary-value">
+{dinero_corto(flujo)}
+</div>
+
+<div class="summary-sub">
+Ingresos − gastos
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    st.markdown(
+        f"""
+<div class="summary-card profit">
+
+<div class="summary-label">
+RENTABILIDAD
+</div>
+
+<div class="summary-value">
+{rentabilidad:.1f}%
+</div>
+
+<div class="summary-sub">
+Objetivo: 35%
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    # --------------------------------------------------------
+    # GRÁFICO INGRESOS
+    # --------------------------------------------------------
+
+    st.markdown(
+        """
+<div class="chart-card">
+
+<div class="chart-title">
+Ingresos mensuales 2026
+</div>
+
+<div class="chart-subtitle">
+Evolución de ingresos Airbnb
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    chart_data = (
+        df_ytd
+        .assign(
+            MesNumero=df_ytd["Fecha"].dt.month,
+            Mes=df_ytd["Fecha"].dt.strftime("%b")
+        )
+        .groupby(
+            ["MesNumero", "Mes"],
+            as_index=False
+        )["Ingreso"]
+        .sum()
+        .sort_values("MesNumero")
+    )
+
+    max_chart = (
+        chart_data["Ingreso"].max()
+        if not chart_data.empty
+        else 1
+    )
+
+    chart_html = """
+<div class="bar-chart">
+"""
+
+    for _, r in chart_data.iterrows():
+
+        height = (
+            max(
+                4,
+                int(
+                    r["Ingreso"] /
+                    max_chart *
+                    105
                 )
-
-
-            if pd.isna(noches):
-
-                noches_txt = "—"
-
-            else:
-
-                noches_txt = (
-                    f"{int(noches)} noches"
-                )
-
-
-            # ------------------------------------------------
-            # TARJETA
-            #
-            # IMPORTANTE:
-            # Se usa st.html para evitar que Streamlit
-            # muestre el HTML como texto.
-            # ------------------------------------------------
-
-            html_card = f"""
-<style>
-
-.property-card {{
-    width: 100%;
-    height: 318px;
-    box-sizing: border-box;
-    background: #FFFFFF;
-    border: 1px solid {card_border};
-    border-radius: 15px;
-    padding: 14px;
-    box-shadow: 0 3px 10px rgba(20,40,70,0.035);
-    font-family: Arial, sans-serif;
-    color: #19345C;
-    overflow: hidden;
-}}
-
-.property-header {{
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-    height: 42px;
-}}
-
-.property-name {{
-    font-size: 17px;
-    font-weight: 800;
-    color: #19345C;
-    line-height: 1.1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}}
-
-.property-city {{
-    font-size: 10px;
-    color: #71809A;
-    margin-top: 5px;
-}}
-
-.property-profit {{
-    font-size: 16px;
-    font-weight: 800;
-    color: {profit_color};
-    text-align: right;
-    white-space: nowrap;
-}}
-
-.accumulated {{
-    font-size: 8px;
-    color: #8795AA;
-    margin-top: 2px;
-    text-align: right;
-}}
-
-.metric-grid {{
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-top: 11px;
-}}
-
-.metric-box {{
-    background: #F6F8FA;
-    border-radius: 9px;
-    padding: 8px 7px;
-    height: 65px;
-    box-sizing: border-box;
-}}
-
-.metric-label {{
-    font-size: 9px;
-    font-weight: 600;
-    color: #71809A;
-}}
-
-.metric-value {{
-    font-size: 13px;
-    font-weight: 800;
-    margin-top: 5px;
-    line-height: 1;
-    white-space: nowrap;
-}}
-
-.income {{
-    color: #009D72;
-}}
-
-.expense {{
-    color: #FF3B20;
-}}
-
-.flow {{
-    color: #006FCB;
-}}
-
-.metric-average {{
-    font-size: 8px;
-    color: #8795AA;
-    margin-top: 6px;
-    white-space: nowrap;
-}}
-
-.profit-row {{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 12px;
-}}
-
-.profit-label {{
-    font-size: 10px;
-    font-weight: 600;
-    color: #71809A;
-}}
-
-.progress-bg {{
-    height: 5px;
-    border-radius: 8px;
-    background: #E7ECF1;
-    margin-top: 5px;
-    overflow: hidden;
-}}
-
-.progress-bar {{
-    height: 100%;
-    width: {progress:.1f}%;
-    background: {progress_color};
-    border-radius: 8px;
-}}
-
-.occupancy-box {{
-    background: #F6F8FA;
-    border-radius: 9px;
-    padding: 8px 9px;
-    margin-top: 9px;
-    height: 48px;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}}
-
-.occupancy-title {{
-    font-size: 9px;
-    font-weight: 600;
-    color: #71809A;
-}}
-
-.occupancy-value {{
-    font-size: 14px;
-    font-weight: 800;
-    color: #7256E8;
-    margin-top: 3px;
-}}
-
-.occupancy-detail {{
-    font-size: 8px;
-    line-height: 1.5;
-    color: #8795AA;
-    text-align: right;
-}}
-
-</style>
-
-
-<div class="property-card">
-
-    <div class="property-header">
-
-        <div>
-
-            <div class="property-name">
-                {row["Nombre_Propiedad"]}
-            </div>
-
-            <div class="property-city">
-                📍 {row["Ciudad"]}
-            </div>
-
-        </div>
-
-
-        <div>
-
-            <div class="property-profit">
-                {rent:.1f}%
-            </div>
-
-            <div class="accumulated">
-                Acumulada 2026
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="metric-grid">
-
-
-        <div class="metric-box">
-
-            <div class="metric-label">
-                Ingresos
-            </div>
-
-            <div class="metric-value income">
-                {dinero_corto(row["Ingresos"])}
-            </div>
-
-            <div class="metric-average">
-                {dinero_corto(ingreso_prom)}/mes
-            </div>
-
-        </div>
-
-
-        <div class="metric-box">
-
-            <div class="metric-label">
-                Gastos
-            </div>
-
-            <div class="metric-value expense">
-                {dinero_corto(row["Gastos"])}
-            </div>
-
-            <div class="metric-average">
-                {dinero_corto(gasto_prom)}/mes
-            </div>
-
-        </div>
-
-
-        <div class="metric-box">
-
-            <div class="metric-label">
-                Flujo
-            </div>
-
-            <div class="metric-value flow">
-                {dinero_corto(row["Flujo"])}
-            </div>
-
-            <div class="metric-average">
-                {dinero_corto(flujo_prom)}/mes
-            </div>
-
-        </div>
-
-
-    </div>
-
-
-    <div class="profit-row">
-
-        <div class="profit-label">
-            Rentabilidad
-        </div>
-
-        <div class="property-profit">
-            {rent:.1f}%
-        </div>
-
-    </div>
-
-
-    <div class="progress-bg">
-
-        <div class="progress-bar"></div>
-
-    </div>
-
-
-    {objetivo_html}
-
-
-    <div class="occupancy-box">
-
-        <div>
-
-            <div class="occupancy-title">
-                Ocupación Airbnb
-            </div>
-
-            <div class="occupancy-value">
-                {ocupacion_txt}
-            </div>
-
-        </div>
-
-
-        <div class="occupancy-detail">
-            {reservas_txt}<br>
-            {noches_txt}
-        </div>
-
-    </div>
-
+            )
+            if max_chart > 0
+            else 4
+        )
+
+        chart_html += f"""
+<div class="bar-wrapper">
+
+<div
+class="bar"
+style="height:{height}px;"
+title="{dinero(r["Ingreso"])}">
+</div>
+
+</div>
+"""
+
+    chart_html += """
+</div>
+"""
+
+    st.markdown(
+        chart_html,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+
+    # --------------------------------------------------------
+    # RANKING
+    # --------------------------------------------------------
+
+    ranking = (
+        df_ytd
+        .groupby("Nombre_Propiedad")["Ingreso"]
+        .sum()
+        .sort_values(
+            ascending=False
+        )
+        .head(6)
+    )
+
+    max_rank = (
+        ranking.max()
+        if not ranking.empty
+        else 1
+    )
+
+
+    ranking_html = """
+<div class="chart-card">
+
+<div class="chart-title">
+Top 6 por ingreso
+</div>
+
+<div class="chart-subtitle">
+Ingresos acumulados 2026
+</div>
+"""
+
+    for name, value in ranking.items():
+
+        width = (
+            value /
+            max_rank *
+            100
+            if max_rank > 0
+            else 0
+        )
+
+        ranking_html += f"""
+<div class="rank-row">
+
+<div class="rank-name">
+{name}
+</div>
+
+<div class="rank-background">
+
+<div
+class="rank-bar"
+style="width:{width:.1f}%;">
+</div>
+
+</div>
+
+<div class="rank-value">
+{dinero_corto(value)}
+</div>
+
+</div>
+"""
+
+    ranking_html += """
+</div>
+"""
+
+    st.markdown(
+        ranking_html,
+        unsafe_allow_html=True
+    )
+
+
+    # --------------------------------------------------------
+    # INSIGHTS
+    # --------------------------------------------------------
+
+    mejor_rentabilidad = (
+        resumen.loc[
+            resumen["Rentabilidad"].idxmax()
+        ]
+        if not resumen.empty
+        else None
+    )
+
+    peor_rentabilidad = (
+        resumen.loc[
+            resumen["Rentabilidad"].idxmin()
+        ]
+        if not resumen.empty
+        else None
+    )
+
+    mayor_ingreso = (
+        resumen.loc[
+            resumen["Ingresos"].idxmax()
+        ]
+        if not resumen.empty
+        else None
+    )
+
+
+    insights_html = """
+<div class="chart-card">
+
+<div class="chart-title">
+💡 Insights clave
+</div>
+"""
+
+
+    if mejor_rentabilidad is not None:
+
+        insights_html += f"""
+<div class="insight">
+
+<div
+class="insight-dot"
+style="background:#00B486;">
+</div>
+
+<div class="insight-text">
+<b>{mejor_rentabilidad["Nombre_Propiedad"]}</b>
+lidera la rentabilidad con
+<b>{mejor_rentabilidad["Rentabilidad"]:.1f}%</b>.
+</div>
 
 </div>
 """
 
 
-            # ------------------------------------------------
-            # RENDER CORRECTO
-            # ------------------------------------------------
+    if mayor_ingreso is not None:
 
-            with col:
+        insights_html += f"""
+<div class="insight">
 
-                st.html(
-                    html_card
-                )
+<div
+class="insight-dot"
+style="background:#8067E8;">
+</div>
+
+<div class="insight-text">
+<b>{mayor_ingreso["Nombre_Propiedad"]}</b>
+registra el mayor ingreso del período:
+<b>{dinero_corto(mayor_ingreso["Ingresos"])}</b>.
+</div>
+
+</div>
+"""
 
 
-        # ----------------------------------------------------
-        # ESPACIO ENTRE FILAS
-        # ----------------------------------------------------
+    if peor_rentabilidad is not None:
 
-        st.markdown(
-            "<div style='height:9px'></div>",
-            unsafe_allow_html=True
-        )
+        insights_html += f"""
+<div class="insight">
+
+<div
+class="insight-dot"
+style="background:#F0443A;">
+</div>
+
+<div class="insight-text">
+<b>{peor_rentabilidad["Nombre_Propiedad"]}</b>
+presenta la rentabilidad más baja:
+<b>{peor_rentabilidad["Rentabilidad"]:.1f}%</b>.
+</div>
+
+</div>
+"""
+
+
+    if rentabilidad >= 35:
+
+        insights_html += """
+<div class="insight">
+
+<div
+class="insight-dot"
+style="background:#00B486;">
+</div>
+
+<div class="insight-text">
+La rentabilidad del período está
+<b>sobre el objetivo del 35%</b>.
+</div>
+
+</div>
+"""
+
+    else:
+
+        insights_html += """
+<div class="insight">
+
+<div
+class="insight-dot"
+style="background:#F0443A;">
+</div>
+
+<div class="insight-text">
+La rentabilidad del período está
+<b>por debajo del objetivo del 35%</b>.
+</div>
+
+</div>
+"""
+
+
+    insights_html += """
+</div>
+"""
+
+    st.markdown(
+        insights_html,
+        unsafe_allow_html=True
+    )
+
+
+    # --------------------------------------------------------
+    # ESPACIO FUTURA PROPIEDAD
+    # --------------------------------------------------------
+
+    st.markdown(
+        """
+<div class="add-card">
+
+<div class="add-plus">
++
+</div>
+
+<div class="add-title">
+Agregar propiedad
+</div>
+
+<div class="add-sub">
+Nuevas oportunidades de inversión
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
