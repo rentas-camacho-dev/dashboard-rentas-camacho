@@ -30,17 +30,9 @@ st.markdown("""
 }
 
 .block-container {
-    padding-top: 4rem !important;
+    padding-top: 3.8rem !important;
     padding-bottom: 1rem !important;
     max-width: 1500px !important;
-}
-
-[data-testid="stHeader"] {
-    z-index: 999 !important;
-}
-
-[data-testid="stToolbar"] {
-    z-index: 1000 !important;
 }
 
 
@@ -52,25 +44,25 @@ st.markdown("""
     background: white;
     border: 1px solid #E0E6ED;
     border-radius: 18px;
-    padding: 14px 18px;
+    padding: 13px 17px;
     box-shadow: 0 3px 12px rgba(20,40,70,0.04);
-    margin-bottom: 15px;
+    margin-bottom: 13px;
 }
 
 .logo-box {
-    width: 62px;
-    height: 62px;
-    border-radius: 16px;
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
     background: #FF1F4B;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
+    font-size: 31px;
     flex-shrink: 0;
 }
 
 .main-title {
-    font-size: 28px;
+    font-size: 27px;
     font-weight: 800;
     color: #192F55;
     line-height: 1.05;
@@ -96,8 +88,8 @@ st.markdown("""
     background: #F7F9FB;
     border: 1px solid #E1E7EE;
     border-radius: 11px;
-    padding: 9px 11px;
-    height: 65px;
+    padding: 8px 10px;
+    height: 62px;
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -128,8 +120,8 @@ st.markdown("""
     background: #F7F9FB;
     border: 1px solid #E1E7EE;
     border-radius: 11px;
-    padding: 8px 10px;
-    height: 65px;
+    padding: 7px 9px;
+    height: 62px;
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -142,7 +134,7 @@ st.markdown("""
 }
 
 .mini-bars {
-    height: 27px;
+    height: 25px;
     width: 100%;
     display: flex;
     align-items: flex-end;
@@ -201,8 +193,8 @@ div[data-testid="stDateInput"] > div {
     background: white;
     border: 1px solid #E0E6ED;
     border-radius: 14px;
-    padding: 13px 15px;
-    min-height: 100px;
+    padding: 12px 14px;
+    min-height: 94px;
     box-shadow: 0 3px 10px rgba(20,40,70,0.035);
 }
 
@@ -213,24 +205,16 @@ div[data-testid="stDateInput"] > div {
 }
 
 .kpi-value {
-    font-size: 25px;
+    font-size: 24px;
     font-weight: 800;
     color: #19345C;
-    margin-top: 6px;
-}
-
-.kpi-value.green {
-    color: #008F63;
-}
-
-.kpi-value.red {
-    color: #E53B24;
+    margin-top: 5px;
 }
 
 .kpi-sub {
-    font-size: 11px;
+    font-size: 10px;
     color: #8B99AD;
-    margin-top: 3px;
+    margin-top: 2px;
 }
 
 
@@ -239,58 +223,63 @@ div[data-testid="stDateInput"] > div {
    ============================================================ */
 
 .section-title {
-    font-size: 23px;
+    font-size: 22px;
     font-weight: 800;
     color: #192F55;
-    margin-top: 15px;
-    margin-bottom: 2px;
+    margin-top: 13px;
+    margin-bottom: 1px;
 }
 
 .section-subtitle {
-    font-size: 12px;
+    font-size: 11px;
     color: #71809A;
-    margin-bottom: 12px;
+    margin-bottom: 9px;
 }
 
 
 /* ============================================================
-   PROPIEDADES
+   TARJETAS DE PROPIEDADES
    ============================================================ */
 
 .property-card {
     background: white;
     border: 1px solid #DDE4EC;
-    border-radius: 17px;
-    padding: 15px 16px;
-    box-shadow: 0 4px 12px rgba(20,40,70,0.035);
+    border-radius: 15px;
+    padding: 13px 13px 12px 13px;
+    box-shadow: 0 3px 10px rgba(20,40,70,0.035);
 }
 
 .property-card.bad {
-    border: 2px solid #FF6262;
+    border: 1px solid #FF8A8A;
 }
+
+
+/* CABECERA PROPIEDAD */
 
 .property-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: 6px;
 }
 
 .property-name {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 800;
     color: #19345C;
-    line-height: 1.15;
+    line-height: 1.1;
 }
 
 .property-city {
-    font-size: 11px;
+    font-size: 10px;
     color: #71809A;
-    margin-top: 5px;
+    margin-top: 4px;
 }
 
 .property-profit {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
+    white-space: nowrap;
 }
 
 .property-profit.good {
@@ -302,9 +291,9 @@ div[data-testid="stDateInput"] > div {
 }
 
 .accumulated {
-    font-size: 9px;
+    font-size: 8px;
     color: #8795AA;
-    margin-top: 2px;
+    margin-top: 1px;
     text-align: right;
 }
 
@@ -315,26 +304,27 @@ div[data-testid="stDateInput"] > div {
 
 .metric-grid {
     display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 7px;
-    margin-top: 14px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-top: 11px;
 }
 
 .metric-box {
     background: #F6F8FA;
-    border-radius: 10px;
-    padding: 9px 8px;
+    border-radius: 8px;
+    padding: 7px 6px;
 }
 
 .metric-label {
-    font-size: 10px;
+    font-size: 9px;
     color: #71809A;
 }
 
 .metric-value {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 800;
-    margin-top: 4px;
+    margin-top: 3px;
+    white-space: nowrap;
 }
 
 .metric-value.income {
@@ -350,9 +340,10 @@ div[data-testid="stDateInput"] > div {
 }
 
 .metric-average {
-    font-size: 9px;
+    font-size: 8px;
     color: #8795AA;
     margin-top: 2px;
+    white-space: nowrap;
 }
 
 
@@ -363,19 +354,19 @@ div[data-testid="stDateInput"] > div {
 .profit-row {
     display: flex;
     justify-content: space-between;
-    margin-top: 12px;
+    margin-top: 9px;
 }
 
 .profit-label {
-    font-size: 11px;
+    font-size: 10px;
     color: #71809A;
 }
 
 .progress-bg {
-    height: 6px;
+    height: 5px;
     border-radius: 8px;
     background: #E7ECF1;
-    margin-top: 6px;
+    margin-top: 4px;
     overflow: hidden;
 }
 
@@ -393,16 +384,16 @@ div[data-testid="stDateInput"] > div {
 
 .target-good {
     color: #009A6C;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
-    margin-top: 6px;
+    margin-top: 4px;
 }
 
 .target-bad {
     color: #E53B24;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
-    margin-top: 6px;
+    margin-top: 4px;
 }
 
 
@@ -412,27 +403,30 @@ div[data-testid="stDateInput"] > div {
 
 .occupancy-box {
     background: #F6F8FA;
-    border-radius: 11px;
-    padding: 10px;
-    margin-top: 10px;
+    border-radius: 9px;
+    padding: 7px 8px;
+    margin-top: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
 }
 
 .occupancy-title {
-    font-size: 10px;
+    font-size: 9px;
     color: #71809A;
 }
 
 .occupancy-value {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 800;
     color: #7256E8;
-    margin-top: 4px;
 }
 
 .occupancy-detail {
-    font-size: 9px;
+    font-size: 8px;
     color: #8795AA;
-    margin-top: 2px;
+    text-align: right;
 }
 
 
@@ -471,7 +465,7 @@ client = bigquery.Client(
 
 
 # ============================================================
-# FUNCIONES
+# FUNCIONES DE FORMATO
 # ============================================================
 
 def dinero(valor):
@@ -489,13 +483,16 @@ def dinero_corto(valor):
 
     valor = float(valor)
 
-    if abs(valor) >= 1_000_000:
-        return f"${valor/1_000_000:.1f}M"
+    signo = "-" if valor < 0 else ""
+    valor = abs(valor)
 
-    if abs(valor) >= 1_000:
-        return f"${valor/1_000:.0f}k"
+    if valor >= 1_000_000:
+        return f"{signo}${valor/1_000_000:.1f}M"
 
-    return f"${valor:,.0f}".replace(",", ".")
+    if valor >= 1_000:
+        return f"{signo}${valor/1_000:.0f}k"
+
+    return f"{signo}${valor:,.0f}".replace(",", ".")
 
 
 # ============================================================
@@ -536,6 +533,24 @@ def cargar_datos_financieros():
         df["Gasto"],
         errors="coerce"
     ).fillna(0)
+
+    df["Nombre_Propiedad"] = (
+        df["Nombre_Propiedad"]
+        .fillna("Sin propiedad")
+        .astype(str)
+    )
+
+    df["Ciudad"] = (
+        df["Ciudad"]
+        .fillna("Sin ciudad")
+        .astype(str)
+    )
+
+    df["Nombre_Socio"] = (
+        df["Nombre_Socio"]
+        .fillna("Sin socio")
+        .astype(str)
+    )
 
     return df
 
@@ -701,7 +716,10 @@ inicio_anio = pd.Timestamp(
     1
 )
 
-fin_hoy = pd.Timestamp(hoy) + pd.Timedelta(days=1)
+fin_hoy = (
+    pd.Timestamp(hoy)
+    + pd.Timedelta(days=1)
+)
 
 inicio_mes = date(
     hoy.year,
@@ -711,7 +729,7 @@ inicio_mes = date(
 
 
 # ============================================================
-# YTD
+# INDICADORES YTD
 # ============================================================
 
 df_ytd = df[
@@ -744,21 +762,30 @@ df_anio = df[
     (df["Fecha"] < fin_hoy)
 ].copy()
 
-df_anio["Mes"] = df_anio["Fecha"].dt.month
+df_anio["Mes"] = (
+    df_anio["Fecha"].dt.month
+)
 
 mensual = (
     df_anio
-    .groupby("Mes", as_index=False)
-    ["Ingreso"]
+    .groupby(
+        "Mes",
+        as_index=False
+    )["Ingreso"]
     .sum()
 )
 
 meses = list(
-    range(1, hoy.month + 1)
+    range(
+        1,
+        hoy.month + 1
+    )
 )
 
 mensual = (
-    pd.DataFrame({"Mes": meses})
+    pd.DataFrame(
+        {"Mes": meses}
+    )
     .merge(
         mensual,
         on="Mes",
@@ -774,7 +801,7 @@ if max_ingreso > 0:
     mensual["altura"] = (
         mensual["Ingreso"]
         / max_ingreso
-        * 27
+        * 25
     )
 
 else:
@@ -789,7 +816,10 @@ else:
 promedio_propiedad = (
     df_anio
     .groupby(
-        ["Nombre_Propiedad", "Ciudad"],
+        [
+            "Nombre_Propiedad",
+            "Ciudad"
+        ],
         as_index=False
     )
     .agg(
@@ -806,7 +836,9 @@ promedio_propiedad = (
 )
 
 max_promedio = (
-    promedio_propiedad["Ingreso_Promedio"].max()
+    promedio_propiedad[
+        "Ingreso_Promedio"
+    ].max()
     if not promedio_propiedad.empty
     else 0
 )
@@ -818,7 +850,7 @@ if max_promedio > 0:
             "Ingreso_Promedio"
         ]
         / max_promedio
-        * 27
+        * 25
     )
 
 else:
@@ -827,7 +859,7 @@ else:
 
 
 # ============================================================
-# CREAR BARRAS
+# BARRAS
 # ============================================================
 
 barras_ingreso = ""
@@ -837,7 +869,7 @@ for _, row in mensual.iterrows():
     altura = max(
         3,
         min(
-            27,
+            25,
             float(row["altura"])
         )
     )
@@ -855,7 +887,7 @@ for _, row in promedio_propiedad.iterrows():
     altura = max(
         3,
         min(
-            27,
+            25,
             float(row["altura"])
         )
     )
@@ -876,7 +908,7 @@ header_html = f"""
 <div style="
 display:flex;
 align-items:center;
-gap:14px;
+gap:13px;
 width:100%;
 ">
 
@@ -885,8 +917,8 @@ width:100%;
 </div>
 
 <div style="
-min-width:260px;
-flex:1.7;
+min-width:245px;
+flex:1.65;
 ">
 
 <div class="main-title">
@@ -907,7 +939,7 @@ INGRESOS 2026
 </div>
 
 <div class="mini-value">
-{dinero(ingresos_ytd)}
+{dinero_corto(ingresos_ytd)}
 </div>
 
 </div>
@@ -920,7 +952,7 @@ FLUJO 2026
 </div>
 
 <div class="mini-value green">
-{dinero(flujo_ytd)}
+{dinero_corto(flujo_ytd)}
 </div>
 
 </div>
@@ -1068,12 +1100,18 @@ with col4:
 
     periodo = st.date_input(
         "Período",
-        value=(inicio_mes, hoy),
+        value=(
+            inicio_mes,
+            hoy
+        ),
         label_visibility="collapsed"
     )
 
 
-if isinstance(periodo, tuple) and len(periodo) == 2:
+if (
+    isinstance(periodo, tuple)
+    and len(periodo) == 2
+):
 
     fecha_inicio = periodo[0]
     fecha_fin = periodo[1]
@@ -1277,12 +1315,21 @@ Desempeño financiero de cada propiedad en el período seleccionado
 resumen = (
     df_f
     .groupby(
-        ["Nombre_Propiedad", "Ciudad"],
+        [
+            "Nombre_Propiedad",
+            "Ciudad"
+        ],
         as_index=False
     )
     .agg(
-        Ingresos=("Ingreso", "sum"),
-        Gastos=("Gasto", "sum")
+        Ingresos=(
+            "Ingreso",
+            "sum"
+        ),
+        Gastos=(
+            "Gasto",
+            "sum"
+        )
     )
 )
 
@@ -1293,7 +1340,9 @@ resumen["Flujo"] = (
 
 resumen["Rentabilidad"] = resumen.apply(
     lambda x:
-        x["Flujo"] / x["Ingresos"] * 100
+        x["Flujo"]
+        / x["Ingresos"]
+        * 100
         if x["Ingresos"] != 0
         else 0,
     axis=1
@@ -1326,21 +1375,35 @@ if meses_cerrados > 0:
     promedios = (
         df_cerrado
         .groupby(
-            ["Nombre_Propiedad", "Ciudad"],
+            [
+                "Nombre_Propiedad",
+                "Ciudad"
+            ],
             as_index=False
         )
         .agg(
-            Ingreso_Promedio=("Ingreso", "sum"),
-            Gasto_Promedio=("Gasto", "sum")
+            Ingreso_Promedio=(
+                "Ingreso",
+                "sum"
+            ),
+            Gasto_Promedio=(
+                "Gasto",
+                "sum"
+            )
         )
     )
 
-    promedios["Ingreso_Promedio"] /= meses_cerrados
+    promedios["Ingreso_Promedio"] /= (
+        meses_cerrados
+    )
 
-    promedios["Gasto_Promedio"] /= meses_cerrados
+    promedios["Gasto_Promedio"] /= (
+        meses_cerrados
+    )
 
     promedios["Flujo_Promedio"] = (
-        promedios["Ingreso_Promedio"] -
+        promedios["Ingreso_Promedio"]
+        -
         promedios["Gasto_Promedio"]
     )
 
@@ -1396,8 +1459,13 @@ if not df_ocupacion.empty:
     df_ocupacion[
         "Ocupacion_Porcentaje"
     ] = (
-        df_ocupacion["Noches_Reservadas"]
-        / df_ocupacion["Noches_Disponibles"]
+        df_ocupacion[
+            "Noches_Reservadas"
+        ]
+        /
+        df_ocupacion[
+            "Noches_Disponibles"
+        ]
         * 100
     )
 
@@ -1405,7 +1473,9 @@ else:
 
     df_ocupacion[
         "Ocupacion_Porcentaje"
-    ] = pd.Series(dtype=float)
+    ] = pd.Series(
+        dtype=float
+    )
 
 
 resumen = resumen.merge(
@@ -1429,20 +1499,20 @@ resumen = resumen.sort_values(
 
 
 # ============================================================
-# TARJETAS DE PROPIEDADES
+# TARJETAS — 4 POR FILA
 # ============================================================
 
 for inicio in range(
     0,
     len(resumen),
-    3
+    4
 ):
 
     fila = resumen.iloc[
-        inicio:inicio + 3
+        inicio:inicio + 4
     ]
 
-    cols = st.columns(3)
+    cols = st.columns(4)
 
     for col, (_, row) in zip(
         cols,
@@ -1490,6 +1560,10 @@ for inicio in range(
 """
 
 
+        # ----------------------------------------------------
+        # PROMEDIOS
+        # ----------------------------------------------------
+
         ingreso_prom = row.get(
             "Ingreso_Promedio",
             0
@@ -1505,6 +1579,10 @@ for inicio in range(
             0
         )
 
+
+        # ----------------------------------------------------
+        # OCUPACIÓN
+        # ----------------------------------------------------
 
         ocupacion = row.get(
             "Ocupacion_Porcentaje",
@@ -1541,6 +1619,10 @@ for inicio in range(
         )
 
 
+        # ----------------------------------------------------
+        # TARJETA
+        # ----------------------------------------------------
+
         html_card = f"""
 <div class="property-card {card_class}">
 
@@ -1575,6 +1657,7 @@ Acumulada 2026
 
 <div class="metric-grid">
 
+
 <div class="metric-box">
 
 <div class="metric-label">
@@ -1582,11 +1665,11 @@ Ingresos
 </div>
 
 <div class="metric-value income">
-{dinero(row["Ingresos"])}
+{dinero_corto(row["Ingresos"])}
 </div>
 
 <div class="metric-average">
-Prom. mes {dinero_corto(ingreso_prom)}
+{dinero_corto(ingreso_prom)}/mes
 </div>
 
 </div>
@@ -1599,11 +1682,11 @@ Gastos
 </div>
 
 <div class="metric-value expense">
-{dinero(row["Gastos"])}
+{dinero_corto(row["Gastos"])}
 </div>
 
 <div class="metric-average">
-Prom. mes {dinero_corto(gasto_prom)}
+{dinero_corto(gasto_prom)}/mes
 </div>
 
 </div>
@@ -1616,14 +1699,15 @@ Flujo
 </div>
 
 <div class="metric-value flow">
-{dinero(row["Flujo"])}
+{dinero_corto(row["Flujo"])}
 </div>
 
 <div class="metric-average">
-Prom. mes {dinero_corto(flujo_prom)}
+{dinero_corto(flujo_prom)}/mes
 </div>
 
 </div>
+
 
 </div>
 
@@ -1655,6 +1739,8 @@ style="width:{progress:.1f}%">
 
 <div class="occupancy-box">
 
+<div>
+
 <div class="occupancy-title">
 Ocupación Airbnb
 </div>
@@ -1663,11 +1749,15 @@ Ocupación Airbnb
 {ocupacion_txt}
 </div>
 
+</div>
+
 <div class="occupancy-detail">
-{reservas_txt} · {noches_txt}
+{reservas_txt}<br>
+{noches_txt}
 </div>
 
 </div>
+
 
 </div>
 """
@@ -1685,6 +1775,6 @@ Ocupación Airbnb
 
 
     st.markdown(
-        "<div style='height:12px'></div>",
+        "<div style='height:9px'></div>",
         unsafe_allow_html=True
     )
