@@ -1009,27 +1009,13 @@ f1, f2, f3, f4, f5, f6 = st.columns(
 with f1:
 
     st.markdown(
-        """
-        <div class="brand-mini">
-
-            <div class="logo-mini">
-                🏢
-            </div>
-
-            <div>
-
-                <div class="brand-mini-title">
-                    Airbnb <span>Financial Hub</span>
-                </div>
-
-                <div class="brand-mini-sub">
-                    Rentabilidad financiera · Solo Airbnb
-                </div>
-
-            </div>
-
-        </div>
-        """,
+        """<div class="brand-mini">
+<div class="logo-mini">🏢</div>
+<div>
+<div class="brand-mini-title">Airbnb <span>Financial Hub</span></div>
+<div class="brand-mini-sub">Rentabilidad financiera · Solo Airbnb</div>
+</div>
+</div>""",
         unsafe_allow_html=True
     )
 
