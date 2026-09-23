@@ -525,63 +525,113 @@ div.stButton > button:hover {
     margin-top: 3px;
 }
 
-
 /* ============================================================
    PORTAFOLIO
 ============================================================ */
 
 .portfolio-card {
-    background: #274C77;
-    border-radius: 15px;
-    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    background: #FFFFFF;
+    border: 1px solid #DCE5EE;
+    border-radius: 18px;
+    padding: 18px;
     height: 270px;
     box-sizing: border-box;
     color: #17345E;
 }
 
+.portfolio-card::after {
+    content: "A";
+    position: absolute;
+    right: 15px;
+    top: -35px;
+    font-size: 190px;
+    font-weight: 900;
+    color: #FFF0F3;
+    line-height: 1;
+    z-index: 0;
+}
+
+.portfolio-title,
+.portfolio-subtitle,
+.portfolio-main,
+.portfolio-main-label,
+.portfolio-row {
+    position: relative;
+    z-index: 1;
+}
+
 .portfolio-title {
-    font-size: 19px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 22px;
     font-weight: 850;
+    color: #17345E;
+}
+
+.portfolio-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #FF214B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
 }
 
 .portfolio-subtitle {
-    font-size: 9px;
-    color: #D6E3F0;
-    margin-top: 4px;
+    font-size: 11px;
+    color: #71839A;
+    margin-top: 7px;
+    margin-left: 58px;
 }
 
 .portfolio-main {
-    font-size: 31px;
-    font-weight: 850;
-    margin-top: 20px;
+    font-size: 40px;
+    font-weight: 900;
+    color: #17345E;
+    margin-top: 28px;
+    line-height: 1;
 }
 
 .portfolio-main-label {
-    font-size: 9px;
-    color: #D6E3F0;
+    font-size: 10px;
+    color: #71839A;
+    margin-top: 7px;
 }
 
 .portfolio-row {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #E5EBF0;
 }
 
-.portfolio-main-label {
-    font-size: 9px;
-    color: #D6E3F0;
+.portfolio-mini-label {
+    font-size: 10px;
+    color: #71839A;
 }
 
 .portfolio-mini-value {
-    font-size: 16px;
-    font-weight: 800;
-    margin-top: 3px;
+    font-size: 19px;
+    font-weight: 850;
+    color: #17345E;
+    margin-top: 4px;
 }
 
 .portfolio-profit {
-    color: #52D7B0;
+    color: #FF4B5C;
 }
 
+.portfolio-target {
+    color: #17345E;
+}
 
 /* ============================================================
    PANELES
