@@ -875,14 +875,14 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {
     align-items: center !important;
 }
 
-/* CENTRAR ICONOS VERTICALMENTE */
-.st-key-nav_portafolio button,
-.st-key-nav_propiedades button,
-.st-key-nav_ocupacion button,
-.st-key-nav_financiero button,
-.st-key-nav_analisis button,
-.st-key-nav_reportes button {
-    background-position: center 50% !important;
+/* CENTRAR ICONOS EN LA BARRA */
+.st-key-nav_portafolio,
+.st-key-nav_propiedades,
+.st-key-nav_ocupacion,
+.st-key-nav_financiero,
+.st-key-nav_analisis,
+.st-key-nav_reportes {
+    margin-top: 15px !important;
 }
 
 </style>
