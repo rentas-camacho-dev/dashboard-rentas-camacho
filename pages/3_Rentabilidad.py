@@ -909,6 +909,91 @@ icon_analisis = cargar_svg_base64("icon_analisis.svg")
 icon_reportes = cargar_svg_base64("icon_reportes.svg")
 
 # ============================================================
+# ESTILO ICONOS MENÚ SUPERIOR
+# ============================================================
+
+st.markdown(
+    f"""
+<style>
+
+div[data-testid="stHorizontalBlock"]:has(
+    div[data-testid="stColumn"]:nth-child(2)
+    button[key="nav_portafolio"]
+) div[data-testid="stColumn"]:nth-child(2) button {{
+    background-image: url("data:image/svg+xml;base64,{icon_portafolio}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center 8px !important;
+    background-size: 48px 48px !important;
+    padding-top: 55px !important;
+    height: 82px !important;
+}}
+
+div[data-testid="stHorizontalBlock"]:has(
+    div[data-testid="stColumn"]:nth-child(3)
+    button[key="nav_propiedades"]
+) div[data-testid="stColumn"]:nth-child(3) button {{
+    background-image: url("data:image/svg+xml;base64,{icon_propiedades}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center 8px !important;
+    background-size: 48px 48px !important;
+    padding-top: 55px !important;
+    height: 82px !important;
+}}
+
+div[data-testid="stHorizontalBlock"]:has(
+    div[data-testid="stColumn"]:nth-child(4)
+    button[key="nav_ocupacion"]
+) div[data-testid="stColumn"]:nth-child(4) button {{
+    background-image: url("data:image/svg+xml;base64,{icon_ocupacion}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center 8px !important;
+    background-size: 48px 48px !important;
+    padding-top: 55px !important;
+    height: 82px !important;
+}}
+
+div[data-testid="stHorizontalBlock"]:has(
+    div[data-testid="stColumn"]:nth-child(5)
+    button[key="nav_financiero"]
+) div[data-testid="stColumn"]:nth-child(5) button {{
+    background-image: url("data:image/svg+xml;base64,{icon_financiero}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center 8px !important;
+    background-size: 48px 48px !important;
+    padding-top: 55px !important;
+    height: 82px !important;
+}}
+
+div[data-testid="stHorizontalBlock"]:has(
+    div[data-testid="stColumn"]:nth-child(6)
+    button[key="nav_analisis"]
+) div[data-testid="stColumn"]:nth-child(6) button {{
+    background-image: url("data:image/svg+xml;base64,{icon_analisis}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center 8px !important;
+    background-size: 48px 48px !important;
+    padding-top: 55px !important;
+    height: 82px !important;
+}}
+
+div[data-testid="stHorizontalBlock"]:has(
+    div[data-testid="stColumn"]:nth-child(7)
+    button[key="nav_reportes"]
+) div[data-testid="stColumn"]:nth-child(7) button {{
+    background-image: url("data:image/svg+xml;base64,{icon_reportes}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center 8px !important;
+    background-size: 48px 48px !important;
+    padding-top: 55px !important;
+    height: 82px !important;
+}}
+
+</style>
+""",
+    unsafe_allow_html=True
+)
+
+# ============================================================
 # FORMATO DINERO
 # ============================================================
 
