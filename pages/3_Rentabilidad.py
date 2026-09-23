@@ -543,23 +543,27 @@ div.stButton > button:hover {
     box-shadow: 0 3px 12px rgba(24,52,94,.035);
 }
 
-.portfolio-card::after {
-    content: "";
+.portfolio-watermark-circle {
     position: absolute;
-    right: -10px;
-    top: -25px;
-    width: 185px;
-    height: 185px;
-    background:
-        radial-gradient(
-            circle at 50% 50%,
-            rgba(255, 33, 75, 0.08) 0%,
-            rgba(255, 33, 75, 0.04) 55%,
-            transparent 72%
-        );
+    right: -35px;
+    top: -45px;
+    width: 205px;
+    height: 205px;
     border-radius: 50%;
+    background: #FFF0F3;
     z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.portfolio-watermark-circle img {
+    width: 135px;
+    height: 135px;
+    object-fit: contain;
+    opacity: 0.10;
+}
+
 .portfolio-title,
 .portfolio-subtitle,
 .portfolio-main,
@@ -2082,6 +2086,12 @@ def tarjeta_portafolio():
 
     return f"""
 <div class="portfolio-card">
+    <div class="portfolio-watermark-circle">
+        <img
+            src="{logo_data}"
+            alt=""
+        >
+    </div>
 
     <div class="portfolio-title">
 
