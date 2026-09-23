@@ -875,6 +875,16 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {
     align-items: center !important;
 }
 
+/* CENTRAR ICONOS VERTICALMENTE */
+.st-key-nav_portafolio button,
+.st-key-nav_propiedades button,
+.st-key-nav_ocupacion button,
+.st-key-nav_financiero button,
+.st-key-nav_analisis button,
+.st-key-nav_reportes button {
+    background-position: center 50% !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
