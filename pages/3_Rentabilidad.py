@@ -964,7 +964,7 @@ st.markdown(
     border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
-    color: #17345E !important;
+    background-color: #FFFFFF !important;
     font-size: 11px !important;
     font-weight: 800 !important;
 }}
@@ -988,7 +988,7 @@ st.markdown(
     border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
-    color: #17345E !important;
+    background-color: #FFFFFF !important;
     font-size: 11px !important;
     font-weight: 800 !important;
 }}
@@ -1012,7 +1012,7 @@ st.markdown(
     border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
-    color: #17345E !important;
+    background-color: #FFFFFF !important;
     font-size: 11px !important;
     font-weight: 800 !important;
 }}
@@ -1036,7 +1036,7 @@ st.markdown(
     border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
-    color: #17345E !important;
+    background-color: #FFFFFF !important;
     font-size: 11px !important;
     font-weight: 800 !important;
 }}
@@ -1060,7 +1060,7 @@ st.markdown(
     border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
-    color: #17345E !important;
+    background-color: #FFFFFF !important;
     font-size: 11px !important;
     font-weight: 800 !important;
 }}
@@ -1084,7 +1084,7 @@ st.markdown(
     border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
-    color: #17345E !important;
+    background-color: #FFFFFF !important;
     font-size: 11px !important;
     font-weight: 800 !important;
 }}
