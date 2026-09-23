@@ -1393,39 +1393,38 @@ top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = st.columns(
 
 with top1:
 
-    st.markdown(
+    st.html(
         f"""
-<div class="brand-mini">
+        <div class="brand-mini">
 
-    <div class="logo-mini">
+            <div class="logo-mini">
 
-        <img
-            src="{logo_data}"
-            alt="Rentas Camacho"
-            style="
-                width:42px;
-                height:42px;
-                object-fit:contain;
-            "
-        >
+                <img
+                    src="{logo_data}"
+                    alt="Rentas Camacho"
+                    style="
+                        width:42px;
+                        height:42px;
+                        object-fit:contain;
+                    "
+                >
 
-    </div>
+            </div>
 
-    <div>
+            <div>
 
-        <div class="brand-mini-title">
-            Airbnb <span>Financial Hub</span>
+                <div class="brand-mini-title">
+                    Airbnb <span>Financial Hub</span>
+                </div>
+
+                <div class="brand-mini-sub">
+                    Rentabilidad financiera · Solo Airbnb
+                </div>
+
+            </div>
+
         </div>
-
-        <div class="brand-mini-sub">
-            Rentabilidad financiera · Solo Airbnb
-        </div>
-
-    </div>
-
-</div>
-""",
-        unsafe_allow_html=True
+        """
     )
 
 # ============================================================
