@@ -191,7 +191,10 @@ div[data-testid="stPopover"] button:hover {
     color: #17345E !important;
     background: #F8FAFC !important;
 }
-
+    div[data-testid="stPopoverBody"] {
+    width: 780px !important;
+    max-width: 780px !important;
+}
 
 /* ============================================================
    INDICADORES SUPERIORES
