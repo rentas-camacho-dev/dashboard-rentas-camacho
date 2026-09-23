@@ -893,6 +893,20 @@ with open(
     ).decode()
 
 logo_data = f"data:image/png;base64,{logo_b64}"
+# ============================================================
+# ICONOS DEL MENÚ SUPERIOR
+# ============================================================
+
+def cargar_svg_base64(nombre):
+    with open(f"assets/{nombre}", "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+icon_portafolio = cargar_svg_base64("icon_portafolio.svg")
+icon_propiedades = cargar_svg_base64("icon_propiedades.svg")
+icon_ocupacion = cargar_svg_base64("icon_ocupacion.svg")
+icon_financiero = cargar_svg_base64("icon_financiero.svg")
+icon_analisis = cargar_svg_base64("icon_analisis.svg")
+icon_reportes = cargar_svg_base64("icon_reportes.svg")
 
 # ============================================================
 # FORMATO DINERO
@@ -1242,7 +1256,7 @@ with top1:
 with top2:
 
     if st.button(
-        ":material/home: Portafolio",
+       "Portafolio",
         key="nav_portafolio",
         use_container_width=True,
         help="Portafolio"
@@ -1259,7 +1273,7 @@ with top2:
 with top3:
 
     if st.button(
-        ":material/apartment: Propiedades",
+        "Propiedades",
         key="nav_propiedades",
         use_container_width=True,
         help="Propiedades"
@@ -1276,7 +1290,7 @@ with top3:
 with top4:
 
     if st.button(
-        ":material/calendar_month: Ocupación",
+        "Ocupación",
         key="nav_ocupacion",
         use_container_width=True,
         help="Ocupación"
@@ -1293,7 +1307,7 @@ with top4:
 with top5:
 
     if st.button(
-        ":material/payments: Financiero",
+        "Financiero",
         key="nav_financiero",
         use_container_width=True,
         help="Financiero"
@@ -1310,7 +1324,7 @@ with top5:
 with top6:
 
     if st.button(
-        ":material/analytics: Análisis",
+        "Análisis",
         key="nav_analisis",
         use_container_width=True,
         help="Análisis"
@@ -1327,7 +1341,7 @@ with top6:
 with top7:
 
     if st.button(
-        ":material/description: Reportes",
+        "Reportes",
         key="nav_reportes",
         use_container_width=True,
         help="Reportes"
