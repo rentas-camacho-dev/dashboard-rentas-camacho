@@ -543,7 +543,7 @@ div.stButton > button:hover {
 }
 
 .portfolio-card::after {
-    content: "RC";
+    content: "";
     position: absolute;
     right: -15px;
     top: -50px;
@@ -613,7 +613,7 @@ div.stButton > button:hover {
     font-size: 39px;
     font-weight: 900;
     color: #17345E;
-    margin-top: 25px;
+    margin-top: 10px;
     line-height: 1;
 }
 
@@ -683,7 +683,7 @@ div.stButton > button:hover {
 .portfolio-divider {
     height: 1px;
     background: #E3E8ED;
-    margin-top: 17px;
+    margin-top: 9px;
 }
 
 
@@ -695,7 +695,7 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    margin-top: 13px;
+    margin-top: 7px;
 }
 
 .portfolio-profit-block {
