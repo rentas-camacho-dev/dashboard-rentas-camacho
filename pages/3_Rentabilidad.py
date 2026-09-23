@@ -1262,61 +1262,57 @@ with f3:
 
         fig2 = go.Figure()
 
+        # BARRAS HORIZONTALES
         fig2.add_trace(
             go.Bar(
-                x=propiedades_grafico[
-                    "Nombre_Propiedad"
-                ],
-                y=propiedades_grafico[
-                    "Ingresos"
-                ],
+                x=propiedades_grafico["Ingresos"],
+                y=propiedades_grafico["Nombre_Propiedad"],
                 name="Ingresos",
+                orientation="h",
                 marker_color="#7965D9"
             )
         )
 
-        fig2.add_trace(
-            go.Scatter(
-                x=propiedades_grafico[
-                    "Nombre_Propiedad"
-                ],
-                y=[
-                    promedio_propiedad
-                ] *
-                len(
-                    propiedades_grafico
-                ),
-                name="Promedio",
-                mode="lines",
-                line=dict(
-                    color="#EF4338",
-                    width=3,
-                    dash="dash"
-                )
-            )
+        # LÍNEA DEL PROMEDIO
+        fig2.add_vline(
+            x=promedio_propiedad,
+            line_color="#EF4338",
+            line_width=3,
+            line_dash="dash"
         )
 
         fig2.update_layout(
-            height=390,
+            height=400,
             margin=dict(
-                l=50,
-                r=30,
-                t=30,
-                b=100
+                l=10,
+                r=25,
+                t=35,
+                b=35
             ),
+
             plot_bgcolor="white",
             paper_bgcolor="white",
+
             xaxis=dict(
-                showgrid=False,
-                tickangle=-35
-            ),
-            yaxis=dict(
                 tickprefix="$",
                 tickformat=",.0f",
-                gridcolor="#E9EEF3"
+                gridcolor="#E9EEF3",
+                showgrid=True,
+                automargin=True
             ),
+
+            yaxis=dict(
+                showgrid=False,
+                automargin=True,
+                autorange="reversed"
+            ),
+
             legend=dict(
-                orientation="h"
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
             )
         )
 
@@ -1326,6 +1322,7 @@ with f3:
             config={
                 "displayModeBar": False
             }
+        )
         )
 
 
