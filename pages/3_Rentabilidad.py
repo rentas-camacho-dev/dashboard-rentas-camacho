@@ -556,7 +556,7 @@ div.stButton > button:hover {
 
 .portfolio-main-label {
     font-size: 9px;
-    color: #B9C8DA;
+    color: #71839A;
 }
 
 .portfolio-row {
@@ -567,7 +567,7 @@ div.stButton > button:hover {
 
 .portfolio-mini-label {
     font-size: 8px;
-    color: #B9C8DA;
+    color: #71839A;
 }
 
 .portfolio-mini-value {
