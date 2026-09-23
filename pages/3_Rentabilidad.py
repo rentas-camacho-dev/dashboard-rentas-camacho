@@ -1500,7 +1500,7 @@ with top1:
 with top2:
 
     if st.button(
-       "Portafolio",
+        "",
         key="nav_portafolio",
         use_container_width=True,
         help="Portafolio"
@@ -1517,7 +1517,7 @@ with top2:
 with top3:
 
     if st.button(
-        "Propiedades",
+        "",
         key="nav_propiedades",
         use_container_width=True,
         help="Propiedades"
@@ -1534,7 +1534,7 @@ with top3:
 with top4:
 
     if st.button(
-        "Ocupación",
+        "",
         key="nav_ocupacion",
         use_container_width=True,
         help="Ocupación"
@@ -1551,7 +1551,7 @@ with top4:
 with top5:
 
     if st.button(
-        "Financiero",
+        "",
         key="nav_financiero",
         use_container_width=True,
         help="Financiero"
@@ -1568,7 +1568,7 @@ with top5:
 with top6:
 
     if st.button(
-        "Análisis",
+        "",
         key="nav_analisis",
         use_container_width=True,
         help="Análisis"
@@ -1585,7 +1585,7 @@ with top6:
 with top7:
 
     if st.button(
-        "Reportes",
+        "",
         key="nav_reportes",
         use_container_width=True,
         help="Reportes"
