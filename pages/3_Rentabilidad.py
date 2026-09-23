@@ -916,76 +916,149 @@ st.markdown(
     f"""
 <style>
 
-div[data-testid="stHorizontalBlock"]:has(
-    div[data-testid="stColumn"]:nth-child(2)
-    button[key="nav_portafolio"]
-) div[data-testid="stColumn"]:nth-child(2) button {{
+/* PORTAFOLIO */
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton > button {{
     background-image: url("data:image/svg+xml;base64,{icon_portafolio}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 8px !important;
-    background-size: 48px 48px !important;
-    padding-top: 55px !important;
-    height: 82px !important;
+    background-position: center 7px !important;
+    background-size: 46px 46px !important;
+
+    height: 78px !important;
+    min-height: 78px !important;
+
+    padding-top: 51px !important;
+
+    border: 1px solid #DCE5EE !important;
+    border-radius: 13px !important;
+
+    background-color: #FFFFFF !important;
+
+    color: #17345E !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
 }}
 
-div[data-testid="stHorizontalBlock"]:has(
-    div[data-testid="stColumn"]:nth-child(3)
-    button[key="nav_propiedades"]
-) div[data-testid="stColumn"]:nth-child(3) button {{
+
+/* PROPIEDADES */
+div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton > button {{
     background-image: url("data:image/svg+xml;base64,{icon_propiedades}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 8px !important;
-    background-size: 48px 48px !important;
-    padding-top: 55px !important;
-    height: 82px !important;
+    background-position: center 7px !important;
+    background-size: 46px 46px !important;
+
+    height: 78px !important;
+    min-height: 78px !important;
+
+    padding-top: 51px !important;
+
+    border: 1px solid #DCE5EE !important;
+    border-radius: 13px !important;
+
+    background-color: #FFFFFF !important;
+
+    color: #17345E !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
 }}
 
-div[data-testid="stHorizontalBlock"]:has(
-    div[data-testid="stColumn"]:nth-child(4)
-    button[key="nav_ocupacion"]
-) div[data-testid="stColumn"]:nth-child(4) button {{
+
+/* OCUPACIÓN */
+div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton > button {{
     background-image: url("data:image/svg+xml;base64,{icon_ocupacion}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 8px !important;
-    background-size: 48px 48px !important;
-    padding-top: 55px !important;
-    height: 82px !important;
+    background-position: center 7px !important;
+    background-size: 46px 46px !important;
+
+    height: 78px !important;
+    min-height: 78px !important;
+
+    padding-top: 51px !important;
+
+    border: 1px solid #DCE5EE !important;
+    border-radius: 13px !important;
+
+    background-color: #FFFFFF !important;
+
+    color: #17345E !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
 }}
 
-div[data-testid="stHorizontalBlock"]:has(
-    div[data-testid="stColumn"]:nth-child(5)
-    button[key="nav_financiero"]
-) div[data-testid="stColumn"]:nth-child(5) button {{
+
+/* FINANCIERO */
+div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton > button {{
     background-image: url("data:image/svg+xml;base64,{icon_financiero}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 8px !important;
-    background-size: 48px 48px !important;
-    padding-top: 55px !important;
-    height: 82px !important;
+    background-position: center 7px !important;
+    background-size: 46px 46px !important;
+
+    height: 78px !important;
+    min-height: 78px !important;
+
+    padding-top: 51px !important;
+
+    border: 1px solid #DCE5EE !important;
+    border-radius: 13px !important;
+
+    background-color: #FFFFFF !important;
+
+    color: #17345E !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
 }}
 
-div[data-testid="stHorizontalBlock"]:has(
-    div[data-testid="stColumn"]:nth-child(6)
-    button[key="nav_analisis"]
-) div[data-testid="stColumn"]:nth-child(6) button {{
+
+/* ANÁLISIS */
+div[data-testid="stHorizontalBlock"] > div:nth-child(6) div.stButton > button {{
     background-image: url("data:image/svg+xml;base64,{icon_analisis}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 8px !important;
-    background-size: 48px 48px !important;
-    padding-top: 55px !important;
-    height: 82px !important;
+    background-position: center 7px !important;
+    background-size: 46px 46px !important;
+
+    height: 78px !important;
+    min-height: 78px !important;
+
+    padding-top: 51px !important;
+
+    border: 1px solid #DCE5EE !important;
+    border-radius: 13px !important;
+
+    background-color: #FFFFFF !important;
+
+    color: #17345E !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
 }}
 
-div[data-testid="stHorizontalBlock"]:has(
-    div[data-testid="stColumn"]:nth-child(7)
-    button[key="nav_reportes"]
-) div[data-testid="stColumn"]:nth-child(7) button {{
+
+/* REPORTES */
+div[data-testid="stHorizontalBlock"] > div:nth-child(7) div.stButton > button {{
     background-image: url("data:image/svg+xml;base64,{icon_reportes}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 8px !important;
-    background-size: 48px 48px !important;
-    padding-top: 55px !important;
-    height: 82px !important;
+    background-position: center 7px !important;
+    background-size: 46px 46px !important;
+
+    height: 78px !important;
+    min-height: 78px !important;
+
+    padding-top: 51px !important;
+
+    border: 1px solid #DCE5EE !important;
+    border-radius: 13px !important;
+
+    background-color: #FFFFFF !important;
+
+    color: #17345E !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+}}
+
+
+/* EFECTO AL PASAR EL MOUSE */
+div[data-testid="stHorizontalBlock"] div.stButton > button:hover {{
+    border-color: #FF8FA3 !important;
+    background-color: #FFF9FA !important;
+    color: #17345E !important;
 }}
 
 </style>
