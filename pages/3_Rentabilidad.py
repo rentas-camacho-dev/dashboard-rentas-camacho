@@ -1059,6 +1059,20 @@ st.markdown(
     font-weight: 800 !important;
 }}
 
+/* ----------------------------- */
+/* QUITAR RECUADRO BLANCO */
+/* ----------------------------- */
+
+.st-key-nav_portafolio button,
+.st-key-nav_propiedades button,
+.st-key-nav_ocupacion button,
+.st-key-nav_financiero button,
+.st-key-nav_analisis button,
+.st-key-nav_reportes button {{
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}}
 
 /* ----------------------------- */
 /* HOVER */
@@ -1070,14 +1084,10 @@ st.markdown(
 .st-key-nav_financiero button:hover,
 .st-key-nav_analisis button:hover,
 .st-key-nav_reportes button:hover {{
-    background-color: #FFF9FA !important;
-    border-color: #FFB6C1 !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }}
-
-</style>
-""",
-    unsafe_allow_html=True
-)
 
 # ============================================================
 # FORMATO DINERO
