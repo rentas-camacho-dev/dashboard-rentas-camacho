@@ -1385,16 +1385,15 @@ if "vista_airbnb" not in st.session_state:
 
     st.session_state.vista_airbnb = "Portafolio"
 
-
 top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = st.columns(
     [
-        1.70,
-        0.72,
-        0.72,
-        0.72,
-        0.72,
-        0.72,
-        0.72,
+        1.90,
+        0.68,
+        0.68,
+        0.68,
+        0.68,
+        0.68,
+        0.68,
         0.90,
         0.90,
         1.10
