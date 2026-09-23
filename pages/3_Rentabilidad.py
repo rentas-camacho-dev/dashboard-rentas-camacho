@@ -1982,19 +1982,6 @@ Objetivo
 
 if st.session_state.vista_airbnb == "Propiedades":
 
-    st.markdown(
-        """
-<div class="section-title">
-🏢 Tu portafolio
-</div>
-
-<div class="section-subtitle">
-Desempeño financiero de tus propiedades Airbnb en el período seleccionado.
-</div>
-""",
-        unsafe_allow_html=True
-    )
-  
     # ========================================================
     # TARJETAS
     # ========================================================
