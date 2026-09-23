@@ -6,7 +6,7 @@ import base64
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from datetime import date
-
+/* CENTRAR ICONOS EN LA BARRA */
 
 # ============================================================
 # CONFIGURACIÓN
@@ -875,14 +875,14 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {
     align-items: center !important;
 }
 
-/* CENTRAR ICONOS EN LA BARRA */
-.st-key-nav_portafolio,
-.st-key-nav_propiedades,
-.st-key-nav_ocupacion,
-.st-key-nav_financiero,
-.st-key-nav_analisis,
-.st-key-nav_reportes {
-    margin-top: 15px !important;
+/* CENTRAR ICONOS SIN AGRANDAR LA BARRA */
+.st-key-nav_portafolio button,
+.st-key-nav_propiedades button,
+.st-key-nav_ocupacion button,
+.st-key-nav_financiero button,
+.st-key-nav_analisis button,
+.st-key-nav_reportes button {
+    transform: translateY(7px) !important;
 }
 
 </style>
