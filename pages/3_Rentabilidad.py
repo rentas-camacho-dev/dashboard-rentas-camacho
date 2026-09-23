@@ -632,7 +632,7 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
-    margin-top: 17px;
+    margin-top: 7px;
 }
 
 .portfolio-metric {
@@ -683,7 +683,7 @@ div.stButton > button:hover {
 .portfolio-divider {
     height: 1px;
     background: #E3E8ED;
-    margin-top: 9px;
+    margin-top: 6px;
 }
 
 
@@ -695,7 +695,7 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    margin-top: 7px;
+    margin-top: 4px;
 }
 
 .portfolio-profit-block {
