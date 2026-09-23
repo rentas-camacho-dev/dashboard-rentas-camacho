@@ -2062,17 +2062,47 @@ Ocupación Airbnb
 def tarjeta_portafolio():
 
     progreso_rentabilidad = min(
-        max(rentabilidad / 35 * 100, 0),
+        max((rentabilidad / 35) * 100, 0),
         100
     )
 
     return f"""
 <div class="portfolio-card">
 
+    <!-- ENCABEZADO -->
     <div class="portfolio-title">
 
         <div class="portfolio-icon">
-            RC
+
+            <svg viewBox="0 0 64 64"
+                 width="27"
+                 height="27"
+                 fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+
+                <path
+                    d="M10 29L32 10L54 29"
+                    stroke="white"
+                    stroke-width="6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"/>
+
+                <path
+                    d="M16 27V52H48V27"
+                    stroke="white"
+                    stroke-width="6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"/>
+
+                <path
+                    d="M27 52V37H37V52"
+                    stroke="white"
+                    stroke-width="6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"/>
+
+            </svg>
+
         </div>
 
         <div>
@@ -2081,10 +2111,13 @@ def tarjeta_portafolio():
 
     </div>
 
+
     <div class="portfolio-subtitle">
         Todas las propiedades seleccionadas
     </div>
 
+
+    <!-- INGRESO PRINCIPAL -->
     <div class="portfolio-main">
         {dinero_corto(ingresos)}
     </div>
@@ -2093,12 +2126,53 @@ def tarjeta_portafolio():
         Ingresos del período
     </div>
 
+
+    <!-- GASTOS / FLUJO -->
     <div class="portfolio-metrics">
 
         <div class="portfolio-metric">
 
             <div class="portfolio-metric-icon expense">
-                ↗
+
+                <svg viewBox="0 0 32 32"
+                     width="21"
+                     height="21"
+                     fill="none"
+                     xmlns="http://www.w3.org/2000/svg">
+
+                    <path
+                        d="M5 24V16"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"/>
+
+                    <path
+                        d="M13 24V11"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"/>
+
+                    <path
+                        d="M21 24V6"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"/>
+
+                    <path
+                        d="M25 8L28 5"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"/>
+
+                    <path
+                        d="M25 5H28V8"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"/>
+
+                </svg>
+
             </div>
 
             <div>
@@ -2115,10 +2189,45 @@ def tarjeta_portafolio():
 
         </div>
 
+
         <div class="portfolio-metric">
 
             <div class="portfolio-metric-icon flow">
-                ◉
+
+                <svg viewBox="0 0 32 32"
+                     width="21"
+                     height="21"
+                     fill="none"
+                     xmlns="http://www.w3.org/2000/svg">
+
+                    <ellipse
+                        cx="16"
+                        cy="8"
+                        rx="8"
+                        ry="4"
+                        stroke="currentColor"
+                        stroke-width="3"/>
+
+                    <path
+                        d="M8 8V14C8 16.2 11.6 18 16 18C20.4 18 24 16.2 24 14V8"
+                        stroke="currentColor"
+                        stroke-width="3"/>
+
+                    <path
+                        d="M8 14V21C8 23.2 11.6 25 16 25C18.2 25 20.2 24.6 21.6 23.8"
+                        stroke="currentColor"
+                        stroke-width="3"/>
+
+                    <ellipse
+                        cx="21"
+                        cy="20"
+                        rx="7"
+                        ry="3.5"
+                        stroke="currentColor"
+                        stroke-width="3"/>
+
+                </svg>
+
             </div>
 
             <div>
@@ -2137,8 +2246,12 @@ def tarjeta_portafolio():
 
     </div>
 
+
+    <!-- LÍNEA GRIS -->
     <div class="portfolio-divider"></div>
 
+
+    <!-- RENTABILIDAD / OBJETIVO -->
     <div class="portfolio-profit-row">
 
         <div class="portfolio-profit-block">
@@ -2161,6 +2274,7 @@ def tarjeta_portafolio():
             </div>
 
         </div>
+
 
         <div class="portfolio-profit-block target">
 
