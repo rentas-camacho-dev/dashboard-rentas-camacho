@@ -529,12 +529,12 @@ div.stButton > button:hover {
 ============================================================ */
 
 .portfolio-card {
-    background: #17345E;
+    background: #EAF2F5;
     border-radius: 15px;
     padding: 16px;
     height: 270px;
     box-sizing: border-box;
-    color: #FFFFFF;
+    color: #17345E;
 }
 
 .portfolio-title {
