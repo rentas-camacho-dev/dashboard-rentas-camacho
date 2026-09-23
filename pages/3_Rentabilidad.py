@@ -1168,7 +1168,7 @@ with f2:
             )
         )
 
-               fig.update_layout(
+        fig.update_layout(
             height=300,
             margin=dict(
                 l=35,
