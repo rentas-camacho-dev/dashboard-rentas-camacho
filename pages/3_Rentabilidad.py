@@ -2199,11 +2199,15 @@ if st.session_state.vista_airbnb == "Propiedades":
 
     cards_html += "</div>"
 
+    cards_html = "\n".join(
+        linea.strip()
+        for linea in cards_html.splitlines()
+    )
+
     st.markdown(
         cards_html,
         unsafe_allow_html=True
     )
-
 
     # ========================================================
     # RANKING + ACUMULADO
