@@ -81,10 +81,10 @@ div[data-testid="stDecoration"] {
 
 .brand-mini {
     height: 72px;
-    background: #FFFFFF;
-    border: 1px solid #DCE5EE;
-    border-radius: 13px;
-    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
     display: flex;
     align-items: center;
     box-sizing: border-box;
