@@ -545,16 +545,20 @@ div.stButton > button:hover {
 .portfolio-card::after {
     content: "";
     position: absolute;
-    right: -15px;
-    top: -50px;
-    font-size: 190px;
-    font-weight: 900;
-    letter-spacing: -12px;
-    color: #FFF0F3;
-    line-height: 1;
+    right: -10px;
+    top: -25px;
+    width: 185px;
+    height: 185px;
+    background:
+        radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 33, 75, 0.08) 0%,
+            rgba(255, 33, 75, 0.04) 55%,
+            transparent 72%
+        );
+    border-radius: 50%;
     z-index: 0;
 }
-
 .portfolio-title,
 .portfolio-subtitle,
 .portfolio-main,
