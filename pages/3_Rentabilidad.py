@@ -1940,7 +1940,6 @@ Ocupación Airbnb
 </div>
 """
 
-
 # ============================================================
 # TARJETA PORTAFOLIO
 # ============================================================
@@ -1951,7 +1950,15 @@ def tarjeta_portafolio():
 <div class="portfolio-card">
 
 <div class="portfolio-title">
-🏢 Portafolio
+
+<div class="portfolio-icon">
+🏢
+</div>
+
+<div>
+Portafolio
+</div>
+
 </div>
 
 <div class="portfolio-subtitle">
@@ -2014,7 +2021,7 @@ Rentabilidad
 Objetivo
 </div>
 
-<div class="portfolio-mini-value">
+<div class="portfolio-mini-value portfolio-target">
 35%
 </div>
 
@@ -2024,7 +2031,6 @@ Objetivo
 
 </div>
 """
-
 
 # ============================================================
 # VISTA PROPIEDADES
