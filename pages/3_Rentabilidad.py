@@ -908,6 +908,36 @@ icon_financiero = cargar_svg_base64("icon_financiero.svg")
 icon_analisis = cargar_svg_base64("icon_analisis.svg")
 icon_reportes = cargar_svg_base64("icon_reportes.svg")
 
+/* ============================================================
+   QUITAR RECUADRO BLANCO DE LOS ICONOS
+   ============================================================ */
+
+.st-key-nav_portafolio button,
+.st-key-nav_propiedades button,
+.st-key-nav_ocupacion button,
+.st-key-nav_financiero button,
+.st-key-nav_analisis button,
+.st-key-nav_reportes button {
+
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+
+}
+
+.st-key-nav_portafolio button:hover,
+.st-key-nav_propiedades button:hover,
+.st-key-nav_ocupacion button:hover,
+.st-key-nav_financiero button:hover,
+.st-key-nav_analisis button:hover,
+.st-key-nav_reportes button:hover {
+
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+
+}
+
 # ============================================================
 # ICONOS PERSONALIZADOS DEL MENÚ
 # ============================================================
