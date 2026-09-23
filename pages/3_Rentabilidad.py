@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import base64
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -872,6 +873,16 @@ credentials = service_account.Credentials.from_service_account_info(
 client = bigquery.Client(
     credentials=credentials,
     project="rentascamacho"
+
+with open(
+    "assets/logo_rentas_camacho.png",
+    "rb"
+) as f:
+    logo_b64 = base64.b64encode(
+        f.read()
+    ).decode()
+
+logo_data = f"data:image/png;base64,{logo_b64}"
 )
 
 
@@ -2075,9 +2086,12 @@ def tarjeta_portafolio():
 
     <div class="portfolio-title">
 
-        <div class="portfolio-icon">
-            🏢
-        </div>
+    <div class="portfolio-icon">
+        <img
+            src="{logo_data}"
+            alt="Rentas Camacho"
+        >
+    </div>
 
         <div>
             Portafolio
