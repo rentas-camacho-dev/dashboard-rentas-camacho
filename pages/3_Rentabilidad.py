@@ -1169,10 +1169,10 @@ with f2:
         )
 
         fig.update_layout(
-            height=300,
+            height=250,
             margin=dict(
-                l=35,
-                r=35,
+                l=25,
+                r=25,
                 t=20,
                 b=35
             ),
