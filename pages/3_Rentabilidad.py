@@ -2098,10 +2098,6 @@ def tarjeta_portafolio():
 
     </div>
 
-    <div class="portfolio-subtitle">
-        Todas las propiedades seleccionadas
-    </div>
-
     <div class="portfolio-main">
         {dinero_corto(ingresos)}
     </div>
