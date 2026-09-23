@@ -1212,7 +1212,6 @@ with f2:
                 "displayModeBar": False
             }
         )
-        )
 
 # ============================================================
 # GRÁFICO INGRESOS POR PROPIEDAD
