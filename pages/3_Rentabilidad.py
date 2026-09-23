@@ -2112,11 +2112,11 @@ Objetivo: 35%
 
     cards_html = '<div class="properties-grid">'
 
+    cards_html += tarjeta_portafolio()
+
     for _, row in resumen.iterrows():
 
-        cards_html += tarjeta_propiedad(row)
-
-    cards_html += tarjeta_portafolio()
+    cards_html += tarjeta_propiedad(row)
 
     cards_html += "</div>"
 
