@@ -6,7 +6,6 @@ import base64
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from datetime import date
-/* CENTRAR ICONOS EN LA BARRA */
 
 # ============================================================
 # CONFIGURACIÓN
@@ -38,9 +37,9 @@ st.markdown("""
 .block-container {
     max-width: 1500px !important;
 
-    /* Espacio suficiente para la barra superior */
-    padding-top: 2.15rem !important;
-    padding-bottom: 1rem !important;
+    /* Espacio compacto alrededor de la barra superior */
+    padding-top: 0.80rem !important;
+    padding-bottom: 0.50rem !important;
     padding-left: 3rem !important;
     padding-right: 3rem !important;
 }
@@ -80,7 +79,7 @@ div[data-testid="stDecoration"] {
 ============================================================ */
 
 .brand-mini {
-    height: 72px;
+    height: 64px;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -864,25 +863,16 @@ div.stButton > button:hover {
 }
 
 /* ============================================================
-   ALTURA COMPACTA DEL ENCABEZADO SUPERIOR
+   ENCABEZADO SUPERIOR COMPACTO Y CENTRADO
    ============================================================ */
 
 div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {
-    min-height: 100px !important;
-    height: 100px !important;
-    padding: 4px 10px !important;
+    min-height: 78px !important;
+    height: 78px !important;
+    padding: 5px 10px !important;
+    margin-bottom: 0 !important;
     box-sizing: border-box !important;
     align-items: center !important;
-}
-
-/* CENTRAR ICONOS SIN AGRANDAR LA BARRA */
-.st-key-nav_portafolio button,
-.st-key-nav_propiedades button,
-.st-key-nav_ocupacion button,
-.st-key-nav_financiero button,
-.st-key-nav_analisis button,
-.st-key-nav_reportes button {
-    transform: translateY(7px) !important;
 }
 
 </style>
@@ -946,196 +936,14 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {{
     background: #FFFFFF !important;
     border: 1px solid #DCE5EE !important;
     border-radius: 16px !important;
-    padding: 8px 10px 6px 10px !important;
+    padding: 5px 10px !important;
     box-sizing: border-box !important;
-}}
-
-/* ----------------------------- */
-/* PORTAFOLIO */
-/* ----------------------------- */
-
-.st-key-nav_portafolio button {{
-    background-image: url("data:image/svg+xml;base64,{icon_portafolio}") !important;
-    background-repeat: no-repeat !important;
-    background-position: center 6px !important;
-    background-size: 46px 46px !important;
-
-    height: 82px !important;
-    min-height: 82px !important;
-
-    padding-top: 50px !important;
-
-    border-radius: 14px !important;
-    background-color: #FFFFFF !important;
-
-    background-color: #FFFFFF !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-}}
-
-
-/* ----------------------------- */
-/* PROPIEDADES */
-/* ----------------------------- */
-
-.st-key-nav_propiedades button {{
-    background-image: url("data:image/svg+xml;base64,{icon_propiedades}") !important;
-    background-repeat: no-repeat !important;
-    background-position: center 6px !important;
-    background-size: 46px 46px !important;
-
-    height: 82px !important;
-    min-height: 82px !important;
-
-    padding-top: 50px !important;
-
-    border-radius: 14px !important;
-    background-color: #FFFFFF !important;
-
-    background-color: #FFFFFF !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-}}
-
-
-/* ----------------------------- */
-/* OCUPACIÓN */
-/* ----------------------------- */
-
-.st-key-nav_ocupacion button {{
-    background-image: url("data:image/svg+xml;base64,{icon_ocupacion}") !important;
-    background-repeat: no-repeat !important;
-    background-position: center 6px !important;
-    background-size: 46px 46px !important;
-
-    height: 82px !important;
-    min-height: 82px !important;
-
-    padding-top: 50px !important;
-
-    border-radius: 14px !important;
-    background-color: #FFFFFF !important;
-
-    background-color: #FFFFFF !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-}}
-
-
-/* ----------------------------- */
-/* FINANCIERO */
-/* ----------------------------- */
-
-.st-key-nav_financiero button {{
-    background-image: url("data:image/svg+xml;base64,{icon_financiero}") !important;
-    background-repeat: no-repeat !important;
-    background-position: center 6px !important;
-    background-size: 46px 46px !important;
-
-    height: 82px !important;
-    min-height: 82px !important;
-
-    padding-top: 50px !important;
-
-    border-radius: 14px !important;
-    background-color: #FFFFFF !important;
-
-    background-color: #FFFFFF !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-}}
-
-
-/* ----------------------------- */
-/* ANÁLISIS */
-/* ----------------------------- */
-
-.st-key-nav_analisis button {{
-    background-image: url("data:image/svg+xml;base64,{icon_analisis}") !important;
-    background-repeat: no-repeat !important;
-    background-position: center 6px !important;
-    background-size: 46px 46px !important;
-
-    height: 82px !important;
-    min-height: 82px !important;
-
-    padding-top: 50px !important;
-
-    border-radius: 14px !important;
-    background-color: #FFFFFF !important;
-
-    background-color: #FFFFFF !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-}}
-
-
-/* ----------------------------- */
-/* REPORTES */
-/* ----------------------------- */
-
-.st-key-nav_reportes button {{
-    background-image: url("data:image/svg+xml;base64,{icon_reportes}") !important;
-    background-repeat: no-repeat !important;
-    background-position: center 6px !important;
-    background-size: 46px 46px !important;
-
-    height: 82px !important;
-    min-height: 82px !important;
-
-    padding-top: 50px !important;
-
-    border-radius: 14px !important;
-    background-color: #FFFFFF !important;
-
-    background-color: #FFFFFF !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
+    align-items: center !important;
 }}
 
 /* ============================================================
-   NOMBRES DEL MENÚ
+   ICONOS PERSONALIZADOS — SIN RECUADRO BLANCO
    ============================================================ */
-
-.st-key-nav_portafolio button {{
-    color: #FF3155 !important;
-    font-size: 9px !important;
-    font-weight: 700 !important;
-}}
-
-.st-key-nav_propiedades button {{
-    color: #1688F5 !important;
-    font-size: 9px !important;
-    font-weight: 700 !important;
-}}
-
-.st-key-nav_ocupacion button {{
-    color: #18B58A !important;
-    font-size: 9px !important;
-    font-weight: 700 !important;
-}}
-
-.st-key-nav_financiero button {{
-    color: #F5A623 !important;
-    font-size: 9px !important;
-    font-weight: 700 !important;
-}}
-
-.st-key-nav_analisis button {{
-    color: #F23861 !important;
-    font-size: 9px !important;
-    font-weight: 700 !important;
-}}
-
-.st-key-nav_reportes button {{
-    color: #7654E8 !important;
-    font-size: 9px !important;
-    font-weight: 700 !important;
-}}
-
-/* ----------------------------- */
-/* QUITAR RECUADRO BLANCO */
-/* ----------------------------- */
 
 .st-key-nav_portafolio button,
 .st-key-nav_propiedades button,
@@ -1143,14 +951,51 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {{
 .st-key-nav_financiero button,
 .st-key-nav_analisis button,
 .st-key-nav_reportes button {{
+    height: 62px !important;
+    min-height: 62px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
     background-color: transparent !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 46px 46px !important;
+
     border: none !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
+
+    font-size: 0 !important;
+    color: transparent !important;
 }}
 
-/* ----------------------------- */
-/* HOVER */
-/* ----------------------------- */
+/* SVG de cada sección */
+
+.st-key-nav_portafolio button {{
+    background-image: url("data:image/svg+xml;base64,{icon_portafolio}") !important;
+}}
+
+.st-key-nav_propiedades button {{
+    background-image: url("data:image/svg+xml;base64,{icon_propiedades}") !important;
+}}
+
+.st-key-nav_ocupacion button {{
+    background-image: url("data:image/svg+xml;base64,{icon_ocupacion}") !important;
+}}
+
+.st-key-nav_financiero button {{
+    background-image: url("data:image/svg+xml;base64,{icon_financiero}") !important;
+}}
+
+.st-key-nav_analisis button {{
+    background-image: url("data:image/svg+xml;base64,{icon_analisis}") !important;
+}}
+
+.st-key-nav_reportes button {{
+    background-image: url("data:image/svg+xml;base64,{icon_reportes}") !important;
+}}
+
+/* Hover limpio */
 
 .st-key-nav_portafolio button:hover,
 .st-key-nav_propiedades button:hover,
@@ -1161,6 +1006,16 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {{
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    transform: none !important;
+}}
+
+/* ============================================================
+   FILTROS CENTRADOS VERTICALMENTE
+   ============================================================ */
+
+div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio)
+div[data-testid="column"] {{
+    align-self: center !important;
 }}
 
 </style>
