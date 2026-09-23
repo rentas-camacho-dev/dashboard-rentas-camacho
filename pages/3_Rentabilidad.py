@@ -1168,49 +1168,41 @@ with f2:
             )
         )
 
-        fig.update_layout(
-            height=390,
-
+               fig.update_layout(
+            height=300,
             margin=dict(
-                l=55,
-                r=25,
-                t=25,
-                b=45
+                l=35,
+                r=35,
+                t=20,
+                b=35
             ),
-
             plot_bgcolor="white",
             paper_bgcolor="white",
-
-            bargap=0.25,
-
             xaxis=dict(
                 showgrid=False,
-                fixedrange=True
+                automargin=True
             ),
-
             yaxis=dict(
-                tickmode="array",
-                tickvals=tickvals,
-                ticktext=[
-                    "$0"
-                    if v == 0
-                    else f"${v / 1_000_000:.0f}M"
-                    for v in tickvals
-                ],
+                tickprefix="$",
+                tickformat=",.0f",
                 gridcolor="#E9EEF3",
-                fixedrange=True,
-                zeroline=False
+                automargin=True
             ),
-
+            yaxis2=dict(
+                overlaying="y",
+                side="right",
+                showgrid=False,
+                tickprefix="$",
+                tickformat=",.0f",
+                automargin=True
+            ),
             legend=dict(
                 orientation="h",
-                yanchor="bottom",
-                y=1.01,
+                yanchor="top",
+                y=1.02,
                 xanchor="right",
                 x=1
-            ),
-
-            hovermode="x unified"
+            )
         )
 
         st.plotly_chart(
@@ -1219,6 +1211,7 @@ with f2:
             config={
                 "displayModeBar": False
             }
+        )
         )
 
 # ============================================================
