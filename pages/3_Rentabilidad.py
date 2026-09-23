@@ -884,8 +884,6 @@ with open(
     ).decode()
 
 logo_data = f"data:image/png;base64,{logo_b64}"
-)
-
 
 # ============================================================
 # FORMATO DINERO
