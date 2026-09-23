@@ -544,7 +544,7 @@ div.stButton > button:hover {
 
 .portfolio-subtitle {
     font-size: 9px;
-    color: #B9C8DA;
+    color: #71839A;
     margin-top: 4px;
 }
 
