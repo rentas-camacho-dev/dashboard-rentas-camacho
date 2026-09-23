@@ -2116,7 +2116,7 @@ Objetivo: 35%
 
     for _, row in resumen.iterrows():
 
-    cards_html += tarjeta_propiedad(row)
+        cards_html += tarjeta_propiedad(row)
 
     cards_html += "</div>"
 
