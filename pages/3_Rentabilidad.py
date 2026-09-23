@@ -535,19 +535,21 @@ div.stButton > button:hover {
     background: #FFFFFF;
     border: 1px solid #DCE5EE;
     border-radius: 18px;
-    padding: 18px;
+    padding: 17px;
     height: 270px;
     box-sizing: border-box;
     color: #17345E;
+    box-shadow: 0 3px 12px rgba(24,52,94,.035);
 }
 
 .portfolio-card::after {
-    content: "A";
+    content: "RC";
     position: absolute;
-    right: 15px;
-    top: -35px;
+    right: -15px;
+    top: -50px;
     font-size: 190px;
     font-weight: 900;
+    letter-spacing: -12px;
     color: #FFF0F3;
     line-height: 1;
     z-index: 0;
@@ -557,10 +559,17 @@ div.stButton > button:hover {
 .portfolio-subtitle,
 .portfolio-main,
 .portfolio-main-label,
-.portfolio-row {
+.portfolio-metrics,
+.portfolio-divider,
+.portfolio-profit-row {
     position: relative;
     z-index: 1;
 }
+
+
+/* ------------------------------------------------------------
+   ENCABEZADO
+------------------------------------------------------------ */
 
 .portfolio-title {
     display: flex;
@@ -569,17 +578,21 @@ div.stButton > button:hover {
     font-size: 22px;
     font-weight: 850;
     color: #17345E;
+    line-height: 1;
 }
 
 .portfolio-icon {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
     border-radius: 12px;
     background: #FF214B;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 26px;
+    font-size: 18px;
+    font-weight: 900;
+    color: #FFFFFF;
+    letter-spacing: -1px;
     flex-shrink: 0;
 }
 
@@ -587,14 +600,20 @@ div.stButton > button:hover {
     font-size: 11px;
     color: #71839A;
     margin-top: 7px;
-    margin-left: 58px;
+    margin-left: 56px;
+    white-space: nowrap;
 }
 
+
+/* ------------------------------------------------------------
+   INGRESO PRINCIPAL
+------------------------------------------------------------ */
+
 .portfolio-main {
-    font-size: 40px;
+    font-size: 39px;
     font-weight: 900;
     color: #17345E;
-    margin-top: 28px;
+    margin-top: 25px;
     line-height: 1;
 }
 
@@ -604,13 +623,43 @@ div.stButton > button:hover {
     margin-top: 7px;
 }
 
-.portfolio-row {
+
+/* ------------------------------------------------------------
+   MÉTRICAS GASTOS / FLUJO
+------------------------------------------------------------ */
+
+.portfolio-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 18px;
-    padding-top: 14px;
-    border-top: 1px solid #E5EBF0;
+    gap: 24px;
+    margin-top: 17px;
+}
+
+.portfolio-metric {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.portfolio-metric-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.portfolio-metric-icon.expense {
+    background: #FFF0F1;
+    color: #FF4B5C;
+}
+
+.portfolio-metric-icon.flow {
+    background: #EAF8F3;
+    color: #00A779;
 }
 
 .portfolio-mini-label {
@@ -622,7 +671,52 @@ div.stButton > button:hover {
     font-size: 19px;
     font-weight: 850;
     color: #17345E;
-    margin-top: 4px;
+    margin-top: 3px;
+    line-height: 1;
+}
+
+
+/* ------------------------------------------------------------
+   LÍNEA GRIS
+------------------------------------------------------------ */
+
+.portfolio-divider {
+    height: 1px;
+    background: #E3E8ED;
+    margin-top: 17px;
+}
+
+
+/* ------------------------------------------------------------
+   RENTABILIDAD / OBJETIVO
+------------------------------------------------------------ */
+
+.portfolio-profit-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 13px;
+}
+
+.portfolio-profit-block {
+    position: relative;
+}
+
+.portfolio-profit-block.target {
+    border-left: 1px solid #E3E8ED;
+    padding-left: 20px;
+}
+
+.portfolio-profit-label {
+    font-size: 10px;
+    color: #71839A;
+}
+
+.portfolio-profit-value {
+    font-size: 25px;
+    font-weight: 900;
+    margin-top: 5px;
+    line-height: 1;
 }
 
 .portfolio-profit {
@@ -631,6 +725,27 @@ div.stButton > button:hover {
 
 .portfolio-target {
     color: #17345E;
+}
+
+
+/* ------------------------------------------------------------
+   BARRA DE RENTABILIDAD
+------------------------------------------------------------ */
+
+.portfolio-progress {
+    width: 100%;
+    height: 7px;
+    background: #E7EDF1;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.portfolio-progress-fill {
+    height: 100%;
+    width: 67.1%;
+    background: #FF5A67;
+    border-radius: 8px;
 }
 
 /* ============================================================
