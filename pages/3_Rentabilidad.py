@@ -916,6 +916,18 @@ st.markdown(
     f"""
 <style>
 
+/* ============================================================
+   RECUADRO GENERAL DEL MENÚ SUPERIOR
+   ============================================================ */
+
+div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {{
+    background: #FFFFFF !important;
+    border: 1px solid #DCE5EE !important;
+    border-radius: 16px !important;
+    padding: 8px 10px 6px 10px !important;
+    box-sizing: border-box !important;
+}}
+
 /* ----------------------------- */
 /* PORTAFOLIO */
 /* ----------------------------- */
@@ -1057,6 +1069,46 @@ st.markdown(
     background-color: #FFFFFF !important;
     font-size: 11px !important;
     font-weight: 800 !important;
+}}
+
+/* ============================================================
+   NOMBRES DEL MENÚ
+   ============================================================ */
+
+.st-key-nav_portafolio button {{
+    color: #FF3155 !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+}}
+
+.st-key-nav_propiedades button {{
+    color: #1688F5 !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+}}
+
+.st-key-nav_ocupacion button {{
+    color: #18B58A !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+}}
+
+.st-key-nav_financiero button {{
+    color: #F5A623 !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+}}
+
+.st-key-nav_analisis button {{
+    color: #F23861 !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+}}
+
+.st-key-nav_reportes button {{
+    color: #7654E8 !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
 }}
 
 /* ----------------------------- */
