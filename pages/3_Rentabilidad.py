@@ -336,7 +336,7 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 13px;
-    margin-top: 13px;
+    margin-top: 0;
 }
 
 .property-card {
@@ -537,14 +537,21 @@ div.stButton > button:hover {
 .portfolio-card {
     position: relative;
     overflow: hidden;
-    background: #FFFFFF;
-    border: 1px solid #DCE5EE;
+    background: linear-gradient(
+        145deg,
+        #FFF6F8 0%,
+        #FFE8EE 55%,
+        #FFDDE6 100%
+    );
+    border: 1px solid #FFB8C7;
     border-radius: 18px;
     padding: 17px;
     height: 270px;
     box-sizing: border-box;
     color: #17345E;
-    box-shadow: 0 3px 12px rgba(24,52,94,.035);
+    box-shadow:
+        0 5px 18px rgba(255, 91, 119, .12),
+        inset 0 1px 0 rgba(255,255,255,.75);
 }
 
 .portfolio-watermark-circle {
@@ -554,7 +561,7 @@ div.stButton > button:hover {
     width: 205px;
     height: 205px;
     border-radius: 50%;
-    background: #FFF0F3;
+    background: rgba(255,255,255,.46);
     z-index: 0;
     display: flex;
     align-items: center;
@@ -599,6 +606,7 @@ div.stButton > button:hover {
     height: 46px;
     border-radius: 12px;
     background: #FF214B;
+    box-shadow: 0 4px 10px rgba(255,33,75,.18);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -870,7 +878,7 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {
     min-height: 78px !important;
     height: 78px !important;
     padding: 5px 10px !important;
-    margin-bottom: 0 !important;
+    margin-bottom: -10px !important;
     box-sizing: border-box !important;
     align-items: center !important;
 }
