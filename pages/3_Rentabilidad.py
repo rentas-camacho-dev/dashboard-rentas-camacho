@@ -531,7 +531,7 @@ div.stButton > button:hover {
 ============================================================ */
 
 .portfolio-card {
-    background: #EAF2F5;
+    background: #274C77;
     border-radius: 15px;
     padding: 16px;
     height: 270px;
@@ -546,7 +546,7 @@ div.stButton > button:hover {
 
 .portfolio-subtitle {
     font-size: 9px;
-    color: #71839A;
+    color: #D6E3F0;
     margin-top: 4px;
 }
 
@@ -558,7 +558,7 @@ div.stButton > button:hover {
 
 .portfolio-main-label {
     font-size: 9px;
-    color: #71839A;
+    color: #D6E3F0;
 }
 
 .portfolio-row {
@@ -567,9 +567,9 @@ div.stButton > button:hover {
     margin-top: 16px;
 }
 
-.portfolio-mini-label {
-    font-size: 8px;
-    color: #71839A;
+.portfolio-main-label {
+    font-size: 9px;
+    color: #D6E3F0;
 }
 
 .portfolio-mini-value {
