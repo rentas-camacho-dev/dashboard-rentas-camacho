@@ -863,6 +863,18 @@ div.stButton > button:hover {
     }
 }
 
+/* ============================================================
+   ALTURA COMPACTA DEL ENCABEZADO SUPERIOR
+   ============================================================ */
+
+div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {
+    min-height: 100px !important;
+    height: 100px !important;
+    padding: 4px 10px !important;
+    box-sizing: border-box !important;
+    align-items: center !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
