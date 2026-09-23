@@ -909,28 +909,29 @@ icon_analisis = cargar_svg_base64("icon_analisis.svg")
 icon_reportes = cargar_svg_base64("icon_reportes.svg")
 
 # ============================================================
-# ESTILO ICONOS MENÚ SUPERIOR
+# ICONOS PERSONALIZADOS DEL MENÚ
 # ============================================================
 
 st.markdown(
     f"""
 <style>
 
+/* ----------------------------- */
 /* PORTAFOLIO */
-div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton > button {{
+/* ----------------------------- */
+
+.st-key-nav_portafolio button {{
     background-image: url("data:image/svg+xml;base64,{icon_portafolio}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 7px !important;
+    background-position: center 6px !important;
     background-size: 46px 46px !important;
 
-    height: 78px !important;
-    min-height: 78px !important;
+    height: 82px !important;
+    min-height: 82px !important;
 
-    padding-top: 51px !important;
+    padding-top: 50px !important;
 
-    border: 1px solid #DCE5EE !important;
-    border-radius: 13px !important;
-
+    border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
     color: #17345E !important;
@@ -939,21 +940,22 @@ div[data-testid="stHorizontalBlock"] > div:nth-child(2) div.stButton > button {{
 }}
 
 
+/* ----------------------------- */
 /* PROPIEDADES */
-div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton > button {{
+/* ----------------------------- */
+
+.st-key-nav_propiedades button {{
     background-image: url("data:image/svg+xml;base64,{icon_propiedades}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 7px !important;
+    background-position: center 6px !important;
     background-size: 46px 46px !important;
 
-    height: 78px !important;
-    min-height: 78px !important;
+    height: 82px !important;
+    min-height: 82px !important;
 
-    padding-top: 51px !important;
+    padding-top: 50px !important;
 
-    border: 1px solid #DCE5EE !important;
-    border-radius: 13px !important;
-
+    border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
     color: #17345E !important;
@@ -962,21 +964,22 @@ div[data-testid="stHorizontalBlock"] > div:nth-child(3) div.stButton > button {{
 }}
 
 
+/* ----------------------------- */
 /* OCUPACIÓN */
-div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton > button {{
+/* ----------------------------- */
+
+.st-key-nav_ocupacion button {{
     background-image: url("data:image/svg+xml;base64,{icon_ocupacion}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 7px !important;
+    background-position: center 6px !important;
     background-size: 46px 46px !important;
 
-    height: 78px !important;
-    min-height: 78px !important;
+    height: 82px !important;
+    min-height: 82px !important;
 
-    padding-top: 51px !important;
+    padding-top: 50px !important;
 
-    border: 1px solid #DCE5EE !important;
-    border-radius: 13px !important;
-
+    border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
     color: #17345E !important;
@@ -985,21 +988,22 @@ div[data-testid="stHorizontalBlock"] > div:nth-child(4) div.stButton > button {{
 }}
 
 
+/* ----------------------------- */
 /* FINANCIERO */
-div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton > button {{
+/* ----------------------------- */
+
+.st-key-nav_financiero button {{
     background-image: url("data:image/svg+xml;base64,{icon_financiero}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 7px !important;
+    background-position: center 6px !important;
     background-size: 46px 46px !important;
 
-    height: 78px !important;
-    min-height: 78px !important;
+    height: 82px !important;
+    min-height: 82px !important;
 
-    padding-top: 51px !important;
+    padding-top: 50px !important;
 
-    border: 1px solid #DCE5EE !important;
-    border-radius: 13px !important;
-
+    border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
     color: #17345E !important;
@@ -1008,21 +1012,22 @@ div[data-testid="stHorizontalBlock"] > div:nth-child(5) div.stButton > button {{
 }}
 
 
+/* ----------------------------- */
 /* ANÁLISIS */
-div[data-testid="stHorizontalBlock"] > div:nth-child(6) div.stButton > button {{
+/* ----------------------------- */
+
+.st-key-nav_analisis button {{
     background-image: url("data:image/svg+xml;base64,{icon_analisis}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 7px !important;
+    background-position: center 6px !important;
     background-size: 46px 46px !important;
 
-    height: 78px !important;
-    min-height: 78px !important;
+    height: 82px !important;
+    min-height: 82px !important;
 
-    padding-top: 51px !important;
+    padding-top: 50px !important;
 
-    border: 1px solid #DCE5EE !important;
-    border-radius: 13px !important;
-
+    border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
     color: #17345E !important;
@@ -1031,21 +1036,22 @@ div[data-testid="stHorizontalBlock"] > div:nth-child(6) div.stButton > button {{
 }}
 
 
+/* ----------------------------- */
 /* REPORTES */
-div[data-testid="stHorizontalBlock"] > div:nth-child(7) div.stButton > button {{
+/* ----------------------------- */
+
+.st-key-nav_reportes button {{
     background-image: url("data:image/svg+xml;base64,{icon_reportes}") !important;
     background-repeat: no-repeat !important;
-    background-position: center 7px !important;
+    background-position: center 6px !important;
     background-size: 46px 46px !important;
 
-    height: 78px !important;
-    min-height: 78px !important;
+    height: 82px !important;
+    min-height: 82px !important;
 
-    padding-top: 51px !important;
+    padding-top: 50px !important;
 
-    border: 1px solid #DCE5EE !important;
-    border-radius: 13px !important;
-
+    border-radius: 14px !important;
     background-color: #FFFFFF !important;
 
     color: #17345E !important;
@@ -1054,11 +1060,18 @@ div[data-testid="stHorizontalBlock"] > div:nth-child(7) div.stButton > button {{
 }}
 
 
-/* EFECTO AL PASAR EL MOUSE */
-div[data-testid="stHorizontalBlock"] div.stButton > button:hover {{
-    border-color: #FF8FA3 !important;
+/* ----------------------------- */
+/* HOVER */
+/* ----------------------------- */
+
+.st-key-nav_portafolio button:hover,
+.st-key-nav_propiedades button:hover,
+.st-key-nav_ocupacion button:hover,
+.st-key-nav_financiero button:hover,
+.st-key-nav_analisis button:hover,
+.st-key-nav_reportes button:hover {{
     background-color: #FFF9FA !important;
-    color: #17345E !important;
+    border-color: #FFB6C1 !important;
 }}
 
 </style>
@@ -1374,7 +1387,6 @@ top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = st.columns(
     gap="small"
 )
 
-
 # ============================================================
 # MARCA
 # ============================================================
@@ -1382,11 +1394,21 @@ top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = st.columns(
 with top1:
 
     st.markdown(
-        """
+        f"""
 <div class="brand-mini">
 
     <div class="logo-mini">
-        🏢
+
+        <img
+            src="{logo_data}"
+            alt="Rentas Camacho"
+            style="
+                width:42px;
+                height:42px;
+                object-fit:contain;
+            "
+        >
+
     </div>
 
     <div>
@@ -1405,7 +1427,6 @@ with top1:
 """,
         unsafe_allow_html=True
     )
-
 
 # ============================================================
 # PORTAFOLIO
