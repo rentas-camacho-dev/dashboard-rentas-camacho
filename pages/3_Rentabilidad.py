@@ -2061,88 +2061,120 @@ Ocupación Airbnb
 
 def tarjeta_portafolio():
 
+    progreso_rentabilidad = min(
+        max(rentabilidad / 35 * 100, 0),
+        100
+    )
+
     return f"""
 <div class="portfolio-card">
 
-<div class="portfolio-title">
+    <div class="portfolio-title">
 
-<div class="portfolio-icon">
-🏢
-</div>
+        <div class="portfolio-icon">
+            RC
+        </div>
 
-<div>
-Portafolio
-</div>
+        <div>
+            Portafolio
+        </div>
 
-</div>
+    </div>
 
-<div class="portfolio-subtitle">
-Todas las propiedades seleccionadas
-</div>
+    <div class="portfolio-subtitle">
+        Todas las propiedades seleccionadas
+    </div>
 
-<div class="portfolio-main">
-{dinero_corto(ingresos)}
-</div>
+    <div class="portfolio-main">
+        {dinero_corto(ingresos)}
+    </div>
 
-<div class="portfolio-main-label">
-Ingresos del período
-</div>
+    <div class="portfolio-main-label">
+        Ingresos del período
+    </div>
 
-<div class="portfolio-row">
+    <div class="portfolio-metrics">
 
-<div>
+        <div class="portfolio-metric">
 
-<div class="portfolio-mini-label">
-Gastos
-</div>
+            <div class="portfolio-metric-icon expense">
+                ↗
+            </div>
 
-<div class="portfolio-mini-value">
-{dinero_corto(gastos)}
-</div>
+            <div>
 
-</div>
+                <div class="portfolio-mini-label">
+                    Gastos
+                </div>
 
-<div>
+                <div class="portfolio-mini-value">
+                    {dinero_corto(gastos)}
+                </div>
 
-<div class="portfolio-mini-label">
-Flujo
-</div>
+            </div>
 
-<div class="portfolio-mini-value">
-{dinero_corto(flujo)}
-</div>
+        </div>
 
-</div>
+        <div class="portfolio-metric">
 
-</div>
+            <div class="portfolio-metric-icon flow">
+                ◉
+            </div>
 
-<div class="portfolio-row">
+            <div>
 
-<div>
+                <div class="portfolio-mini-label">
+                    Flujo
+                </div>
 
-<div class="portfolio-mini-label">
-Rentabilidad
-</div>
+                <div class="portfolio-mini-value">
+                    {dinero_corto(flujo)}
+                </div>
 
-<div class="portfolio-mini-value portfolio-profit">
-{rentabilidad:.1f}%
-</div>
+            </div>
 
-</div>
+        </div>
 
-<div>
+    </div>
 
-<div class="portfolio-mini-label">
-Objetivo
-</div>
+    <div class="portfolio-divider"></div>
 
-<div class="portfolio-mini-value portfolio-target">
-35%
-</div>
+    <div class="portfolio-profit-row">
 
-</div>
+        <div class="portfolio-profit-block">
 
-</div>
+            <div class="portfolio-profit-label">
+                Rentabilidad
+            </div>
+
+            <div class="portfolio-profit-value portfolio-profit">
+                {rentabilidad:.1f}%
+            </div>
+
+            <div class="portfolio-progress">
+
+                <div
+                    class="portfolio-progress-fill"
+                    style="width:{progreso_rentabilidad:.1f}%;">
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="portfolio-profit-block target">
+
+            <div class="portfolio-profit-label">
+                Objetivo
+            </div>
+
+            <div class="portfolio-profit-value portfolio-target">
+                35%
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 """
