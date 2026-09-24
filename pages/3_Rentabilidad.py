@@ -2022,6 +2022,40 @@ if st.session_state.vista_airbnb == "Propiedades":
         )
     )
 
+    # ========================================================
+    # CORRECCIÓN DE INGRESOS: TORRE ACQUA + TEMPUS 49
+    # ========================================================
+    # Los movimientos contables tienen el ingreso combinado de
+    # ambas propiedades distribuido de forma incorrecta.
+    # Airbnb_Prorrateado establece la proporción real:
+    #   Torre Acqua = 70.322145948%
+    #   Tempus 49   = 29.677854052%
+    #
+    # Se conserva exactamente el ingreso histórico combinado
+    # y solamente se redistribuye entre las dos propiedades.
+    #
+    # Los gastos NO se modifican.
+
+    propiedades_corregidas = ["Torre Acqua", "Tempus 49"]
+
+    ingreso_combinado = historico.loc[
+        historico["Nombre_Propiedad"].isin(propiedades_corregidas),
+        "Ingresos_Historicos"
+    ].sum()
+
+    proporcion_acqua = 0.703221459479914
+    proporcion_tempus = 0.296778540520086
+
+    historico.loc[
+        historico["Nombre_Propiedad"] == "Torre Acqua",
+        "Ingresos_Historicos"
+    ] = ingreso_combinado * proporcion_acqua
+
+    historico.loc[
+        historico["Nombre_Propiedad"] == "Tempus 49",
+        "Ingresos_Historicos"
+    ] = ingreso_combinado * proporcion_tempus
+
     historico["Flujo_Historico"] = (
         historico["Ingresos_Historicos"]
         - historico["Gastos_Historicos"]
