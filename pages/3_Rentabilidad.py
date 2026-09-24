@@ -7,27 +7,23 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 from datetime import date
 
-============================================================
-
-CONFIGURACIÓN
-
-============================================================
+# ============================================================
+# CONFIGURACIÓN
+# ============================================================
 
 st.set_page_config(
-page_title="Airbnb Financial Hub",
-page_icon="🏢",
-layout="wide",
-initial_sidebar_state="collapsed"
+    page_title="Airbnb Financial Hub",
+    page_icon="🏢",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-============================================================
 
-ESTILOS
-
-============================================================
+# ============================================================
+# ESTILOS
+# ============================================================
 
 st.markdown("""
-
 <style>
 
 /* ============================================================
@@ -888,47 +884,42 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {
 }
 
 </style>
-
 """, unsafe_allow_html=True)
 
-============================================================
 
-CONEXIÓN BIGQUERY
-
-============================================================
+# ============================================================
+# CONEXIÓN BIGQUERY
+# ============================================================
 
 credentials = service_account.Credentials.from_service_account_info(
-st.secrets["gcp_service_account"],
-scopes=[
-"https://www.googleapis.com/auth/cloud-platform",
-"https://www.googleapis.com/auth/drive.readonly"
-]
+    st.secrets["gcp_service_account"],
+    scopes=[
+        "https://www.googleapis.com/auth/cloud-platform",
+        "https://www.googleapis.com/auth/drive.readonly"
+    ]
 )
 
 client = bigquery.Client(
-credentials=credentials,
-project="rentascamacho"
+    credentials=credentials,
+    project="rentascamacho"
 )
 
 with open(
-"assets/logo_rentas_camacho.png",
-"rb"
+    "assets/logo_rentas_camacho.png",
+    "rb"
 ) as f:
-logo_b64 = base64.b64encode(
-f.read()
-).decode()
+    logo_b64 = base64.b64encode(
+        f.read()
+    ).decode()
 
-logo_data = f"data/png;base64,{logo_b64}"
-
-============================================================
-
-ICONOS DEL MENÚ SUPERIOR
-
-============================================================
+logo_data = f"data:image/png;base64,{logo_b64}"
+# ============================================================
+# ICONOS DEL MENÚ SUPERIOR
+# ============================================================
 
 def cargar_svg_base64(nombre):
-with open(f"assets/{nombre}", "rb") as f:
-return base64.b64encode(f.read()).decode()
+    with open(f"assets/{nombre}", "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
 icon_portafolio = cargar_svg_base64("icon_portafolio.svg")
 icon_propiedades = cargar_svg_base64("icon_propiedades.svg")
@@ -937,15 +928,12 @@ icon_financiero = cargar_svg_base64("icon_financiero.svg")
 icon_analisis = cargar_svg_base64("icon_analisis.svg")
 icon_reportes = cargar_svg_base64("icon_reportes.svg")
 
-============================================================
-
-ICONOS PERSONALIZADOS DEL MENÚ
-
-============================================================
+# ============================================================
+# ICONOS PERSONALIZADOS DEL MENÚ
+# ============================================================
 
 st.markdown(
-f"""
-
+    f"""
 <style>
 
 /* ============================================================
@@ -1039,316 +1027,309 @@ div[data-testid="column"] {{
 }}
 
 </style>
-
 """,
-unsafe_allow_html=True
+    unsafe_allow_html=True
 )
 
-============================================================
-
-FORMATO DINERO
-
-============================================================
+# ============================================================
+# FORMATO DINERO
+# ============================================================
 
 def dinero_corto(valor):
 
-if pd.isna(valor):
-    valor = 0
+    if pd.isna(valor):
+        valor = 0
 
-valor = float(valor)
+    valor = float(valor)
 
-if abs(valor) >= 1_000_000:
-    return f"${valor / 1_000_000:.1f}M"
+    if abs(valor) >= 1_000_000:
+        return f"${valor / 1_000_000:.1f}M"
 
-if abs(valor) >= 1_000:
-    return f"${valor / 1_000:.0f}k"
+    if abs(valor) >= 1_000:
+        return f"${valor / 1_000:.0f}k"
 
-return f"${valor:,.0f}".replace(",", ".")
+    return f"${valor:,.0f}".replace(",", ".")
 
-============================================================
 
-DATOS FINANCIEROS
-
-============================================================
+# ============================================================
+# DATOS FINANCIEROS
+# ============================================================
 
 @st.cache_data(ttl=300)
 def cargar_datos_financieros():
 
-query = """
-SELECT
-    Fecha,
-    Nombre_Propiedad,
-    Ciudad,
-    Nombre_Socio,
-    Nombre_Tipo,
-    Ingreso,
-    Gasto
-FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
-WHERE LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
-"""
+    query = """
+    SELECT
+        Fecha,
+        Nombre_Propiedad,
+        Ciudad,
+        Nombre_Socio,
+        Nombre_Tipo,
+        Ingreso,
+        Gasto
+    FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
+    WHERE LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
+    """
 
-df = client.query(query).to_dataframe()
+    df = client.query(query).to_dataframe()
 
-df["Fecha"] = pd.to_datetime(
-    df["Fecha"],
-    errors="coerce"
-)
-
-df["Ingreso"] = pd.to_numeric(
-    df["Ingreso"],
-    errors="coerce"
-).fillna(0)
-
-df["Gasto"] = pd.to_numeric(
-    df["Gasto"],
-    errors="coerce"
-).fillna(0)
-
-for col in [
-    "Nombre_Propiedad",
-    "Ciudad",
-    "Nombre_Socio"
-]:
-
-    df[col] = (
-        df[col]
-        .fillna("Sin información")
-        .astype(str)
+    df["Fecha"] = pd.to_datetime(
+        df["Fecha"],
+        errors="coerce"
     )
 
-return df
+    df["Ingreso"] = pd.to_numeric(
+        df["Ingreso"],
+        errors="coerce"
+    ).fillna(0)
 
-============================================================
+    df["Gasto"] = pd.to_numeric(
+        df["Gasto"],
+        errors="coerce"
+    ).fillna(0)
 
-INVERSIONES POR PROPIEDAD
+    for col in [
+        "Nombre_Propiedad",
+        "Ciudad",
+        "Nombre_Socio"
+    ]:
 
-============================================================
+        df[col] = (
+            df[col]
+            .fillna("Sin información")
+            .astype(str)
+        )
+
+    return df
+
+
+# ============================================================
+# INVERSIONES POR PROPIEDAD
+# ============================================================
 
 @st.cache_data(ttl=300)
 def cargar_inversiones():
 
-query = """
-SELECT
-    Activo_Proyecto,
-    SUM(Valor_Prorrateado_Calculado) AS Inversion
-FROM `rentascamacho.rentas_cortas.Vista_Inversiones_Prorrateadas`
-WHERE Activo_Proyecto IN (
-    'Torre Acqua',
-    'Torre Evoca',
-    'Torre Ventto',
-    'Lotus',
-    'Santa Marina',
-    'Base Loft',
-    'Tempus 49',
-    'Iwani'
-)
-GROUP BY Activo_Proyecto
-"""
+    query = """
+    SELECT
+        Activo_Proyecto,
+        ANY_VALUE(Ciudad) AS Ciudad,
+        SUM(Valor_Prorrateado_Calculado) AS Inversion
+    FROM `rentascamacho.rentas_cortas.Vista_Inversiones_Prorrateadas`
+    WHERE Activo_Proyecto IN (
+        'Torre Acqua',
+        'Torre Evoca',
+        'Torre Ventto',
+        'Lotus',
+        'Santa Marina',
+        'Base Loft',
+        'Tempus 49',
+        'Iwani'
+    )
+    GROUP BY Activo_Proyecto
+    """
 
-inversiones = client.query(query).to_dataframe()
+    inversiones = client.query(query).to_dataframe()
 
-inversiones["Inversion"] = pd.to_numeric(
-    inversiones["Inversion"],
-    errors="coerce"
-).fillna(0)
+    inversiones["Inversion"] = pd.to_numeric(
+        inversiones["Inversion"],
+        errors="coerce"
+    ).fillna(0)
 
-return inversiones
+    return inversiones
 
-============================================================
 
-RESERVAS AIRBNB / OCUPACIÓN
-
-============================================================
+# ============================================================
+# RESERVAS AIRBNB / OCUPACIÓN
+# ============================================================
 
 @st.cache_data(ttl=300)
 def cargar_reservas(
-fecha_inicio,
-fecha_fin
+    fecha_inicio,
+    fecha_fin
 ):
 
-query = """
-WITH mapa AS (
+    query = """
+    WITH mapa AS (
+
+        SELECT
+            LOWER(TRIM(Anuncio)) AS anuncio_key,
+            Nombre AS Nombre_Propiedad,
+            Ciudad
+
+        FROM `rentascamacho.rentas_cortas.Participaciones`
+
+        WHERE
+            Anuncio IS NOT NULL
+            AND TRIM(Anuncio) <> ''
+
+        QUALIFY ROW_NUMBER() OVER (
+            PARTITION BY LOWER(TRIM(Anuncio))
+            ORDER BY ID_Activo
+        ) = 1
+    ),
+
+    reservas_base AS (
+
+        SELECT
+            C__digo_de_confirmaci__n AS Codigo_Reserva,
+            LOWER(TRIM(Anuncio)) AS anuncio_key,
+            DATE(Fecha_de_inicio) AS Fecha_Inicio,
+            DATE(Fecha_de_finalizaci__n) AS Fecha_Fin
+
+        FROM `rentascamacho.rentas_cortas.Airbnb_Prorrateado`
+
+        WHERE
+            LOWER(TRIM(Tipo)) = 'reservación'
+            AND C__digo_de_confirmaci__n IS NOT NULL
+            AND Anuncio IS NOT NULL
+            AND Fecha_de_inicio IS NOT NULL
+            AND Fecha_de_finalizaci__n IS NOT NULL
+
+        QUALIFY ROW_NUMBER() OVER (
+            PARTITION BY C__digo_de_confirmaci__n
+            ORDER BY Fecha_de_inicio
+        ) = 1
+    ),
+
+    reservas AS (
+
+        SELECT
+            r.Codigo_Reserva,
+            m.Nombre_Propiedad,
+            m.Ciudad,
+            r.Fecha_Inicio,
+            r.Fecha_Fin
+
+        FROM reservas_base r
+
+        INNER JOIN mapa m
+            ON r.anuncio_key = m.anuncio_key
+    ),
+
+    calculo AS (
+
+        SELECT
+            Codigo_Reserva,
+            Nombre_Propiedad,
+            Ciudad,
+
+            GREATEST(
+                Fecha_Inicio,
+                @fecha_inicio
+            ) AS Inicio_Overlap,
+
+            LEAST(
+                Fecha_Fin,
+                DATE_ADD(
+                    @fecha_fin,
+                    INTERVAL 1 DAY
+                )
+            ) AS Fin_Overlap
+
+        FROM reservas
+
+        WHERE
+            Fecha_Inicio <
+                DATE_ADD(
+                    @fecha_fin,
+                    INTERVAL 1 DAY
+                )
+
+            AND Fecha_Fin >
+                @fecha_inicio
+    )
 
     SELECT
-        LOWER(TRIM(Anuncio)) AS anuncio_key,
-        Nombre AS Nombre_Propiedad,
-        Ciudad
-
-    FROM `rentascamacho.rentas_cortas.Participaciones`
-
-    WHERE
-        Anuncio IS NOT NULL
-        AND TRIM(Anuncio) <> ''
-
-    QUALIFY ROW_NUMBER() OVER (
-        PARTITION BY LOWER(TRIM(Anuncio))
-        ORDER BY ID_Activo
-    ) = 1
-),
-
-reservas_base AS (
-
-    SELECT
-        C__digo_de_confirmaci__n AS Codigo_Reserva,
-        LOWER(TRIM(Anuncio)) AS anuncio_key,
-        DATE(Fecha_de_inicio) AS Fecha_Inicio,
-        DATE(Fecha_de_finalizaci__n) AS Fecha_Fin
-
-    FROM `rentascamacho.rentas_cortas.Airbnb_Prorrateado`
-
-    WHERE
-        LOWER(TRIM(Tipo)) = 'reservación'
-        AND C__digo_de_confirmaci__n IS NOT NULL
-        AND Anuncio IS NOT NULL
-        AND Fecha_de_inicio IS NOT NULL
-        AND Fecha_de_finalizaci__n IS NOT NULL
-
-    QUALIFY ROW_NUMBER() OVER (
-        PARTITION BY C__digo_de_confirmaci__n
-        ORDER BY Fecha_de_inicio
-    ) = 1
-),
-
-reservas AS (
-
-    SELECT
-        r.Codigo_Reserva,
-        m.Nombre_Propiedad,
-        m.Ciudad,
-        r.Fecha_Inicio,
-        r.Fecha_Fin
-
-    FROM reservas_base r
-
-    INNER JOIN mapa m
-        ON r.anuncio_key = m.anuncio_key
-),
-
-calculo AS (
-
-    SELECT
-        Codigo_Reserva,
         Nombre_Propiedad,
         Ciudad,
 
-        GREATEST(
-            Fecha_Inicio,
-            @fecha_inicio
-        ) AS Inicio_Overlap,
+        COUNT(DISTINCT Codigo_Reserva)
+            AS Reservas,
 
-        LEAST(
-            Fecha_Fin,
+        SUM(
+            GREATEST(
+                DATE_DIFF(
+                    Fin_Overlap,
+                    Inicio_Overlap,
+                    DAY
+                ),
+                0
+            )
+        ) AS Noches_Reservadas,
+
+        DATE_DIFF(
             DATE_ADD(
                 @fecha_fin,
                 INTERVAL 1 DAY
-            )
-        ) AS Fin_Overlap
-
-    FROM reservas
-
-    WHERE
-        Fecha_Inicio <
-            DATE_ADD(
-                @fecha_fin,
-                INTERVAL 1 DAY
-            )
-
-        AND Fecha_Fin >
-            @fecha_inicio
-)
-
-SELECT
-    Nombre_Propiedad,
-    Ciudad,
-
-    COUNT(DISTINCT Codigo_Reserva)
-        AS Reservas,
-
-    SUM(
-        GREATEST(
-            DATE_DIFF(
-                Fin_Overlap,
-                Inicio_Overlap,
-                DAY
             ),
-            0
-        )
-    ) AS Noches_Reservadas,
+            @fecha_inicio,
+            DAY
+        ) AS Noches_Disponibles
 
-    DATE_DIFF(
-        DATE_ADD(
-            @fecha_fin,
-            INTERVAL 1 DAY
-        ),
-        @fecha_inicio,
-        DAY
-    ) AS Noches_Disponibles
+    FROM calculo
 
-FROM calculo
+    GROUP BY
+        Nombre_Propiedad,
+        Ciudad
+    """
 
-GROUP BY
-    Nombre_Propiedad,
-    Ciudad
-"""
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter(
+                "fecha_inicio",
+                "DATE",
+                fecha_inicio
+            ),
+            bigquery.ScalarQueryParameter(
+                "fecha_fin",
+                "DATE",
+                fecha_fin
+            )
+        ]
+    )
 
-job_config = bigquery.QueryJobConfig(
-    query_parameters=[
-        bigquery.ScalarQueryParameter(
-            "fecha_inicio",
-            "DATE",
-            fecha_inicio
-        ),
-        bigquery.ScalarQueryParameter(
-            "fecha_fin",
-            "DATE",
-            fecha_fin
-        )
-    ]
-)
+    return client.query(
+        query,
+        job_config=job_config
+    ).to_dataframe()
 
-return client.query(
-    query,
-    job_config=job_config
-).to_dataframe()
 
-============================================================
-
-CARGAR DATOS
-
-============================================================
+# ============================================================
+# CARGAR DATOS
+# ============================================================
 
 df = cargar_datos_financieros()
 
 hoy = date.today()
 
 inicio_mes = date(
-hoy.year,
-hoy.month,
-1
+    hoy.year,
+    hoy.month,
+    1
 )
 
 inicio_anio = pd.Timestamp(
-hoy.year,
-1,
-1
+    hoy.year,
+    1,
+    1
 )
 
 fin_hoy = (
-pd.Timestamp(hoy)
-+
-pd.Timedelta(days=1)
+    pd.Timestamp(hoy)
+    +
+    pd.Timedelta(days=1)
 )
 
-============================================================
 
-YTD
-
-============================================================
+# ============================================================
+# YTD
+# ============================================================
 
 df_ytd = df[
-(df["Fecha"] >= inicio_anio)
-&
-(df["Fecha"] < fin_hoy)
+    (df["Fecha"] >= inicio_anio)
+    &
+    (df["Fecha"] < fin_hoy)
 ].copy()
 
 ingresos_ytd = df_ytd["Ingreso"].sum()
@@ -1356,757 +1337,805 @@ ingresos_ytd = df_ytd["Ingreso"].sum()
 gastos_ytd = df_ytd["Gasto"].sum()
 
 flujo_ytd = (
-ingresos_ytd -
-gastos_ytd
+    ingresos_ytd -
+    gastos_ytd
 )
 
 rentabilidad_ytd = (
-flujo_ytd /
-ingresos_ytd *
-100
-if ingresos_ytd
-else 0
+    flujo_ytd /
+    ingresos_ytd *
+    100
+    if ingresos_ytd
+    else 0
 )
 
-============================================================
-
-MENÚ SUPERIOR
-
-MARCA + NAVEGACIÓN + FILTROS
-
-============================================================
+# ============================================================
+# MENÚ SUPERIOR
+# MARCA + NAVEGACIÓN + FILTROS
+# ============================================================
 
 if "vista_airbnb" not in st.session_state:
 
-st.session_state.vista_airbnb = "Portafolio"
+    st.session_state.vista_airbnb = "Portafolio"
 
 top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = st.columns(
-[
-1.90,
-0.68,
-0.68,
-0.68,
-0.68,
-0.68,
-0.68,
-0.90,
-0.90,
-1.10
-],
-gap="small"
+    [
+        1.90,
+        0.68,
+        0.68,
+        0.68,
+        0.68,
+        0.68,
+        0.68,
+        0.90,
+        0.90,
+        1.10
+    ],
+    gap="small"
 )
 
-============================================================
-
-MARCA
-
-============================================================
+# ============================================================
+# MARCA
+# ============================================================
 
 with top1:
 
-st.html(
-    f"""
-    <div class="brand-mini">
+    st.html(
+        f"""
+        <div class="brand-mini">
 
-        <div class="logo-mini">
+            <div class="logo-mini">
 
-            <img
-                src="{logo_data}"
-                alt="Rentas Camacho"
-                style="
-                    width:42px;
-                    height:42px;
-                    object-fit:contain;
-                "
-            >
+                <img
+                    src="{logo_data}"
+                    alt="Rentas Camacho"
+                    style="
+                        width:42px;
+                        height:42px;
+                        object-fit:contain;
+                    "
+                >
 
-        </div>
-
-        <div>
-
-            <div class="brand-mini-title">
-                Airbnb <span>Financial Hub</span>
             </div>
 
-            <div class="brand-mini-sub">
-                Rentabilidad financiera · Solo Airbnb
+            <div>
+
+                <div class="brand-mini-title">
+                    Airbnb <span>Financial Hub</span>
+                </div>
+
+                <div class="brand-mini-sub">
+                    Rentabilidad financiera · Solo Airbnb
+                </div>
+
             </div>
 
         </div>
+        """
+    )
 
-    </div>
-    """
-)
-
-============================================================
-
-PORTAFOLIO
-
-============================================================
+# ============================================================
+# PORTAFOLIO
+# ============================================================
 
 with top2:
 
-if st.button(
-    "",
-    key="nav_portafolio",
-    use_container_width=True,
-    help="Portafolio"
-):
+    if st.button(
+        "",
+        key="nav_portafolio",
+        use_container_width=True,
+        help="Portafolio"
+    ):
 
-    st.session_state.vista_airbnb = "Portafolio"
-    st.rerun()
+        st.session_state.vista_airbnb = "Portafolio"
+        st.rerun()
 
-============================================================
 
-PROPIEDADES
-
-============================================================
+# ============================================================
+# PROPIEDADES
+# ============================================================
 
 with top3:
 
-if st.button(
-    "",
-    key="nav_propiedades",
-    use_container_width=True,
-    help="Propiedades"
-):
+    if st.button(
+        "",
+        key="nav_propiedades",
+        use_container_width=True,
+        help="Propiedades"
+    ):
 
-    st.session_state.vista_airbnb = "Propiedades"
-    st.rerun()
+        st.session_state.vista_airbnb = "Propiedades"
+        st.rerun()
 
-============================================================
 
-OCUPACIÓN
-
-============================================================
+# ============================================================
+# OCUPACIÓN
+# ============================================================
 
 with top4:
 
-if st.button(
-    "",
-    key="nav_ocupacion",
-    use_container_width=True,
-    help="Ocupación"
-):
+    if st.button(
+        "",
+        key="nav_ocupacion",
+        use_container_width=True,
+        help="Ocupación"
+    ):
 
-    st.session_state.vista_airbnb = "Ocupación"
-    st.rerun()
+        st.session_state.vista_airbnb = "Ocupación"
+        st.rerun()
 
-============================================================
 
-FINANCIERO
-
-============================================================
+# ============================================================
+# FINANCIERO
+# ============================================================
 
 with top5:
 
-if st.button(
-    "",
-    key="nav_financiero",
-    use_container_width=True,
-    help="Financiero"
-):
+    if st.button(
+        "",
+        key="nav_financiero",
+        use_container_width=True,
+        help="Financiero"
+    ):
 
-    st.session_state.vista_airbnb = "Financiero"
-    st.rerun()
+        st.session_state.vista_airbnb = "Financiero"
+        st.rerun()
 
-============================================================
 
-ANÁLISIS
-
-============================================================
+# ============================================================
+# ANÁLISIS
+# ============================================================
 
 with top6:
 
-if st.button(
-    "",
-    key="nav_analisis",
-    use_container_width=True,
-    help="Análisis"
-):
+    if st.button(
+        "",
+        key="nav_analisis",
+        use_container_width=True,
+        help="Análisis"
+    ):
 
-    st.session_state.vista_airbnb = "Análisis"
-    st.rerun()
+        st.session_state.vista_airbnb = "Análisis"
+        st.rerun()
 
-============================================================
 
-REPORTES
-
-============================================================
+# ============================================================
+# REPORTES
+# ============================================================
 
 with top7:
 
-if st.button(
-    "",
-    key="nav_reportes",
-    use_container_width=True,
-    help="Reportes"
-):
+    if st.button(
+        "",
+        key="nav_reportes",
+        use_container_width=True,
+        help="Reportes"
+    ):
 
-    st.session_state.vista_airbnb = "Reportes"
-    st.rerun()
+        st.session_state.vista_airbnb = "Reportes"
+        st.rerun()
 
-============================================================
 
-FILTRO CIUDAD
-
-============================================================
+# ============================================================
+# FILTRO CIUDAD
+# ============================================================
 
 with top8:
 
-st.markdown(
-    '<div class="filter-label">📍 Ciudad</div>',
-    unsafe_allow_html=True
-)
+    st.markdown(
+        '<div class="filter-label">📍 Ciudad</div>',
+        unsafe_allow_html=True
+    )
 
-ciudad = st.selectbox(
-    "Ciudad",
-    ["Todas"]
-    +
-    sorted(
-        df["Ciudad"]
-        .dropna()
-        .unique()
-        .tolist()
-    ),
-    label_visibility="collapsed"
-)
+    ciudad = st.selectbox(
+        "Ciudad",
+        ["Todas"]
+        +
+        sorted(
+            df["Ciudad"]
+            .dropna()
+            .unique()
+            .tolist()
+        ),
+        label_visibility="collapsed"
+    )
 
-============================================================
 
-FILTRO PROPIEDAD
-
-============================================================
+# ============================================================
+# FILTRO PROPIEDAD
+# ============================================================
 
 with top9:
 
-st.markdown(
-    '<div class="filter-label">🏢 Propiedad</div>',
-    unsafe_allow_html=True
-)
+    st.markdown(
+        '<div class="filter-label">🏢 Propiedad</div>',
+        unsafe_allow_html=True
+    )
 
-propiedad = st.selectbox(
-    "Propiedad",
-    ["Todas"]
-    +
-    sorted(
-        df["Nombre_Propiedad"]
-        .dropna()
-        .unique()
-        .tolist()
-    ),
-    label_visibility="collapsed"
-)
+    propiedad = st.selectbox(
+        "Propiedad",
+        ["Todas"]
+        +
+        sorted(
+            df["Nombre_Propiedad"]
+            .dropna()
+            .unique()
+            .tolist()
+        ),
+        label_visibility="collapsed"
+    )
 
-============================================================
 
-FILTRO PERÍODO
-
-============================================================
+# ============================================================
+# FILTRO PERÍODO
+# ============================================================
 
 with top10:
 
-st.markdown(
-    '<div class="filter-label">📅 Período</div>',
-    unsafe_allow_html=True
-)
+    st.markdown(
+        '<div class="filter-label">📅 Período</div>',
+        unsafe_allow_html=True
+    )
 
-periodo = st.date_input(
-    "Período",
-    value=(
-        inicio_mes,
-        hoy
-    ),
-    label_visibility="collapsed"
-)
+    periodo = st.date_input(
+        "Período",
+        value=(
+            inicio_mes,
+            hoy
+        ),
+        label_visibility="collapsed"
+    )
 
-============================================================
-
-FECHAS SELECCIONADAS
-
-============================================================
+# ============================================================
+# FECHAS SELECCIONADAS
+# ============================================================
 
 if (
-isinstance(
-periodo,
-(tuple, list)
-)
-and
-len(periodo) == 2
+    isinstance(
+        periodo,
+        (tuple, list)
+    )
+    and
+    len(periodo) == 2
 ):
 
-fecha_inicio = periodo[0]
-fecha_fin = periodo[1]
+    fecha_inicio = periodo[0]
+    fecha_fin = periodo[1]
 
 else:
 
-fecha_inicio = inicio_mes
-fecha_fin = hoy
+    fecha_inicio = inicio_mes
+    fecha_fin = hoy
 
-============================================================
 
-FILTRAR DATOS
-
-============================================================
+# ============================================================
+# FILTRAR DATOS
+# ============================================================
 
 df_f = df[
-(df["Fecha"].dt.date >= fecha_inicio)
-&
-(df["Fecha"].dt.date <= fecha_fin)
+    (df["Fecha"].dt.date >= fecha_inicio)
+    &
+    (df["Fecha"].dt.date <= fecha_fin)
 ].copy()
 
 if ciudad != "Todas":
 
-df_f = df_f[
-    df_f["Ciudad"] == ciudad
-]
+    df_f = df_f[
+        df_f["Ciudad"] == ciudad
+    ]
 
 if propiedad != "Todas":
 
-df_f = df_f[
-    df_f["Nombre_Propiedad"] == propiedad
-]
+    df_f = df_f[
+        df_f["Nombre_Propiedad"] == propiedad
+    ]
 
-============================================================
 
-TOTALES
-
-============================================================
+# ============================================================
+# TOTALES
+# ============================================================
 
 ingresos = df_f["Ingreso"].sum()
 
 gastos = df_f["Gasto"].sum()
 
 flujo = (
-ingresos -
-gastos
+    ingresos -
+    gastos
 )
 
 rentabilidad = (
-flujo /
-ingresos *
-100
-if ingresos
-else 0
+    flujo /
+    ingresos *
+    100
+    if ingresos
+    else 0
 )
 
-============================================================
 
-RESUMEN POR PROPIEDAD
-
-============================================================
+# ============================================================
+# RESUMEN POR PROPIEDAD
+# ============================================================
 
 resumen = (
-df_f
-.groupby(
-[
-"Nombre_Propiedad",
-"Ciudad"
-],
-as_index=False
-)
-.agg(
-Ingresos=(
-"Ingreso",
-"sum"
-),
-Gastos=(
-"Gasto",
-"sum"
-)
-)
+    df_f
+    .groupby(
+        [
+            "Nombre_Propiedad",
+            "Ciudad"
+        ],
+        as_index=False
+    )
+    .agg(
+        Ingresos=(
+            "Ingreso",
+            "sum"
+        ),
+        Gastos=(
+            "Gasto",
+            "sum"
+        )
+    )
 )
 
 resumen["Flujo"] = (
-resumen["Ingresos"]
--
-resumen["Gastos"]
+    resumen["Ingresos"]
+    -
+    resumen["Gastos"]
 )
 
 resumen["Rentabilidad"] = (
-resumen["Flujo"]
-/
-resumen["Ingresos"]
-*
-100
+    resumen["Flujo"]
+    /
+    resumen["Ingresos"]
+    *
+    100
 ).fillna(0)
 
-============================================================
 
-OCUPACIÓN
-
-============================================================
+# ============================================================
+# OCUPACIÓN
+# ============================================================
 
 try:
 
-df_ocupacion = cargar_reservas(
-    fecha_inicio,
-    fecha_fin
-)
+    df_ocupacion = cargar_reservas(
+        fecha_inicio,
+        fecha_fin
+    )
 
 except Exception:
 
-df_ocupacion = pd.DataFrame()
+    df_ocupacion = pd.DataFrame()
+
 
 if not df_ocupacion.empty:
 
-df_ocupacion["Ocupacion"] = (
-    df_ocupacion["Noches_Reservadas"]
-    /
-    df_ocupacion["Noches_Disponibles"]
-    *
-    100
-)
+    df_ocupacion["Ocupacion"] = (
+        df_ocupacion["Noches_Reservadas"]
+        /
+        df_ocupacion["Noches_Disponibles"]
+        *
+        100
+    )
 
 else:
 
-df_ocupacion = pd.DataFrame(
-    columns=[
-        "Nombre_Propiedad",
-        "Ciudad",
-        "Reservas",
-        "Noches_Reservadas",
-        "Noches_Disponibles",
-        "Ocupacion"
-    ]
-)
-
-resumen = resumen.merge(
-df_ocupacion,
-on=[
-"Nombre_Propiedad",
-"Ciudad"
-],
-how="left"
-)
-
-Orden visual por equipos:
-
-1. Bogotá → 2. Costa → 3. Medellín → 4. Ibagué
-
-orden_ciudad = {
-"Bogotá": 1,
-"Santa Marta": 2,
-"Cartagena": 2,
-"Medellín": 3,
-"Ibagué": 4
-}
-
-resumen["OrdenEquipo"] = (
-resumen["Ciudad"]
-.map(orden_ciudad)
-.fillna(99)
-)
-
-resumen = (
-resumen
-.sort_values(
-["OrdenEquipo", "Nombre_Propiedad"],
-ascending=[True, True]
-)
-.drop(columns=["OrdenEquipo"])
-.reset_index(drop=True)
-)
-
-
-
-============================================================
-
-DATOS DE INVERSIÓN
-
-============================================================
-
-inversiones = cargar_inversiones()
-
-============================================================
-
-TARJETA PROPIEDAD
-
-============================================================
-
-def tarjeta_propiedad(row):
-
-rent = float(row["Rentabilidad"])
-good = rent >= 35
-
-progress = min(max(abs(rent) if rent < 0 else rent, 0), 100)
-
-ocup = row.get("Ocupacion", None)
-reservas = row.get("Reservas", None)
-noches = row.get("Noches_Reservadas", None)
-
-if pd.isna(ocup):
-    ocup_text = "—"
-    detalle = "—"
-else:
-    ocup_text = f"{float(ocup):.1f}%"
-    if pd.isna(reservas) or pd.isna(noches):
-        detalle = "—"
-    else:
-        detalle = f"{int(reservas)} R · {int(noches)} N"
-
-ciudad = str(row["Ciudad"]).strip().lower()
-
-if ciudad == "bogotá":
-    equipo = "team-bogota"
-elif ciudad in ["santa marta", "cartagena"]:
-    equipo = "team-costa"
-elif ciudad == "medellín":
-    equipo = "team-medellin"
-elif ciudad == "ibagué":
-    equipo = "team-ibague"
-else:
-    equipo = "team-bogota"
-
-return f"""
-
-<div class="property-card {equipo}">
-
-<div class="property-header">
-    <div>
-        <div class="property-name">
-            {row["Nombre_Propiedad"]}
-        </div>
-        <div class="property-city">
-            {row["Ciudad"]}
-        </div>
-    </div>
-</div>
-
-<div class="property-income-main">
-    {dinero_corto(row["Ingresos"])}
-</div>
-
-<div class="metrics-grid">
-
-    <div class="metric-box">
-        <div class="metric-content">
-            <div class="metric-label">Gastos</div>
-            <div class="metric-value metric-expense">
-                {dinero_corto(row["Gastos"])}
-            </div>
-        </div>
-    </div>
-
-    <div class="metric-box">
-        <div class="metric-content">
-            <div class="metric-label">Flujo</div>
-            <div class="metric-value metric-flow">
-                {dinero_corto(row["Flujo"])}
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<div class="property-bottom">
-
-    <div class="property-bottom-block">
-        <div class="profit-label">Rentabilidad</div>
-        <div class="profit-number {'good' if good else 'bad'}">
-            {rent:.1f}%
-        </div>
-        <div class="progress">
-            <div
-                class="progress-fill {'bad' if not good else ''}"
-                style="width:{progress:.1f}%;">
-            </div>
-        </div>
-    </div>
-
-    <div class="property-bottom-block occupancy">
-        <div class="occupancy-label">Ocup. %</div>
-        <div class="occupancy-value">
-            {ocup_text}
-        </div>
-        <div class="occupancy-detail">
-            {detalle}
-        </div>
-    </div>
-
-</div>
-
-</div>
-"""
-
-============================================================
-
-TARJETA PORTAFOLIO
-
-============================================================
-
-def tarjeta_portafolio():
-
-progreso_rentabilidad = min(
-    max((rentabilidad / 35) * 100, 0),
-    100
-)
-
-return f"""
-
-<div class="portfolio-card">
-
-<div class="portfolio-title">Portafolio</div>
-
-<div class="portfolio-main">
-    {dinero_corto(ingresos)}
-</div>
-
-<div class="portfolio-metrics">
-
-    <div class="portfolio-metric">
-        <div class="portfolio-mini-label">Gastos</div>
-        <div class="portfolio-mini-value">
-            {dinero_corto(gastos)}
-        </div>
-    </div>
-
-    <div class="portfolio-metric">
-        <div class="portfolio-mini-label">Flujo</div>
-        <div class="portfolio-mini-value">
-            {dinero_corto(flujo)}
-        </div>
-    </div>
-
-</div>
-
-<div class="portfolio-profit-row">
-
-    <div class="portfolio-profit-block">
-        <div class="portfolio-profit-label">Rentabilidad</div>
-        <div class="portfolio-profit-value portfolio-profit">
-            {rentabilidad:.1f}%
-        </div>
-        <div class="portfolio-progress">
-            <div
-                class="portfolio-progress-fill"
-                style="width:{progreso_rentabilidad:.1f}%;">
-            </div>
-        </div>
-    </div>
-
-    <div class="portfolio-profit-block target">
-        <div class="portfolio-profit-label">Objetivo</div>
-        <div class="portfolio-profit-value portfolio-target">
-            35%
-        </div>
-    </div>
-
-</div>
-
-</div>
-"""
-
-============================================================
-
-VISTA PROPIEDADES
-
-============================================================
-
-if st.session_state.vista_airbnb == "Propiedades":
-
-# ========================================================
-# TARJETAS
-# ========================================================
-
-cards_html = '<div class="properties-grid">'
-
-cards_html += tarjeta_portafolio()
-
-for _, row in resumen.iterrows():
-
-    cards_html += tarjeta_propiedad(row)
-
-cards_html += "</div>"
-
-cards_html = "\n".join(
-    linea.strip()
-    for linea in cards_html.splitlines()
-)
-
-st.markdown(
-    cards_html,
-    unsafe_allow_html=True
-)
-
-# ========================================================
-# TABLA DE ANÁLISIS DE INVERSIÓN
-# ========================================================
-
-tabla = inversiones.rename(
-    columns={
-        "Activo_Proyecto": "Nombre_Propiedad"
-    }
-).copy()
-
-tabla = tabla.merge(
-    resumen[
-        [
+    df_ocupacion = pd.DataFrame(
+        columns=[
             "Nombre_Propiedad",
             "Ciudad",
-            "Ingresos",
-            "Gastos",
-            "Flujo",
-            "Rentabilidad",
-            "Ocupacion",
             "Reservas",
-            "Noches_Reservadas"
+            "Noches_Reservadas",
+            "Noches_Disponibles",
+            "Ocupacion"
         ]
+    )
+
+
+resumen = resumen.merge(
+    df_ocupacion,
+    on=[
+        "Nombre_Propiedad",
+        "Ciudad"
     ],
-    on="Nombre_Propiedad",
     how="left"
 )
 
-# Estado del activo
-tabla["Estado"] = tabla["Nombre_Propiedad"].apply(
-    lambda x: "En desarrollo"
-    if str(x).strip().lower() == "iwani"
-    else "Operando"
-)
-
-# Filtros actuales
-if propiedad != "Todas":
-    tabla = tabla[
-        tabla["Nombre_Propiedad"] == propiedad
-    ]
-
-if ciudad != "Todas":
-    tabla = tabla[
-        tabla["Ciudad"] == ciudad
-    ]
-
-# Orden visual igual al portafolio
-orden_tabla = {
-    "Torre Acqua": 1,
-    "Torre Evoca": 2,
-    "Torre Ventto": 3,
-    "Lotus": 4,
-    "Santa Marina": 5,
-    "Base Loft": 6,
-    "Tempus 49": 7,
-    "Iwani": 8
+# Orden visual por equipos:
+# 1. Bogotá → 2. Costa → 3. Medellín → 4. Ibagué
+orden_ciudad = {
+    "Bogotá": 1,
+    "Santa Marta": 2,
+    "Cartagena": 2,
+    "Medellín": 3,
+    "Ibagué": 4
 }
 
-tabla["Orden"] = (
-    tabla["Nombre_Propiedad"]
-    .map(orden_tabla)
+resumen["OrdenEquipo"] = (
+    resumen["Ciudad"]
+    .map(orden_ciudad)
     .fillna(99)
 )
 
-tabla = (
-    tabla
-    .sort_values("Orden")
-    .drop(columns=["Orden"])
+resumen = (
+    resumen
+    .sort_values(
+        ["OrdenEquipo", "Nombre_Propiedad"],
+        ascending=[True, True]
+    )
+    .drop(columns=["OrdenEquipo"])
     .reset_index(drop=True)
 )
 
-def valor_tabla(valor):
-    if pd.isna(valor):
-        return "—"
-    return dinero_corto(valor)
 
-html_tabla = """
 
+# ============================================================
+# DATOS DE INVERSIÓN
+# ============================================================
+
+inversiones = cargar_inversiones()
+
+# ============================================================
+# TARJETA PROPIEDAD
+# ============================================================
+
+def tarjeta_propiedad(row):
+
+    rent = float(row["Rentabilidad"])
+    good = rent >= 35
+
+    progress = min(max(abs(rent) if rent < 0 else rent, 0), 100)
+
+    ocup = row.get("Ocupacion", None)
+    reservas = row.get("Reservas", None)
+    noches = row.get("Noches_Reservadas", None)
+
+    if pd.isna(ocup):
+        ocup_text = "—"
+        detalle = "—"
+    else:
+        ocup_text = f"{float(ocup):.1f}%"
+        if pd.isna(reservas) or pd.isna(noches):
+            detalle = "—"
+        else:
+            detalle = f"{int(reservas)} R · {int(noches)} N"
+
+    ciudad = str(row["Ciudad"]).strip().lower()
+
+    if ciudad == "bogotá":
+        equipo = "team-bogota"
+    elif ciudad in ["santa marta", "cartagena"]:
+        equipo = "team-costa"
+    elif ciudad == "medellín":
+        equipo = "team-medellin"
+    elif ciudad == "ibagué":
+        equipo = "team-ibague"
+    else:
+        equipo = "team-bogota"
+
+    return f"""
+<div class="property-card {equipo}">
+
+    <div class="property-header">
+        <div>
+            <div class="property-name">
+                {row["Nombre_Propiedad"]}
+            </div>
+            <div class="property-city">
+                {row["Ciudad"]}
+            </div>
+        </div>
+    </div>
+
+    <div class="property-income-main">
+        {dinero_corto(row["Ingresos"])}
+    </div>
+
+    <div class="metrics-grid">
+
+        <div class="metric-box">
+            <div class="metric-content">
+                <div class="metric-label">Gastos</div>
+                <div class="metric-value metric-expense">
+                    {dinero_corto(row["Gastos"])}
+                </div>
+            </div>
+        </div>
+
+        <div class="metric-box">
+            <div class="metric-content">
+                <div class="metric-label">Flujo</div>
+                <div class="metric-value metric-flow">
+                    {dinero_corto(row["Flujo"])}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="property-bottom">
+
+        <div class="property-bottom-block">
+            <div class="profit-label">Rentabilidad</div>
+            <div class="profit-number {'good' if good else 'bad'}">
+                {rent:.1f}%
+            </div>
+            <div class="progress">
+                <div
+                    class="progress-fill {'bad' if not good else ''}"
+                    style="width:{progress:.1f}%;">
+                </div>
+            </div>
+        </div>
+
+        <div class="property-bottom-block occupancy">
+            <div class="occupancy-label">Ocup. %</div>
+            <div class="occupancy-value">
+                {ocup_text}
+            </div>
+            <div class="occupancy-detail">
+                {detalle}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+"""
+
+# ============================================================
+# TARJETA PORTAFOLIO
+# ============================================================
+
+def tarjeta_portafolio():
+
+    progreso_rentabilidad = min(
+        max((rentabilidad / 35) * 100, 0),
+        100
+    )
+
+    return f"""
+<div class="portfolio-card">
+
+    <div class="portfolio-title">Portafolio</div>
+
+    <div class="portfolio-main">
+        {dinero_corto(ingresos)}
+    </div>
+
+    <div class="portfolio-metrics">
+
+        <div class="portfolio-metric">
+            <div class="portfolio-mini-label">Gastos</div>
+            <div class="portfolio-mini-value">
+                {dinero_corto(gastos)}
+            </div>
+        </div>
+
+        <div class="portfolio-metric">
+            <div class="portfolio-mini-label">Flujo</div>
+            <div class="portfolio-mini-value">
+                {dinero_corto(flujo)}
+            </div>
+        </div>
+
+    </div>
+
+    <div class="portfolio-profit-row">
+
+        <div class="portfolio-profit-block">
+            <div class="portfolio-profit-label">Rentabilidad</div>
+            <div class="portfolio-profit-value portfolio-profit">
+                {rentabilidad:.1f}%
+            </div>
+            <div class="portfolio-progress">
+                <div
+                    class="portfolio-progress-fill"
+                    style="width:{progreso_rentabilidad:.1f}%;">
+                </div>
+            </div>
+        </div>
+
+        <div class="portfolio-profit-block target">
+            <div class="portfolio-profit-label">Objetivo</div>
+            <div class="portfolio-profit-value portfolio-target">
+                35%
+            </div>
+        </div>
+
+    </div>
+
+</div>
+"""
+
+# ============================================================
+# VISTA PROPIEDADES
+# ============================================================
+
+if st.session_state.vista_airbnb == "Propiedades":
+
+    # ========================================================
+    # TARJETAS
+    # ========================================================
+
+    cards_html = '<div class="properties-grid">'
+
+    cards_html += tarjeta_portafolio()
+
+    for _, row in resumen.iterrows():
+
+        cards_html += tarjeta_propiedad(row)
+
+    cards_html += "</div>"
+
+    cards_html = "\n".join(
+        linea.strip()
+        for linea in cards_html.splitlines()
+    )
+
+    st.markdown(
+        cards_html,
+        unsafe_allow_html=True
+    )
+
+    # ========================================================
+    # TABLA DE ANÁLISIS DE INVERSIÓN
+    # ========================================================
+
+    tabla = inversiones.rename(
+        columns={
+            "Activo_Proyecto": "Nombre_Propiedad"
+        }
+    ).copy()
+
+    # Estado del activo
+    tabla["Estado"] = tabla["Nombre_Propiedad"].apply(
+        lambda x: "En desarrollo"
+        if str(x).strip().lower() == "iwani"
+        else "Operando"
+    )
+
+    # Filtros actuales
+    if propiedad != "Todas":
+        tabla = tabla[
+            tabla["Nombre_Propiedad"] == propiedad
+        ]
+
+    if ciudad != "Todas":
+        tabla = tabla[
+            tabla["Ciudad"] == ciudad
+        ]
+
+    # ========================================================
+    # HISTÓRICO FINANCIERO DESDE EL INICIO DE OPERACIÓN
+    # ========================================================
+    # La primera fecha registrada en los movimientos Airbnb
+    # se toma como inicio de operación de cada propiedad.
+    historico = (
+        df
+        .groupby("Nombre_Propiedad", as_index=False)
+        .agg(
+            Fecha_Inicio=("Fecha", "min"),
+            Ingresos_Historicos=("Ingreso", "sum"),
+            Gastos_Historicos=("Gasto", "sum")
+        )
+    )
+
+    historico["Flujo_Historico"] = (
+        historico["Ingresos_Historicos"]
+        - historico["Gastos_Historicos"]
+    )
+
+    hoy_ts = pd.Timestamp(hoy)
+    historico["Meses_Operados"] = (
+        (hoy_ts - historico["Fecha_Inicio"]).dt.days
+        / 30.4375
+    ).clip(lower=1)
+
+    historico["Ingreso_Mensual_Promedio"] = (
+        historico["Ingresos_Historicos"]
+        / historico["Meses_Operados"]
+    )
+
+    historico["Flujo_Mensual_Promedio"] = (
+        historico["Flujo_Historico"]
+        / historico["Meses_Operados"]
+    )
+
+    historico["Flujo_Anualizado"] = (
+        historico["Flujo_Mensual_Promedio"] * 12
+    )
+
+    historico = historico.merge(
+        inversiones[["Activo_Proyecto", "Inversion"]],
+        left_on="Nombre_Propiedad",
+        right_on="Activo_Proyecto",
+        how="left"
+    ).drop(columns=["Activo_Proyecto"])
+
+    historico["ROI_Acumulado"] = (
+        historico["Flujo_Historico"]
+        / historico["Inversion"]
+        * 100
+    ).replace([float("inf"), -float("inf")], pd.NA)
+
+    historico["Yield_Anualizado"] = (
+        historico["Flujo_Anualizado"]
+        / historico["Inversion"]
+        * 100
+    ).replace([float("inf"), -float("inf")], pd.NA)
+
+    historico["Payback_Anios"] = (
+        historico["Inversion"]
+        / historico["Flujo_Anualizado"]
+    ).where(historico["Flujo_Anualizado"] > 0)
+
+    tabla = tabla.drop(
+        columns=[
+            "Ingresos", "Gastos", "Flujo", "Rentabilidad",
+            "Ocupacion", "Reservas", "Noches_Reservadas"
+        ],
+        errors="ignore"
+    )
+
+    tabla = tabla.merge(
+        historico[
+            [
+                "Nombre_Propiedad",
+                "Fecha_Inicio",
+                "Ingresos_Historicos",
+                "Gastos_Historicos",
+                "Flujo_Historico",
+                "Meses_Operados",
+                "Ingreso_Mensual_Promedio",
+                "Flujo_Mensual_Promedio",
+                "Flujo_Anualizado",
+                "ROI_Acumulado",
+                "Yield_Anualizado",
+                "Payback_Anios"
+            ]
+        ],
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    # Orden visual igual al portafolio
+    orden_tabla = {
+        "Torre Acqua": 1,
+        "Torre Evoca": 2,
+        "Torre Ventto": 3,
+        "Lotus": 4,
+        "Santa Marina": 5,
+        "Base Loft": 6,
+        "Tempus 49": 7,
+        "Iwani": 8
+    }
+
+    tabla["Orden"] = (
+        tabla["Nombre_Propiedad"]
+        .map(orden_tabla)
+        .fillna(99)
+    )
+
+    tabla = (
+        tabla
+        .sort_values("Orden")
+        .drop(columns=["Orden"])
+        .reset_index(drop=True)
+    )
+
+    def valor_tabla(valor):
+        if pd.isna(valor):
+            return "—"
+        return dinero_corto(valor)
+
+    def porcentaje_tabla(valor):
+        if pd.isna(valor):
+            return "—"
+        return f'{float(valor):.1f}%'
+
+    html_tabla = """
 <div class="investment-panel">
 
 <div class="investment-title">
@@ -2114,7 +2143,7 @@ html_tabla = """
 </div>
 
 <div class="investment-subtitle">
-Inversión acumulada por activo y desempeño del período seleccionado
+Desempeño histórico desde el inicio de operación · inversión de bolsillo
 </div>
 
 <table class="investment-table">
@@ -2124,71 +2153,58 @@ Inversión acumulada por activo y desempeño del período seleccionado
 <th>Propiedad</th>
 <th>Estado</th>
 <th>Inversión</th>
-<th>Ingresos</th>
-<th>Gastos</th>
-<th>Flujo</th>
-<th>Rentabilidad</th>
-<th>Ocupación</th>
-<th>Reservas</th>
-<th>Noches</th>
+<th>Ingresos hist.</th>
+<th>Gastos hist.</th>
+<th>Flujo hist.</th>
+<th>ROI acum.</th>
+<th>Ingreso prom./mes</th>
+<th>Flujo prom./mes</th>
+<th>Yield anual</th>
+<th>Payback</th>
 </tr>
 </thead>
 
 <tbody>
 """
 
-for _, row in tabla.iterrows():
+    for _, row in tabla.iterrows():
 
-    nombre = row["Nombre_Propiedad"]
-    estado = row["Estado"]
+        nombre = row["Nombre_Propiedad"]
+        estado = row["Estado"]
 
-    estado_class = (
-        "development"
-        if estado == "En desarrollo"
-        else ""
-    )
-
-    flujo = row["Flujo"]
-
-    if pd.isna(flujo):
-        flujo_html = '<span class="investment-muted">—</span>'
-    elif float(flujo) < 0:
-        flujo_html = (
-            f'<span class="investment-flow-negative">'
-            f'{dinero_corto(flujo)}'
-            f'</span>'
-        )
-    else:
-        flujo_html = (
-            f'<span class="investment-flow-positive">'
-            f'{dinero_corto(flujo)}'
-            f'</span>'
+        estado_class = (
+            "development"
+            if estado == "En desarrollo"
+            else ""
         )
 
-    if pd.isna(row["Rentabilidad"]):
-        rent_html = '<span class="investment-muted">—</span>'
-    else:
-        rent_html = f'{float(row["Rentabilidad"]):.1f}%'
+        flujo = row["Flujo_Historico"]
 
-    if pd.isna(row["Ocupacion"]):
-        ocup_html = '<span class="investment-muted">—</span>'
-    else:
-        ocup_html = f'{float(row["Ocupacion"]):.1f}%'
+        if pd.isna(flujo):
+            flujo_html = '<span class="investment-muted">—</span>'
+        elif float(flujo) < 0:
+            flujo_html = (
+                f'<span class="investment-flow-negative">'
+                f'{dinero_corto(flujo)}'
+                f'</span>'
+            )
+        else:
+            flujo_html = (
+                f'<span class="investment-flow-positive">'
+                f'{dinero_corto(flujo)}'
+                f'</span>'
+            )
 
-    reservas_html = (
-        "—"
-        if pd.isna(row["Reservas"])
-        else f'{int(row["Reservas"])}'
-    )
+        roi_html = porcentaje_tabla(row["ROI_Acumulado"])
+        yield_html = porcentaje_tabla(row["Yield_Anualizado"])
 
-    noches_html = (
-        "—"
-        if pd.isna(row["Noches_Reservadas"])
-        else f'{int(row["Noches_Reservadas"])}'
-    )
+        payback_html = (
+            "—"
+            if pd.isna(row["Payback_Anios"])
+            else f'{float(row["Payback_Anios"]):.1f} años'
+        )
 
-    html_tabla += f"""
-
+        html_tabla += f"""
 <tr>
 
 <td>{nombre}</td>
@@ -2205,49 +2221,47 @@ for _, row in tabla.iterrows():
 </span>
 </td>
 
-<td>{valor_tabla(row["Ingresos"])}</td>
+<td>{valor_tabla(row["Ingresos_Historicos"])}</td>
 
-<td>{valor_tabla(row["Gastos"])}</td>
+<td>{valor_tabla(row["Gastos_Historicos"])}</td>
 
 <td>{flujo_html}</td>
 
-<td>{rent_html}</td>
+<td>{roi_html}</td>
 
-<td>{ocup_html}</td>
+<td>{valor_tabla(row["Ingreso_Mensual_Promedio"])}</td>
 
-<td>{reservas_html}</td>
+<td>{valor_tabla(row["Flujo_Mensual_Promedio"])}</td>
 
-<td>{noches_html}</td>
+<td>{yield_html}</td>
+
+<td>{payback_html}</td>
 
 </tr>
 """
 
-html_tabla += """
-
+    html_tabla += """
 </tbody>
 </table>
 
 </div>
 """
 
-st.markdown(
-    html_tabla,
-    unsafe_allow_html=True
-)
+    st.markdown(
+        html_tabla,
+        unsafe_allow_html=True
+    )
 
 
 
-============================================================
-
-VISTA FINANCIERO
-
-============================================================
+# ============================================================
+# VISTA FINANCIERO
+# ============================================================
 
 elif st.session_state.vista_airbnb == "Financiero":
 
-st.markdown(
-    """
-
+    st.markdown(
+        """
 <div class="section-title">
 💰 Financiero
 </div>
@@ -2259,128 +2273,127 @@ Evolución mensual de ingresos, gastos y flujo durante 2026.
         unsafe_allow_html=True
     )
 
-financiero = df[
-    (df["Fecha"] >= inicio_anio)
-    &
-    (df["Fecha"] < fin_hoy)
-].copy()
+
+    financiero = df[
+        (df["Fecha"] >= inicio_anio)
+        &
+        (df["Fecha"] < fin_hoy)
+    ].copy()
 
 
-financiero["Mes_Num"] = (
-    financiero["Fecha"].dt.month
-)
-
-financiero["Mes"] = (
-    financiero["Fecha"]
-    .dt.strftime("%b")
-)
-
-
-mensual_fin = (
-    financiero
-    .groupby(
-        [
-            "Mes_Num",
-            "Mes"
-        ],
-        as_index=False
+    financiero["Mes_Num"] = (
+        financiero["Fecha"].dt.month
     )
-    .agg(
-        Ingresos=(
-            "Ingreso",
-            "sum"
+
+    financiero["Mes"] = (
+        financiero["Fecha"]
+        .dt.strftime("%b")
+    )
+
+
+    mensual_fin = (
+        financiero
+        .groupby(
+            [
+                "Mes_Num",
+                "Mes"
+            ],
+            as_index=False
+        )
+        .agg(
+            Ingresos=(
+                "Ingreso",
+                "sum"
+            ),
+            Gastos=(
+                "Gasto",
+                "sum"
+            )
+        )
+        .sort_values("Mes_Num")
+    )
+
+
+    mensual_fin["Flujo"] = (
+        mensual_fin["Ingresos"]
+        -
+        mensual_fin["Gastos"]
+    )
+
+
+    fig_fin = go.Figure()
+
+
+    fig_fin.add_trace(
+        go.Bar(
+            x=mensual_fin["Mes"],
+            y=mensual_fin["Ingresos"],
+            name="Ingresos",
+            marker_color="#27B68D"
+        )
+    )
+
+
+    fig_fin.add_trace(
+        go.Bar(
+            x=mensual_fin["Mes"],
+            y=mensual_fin["Gastos"],
+            name="Gastos",
+            marker_color="#EF4338"
+        )
+    )
+
+
+    fig_fin.add_trace(
+        go.Scatter(
+            x=mensual_fin["Mes"],
+            y=mensual_fin["Flujo"],
+            name="Flujo",
+            mode="lines+markers",
+            line=dict(
+                color="#17345E",
+                width=3
+            )
+        )
+    )
+
+
+    fig_fin.update_layout(
+        height=470,
+        barmode="group",
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        margin=dict(
+            l=50,
+            r=30,
+            t=40,
+            b=40
         ),
-        Gastos=(
-            "Gasto",
-            "sum"
+        yaxis=dict(
+            tickprefix="$",
+            tickformat=",.0f",
+            gridcolor="#E9EEF3"
+        ),
+        xaxis=dict(
+            showgrid=False
         )
     )
-    .sort_values("Mes_Num")
-)
 
 
-mensual_fin["Flujo"] = (
-    mensual_fin["Ingresos"]
-    -
-    mensual_fin["Gastos"]
-)
-
-
-fig_fin = go.Figure()
-
-
-fig_fin.add_trace(
-    go.Bar(
-        x=mensual_fin["Mes"],
-        y=mensual_fin["Ingresos"],
-        name="Ingresos",
-        marker_color="#27B68D"
+    st.plotly_chart(
+        fig_fin,
+        use_container_width=True
     )
-)
 
 
-fig_fin.add_trace(
-    go.Bar(
-        x=mensual_fin["Mes"],
-        y=mensual_fin["Gastos"],
-        name="Gastos",
-        marker_color="#EF4338"
-    )
-)
-
-
-fig_fin.add_trace(
-    go.Scatter(
-        x=mensual_fin["Mes"],
-        y=mensual_fin["Flujo"],
-        name="Flujo",
-        mode="lines+markers",
-        line=dict(
-            color="#17345E",
-            width=3
-        )
-    )
-)
-
-
-fig_fin.update_layout(
-    height=470,
-    barmode="group",
-    plot_bgcolor="white",
-    paper_bgcolor="white",
-    margin=dict(
-        l=50,
-        r=30,
-        t=40,
-        b=40
-    ),
-    yaxis=dict(
-        tickprefix="$",
-        tickformat=",.0f",
-        gridcolor="#E9EEF3"
-    ),
-    xaxis=dict(
-        showgrid=False
-    )
-)
-
-
-st.plotly_chart(
-    fig_fin,
-    use_container_width=True
-)
-
-============================================================
-
-VISTA OCUPACIÓN
-
-============================================================
+# ============================================================
+# VISTA OCUPACIÓN
+# ============================================================
 
 elif st.session_state.vista_airbnb == "Ocupación":
 
-st.markdown(
-    """
-
+    st.markdown(
+        """
 <div class="section-title">
 📊 Ocupación Airbnb
 </div>
@@ -2392,69 +2405,69 @@ Reservas y noches ocupadas durante el período seleccionado.
         unsafe_allow_html=True
     )
 
-try:
 
-    ocupacion = cargar_reservas(
-        fecha_inicio,
-        fecha_fin
-    )
+    try:
 
-except Exception:
+        ocupacion = cargar_reservas(
+            fecha_inicio,
+            fecha_fin
+        )
 
-    ocupacion = pd.DataFrame()
+    except Exception:
 
-
-if ocupacion.empty:
-
-    st.info(
-        "No hay reservas para el período seleccionado."
-    )
-
-else:
-
-    ocupacion["Ocupacion"] = (
-        ocupacion["Noches_Reservadas"]
-        /
-        ocupacion["Noches_Disponibles"]
-        *
-        100
-    )
+        ocupacion = pd.DataFrame()
 
 
-    total_reservas = (
-        ocupacion["Reservas"].sum()
-    )
+    if ocupacion.empty:
 
-    total_noches = (
-        ocupacion["Noches_Reservadas"].sum()
-    )
+        st.info(
+            "No hay reservas para el período seleccionado."
+        )
 
-    total_disponibles = (
-        ocupacion["Noches_Disponibles"].sum()
-    )
+    else:
 
-    ocupacion_total = (
-        total_noches
-        /
-        total_disponibles
-        *
-        100
-        if total_disponibles
-        else 0
-    )
+        ocupacion["Ocupacion"] = (
+            ocupacion["Noches_Reservadas"]
+            /
+            ocupacion["Noches_Disponibles"]
+            *
+            100
+        )
 
 
-    a, b, c = st.columns(
-        3,
-        gap="small"
-    )
+        total_reservas = (
+            ocupacion["Reservas"].sum()
+        )
+
+        total_noches = (
+            ocupacion["Noches_Reservadas"].sum()
+        )
+
+        total_disponibles = (
+            ocupacion["Noches_Disponibles"].sum()
+        )
+
+        ocupacion_total = (
+            total_noches
+            /
+            total_disponibles
+            *
+            100
+            if total_disponibles
+            else 0
+        )
 
 
-    with a:
+        a, b, c = st.columns(
+            3,
+            gap="small"
+        )
 
-        st.markdown(
-            f"""
 
+        with a:
+
+            st.markdown(
+                f"""
 <div class="kpi-card">
 
 <div class="kpi-label">
@@ -2476,11 +2489,11 @@ Noches ocupadas / disponibles
                 unsafe_allow_html=True
             )
 
-    with b:
 
-        st.markdown(
-            f"""
+        with b:
 
+            st.markdown(
+                f"""
 <div class="kpi-card">
 
 <div class="kpi-label">
@@ -2500,11 +2513,11 @@ Período seleccionado
                 unsafe_allow_html=True
             )
 
-    with c:
 
-        st.markdown(
-            f"""
+        with c:
 
+            st.markdown(
+                f"""
 <div class="kpi-card">
 
 <div class="kpi-label">
@@ -2524,25 +2537,25 @@ De {int(total_disponibles)} disponibles
                 unsafe_allow_html=True
             )
 
-    # ====================================================
-    # TARJETAS DE OCUPACIÓN
-    # ====================================================
 
-    cards_html = '<div class="properties-grid">'
+        # ====================================================
+        # TARJETAS DE OCUPACIÓN
+        # ====================================================
 
-    for _, row in ocupacion.iterrows():
+        cards_html = '<div class="properties-grid">'
 
-        porcentaje = float(
-            row["Ocupacion"]
-        )
+        for _, row in ocupacion.iterrows():
 
-        progress = min(
-            max(porcentaje, 0),
-            100
-        )
+            porcentaje = float(
+                row["Ocupacion"]
+            )
 
-        cards_html += f"""
+            progress = min(
+                max(porcentaje, 0),
+                100
+            )
 
+            cards_html += f"""
 <div class="property-card">
 
 <div class="property-header">
@@ -2647,9 +2660,9 @@ Reservas
 </div>
 """
 
-    cards_html += "</div>"
+        cards_html += "</div>"
 
-    st.markdown(
-        cards_html,
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            cards_html,
+            unsafe_allow_html=True
+        )
