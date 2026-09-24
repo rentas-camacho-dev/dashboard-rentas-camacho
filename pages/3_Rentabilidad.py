@@ -38,7 +38,7 @@ st.markdown("""
     max-width: 1500px !important;
 
     /* Espacio compacto alrededor de la barra superior */
-    padding-top: 0.80rem !important;
+    padding-top: 0.35rem !important;
     padding-bottom: 0.50rem !important;
     padding-left: 3rem !important;
     padding-right: 3rem !important;
@@ -1904,21 +1904,7 @@ def tarjeta_portafolio():
 
     return f"""
 <div class="portfolio-card">
-    <div class="portfolio-watermark-circle">
-        <img
-            src="{logo_data}"
-            alt=""
-        >
-    </div>
-
     <div class="portfolio-title">
-
-    <div class="portfolio-icon">
-        <img
-            src="{logo_data}"
-            alt="Rentas Camacho"
-        >
-    </div>
 
         <div>
             Portafolio
