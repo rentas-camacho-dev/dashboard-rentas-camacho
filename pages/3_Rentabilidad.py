@@ -344,7 +344,7 @@ div.stButton > button:hover {
     border: 1px solid #C9D9E8;
     border-radius:   12px;
     padding:   8px;
-    height:   190px;
+    height:   165px;
     box-sizing: border-box;
     box-shadow: 0 3px 12px rgba(24,52,94,.035);
 }
@@ -561,7 +561,7 @@ div.stButton > button:hover {
     border: 1.5px solid #FF9FB2;
     border-radius:   12px;
     padding:   8px;
-    height:   190px;
+    height:   165px;
     box-sizing: border-box;
     color: #17345E;
     box-shadow: 0 5px 18px rgba(255, 91, 119, .10);
@@ -1720,8 +1720,8 @@ def tarjeta_propiedad(row):
         else:
 
             detalle = (
-                f"{int(reservas)} reservas · "
-                f"{int(noches)} noches"
+                f"{int(reservas)} R · "
+                f"{int(noches)} N"
             )
 
     ciudad = str(row["Ciudad"]).strip().lower()
