@@ -334,17 +334,17 @@ div.stButton > button:hover {
 
 .properties-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 13px;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap:  9px;
     margin-top: 0;
 }
 
 .property-card {
     background: #FFFFFF;
     border: 1px solid #C9D9E8;
-    border-radius: 17px;
-    padding: 15px;
-    height: 270px;
+    border-radius:  14px;
+    padding:  10px;
+    height:  218px;
     box-sizing: border-box;
     box-shadow: 0 3px 12px rgba(24,52,94,.035);
 }
@@ -367,27 +367,27 @@ div.stButton > button:hover {
 }
 
 .property-header {
-    height: 46px;
+    height:  36px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
 
 .property-name {
-    font-size: 18px;
+    font-size:  14px;
     font-weight: 850;
     color: #17345E;
     line-height: 1.1;
 }
 
 .property-city {
-    font-size: 10px;
+    font-size:  8px;
     color: #8290A4;
     margin-top: 5px;
 }
 
 .property-income-main {
-    font-size: 29px;
+    font-size:  23px;
     font-weight: 900;
     color: #009B70;
     line-height: 1;
@@ -395,7 +395,7 @@ div.stButton > button:hover {
 }
 
 .property-income-label {
-    font-size: 9px;
+    font-size:  7px;
     color: #8290A4;
     margin-top: 5px;
 }
@@ -403,30 +403,30 @@ div.stButton > button:hover {
 .metrics-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 8px;
+    gap:  5px;
+    margin-top:  6px;
 }
 
 .metric-box {
     background: transparent;
     border-radius: 9px;
     padding: 0;
-    height: 43px;
+    height:  36px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap:  4px;
 }
 
 .metric-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width:  27px;
+    height:  27px;
+    border-radius:  8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 17px;
+    font-size:  13px;
     border: 1px solid #E3EAF1;
     background: #FAFCFE;
 }
@@ -446,12 +446,12 @@ div.stButton > button:hover {
 }
 
 .metric-label {
-    font-size: 9px;
+    font-size:  7px;
     color: #71839A;
 }
 
 .metric-value {
-    font-size: 16px;
+    font-size:  12px;
     font-weight: 850;
     margin-top: 3px;
     white-space: nowrap;
@@ -472,14 +472,14 @@ div.stButton > button:hover {
 .property-divider {
     height: 1px;
     background: #E2E9F0;
-    margin-top: 7px;
+    margin-top:  5px;
 }
 
 .property-bottom {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    margin-top: 7px;
+    gap:  7px;
+    margin-top:  5px;
 }
 
 .property-bottom-block {
@@ -488,16 +488,16 @@ div.stButton > button:hover {
 
 .property-bottom-block.occupancy {
     border-left: 1px solid #E2E9F0;
-    padding-left: 18px;
+    padding-left:  7px;
 }
 
 .profit-label {
-    font-size: 9px;
+    font-size:  7px;
     color: #71839A;
 }
 
 .profit-number {
-    font-size: 19px;
+    font-size:  15px;
     font-weight: 900;
     margin-top: 4px;
     line-height: 1;
@@ -513,10 +513,10 @@ div.stButton > button:hover {
 
 .progress {
     width: 100%;
-    height: 7px;
+    height:  5px;
     background: #E7EDF1;
     border-radius: 7px;
-    margin-top: 7px;
+    margin-top:  5px;
     overflow: hidden;
 }
 
@@ -531,12 +531,12 @@ div.stButton > button:hover {
 }
 
 .occupancy-label {
-    font-size: 9px;
+    font-size:  7px;
     color: #71839A;
 }
 
 .occupancy-value {
-    font-size: 19px;
+    font-size:  15px;
     font-weight: 900;
     color: #6954E6;
     margin-top: 4px;
@@ -544,7 +544,7 @@ div.stButton > button:hover {
 }
 
 .occupancy-detail {
-    font-size: 8px;
+    font-size:  7px;
     color: #8290A4;
     margin-top: 6px;
     white-space: nowrap;
@@ -559,9 +559,9 @@ div.stButton > button:hover {
     overflow: hidden;
     background: #FFF1F4;
     border: 1.5px solid #FF9FB2;
-    border-radius: 18px;
-    padding: 17px;
-    height: 270px;
+    border-radius:  14px;
+    padding:  10px;
+    height:  218px;
     box-sizing: border-box;
     color: #17345E;
     box-shadow: 0 5px 18px rgba(255, 91, 119, .10);
@@ -578,14 +578,14 @@ div.stButton > button:hover {
 }
 
 .portfolio-title {
-    font-size: 22px;
+    font-size:  16px;
     font-weight: 850;
     color: #17345E;
     line-height: 1;
 }
 
 .portfolio-main {
-    font-size: 39px;
+    font-size:  29px;
     font-weight: 900;
     color: #17345E;
     margin-top: 12px;
@@ -593,32 +593,32 @@ div.stButton > button:hover {
 }
 
 .portfolio-main-label {
-    font-size: 10px;
+    font-size:  7px;
     color: #71839A;
-    margin-top: 7px;
+    margin-top:  5px;
 }
 
 .portfolio-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 8px;
+    gap:  5px;
+    margin-top:  6px;
 }
 
 .portfolio-metric {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap:  4px;
 }
 
 .portfolio-metric-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 11px;
+    width:  27px;
+    height:  27px;
+    border-radius:  8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 19px;
+    font-size:  13px;
     flex-shrink: 0;
 }
 
@@ -633,12 +633,12 @@ div.stButton > button:hover {
 }
 
 .portfolio-mini-label {
-    font-size: 10px;
+    font-size:  7px;
     color: #71839A;
 }
 
 .portfolio-mini-value {
-    font-size: 19px;
+    font-size:  13px;
     font-weight: 850;
     color: #17345E;
     margin-top: 3px;
@@ -648,13 +648,13 @@ div.stButton > button:hover {
 .portfolio-divider {
     height: 1px;
     background: #E3E8ED;
-    margin-top: 7px;
+    margin-top:  5px;
 }
 
 .portfolio-profit-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap:  7px;
     margin-top: 7px;
 }
 
@@ -664,16 +664,16 @@ div.stButton > button:hover {
 
 .portfolio-profit-block.target {
     border-left: 1px solid #E3E8ED;
-    padding-left: 20px;
+    padding-left:  7px;
 }
 
 .portfolio-profit-label {
-    font-size: 10px;
+    font-size:  7px;
     color: #71839A;
 }
 
 .portfolio-profit-value {
-    font-size: 25px;
+    font-size:  18px;
     font-weight: 900;
     margin-top: 5px;
     line-height: 1;
@@ -689,11 +689,11 @@ div.stButton > button:hover {
 
 .portfolio-progress {
     width: 100%;
-    height: 7px;
+    height:  5px;
     background: #E7EDF1;
     border-radius: 8px;
     overflow: hidden;
-    margin-top: 8px;
+    margin-top:  5px;
 }
 
 .portfolio-progress-fill {
@@ -781,7 +781,7 @@ div.stButton > button:hover {
     }
 
     .properties-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
