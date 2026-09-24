@@ -882,6 +882,7 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {
     margin-bottom: -10px !important;
     box-sizing: border-box !important;
     align-items: center !important;
+    top: 6px !important;
 }
 
 </style>
