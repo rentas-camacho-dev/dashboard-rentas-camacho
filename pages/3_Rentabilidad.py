@@ -1640,7 +1640,7 @@ def tarjeta_propiedad(row):
     rent = float(row["Rentabilidad"])
     good = rent >= 35
 
-    progress = min(max(rent, 0), 100)
+    progress = min(max(abs(rent) if rent < 0 else rent, 0), 100)
 
     ocup = row.get("Ocupacion", None)
     reservas = row.get("Reservas", None)
