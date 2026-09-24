@@ -878,6 +878,7 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {
     min-height: 78px !important;
     height: 78px !important;
     padding: 5px 10px !important;
+    margin-top: 6px !important;
     margin-bottom: -10px !important;
     box-sizing: border-box !important;
     align-items: center !important;
