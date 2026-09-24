@@ -368,14 +368,14 @@ div.stButton > button:hover {
 }
 
 .property-header {
-    height: 32px;
+    height: 30px;
     display: flex;
     align-items: flex-start;
 }
 
 .property-name {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 800;
     color: #FFFFFF;
     line-height: 1.05;
     white-space: nowrap;
@@ -389,8 +389,8 @@ div.stButton > button:hover {
 }
 
 .property-income-main {
-    font-size: 23px;
-    font-weight: 800;
+    font-size: 22px;
+    font-weight: 400;
     color: #FFFFFF;
     line-height: 1;
     margin-top: 2px;
@@ -404,8 +404,8 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0;
-    margin-top: 9px;
-    padding-top: 7px;
+    margin-top: 7px;
+    padding-top: 6px;
     border-top: 1px solid rgba(255,255,255,.20);
 }
 
@@ -413,7 +413,7 @@ div.stButton > button:hover {
     background: transparent;
     border-radius: 0;
     padding: 0;
-    height: 30px;
+    height: 28px;
     box-sizing: border-box;
     display: block;
 }
@@ -433,15 +433,15 @@ div.stButton > button:hover {
 
 .metric-label {
     font-size: 7.5px;
-    font-weight: 400;
+    font-weight: 700;
     color: rgba(255,255,255,.76);
     line-height: 1;
 }
 
 .metric-value {
     font-size: 12px;
-    font-weight: 600;
-    margin-top: 4px;
+    font-weight: 400;
+    margin-top: 3px;
     white-space: nowrap;
     line-height: 1;
 }
@@ -459,8 +459,8 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0;
-    margin-top: 3px;
-    padding-top: 6px;
+    margin-top: 2px;
+    padding-top: 5px;
     border-top: 1px solid rgba(255,255,255,.20);
 }
 
@@ -476,14 +476,14 @@ div.stButton > button:hover {
 .profit-label,
 .occupancy-label {
     font-size: 7.5px;
-    font-weight: 400;
+    font-weight: 700;
     color: rgba(255,255,255,.76);
 }
 
 .profit-number {
     font-size: 14px;
-    font-weight: 750;
-    margin-top: 3px;
+    font-weight: 400;
+    margin-top: 2px;
     line-height: 1;
 }
 
@@ -497,7 +497,7 @@ div.stButton > button:hover {
     height: 4px;
     background: rgba(255,255,255,.28);
     border-radius: 7px;
-    margin-top: 4px;
+    margin-top: 3px;
     overflow: hidden;
 }
 
@@ -513,9 +513,9 @@ div.stButton > button:hover {
 
 .occupancy-value {
     font-size: 14px;
-    font-weight: 750;
+    font-weight: 400;
     color: #FFFFFF;
-    margin-top: 3px;
+    margin-top: 2px;
     line-height: 1;
 }
 
@@ -556,16 +556,16 @@ div.stButton > button:hover {
 
 .portfolio-title {
     font-size: 15px;
-    font-weight: 750;
+    font-weight: 800;
     color: #FFFFFF;
     line-height: 1;
 }
 
 .portfolio-main {
-    font-size: 27px;
-    font-weight: 850;
+    font-size: 26px;
+    font-weight: 400;
     color: #FFFFFF;
-    margin-top: 13px;
+    margin-top: 11px;
     line-height: 1;
 }
 
@@ -577,8 +577,8 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0;
-    margin-top: 9px;
-    padding-top: 7px;
+    margin-top: 7px;
+    padding-top: 6px;
     border-top: 1px solid rgba(255,255,255,.20);
 }
 
@@ -597,13 +597,13 @@ div.stButton > button:hover {
 
 .portfolio-mini-label {
     font-size: 7.5px;
-    font-weight: 400;
+    font-weight: 700;
     color: rgba(255,255,255,.76);
 }
 
 .portfolio-mini-value {
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 400;
     color: #FFFFFF;
     margin-top: 4px;
     line-height: 1;
@@ -617,8 +617,8 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0;
-    margin-top: 3px;
-    padding-top: 6px;
+    margin-top: 2px;
+    padding-top: 5px;
     border-top: 1px solid rgba(255,255,255,.20);
 }
 
@@ -633,14 +633,14 @@ div.stButton > button:hover {
 
 .portfolio-profit-label {
     font-size: 7.5px;
-    font-weight: 400;
+    font-weight: 700;
     color: rgba(255,255,255,.76);
 }
 
 .portfolio-profit-value {
     font-size: 15px;
-    font-weight: 800;
-    margin-top: 3px;
+    font-weight: 400;
+    margin-top: 2px;
     line-height: 1;
 }
 
