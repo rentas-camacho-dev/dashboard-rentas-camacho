@@ -1760,9 +1760,7 @@ def tarjeta_propiedad(row):
         {dinero_corto(row["Ingresos"])}
     </div>
 
-    <div class="property-income-label">
-        Ingresos del período
-    </div>
+    <div class="property-income-label"></div>
 
     <div class="metrics-grid">
 
@@ -1836,7 +1834,7 @@ def tarjeta_propiedad(row):
         <div class="property-bottom-block occupancy">
 
             <div class="occupancy-label">
-                Ocupación Airbnb
+                Ocup. %
             </div>
 
             <div class="occupancy-value">
@@ -1879,9 +1877,7 @@ def tarjeta_portafolio():
         {dinero_corto(ingresos)}
     </div>
 
-    <div class="portfolio-main-label">
-        Ingresos del período
-    </div>
+    <div class="portfolio-main-label"></div>
 
     <div class="portfolio-metrics">
 
