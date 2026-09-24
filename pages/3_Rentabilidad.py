@@ -330,7 +330,7 @@ div.stButton > button:hover {
 
 /* ============================================================
    TARJETAS DEL PORTAFOLIO / PROPIEDADES
-   Diseño compacto tipo dashboard
+   Diseño compacto — contenido ajustado a 165px
 ============================================================ */
 
 .properties-grid {
@@ -346,7 +346,7 @@ div.stButton > button:hover {
     overflow: hidden;
     border: none;
     border-radius: 10px;
-    padding: 12px 10px 10px;
+    padding: 10px 10px 8px;
     height: 165px;
     box-sizing: border-box;
     color: #FFFFFF;
@@ -368,31 +368,32 @@ div.stButton > button:hover {
 }
 
 .property-header {
-    height: 38px;
+    height: 32px;
     display: flex;
     align-items: flex-start;
 }
 
 .property-name {
-    font-size: 14px;
-    font-weight: 850;
+    font-size: 13px;
+    font-weight: 700;
     color: #FFFFFF;
     line-height: 1.05;
     white-space: nowrap;
 }
 
 .property-city {
-    font-size: 8px;
-    color: rgba(255,255,255,.88);
-    margin-top: 5px;
+    font-size: 7.5px;
+    font-weight: 400;
+    color: rgba(255,255,255,.86);
+    margin-top: 3px;
 }
 
 .property-income-main {
-    font-size: 25px;
-    font-weight: 900;
+    font-size: 23px;
+    font-weight: 800;
     color: #FFFFFF;
     line-height: 1;
-    margin-top: 4px;
+    margin-top: 2px;
 }
 
 .property-income-label {
@@ -403,8 +404,8 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0;
-    margin-top: 14px;
-    padding-top: 9px;
+    margin-top: 9px;
+    padding-top: 7px;
     border-top: 1px solid rgba(255,255,255,.20);
 }
 
@@ -412,14 +413,14 @@ div.stButton > button:hover {
     background: transparent;
     border-radius: 0;
     padding: 0;
-    height: 34px;
+    height: 30px;
     box-sizing: border-box;
     display: block;
 }
 
 .metric-box + .metric-box {
     border-left: 1px solid rgba(255,255,255,.20);
-    padding-left: 10px;
+    padding-left: 9px;
 }
 
 .metric-icon {
@@ -431,14 +432,15 @@ div.stButton > button:hover {
 }
 
 .metric-label {
-    font-size: 8px;
-    color: rgba(255,255,255,.82);
+    font-size: 7.5px;
+    font-weight: 400;
+    color: rgba(255,255,255,.76);
     line-height: 1;
 }
 
 .metric-value {
-    font-size: 13px;
-    font-weight: 850;
+    font-size: 12px;
+    font-weight: 600;
     margin-top: 4px;
     white-space: nowrap;
     line-height: 1;
@@ -457,8 +459,8 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0;
-    margin-top: 5px;
-    padding-top: 8px;
+    margin-top: 3px;
+    padding-top: 6px;
     border-top: 1px solid rgba(255,255,255,.20);
 }
 
@@ -468,19 +470,20 @@ div.stButton > button:hover {
 
 .property-bottom-block.occupancy {
     border-left: 1px solid rgba(255,255,255,.20);
-    padding-left: 10px;
+    padding-left: 9px;
 }
 
 .profit-label,
 .occupancy-label {
-    font-size: 8px;
-    color: rgba(255,255,255,.82);
+    font-size: 7.5px;
+    font-weight: 400;
+    color: rgba(255,255,255,.76);
 }
 
 .profit-number {
-    font-size: 15px;
-    font-weight: 900;
-    margin-top: 4px;
+    font-size: 14px;
+    font-weight: 750;
+    margin-top: 3px;
     line-height: 1;
 }
 
@@ -491,10 +494,10 @@ div.stButton > button:hover {
 
 .progress {
     width: 100%;
-    height: 5px;
-    background: rgba(255,255,255,.30);
+    height: 4px;
+    background: rgba(255,255,255,.28);
     border-radius: 7px;
-    margin-top: 5px;
+    margin-top: 4px;
     overflow: hidden;
 }
 
@@ -509,17 +512,18 @@ div.stButton > button:hover {
 }
 
 .occupancy-value {
-    font-size: 15px;
-    font-weight: 900;
+    font-size: 14px;
+    font-weight: 750;
     color: #FFFFFF;
-    margin-top: 4px;
+    margin-top: 3px;
     line-height: 1;
 }
 
 .occupancy-detail {
-    font-size: 8px;
-    color: rgba(255,255,255,.86);
-    margin-top: 6px;
+    font-size: 7.5px;
+    font-weight: 400;
+    color: rgba(255,255,255,.78);
+    margin-top: 4px;
     white-space: nowrap;
 }
 
@@ -533,7 +537,7 @@ div.stButton > button:hover {
     background: linear-gradient(135deg, #FF3158 0%, #FF3F61 100%);
     border: none;
     border-radius: 10px;
-    padding: 12px 10px 10px;
+    padding: 10px 10px 8px;
     height: 165px;
     box-sizing: border-box;
     color: #FFFFFF;
@@ -551,17 +555,17 @@ div.stButton > button:hover {
 }
 
 .portfolio-title {
-    font-size: 16px;
-    font-weight: 850;
+    font-size: 15px;
+    font-weight: 750;
     color: #FFFFFF;
     line-height: 1;
 }
 
 .portfolio-main {
-    font-size: 29px;
-    font-weight: 900;
+    font-size: 27px;
+    font-weight: 850;
     color: #FFFFFF;
-    margin-top: 15px;
+    margin-top: 13px;
     line-height: 1;
 }
 
@@ -573,8 +577,8 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0;
-    margin-top: 14px;
-    padding-top: 9px;
+    margin-top: 9px;
+    padding-top: 7px;
     border-top: 1px solid rgba(255,255,255,.20);
 }
 
@@ -584,7 +588,7 @@ div.stButton > button:hover {
 
 .portfolio-metric + .portfolio-metric {
     border-left: 1px solid rgba(255,255,255,.20);
-    padding-left: 10px;
+    padding-left: 9px;
 }
 
 .portfolio-metric-icon {
@@ -592,13 +596,14 @@ div.stButton > button:hover {
 }
 
 .portfolio-mini-label {
-    font-size: 8px;
-    color: rgba(255,255,255,.82);
+    font-size: 7.5px;
+    font-weight: 400;
+    color: rgba(255,255,255,.76);
 }
 
 .portfolio-mini-value {
-    font-size: 13px;
-    font-weight: 850;
+    font-size: 12px;
+    font-weight: 600;
     color: #FFFFFF;
     margin-top: 4px;
     line-height: 1;
@@ -612,8 +617,8 @@ div.stButton > button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0;
-    margin-top: 5px;
-    padding-top: 8px;
+    margin-top: 3px;
+    padding-top: 6px;
     border-top: 1px solid rgba(255,255,255,.20);
 }
 
@@ -623,18 +628,19 @@ div.stButton > button:hover {
 
 .portfolio-profit-block.target {
     border-left: 1px solid rgba(255,255,255,.20);
-    padding-left: 10px;
+    padding-left: 9px;
 }
 
 .portfolio-profit-label {
-    font-size: 8px;
-    color: rgba(255,255,255,.82);
+    font-size: 7.5px;
+    font-weight: 400;
+    color: rgba(255,255,255,.76);
 }
 
 .portfolio-profit-value {
-    font-size: 17px;
-    font-weight: 900;
-    margin-top: 5px;
+    font-size: 15px;
+    font-weight: 800;
+    margin-top: 3px;
     line-height: 1;
 }
 
@@ -645,11 +651,11 @@ div.stButton > button:hover {
 
 .portfolio-progress {
     width: 100%;
-    height: 5px;
+    height: 4px;
     background: rgba(255,255,255,.28);
     border-radius: 8px;
     overflow: hidden;
-    margin-top: 5px;
+    margin-top: 4px;
 }
 
 .portfolio-progress-fill {
