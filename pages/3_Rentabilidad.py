@@ -329,7 +329,7 @@ div.stButton > button:hover {
 
 
 /* ============================================================
-   PROPIEDADES
+   PROPIEDADES / EQUIPOS
 ============================================================ */
 
 .properties-grid {
@@ -341,16 +341,29 @@ div.stButton > button:hover {
 
 .property-card {
     background: #FFFFFF;
-    border: 1px solid #DCE5EE;
-    border-radius: 15px;
+    border: 1px solid #C9D9E8;
+    border-radius: 17px;
     padding: 15px;
     height: 270px;
     box-sizing: border-box;
     box-shadow: 0 3px 12px rgba(24,52,94,.035);
 }
 
-.property-card.negative {
-    border-color: #FF7770;
+/* El borde identifica el equipo, sin cambiar el contenido de la tarjeta */
+.property-card.team-bogota {
+    border-color: #9FC4E8;
+}
+
+.property-card.team-costa {
+    border-color: #B7D5E6;
+}
+
+.property-card.team-medellin {
+    border-color: #C5D2E4;
+}
+
+.property-card.team-ibague {
+    border-color: #D2CDE5;
 }
 
 .property-header {
@@ -373,59 +386,74 @@ div.stButton > button:hover {
     margin-top: 5px;
 }
 
-.property-profit {
-    text-align: right;
-}
-
-.property-profit-value {
-    font-size: 19px;
-    font-weight: 850;
-    line-height: 1;
-}
-
-.property-profit-value.good {
+.property-income-main {
+    font-size: 29px;
+    font-weight: 900;
     color: #009B70;
+    line-height: 1;
+    margin-top: 1px;
 }
 
-.property-profit-value.bad {
-    color: #E84235;
-}
-
-.property-profit-label {
-    font-size: 8px;
-    color: #9AA5B4;
+.property-income-label {
+    font-size: 9px;
+    color: #8290A4;
     margin-top: 5px;
 }
 
-
-/* ============================================================
-   MÉTRICAS
-============================================================ */
-
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 7px;
-    margin-top: 10px;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 8px;
 }
 
 .metric-box {
-    background: #F5F7F9;
+    background: transparent;
     border-radius: 9px;
-    padding: 9px;
-    height: 61px;
+    padding: 0;
+    height: 43px;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.metric-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 17px;
+    border: 1px solid #E3EAF1;
+    background: #FAFCFE;
+}
+
+.metric-icon.expense {
+    color: #0878D2;
+    background: #F7FAFE;
+}
+
+.metric-icon.flow {
+    color: #F2A900;
+    background: #FFF9E8;
+}
+
+.metric-content {
+    min-width: 0;
 }
 
 .metric-label {
-    font-size: 8px;
-    color: #8290A4;
+    font-size: 9px;
+    color: #71839A;
 }
 
 .metric-value {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 850;
-    margin-top: 6px;
+    margin-top: 3px;
     white-space: nowrap;
 }
 
@@ -441,29 +469,38 @@ div.stButton > button:hover {
     color: #0878D2;
 }
 
-
-/* ============================================================
-   RENTABILIDAD
-============================================================ */
-
-.profit-section {
-    margin-top: 10px;
+.property-divider {
+    height: 1px;
+    background: #E2E9F0;
+    margin-top: 7px;
 }
 
-.profit-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.property-bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 7px;
+}
+
+.property-bottom-block {
+    min-width: 0;
+}
+
+.property-bottom-block.occupancy {
+    border-left: 1px solid #E2E9F0;
+    padding-left: 18px;
 }
 
 .profit-label {
     font-size: 9px;
-    color: #8290A4;
+    color: #71839A;
 }
 
 .profit-number {
-    font-size: 13px;
-    font-weight: 850;
+    font-size: 19px;
+    font-weight: 900;
+    margin-top: 4px;
+    line-height: 1;
 }
 
 .profit-number.good {
@@ -476,58 +513,41 @@ div.stButton > button:hover {
 
 .progress {
     width: 100%;
-    height: 6px;
+    height: 7px;
     background: #E7EDF1;
-    border-radius: 6px;
-    margin-top: 5px;
+    border-radius: 7px;
+    margin-top: 7px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
     background: #00AC7C;
-    border-radius: 6px;
+    border-radius: 7px;
 }
 
 .progress-fill.bad {
     background: #EF4A42;
 }
 
-
-/* ============================================================
-   OCUPACIÓN
-============================================================ */
-
-.occupancy-box {
-    background: #F5F7FA;
-    border-radius: 9px;
-    margin-top: 9px;
-    padding: 8px 10px;
-    height: 48px;
-    box-sizing: border-box;
-}
-
-.occupancy-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
 .occupancy-label {
-    font-size: 8px;
-    color: #8290A4;
+    font-size: 9px;
+    color: #71839A;
 }
 
 .occupancy-value {
-    font-size: 14px;
-    font-weight: 850;
+    font-size: 19px;
+    font-weight: 900;
     color: #6954E6;
+    margin-top: 4px;
+    line-height: 1;
 }
 
 .occupancy-detail {
     font-size: 8px;
-    color: #96A1AF;
-    margin-top: 3px;
+    color: #8290A4;
+    margin-top: 6px;
+    white-space: nowrap;
 }
 
 /* ============================================================
@@ -537,46 +557,17 @@ div.stButton > button:hover {
 .portfolio-card {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(
-        145deg,
-        #FFF6F8 0%,
-        #FFE8EE 55%,
-        #FFDDE6 100%
-    );
-    border: 1px solid #FFB8C7;
+    background: #FFF1F4;
+    border: 1.5px solid #FF9FB2;
     border-radius: 18px;
     padding: 17px;
     height: 270px;
     box-sizing: border-box;
     color: #17345E;
-    box-shadow:
-        0 5px 18px rgba(255, 91, 119, .12),
-        inset 0 1px 0 rgba(255,255,255,.75);
-}
-
-.portfolio-watermark-circle {
-    position: absolute;
-    right: -35px;
-    top: -45px;
-    width: 205px;
-    height: 205px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.46);
-    z-index: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.portfolio-watermark-circle img {
-    width: 135px;
-    height: 135px;
-    object-fit: contain;
-    opacity: 0.10;
+    box-shadow: 0 5px 18px rgba(255, 91, 119, .10);
 }
 
 .portfolio-title,
-.portfolio-subtitle,
 .portfolio-main,
 .portfolio-main-label,
 .portfolio-metrics,
@@ -586,55 +577,18 @@ div.stButton > button:hover {
     z-index: 1;
 }
 
-
-/* ------------------------------------------------------------
-   ENCABEZADO
------------------------------------------------------------- */
-
 .portfolio-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
     font-size: 22px;
     font-weight: 850;
     color: #17345E;
     line-height: 1;
 }
 
-.portfolio-icon {
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    background: #FF214B;
-    box-shadow: 0 4px 10px rgba(255,33,75,.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 900;
-    color: #FFFFFF;
-    letter-spacing: -1px;
-    flex-shrink: 0;
-}
-
-.portfolio-subtitle {
-    font-size: 11px;
-    color: #71839A;
-    margin-top: 7px;
-    margin-left: 56px;
-    white-space: nowrap;
-}
-
-
-/* ------------------------------------------------------------
-   INGRESO PRINCIPAL
------------------------------------------------------------- */
-
 .portfolio-main {
     font-size: 39px;
     font-weight: 900;
     color: #17345E;
-    margin-top: 10px;
+    margin-top: 12px;
     line-height: 1;
 }
 
@@ -644,16 +598,11 @@ div.stButton > button:hover {
     margin-top: 7px;
 }
 
-
-/* ------------------------------------------------------------
-   MÉTRICAS GASTOS / FLUJO
------------------------------------------------------------- */
-
 .portfolio-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
-    margin-top: 7px;
+    margin-top: 8px;
 }
 
 .portfolio-metric {
@@ -674,13 +623,13 @@ div.stButton > button:hover {
 }
 
 .portfolio-metric-icon.expense {
-    background: #FFF0F1;
-    color: #FF4B5C;
+    background: #F4F6FA;
+    color: #0878D2;
 }
 
 .portfolio-metric-icon.flow {
-    background: #EAF8F3;
-    color: #00A779;
+    background: #FFF4D7;
+    color: #F2A900;
 }
 
 .portfolio-mini-label {
@@ -696,27 +645,17 @@ div.stButton > button:hover {
     line-height: 1;
 }
 
-
-/* ------------------------------------------------------------
-   LÍNEA GRIS
------------------------------------------------------------- */
-
 .portfolio-divider {
     height: 1px;
     background: #E3E8ED;
-    margin-top: 6px;
+    margin-top: 7px;
 }
-
-
-/* ------------------------------------------------------------
-   RENTABILIDAD / OBJETIVO
------------------------------------------------------------- */
 
 .portfolio-profit-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    margin-top: 4px;
+    margin-top: 7px;
 }
 
 .portfolio-profit-block {
@@ -748,11 +687,6 @@ div.stButton > button:hover {
     color: #17345E;
 }
 
-
-/* ------------------------------------------------------------
-   BARRA DE RENTABILIDAD
------------------------------------------------------------- */
-
 .portfolio-progress {
     width: 100%;
     height: 7px;
@@ -764,7 +698,6 @@ div.stButton > button:hover {
 
 .portfolio-progress-fill {
     height: 100%;
-    width: 67.1%;
     background: #FF5A67;
     border-radius: 8px;
 }
@@ -1708,12 +1641,29 @@ resumen = resumen.merge(
     how="left"
 )
 
+# Orden visual por equipos:
+# 1. Bogotá → 2. Costa → 3. Medellín → 4. Ibagué
+orden_ciudad = {
+    "Bogotá": 1,
+    "Santa Marta": 2,
+    "Cartagena": 2,
+    "Medellín": 3,
+    "Ibagué": 4
+}
+
+resumen["OrdenEquipo"] = (
+    resumen["Ciudad"]
+    .map(orden_ciudad)
+    .fillna(99)
+)
+
 resumen = (
     resumen
     .sort_values(
-        "Rentabilidad",
-        ascending=False
+        ["OrdenEquipo", "Nombre_Propiedad"],
+        ascending=[True, True]
     )
+    .drop(columns=["OrdenEquipo"])
     .reset_index(drop=True)
 )
 
@@ -1774,121 +1724,132 @@ def tarjeta_propiedad(row):
                 f"{int(noches)} noches"
             )
 
+    ciudad = str(row["Ciudad"]).strip().lower()
+
+    if ciudad == "bogotá":
+        equipo = "team-bogota"
+    elif ciudad in ["santa marta", "cartagena"]:
+        equipo = "team-costa"
+    elif ciudad == "medellín":
+        equipo = "team-medellin"
+    elif ciudad == "ibagué":
+        equipo = "team-ibague"
+    else:
+        equipo = "team-bogota"
+
     return f"""
-<div class="property-card {'negative' if not good else ''}">
+<div class="property-card {equipo}">
 
-<div class="property-header">
+    <div class="property-header">
 
-<div>
+        <div>
 
-<div class="property-name">
-{row["Nombre_Propiedad"]}
-</div>
+            <div class="property-name">
+                {row["Nombre_Propiedad"]}
+            </div>
 
-<div class="property-city">
-📍 {row["Ciudad"]}
-</div>
+            <div class="property-city">
+                📍 {row["Ciudad"]}
+            </div>
 
-</div>
+        </div>
 
-<div class="property-profit">
+    </div>
 
-<div class="property-profit-value {'good' if good else 'bad'}">
-{rent:.1f}%
-</div>
+    <div class="property-income-main">
+        {dinero_corto(row["Ingresos"])}
+    </div>
 
-<div class="property-profit-label">
-Rentabilidad
-</div>
+    <div class="property-income-label">
+        Ingresos del período
+    </div>
 
-</div>
+    <div class="metrics-grid">
 
-</div>
+        <div class="metric-box">
 
-<div class="metrics-grid">
+            <div class="metric-icon expense">
+                📈
+            </div>
 
-<div class="metric-box">
+            <div class="metric-content">
 
-<div class="metric-label">
-Ingresos
-</div>
+                <div class="metric-label">
+                    Gastos
+                </div>
 
-<div class="metric-value metric-income">
-{dinero_corto(row["Ingresos"])}
-</div>
+                <div class="metric-value metric-expense">
+                    {dinero_corto(row["Gastos"])}
+                </div>
 
-</div>
+            </div>
 
-<div class="metric-box">
+        </div>
 
-<div class="metric-label">
-Gastos
-</div>
+        <div class="metric-box">
 
-<div class="metric-value metric-expense">
-{dinero_corto(row["Gastos"])}
-</div>
+            <div class="metric-icon flow">
+                🪙
+            </div>
 
-</div>
+            <div class="metric-content">
 
-<div class="metric-box">
+                <div class="metric-label">
+                    Flujo
+                </div>
 
-<div class="metric-label">
-Flujo
-</div>
+                <div class="metric-value metric-flow">
+                    {dinero_corto(row["Flujo"])}
+                </div>
 
-<div class="metric-value metric-flow">
-{dinero_corto(row["Flujo"])}
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
-<div class="profit-section">
+    <div class="property-divider"></div>
 
-<div class="profit-line">
+    <div class="property-bottom">
 
-<div class="profit-label">
-Rentabilidad
-</div>
+        <div class="property-bottom-block">
 
-<div class="profit-number {'good' if good else 'bad'}">
-{rent:.1f}%
-</div>
+            <div class="profit-label">
+                Rentabilidad
+            </div>
 
-</div>
+            <div class="profit-number {'good' if good else 'bad'}">
+                {rent:.1f}%
+            </div>
 
-<div class="progress">
+            <div class="progress">
 
-<div
-class="progress-fill {'bad' if not good else ''}"
-style="width:{progress:.1f}%;">
-</div>
+                <div
+                    class="progress-fill {'bad' if not good else ''}"
+                    style="width:{progress:.1f}%;">
+                </div>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-<div class="occupancy-box">
+        <div class="property-bottom-block occupancy">
 
-<div class="occupancy-top">
+            <div class="occupancy-label">
+                Ocupación Airbnb
+            </div>
 
-<div class="occupancy-label">
-Ocupación Airbnb
-</div>
+            <div class="occupancy-value">
+                {ocup_text}
+            </div>
 
-<div class="occupancy-value">
-{ocup_text}
-</div>
+            <div class="occupancy-detail">
+                {detalle}
+            </div>
 
-</div>
+        </div>
 
-<div class="occupancy-detail">
-{detalle}
-</div>
-
-</div>
+    </div>
 
 </div>
 """
