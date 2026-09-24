@@ -342,52 +342,52 @@ div.stButton > button:hover {
 .property-card {
     background: #FFFFFF;
     border: 1px solid #C9D9E8;
-    border-radius:  14px;
-    padding:  10px;
-    height:  218px;
+    border-radius:   12px;
+    padding:   8px;
+    height:   190px;
     box-sizing: border-box;
     box-shadow: 0 3px 12px rgba(24,52,94,.035);
 }
 
 /* El borde identifica el equipo, sin cambiar el contenido de la tarjeta */
 .property-card.team-bogota {
-    border-color: #9FC4E8;
+    border-color: #7FB4E8;
 }
 
 .property-card.team-costa {
-    border-color: #B7D5E6;
+    border-color: #61C8B2;
 }
 
 .property-card.team-medellin {
-    border-color: #C5D2E4;
+    border-color: #B9A8E8;
 }
 
 .property-card.team-ibague {
-    border-color: #D2CDE5;
+    border-color: #B9A8E8;
 }
 
 .property-header {
-    height:  36px;
+    height:   30px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
 
 .property-name {
-    font-size:  14px;
+    font-size:   14px;
     font-weight: 850;
     color: #17345E;
     line-height: 1.1;
 }
 
 .property-city {
-    font-size:  8px;
+    font-size:   8px;
     color: #8290A4;
-    margin-top: 5px;
+    margin-top:  3px;
 }
 
 .property-income-main {
-    font-size:  23px;
+    font-size:   21px;
     font-weight: 900;
     color: #009B70;
     line-height: 1;
@@ -395,38 +395,38 @@ div.stButton > button:hover {
 }
 
 .property-income-label {
-    font-size:  7px;
+    font-size:   8px;
     color: #8290A4;
-    margin-top: 5px;
+    margin-top:  3px;
 }
 
 .metrics-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap:  5px;
-    margin-top:  6px;
+    gap:   4px;
+    margin-top:   4px;
 }
 
 .metric-box {
     background: transparent;
     border-radius: 9px;
     padding: 0;
-    height:  36px;
+    height:   32px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap:  4px;
+    gap:   3px;
 }
 
 .metric-icon {
-    width:  27px;
-    height:  27px;
-    border-radius:  8px;
+    width:   24px;
+    height:   24px;
+    border-radius:   7px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size:  13px;
+    font-size:   12px;
     border: 1px solid #E3EAF1;
     background: #FAFCFE;
 }
@@ -446,14 +446,14 @@ div.stButton > button:hover {
 }
 
 .metric-label {
-    font-size:  7px;
+    font-size:   8px;
     color: #71839A;
 }
 
 .metric-value {
-    font-size:  12px;
+    font-size:   12px;
     font-weight: 850;
-    margin-top: 3px;
+    margin-top:  2px;
     white-space: nowrap;
 }
 
@@ -472,14 +472,14 @@ div.stButton > button:hover {
 .property-divider {
     height: 1px;
     background: #E2E9F0;
-    margin-top:  5px;
+    margin-top:   4px;
 }
 
 .property-bottom {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap:  7px;
-    margin-top:  5px;
+    gap:   5px;
+    margin-top:   4px;
 }
 
 .property-bottom-block {
@@ -488,18 +488,18 @@ div.stButton > button:hover {
 
 .property-bottom-block.occupancy {
     border-left: 1px solid #E2E9F0;
-    padding-left:  7px;
+    padding-left:   5px;
 }
 
 .profit-label {
-    font-size:  7px;
+    font-size:   8px;
     color: #71839A;
 }
 
 .profit-number {
-    font-size:  15px;
+    font-size:   15px;
     font-weight: 900;
-    margin-top: 4px;
+    margin-top:  3px;
     line-height: 1;
 }
 
@@ -516,7 +516,7 @@ div.stButton > button:hover {
     height:  5px;
     background: #E7EDF1;
     border-radius: 7px;
-    margin-top:  5px;
+    margin-top:   4px;
     overflow: hidden;
 }
 
@@ -531,22 +531,22 @@ div.stButton > button:hover {
 }
 
 .occupancy-label {
-    font-size:  7px;
+    font-size:   8px;
     color: #71839A;
 }
 
 .occupancy-value {
-    font-size:  15px;
+    font-size:   15px;
     font-weight: 900;
     color: #6954E6;
-    margin-top: 4px;
+    margin-top:  3px;
     line-height: 1;
 }
 
 .occupancy-detail {
-    font-size:  7px;
+    font-size:   7.5px;
     color: #8290A4;
-    margin-top: 6px;
+    margin-top:  4px;
     white-space: nowrap;
 }
 
@@ -559,9 +559,9 @@ div.stButton > button:hover {
     overflow: hidden;
     background: #FFF1F4;
     border: 1.5px solid #FF9FB2;
-    border-radius:  14px;
-    padding:  10px;
-    height:  218px;
+    border-radius:   12px;
+    padding:   8px;
+    height:   190px;
     box-sizing: border-box;
     color: #17345E;
     box-shadow: 0 5px 18px rgba(255, 91, 119, .10);
@@ -588,37 +588,37 @@ div.stButton > button:hover {
     font-size:  29px;
     font-weight: 900;
     color: #17345E;
-    margin-top: 12px;
+    margin-top:  8px;
     line-height: 1;
 }
 
 .portfolio-main-label {
-    font-size:  7px;
+    font-size:   8px;
     color: #71839A;
-    margin-top:  5px;
+    margin-top:   3px;
 }
 
 .portfolio-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap:  5px;
-    margin-top:  6px;
+    margin-top:   4px;
 }
 
 .portfolio-metric {
     display: flex;
     align-items: center;
-    gap:  4px;
+    gap:   3px;
 }
 
 .portfolio-metric-icon {
-    width:  27px;
-    height:  27px;
-    border-radius:  8px;
+    width:   24px;
+    height:   24px;
+    border-radius:   7px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size:  13px;
+    font-size:   12px;
     flex-shrink: 0;
 }
 
@@ -633,12 +633,12 @@ div.stButton > button:hover {
 }
 
 .portfolio-mini-label {
-    font-size:  7px;
+    font-size:   8px;
     color: #71839A;
 }
 
 .portfolio-mini-value {
-    font-size:  13px;
+    font-size:   12px;
     font-weight: 850;
     color: #17345E;
     margin-top: 3px;
@@ -648,14 +648,14 @@ div.stButton > button:hover {
 .portfolio-divider {
     height: 1px;
     background: #E3E8ED;
-    margin-top:  5px;
+    margin-top:   4px;
 }
 
 .portfolio-profit-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap:  7px;
-    margin-top: 7px;
+    margin-top:  4px;
 }
 
 .portfolio-profit-block {
@@ -668,7 +668,7 @@ div.stButton > button:hover {
 }
 
 .portfolio-profit-label {
-    font-size:  7px;
+    font-size:   8px;
     color: #71839A;
 }
 
@@ -693,7 +693,7 @@ div.stButton > button:hover {
     background: #E7EDF1;
     border-radius: 8px;
     overflow: hidden;
-    margin-top:  5px;
+    margin-top:   4px;
 }
 
 .portfolio-progress-fill {
