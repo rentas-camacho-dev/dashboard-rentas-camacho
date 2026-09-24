@@ -329,116 +329,101 @@ div.stButton > button:hover {
 
 
 /* ============================================================
-   PROPIEDADES / EQUIPOS
+   TARJETAS DEL PORTAFOLIO / PROPIEDADES
+   Diseño compacto tipo dashboard
 ============================================================ */
 
 .properties-grid {
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
-    gap:  9px;
+    gap: 7px;
     margin-top: 0;
 }
 
+/* Tarjetas de propiedades */
 .property-card {
-    background: #FFFFFF;
-    border: 1px solid #C9D9E8;
-    border-radius:   12px;
-    padding:   8px;
-    height:   165px;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 10px 10px;
+    height: 165px;
     box-sizing: border-box;
-    box-shadow: 0 3px 12px rgba(24,52,94,.035);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(24,52,94,.08);
 }
 
-/* El borde identifica el equipo, sin cambiar el contenido de la tarjeta */
+/* Colores por equipo */
 .property-card.team-bogota {
-    border-color: #7FB4E8;
+    background: linear-gradient(135deg, #2298DE 0%, #149FE8 100%);
 }
 
 .property-card.team-costa {
-    border-color: #61C8B2;
+    background: linear-gradient(135deg, #08AE98 0%, #08B89F 100%);
 }
 
-.property-card.team-medellin {
-    border-color: #B9A8E8;
-}
-
+.property-card.team-medellin,
 .property-card.team-ibague {
-    border-color: #B9A8E8;
+    background: linear-gradient(135deg, #7657C5 0%, #8064C9 100%);
 }
 
 .property-header {
-    height:   30px;
+    height: 38px;
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
 }
 
 .property-name {
-    font-size:   14px;
+    font-size: 14px;
     font-weight: 850;
-    color: #17345E;
-    line-height: 1.1;
+    color: #FFFFFF;
+    line-height: 1.05;
+    white-space: nowrap;
 }
 
 .property-city {
-    font-size:   8px;
-    color: #8290A4;
-    margin-top:  3px;
+    font-size: 8px;
+    color: rgba(255,255,255,.88);
+    margin-top: 5px;
 }
 
 .property-income-main {
-    font-size:   21px;
+    font-size: 25px;
     font-weight: 900;
-    color: #009B70;
+    color: #FFFFFF;
     line-height: 1;
-    margin-top: 1px;
+    margin-top: 4px;
 }
 
 .property-income-label {
-    font-size:   8px;
-    color: #8290A4;
-    margin-top:  3px;
+    display: none;
 }
 
 .metrics-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap:   4px;
-    margin-top:   4px;
+    gap: 0;
+    margin-top: 14px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(255,255,255,.20);
 }
 
 .metric-box {
     background: transparent;
-    border-radius: 9px;
+    border-radius: 0;
     padding: 0;
-    height:   32px;
+    height: 34px;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    gap:   3px;
+    display: block;
+}
+
+.metric-box + .metric-box {
+    border-left: 1px solid rgba(255,255,255,.20);
+    padding-left: 10px;
 }
 
 .metric-icon {
-    width:   24px;
-    height:   24px;
-    border-radius:   7px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size:   12px;
-    border: 1px solid #E3EAF1;
-    background: #FAFCFE;
-}
-
-.metric-icon.expense {
-    color: #0878D2;
-    background: #F7FAFE;
-}
-
-.metric-icon.flow {
-    color: #F2A900;
-    background: #FFF9E8;
+    display: none;
 }
 
 .metric-content {
@@ -446,40 +431,35 @@ div.stButton > button:hover {
 }
 
 .metric-label {
-    font-size:   8px;
-    color: #71839A;
+    font-size: 8px;
+    color: rgba(255,255,255,.82);
+    line-height: 1;
 }
 
 .metric-value {
-    font-size:   12px;
+    font-size: 13px;
     font-weight: 850;
-    margin-top:  2px;
+    margin-top: 4px;
     white-space: nowrap;
+    line-height: 1;
 }
 
-.metric-income {
-    color: #009B70;
-}
-
-.metric-expense {
-    color: #EF4338;
-}
-
+.metric-expense,
 .metric-flow {
-    color: #0878D2;
+    color: #FFFFFF;
 }
 
 .property-divider {
-    height: 1px;
-    background: #E2E9F0;
-    margin-top:   4px;
+    display: none;
 }
 
 .property-bottom {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap:   5px;
-    margin-top:   4px;
+    gap: 0;
+    margin-top: 5px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,.20);
 }
 
 .property-bottom-block {
@@ -487,66 +467,59 @@ div.stButton > button:hover {
 }
 
 .property-bottom-block.occupancy {
-    border-left: 1px solid #E2E9F0;
-    padding-left:   5px;
+    border-left: 1px solid rgba(255,255,255,.20);
+    padding-left: 10px;
 }
 
-.profit-label {
-    font-size:   8px;
-    color: #71839A;
+.profit-label,
+.occupancy-label {
+    font-size: 8px;
+    color: rgba(255,255,255,.82);
 }
 
 .profit-number {
-    font-size:   15px;
+    font-size: 15px;
     font-weight: 900;
-    margin-top:  3px;
+    margin-top: 4px;
     line-height: 1;
 }
 
-.profit-number.good {
-    color: #009B70;
-}
-
+.profit-number.good,
 .profit-number.bad {
-    color: #E84235;
+    color: #FFFFFF;
 }
 
 .progress {
     width: 100%;
-    height:  5px;
-    background: #E7EDF1;
+    height: 5px;
+    background: rgba(255,255,255,.30);
     border-radius: 7px;
-    margin-top:   4px;
+    margin-top: 5px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-    background: #00AC7C;
+    background: #37E49B;
     border-radius: 7px;
 }
 
 .progress-fill.bad {
-    background: #EF4A42;
-}
-
-.occupancy-label {
-    font-size:   8px;
-    color: #71839A;
+    background: #FF4D57;
 }
 
 .occupancy-value {
-    font-size:   15px;
+    font-size: 15px;
     font-weight: 900;
-    color: #6954E6;
-    margin-top:  3px;
+    color: #FFFFFF;
+    margin-top: 4px;
     line-height: 1;
 }
 
 .occupancy-detail {
-    font-size:   7.5px;
-    color: #8290A4;
-    margin-top:  4px;
+    font-size: 8px;
+    color: rgba(255,255,255,.86);
+    margin-top: 6px;
     white-space: nowrap;
 }
 
@@ -557,14 +530,14 @@ div.stButton > button:hover {
 .portfolio-card {
     position: relative;
     overflow: hidden;
-    background: #FFF1F4;
-    border: 1.5px solid #FF9FB2;
-    border-radius:   12px;
-    padding:   8px;
-    height:   165px;
+    background: linear-gradient(135deg, #FF3158 0%, #FF3F61 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 10px 10px;
+    height: 165px;
     box-sizing: border-box;
-    color: #17345E;
-    box-shadow: 0 5px 18px rgba(255, 91, 119, .10);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(255,49,88,.12);
 }
 
 .portfolio-title,
@@ -578,84 +551,70 @@ div.stButton > button:hover {
 }
 
 .portfolio-title {
-    font-size:  16px;
+    font-size: 16px;
     font-weight: 850;
-    color: #17345E;
+    color: #FFFFFF;
     line-height: 1;
 }
 
 .portfolio-main {
-    font-size:  29px;
+    font-size: 29px;
     font-weight: 900;
-    color: #17345E;
-    margin-top:  8px;
+    color: #FFFFFF;
+    margin-top: 15px;
     line-height: 1;
 }
 
 .portfolio-main-label {
-    font-size:   8px;
-    color: #71839A;
-    margin-top:   3px;
+    display: none;
 }
 
 .portfolio-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap:  5px;
-    margin-top:   4px;
+    gap: 0;
+    margin-top: 14px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(255,255,255,.20);
 }
 
 .portfolio-metric {
-    display: flex;
-    align-items: center;
-    gap:   3px;
+    display: block;
+}
+
+.portfolio-metric + .portfolio-metric {
+    border-left: 1px solid rgba(255,255,255,.20);
+    padding-left: 10px;
 }
 
 .portfolio-metric-icon {
-    width:   24px;
-    height:   24px;
-    border-radius:   7px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size:   12px;
-    flex-shrink: 0;
-}
-
-.portfolio-metric-icon.expense {
-    background: #F4F6FA;
-    color: #0878D2;
-}
-
-.portfolio-metric-icon.flow {
-    background: #FFF4D7;
-    color: #F2A900;
+    display: none;
 }
 
 .portfolio-mini-label {
-    font-size:   8px;
-    color: #71839A;
+    font-size: 8px;
+    color: rgba(255,255,255,.82);
 }
 
 .portfolio-mini-value {
-    font-size:   12px;
+    font-size: 13px;
     font-weight: 850;
-    color: #17345E;
-    margin-top: 3px;
+    color: #FFFFFF;
+    margin-top: 4px;
     line-height: 1;
 }
 
 .portfolio-divider {
-    height: 1px;
-    background: #E3E8ED;
-    margin-top:   4px;
+    display: none;
 }
 
 .portfolio-profit-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap:  7px;
-    margin-top:  4px;
+    gap: 0;
+    margin-top: 5px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,.20);
 }
 
 .portfolio-profit-block {
@@ -663,42 +622,39 @@ div.stButton > button:hover {
 }
 
 .portfolio-profit-block.target {
-    border-left: 1px solid #E3E8ED;
-    padding-left:  7px;
+    border-left: 1px solid rgba(255,255,255,.20);
+    padding-left: 10px;
 }
 
 .portfolio-profit-label {
-    font-size:   8px;
-    color: #71839A;
+    font-size: 8px;
+    color: rgba(255,255,255,.82);
 }
 
 .portfolio-profit-value {
-    font-size:  18px;
+    font-size: 17px;
     font-weight: 900;
     margin-top: 5px;
     line-height: 1;
 }
 
-.portfolio-profit {
-    color: #FF4B5C;
-}
-
+.portfolio-profit,
 .portfolio-target {
-    color: #17345E;
+    color: #FFFFFF;
 }
 
 .portfolio-progress {
     width: 100%;
-    height:  5px;
-    background: #E7EDF1;
+    height: 5px;
+    background: rgba(255,255,255,.28);
     border-radius: 8px;
     overflow: hidden;
-    margin-top:   4px;
+    margin-top: 5px;
 }
 
 .portfolio-progress-fill {
     height: 100%;
-    background: #FF5A67;
+    background: #FFFFFF;
     border-radius: 8px;
 }
 
@@ -1675,54 +1631,24 @@ resumen = (
 
 def tarjeta_propiedad(row):
 
-    rent = float(
-        row["Rentabilidad"]
-    )
-
+    rent = float(row["Rentabilidad"])
     good = rent >= 35
 
-    progress = min(
-        max(rent, 0),
-        100
-    )
+    progress = min(max(rent, 0), 100)
 
-    ocup = row.get(
-        "Ocupacion",
-        None
-    )
-
-    reservas = row.get(
-        "Reservas",
-        None
-    )
-
-    noches = row.get(
-        "Noches_Reservadas",
-        None
-    )
+    ocup = row.get("Ocupacion", None)
+    reservas = row.get("Reservas", None)
+    noches = row.get("Noches_Reservadas", None)
 
     if pd.isna(ocup):
-
         ocup_text = "—"
-
-        detalle = "Sin datos de Airbnb"
-
+        detalle = "—"
     else:
-
-        ocup_text = (
-            f"{float(ocup):.1f}%"
-        )
-
-        if pd.isna(reservas):
-
-            detalle = "Sin reservas"
-
+        ocup_text = f"{float(ocup):.1f}%"
+        if pd.isna(reservas) or pd.isna(noches):
+            detalle = "—"
         else:
-
-            detalle = (
-                f"{int(reservas)} R · "
-                f"{int(noches)} N"
-            )
+            detalle = f"{int(reservas)} R · {int(noches)} N"
 
     ciudad = str(row["Ciudad"]).strip().lower()
 
@@ -1741,110 +1667,65 @@ def tarjeta_propiedad(row):
 <div class="property-card {equipo}">
 
     <div class="property-header">
-
         <div>
-
             <div class="property-name">
                 {row["Nombre_Propiedad"]}
             </div>
-
             <div class="property-city">
-                📍 {row["Ciudad"]}
+                {row["Ciudad"]}
             </div>
-
         </div>
-
     </div>
 
     <div class="property-income-main">
         {dinero_corto(row["Ingresos"])}
     </div>
 
-    <div class="property-income-label"></div>
-
     <div class="metrics-grid">
 
         <div class="metric-box">
-
-            <div class="metric-icon expense">
-                📈
-            </div>
-
             <div class="metric-content">
-
-                <div class="metric-label">
-                    Gastos
-                </div>
-
+                <div class="metric-label">Gastos</div>
                 <div class="metric-value metric-expense">
                     {dinero_corto(row["Gastos"])}
                 </div>
-
             </div>
-
         </div>
 
         <div class="metric-box">
-
-            <div class="metric-icon flow">
-                🪙
-            </div>
-
             <div class="metric-content">
-
-                <div class="metric-label">
-                    Flujo
-                </div>
-
+                <div class="metric-label">Flujo</div>
                 <div class="metric-value metric-flow">
                     {dinero_corto(row["Flujo"])}
                 </div>
-
             </div>
-
         </div>
 
     </div>
 
-    <div class="property-divider"></div>
-
     <div class="property-bottom">
 
         <div class="property-bottom-block">
-
-            <div class="profit-label">
-                Rentabilidad
-            </div>
-
+            <div class="profit-label">Rentabilidad</div>
             <div class="profit-number {'good' if good else 'bad'}">
                 {rent:.1f}%
             </div>
-
             <div class="progress">
-
                 <div
                     class="progress-fill {'bad' if not good else ''}"
                     style="width:{progress:.1f}%;">
                 </div>
-
             </div>
-
         </div>
 
         <div class="property-bottom-block occupancy">
-
-            <div class="occupancy-label">
-                Ocup. %
-            </div>
-
+            <div class="occupancy-label">Ocup. %</div>
             <div class="occupancy-value">
                 {ocup_text}
             </div>
-
             <div class="occupancy-detail">
                 {detalle}
             </div>
-
         </div>
 
     </div>
@@ -1865,99 +1746,51 @@ def tarjeta_portafolio():
 
     return f"""
 <div class="portfolio-card">
-    <div class="portfolio-title">
 
-        <div>
-            Portafolio
-        </div>
-
-    </div>
+    <div class="portfolio-title">Portafolio</div>
 
     <div class="portfolio-main">
         {dinero_corto(ingresos)}
     </div>
 
-    <div class="portfolio-main-label"></div>
-
     <div class="portfolio-metrics">
 
         <div class="portfolio-metric">
-
-            <div class="portfolio-metric-icon expense">
-                📈
+            <div class="portfolio-mini-label">Gastos</div>
+            <div class="portfolio-mini-value">
+                {dinero_corto(gastos)}
             </div>
-
-            <div>
-                <div class="portfolio-mini-label">
-                    Gastos
-                </div>
-
-                <div class="portfolio-mini-value">
-                    {dinero_corto(gastos)}
-                </div>
-            </div>
-
         </div>
 
-
         <div class="portfolio-metric">
-
-            <div class="portfolio-metric-icon flow">
-                🪙
+            <div class="portfolio-mini-label">Flujo</div>
+            <div class="portfolio-mini-value">
+                {dinero_corto(flujo)}
             </div>
-
-            <div>
-                <div class="portfolio-mini-label">
-                    Flujo
-                </div>
-
-                <div class="portfolio-mini-value">
-                    {dinero_corto(flujo)}
-                </div>
-            </div>
-
         </div>
 
     </div>
 
-
-    <div class="portfolio-divider"></div>
-
-
     <div class="portfolio-profit-row">
 
         <div class="portfolio-profit-block">
-
-            <div class="portfolio-profit-label">
-                Rentabilidad
-            </div>
-
+            <div class="portfolio-profit-label">Rentabilidad</div>
             <div class="portfolio-profit-value portfolio-profit">
                 {rentabilidad:.1f}%
             </div>
-
             <div class="portfolio-progress">
-
                 <div
                     class="portfolio-progress-fill"
                     style="width:{progreso_rentabilidad:.1f}%;">
                 </div>
-
             </div>
-
         </div>
 
-
         <div class="portfolio-profit-block target">
-
-            <div class="portfolio-profit-label">
-                Objetivo
-            </div>
-
+            <div class="portfolio-profit-label">Objetivo</div>
             <div class="portfolio-profit-value portfolio-target">
                 35%
             </div>
-
         </div>
 
     </div>
