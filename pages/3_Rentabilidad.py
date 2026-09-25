@@ -2358,10 +2358,10 @@ Desempeño histórico desde el inicio de operación · inversión total del acti
 <th>Ingresos hist.</th>
 <th>Gastos hist.</th>
 <th>Flujo hist.</th>
-<th>ROI acum.</th>
+<th>ROI total</th>
 <th>Ingreso prom./mes</th>
 <th>Flujo prom./mes</th>
-<th>Yield anual</th>
+<th>Yield total anual</th>
 <th>Payback</th>
 </tr>
 </thead>
@@ -2397,8 +2397,8 @@ Desempeño histórico desde el inicio de operación · inversión total del acti
                 f'</span>'
             )
 
-        roi_html = porcentaje_tabla(row["ROI_Acumulado"])
-        yield_html = porcentaje_tabla(row["Yield_Anualizado"])
+        roi_html = porcentaje_tabla(row["ROI_Total"])
+        yield_html = porcentaje_tabla(row["Retorno_Anualizado_Total"])
 
         payback_html = (
             "—"
