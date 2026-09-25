@@ -2845,13 +2845,6 @@ if st.session_state.vista_airbnb == "Propiedades":
         pd.NA
     )
 
-    historico["Payback_Anios"] = (
-        historico["Inversion"]
-        / historico["Flujo_Anualizado"]
-    ).where(
-        historico["Flujo_Anualizado"] > 0
-    )
-
     tabla = tabla.drop(
         columns=[
             "Ingresos", "Gastos", "Flujo", "Rentabilidad",
@@ -2877,8 +2870,7 @@ if st.session_state.vista_airbnb == "Propiedades":
                 "Flujo_Mensual_Promedio",
                 "Flujo_Anualizado",
                 "ROI_Acumulado",
-                "Yield_Anualizado",
-                "Payback_Anios"
+                "Yield_Anualizado"
             ]
         ],
         on="Nombre_Propiedad",
@@ -2989,7 +2981,7 @@ if st.session_state.vista_airbnb == "Propiedades":
 </div>
 
 <div class="investment-subtitle">
-Desempeño histórico · capital hipotecario separado por amortización
+Desempeño histórico · capital hipotecario separado por amortización · valor neto de salida
 </div>
 
 <table class="investment-table">
@@ -3001,7 +2993,7 @@ Desempeño histórico · capital hipotecario separado por amortización
 <th>Inversión</th>
 <th>Valor actual</th>
 <th>Equipamiento</th>
-<th>Patrimonio</th>
+<th>Valor neto salida</th>
 <th>Ingresos hist.</th>
 <th>Gastos hist. ajust.</th>
 <th>Flujo hist.</th>
@@ -3009,7 +3001,7 @@ Desempeño histórico · capital hipotecario separado por amortización
 <th>Ingreso prom./mes</th>
 <th>Flujo prom./mes</th>
 <th>Yield total anual</th>
-<th>Payback</th>
+
 </tr>
 </thead>
 
@@ -3046,12 +3038,6 @@ Desempeño histórico · capital hipotecario separado por amortización
 
         roi_html = porcentaje_tabla(row["ROI_Total"])
         yield_html = porcentaje_tabla(row["Retorno_Anualizado_Total"])
-
-        payback_html = (
-            "—"
-            if pd.isna(row["Payback_Anios"])
-            else f'{float(row["Payback_Anios"]):.1f} años'
-        )
 
         html_tabla += f"""
 <tr>
@@ -3093,8 +3079,6 @@ Desempeño histórico · capital hipotecario separado por amortización
 <td>{valor_tabla(row["Flujo_Mensual_Promedio"])}</td>
 
 <td>{yield_html}</td>
-
-<td>{payback_html}</td>
 
 </tr>
 """
