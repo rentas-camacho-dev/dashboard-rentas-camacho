@@ -1173,17 +1173,168 @@ def cargar_inversiones():
 
 
 # ============================================================
-# CRÉDITOS Y VALOR ACTUAL DE LOS ACTIVOS
+# CRÉDITOS, AMORTIZACIÓN Y VALOR ACTUAL DE LOS ACTIVOS
 # ============================================================
 
-@st.cache_data(ttl=300)
-def cargar_creditos():
+# La hoja de Créditos representa la última cuota efectivamente
+# registrada/pagada al cierre de agosto de 2026.
+#
+# Regla futura:
+# - septiembre 2026 permanece pendiente hasta el día 30;
+# - el día 30 de cada mes se agrega una cuota;
+# - febrero utiliza el último día del mes.
+#
+# No se modifica la hoja de Google Sheets: la cuota futura se calcula
+# dinámicamente en la aplicación.
 
+FECHA_BASE_CUOTAS = date(2026, 8, 31)
+
+
+def fecha_corte_cuota(fecha):
+    """
+    Día de aplicación de la cuota:
+    día 30 de cada mes; si el mes no tiene 30, último día.
+    """
+    fecha = pd.Timestamp(fecha)
+    ultimo_dia = (
+        fecha + pd.offsets.MonthEnd(0)
+    ).day
+
+    dia = min(30, ultimo_dia)
+
+    return date(
+        fecha.year,
+        fecha.month,
+        dia
+    )
+
+
+def incremento_cuotas_desde_base(fecha):
+    """
+    Calcula cuántas cuotas nuevas se consideran aplicadas
+    desde la base 31-ago-2026.
+
+    Ejemplo:
+    - 25-sep-2026 -> 0
+    - 30-sep-2026 -> 1
+    - 01-oct-2026 -> 1
+    - 30-oct-2026 -> 2
+    """
+    fecha = pd.Timestamp(fecha)
+    base = pd.Timestamp(FECHA_BASE_CUOTAS)
+
+    diferencia_meses = (
+        (fecha.year - base.year) * 12
+        + (fecha.month - base.month)
+    )
+
+    if diferencia_meses <= 0:
+        return 0
+
+    corte = fecha_corte_cuota(fecha)
+
+    if fecha.date() >= corte:
+        return diferencia_meses
+
+    return max(
+        0,
+        diferencia_meses - 1
+    )
+
+
+def calcular_amortizacion(
+    valor_inicial,
+    tasa_interes_ea,
+    cuota_mensual,
+    cuota_hasta
+):
+    """
+    Amortización teórica por cuota.
+
+    La tasa efectiva anual se convierte a tasa efectiva mensual.
+    La cuota contractual se toma de la tabla de Créditos.
+    El seguro NO se mezcla con capital/interés.
+    """
+    try:
+        valor_inicial = float(valor_inicial)
+        tasa_interes_ea = float(tasa_interes_ea)
+        cuota_mensual = float(cuota_mensual)
+        cuota_hasta = int(cuota_hasta)
+    except (TypeError, ValueError):
+        return pd.DataFrame()
+
+    if (
+        valor_inicial <= 0
+        or cuota_mensual <= 0
+        or cuota_hasta <= 0
+    ):
+        return pd.DataFrame()
+
+    tasa_mensual = (
+        (1 + tasa_interes_ea) ** (1 / 12)
+        - 1
+    )
+
+    saldo = valor_inicial
+    registros = []
+
+    for numero_cuota in range(
+        1,
+        cuota_hasta + 1
+    ):
+        saldo_inicial = saldo
+
+        interes = (
+            saldo_inicial
+            * tasa_mensual
+        )
+
+        capital = min(
+            max(
+                cuota_mensual
+                - interes,
+                0
+            ),
+            saldo_inicial
+        )
+
+        saldo = max(
+            0,
+            saldo_inicial - capital
+        )
+
+        registros.append(
+            {
+                "Cuota": numero_cuota,
+                "Saldo_Inicial": saldo_inicial,
+                "Interes_Teorico": interes,
+                "Capital_Teorico": capital,
+                "Cuota_Principal_Interes":
+                    interes + capital,
+                "Saldo_Final": saldo
+            }
+        )
+
+        if saldo <= 0:
+            break
+
+    return pd.DataFrame(registros)
+
+
+@st.cache_data(ttl=300)
+def cargar_creditos(fecha_calculo):
     query = """
     SELECT
+        ID_Credito,
+        ID_Propiedad,
         Propiedad,
+        Banco,
+        Valor_Inicial,
         Saldo_Actual,
         Cuota_Mensual,
+        Cuota,
+        Tasa_Interes,
+        Plazo_Meses,
         Cuota_Seguros,
         Valor_Actual,
         Equipamiento,
@@ -1194,46 +1345,468 @@ def cargar_creditos():
     WHERE Propiedad IS NOT NULL
     """
 
-    creditos = client.query(query).to_dataframe()
+    detalle = client.query(
+        query
+    ).to_dataframe()
 
-    for col in [
+    columnas_numericas = [
+        "Valor_Inicial",
         "Saldo_Actual",
         "Cuota_Mensual",
+        "Cuota",
+        "Tasa_Interes",
+        "Plazo_Meses",
         "Cuota_Seguros",
         "Valor_Actual",
         "Equipamiento",
         "Valor_Total_Actual",
         "Patrimonio_Actual",
         "Costo_Mensual_Total"
-    ]:
-        creditos[col] = pd.to_numeric(
-            creditos[col],
+    ]
+
+    for col in columnas_numericas:
+        detalle[col] = pd.to_numeric(
+            detalle[col],
             errors="coerce"
         )
 
-    # Una propiedad puede tener más de un crédito
-    # (por ejemplo Santa Marina).
-    # La valoración del activo no se suma: se toma una sola vez.
+    incremento = incremento_cuotas_desde_base(
+        fecha_calculo
+    )
+
+    detalle["Cuota_Base"] = (
+        detalle["Cuota"]
+        .fillna(0)
+        .astype(int)
+    )
+
+    detalle["Cuota_Actual"] = (
+        detalle["Cuota_Base"]
+        + incremento
+    )
+
+    detalle["Saldo_Teorico_Actual"] = 0.0
+    detalle["Interes_Cuota_Actual"] = 0.0
+    detalle["Capital_Cuota_Actual"] = 0.0
+
+    for idx, row in detalle.iterrows():
+        amortizacion = calcular_amortizacion(
+            row["Valor_Inicial"],
+            row["Tasa_Interes"],
+            row["Cuota_Mensual"],
+            row["Cuota_Actual"]
+        )
+
+        if amortizacion.empty:
+            continue
+
+        ultima = amortizacion.iloc[-1]
+
+        detalle.loc[
+            idx,
+            "Saldo_Teorico_Actual"
+        ] = ultima["Saldo_Final"]
+
+        detalle.loc[
+            idx,
+            "Interes_Cuota_Actual"
+        ] = ultima["Interes_Teorico"]
+
+        detalle.loc[
+            idx,
+            "Capital_Cuota_Actual"
+        ] = ultima["Capital_Teorico"]
+
+    # Si el saldo real está diligenciado, se utiliza.
+    # Si está vacío, se utiliza el saldo teórico de amortización.
+    detalle["Saldo_Usado"] = (
+        detalle["Saldo_Actual"]
+        .where(
+            detalle["Saldo_Actual"].notna(),
+            detalle["Saldo_Teorico_Actual"]
+        )
+        .fillna(0)
+    )
+
+    # Consolidación por propiedad para valoración/patrimonio.
+    # La amortización sigue siendo individual por crédito.
     creditos_propiedad = (
-        creditos
-        .groupby("Propiedad", as_index=False)
+        detalle
+        .groupby(
+            "Propiedad",
+            as_index=False
+        )
         .agg(
-            Saldo_Actual=("Saldo_Actual", "sum"),
-            Cuota_Mensual=("Cuota_Mensual", "sum"),
-            Cuota_Seguros=("Cuota_Seguros", "sum"),
-            Valor_Actual=("Valor_Actual", "max"),
-            Equipamiento=("Equipamiento", "max"),
-            Valor_Total_Actual=("Valor_Total_Actual", "max"),
-            Costo_Mensual_Total=("Costo_Mensual_Total", "sum")
+            Saldo_Actual=(
+                "Saldo_Actual",
+                "sum"
+            ),
+            Saldo_Teorico_Actual=(
+                "Saldo_Teorico_Actual",
+                "sum"
+            ),
+            Saldo_Usado=(
+                "Saldo_Usado",
+                "sum"
+            ),
+            Cuota_Mensual=(
+                "Cuota_Mensual",
+                "sum"
+            ),
+            Cuota_Seguros=(
+                "Cuota_Seguros",
+                "sum"
+            ),
+            Valor_Actual=(
+                "Valor_Actual",
+                "max"
+            ),
+            Equipamiento=(
+                "Equipamiento",
+                "max"
+            ),
+            Valor_Total_Actual=(
+                "Valor_Total_Actual",
+                "max"
+            ),
+            Costo_Mensual_Total=(
+                "Costo_Mensual_Total",
+                "sum"
+            ),
+            Cuota_Actual=(
+                "Cuota_Actual",
+                "max"
+            )
         )
     )
 
     creditos_propiedad["Patrimonio_Actual"] = (
-        creditos_propiedad["Valor_Total_Actual"].fillna(0)
-        - creditos_propiedad["Saldo_Actual"].fillna(0)
+        creditos_propiedad[
+            "Valor_Total_Actual"
+        ].fillna(0)
+        -
+        creditos_propiedad[
+            "Saldo_Usado"
+        ].fillna(0)
     )
 
-    return creditos_propiedad
+    return detalle, creditos_propiedad
+
+
+@st.cache_data(ttl=300)
+def cargar_pagos_hipotecarios():
+    """
+    Pagos reales registrados en Movimientos_Operativos_Reparto.
+
+    SUB-0032 = Crédito Hipotecario.
+    Se agrupan por propiedad y mes para obtener el pago real
+    efectivamente registrado, independientemente de la cuenta
+    desde la cual se realizó el pago.
+    """
+    query = """
+    SELECT
+        DATE(Fecha) AS Fecha,
+        Nombre_Propiedad AS Propiedad,
+        SUM(Gasto) AS Pago_Real
+    FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
+    WHERE TRIM(Subcategoria) = 'SUB-0032'
+      AND LOWER(TRIM(Nombre_Subcategoria))
+            = 'crédito hipotecario'
+      AND LOWER(TRIM(Detalle))
+            = 'crédito'
+      AND Gasto IS NOT NULL
+      AND Gasto > 0
+    GROUP BY
+        Fecha,
+        Propiedad
+    ORDER BY
+        Propiedad,
+        Fecha
+    """
+
+    pagos = client.query(
+        query
+    ).to_dataframe()
+
+    if pagos.empty:
+        return pagos
+
+    pagos["Fecha"] = pd.to_datetime(
+        pagos["Fecha"],
+        errors="coerce"
+    )
+
+    pagos["Pago_Real"] = pd.to_numeric(
+        pagos["Pago_Real"],
+        errors="coerce"
+    ).fillna(0)
+
+    pagos["Mes"] = (
+        pagos["Fecha"]
+        .dt.to_period("M")
+        .dt.to_timestamp()
+    )
+
+    pagos_mensuales = (
+        pagos
+        .groupby(
+            [
+                "Propiedad",
+                "Mes"
+            ],
+            as_index=False
+        )["Pago_Real"]
+        .sum()
+        .sort_values(
+            [
+                "Propiedad",
+                "Mes"
+            ]
+        )
+        .reset_index(drop=True)
+    )
+
+    return pagos_mensuales
+
+
+def calcular_amortizacion_historica(
+    creditos_detalle,
+    pagos_hipotecarios
+):
+    """
+    Cruza pagos reales históricos con amortización teórica.
+
+    Regla:
+    - el último pago histórico se alinea con Cuota_Actual;
+    - los pagos anteriores ocupan las cuotas anteriores;
+    - el pago real se utiliza como monto efectivamente pagado;
+    - el interés se calcula teóricamente;
+    - el capital estimado es:
+          pago real - interés teórico - seguro
+      sin permitir capital negativo.
+
+    Para propiedades con más de un crédito, el pago real mensual
+    se distribuye proporcionalmente al costo contractual de cada
+    crédito (cuota + seguro).
+    """
+    columnas_salida = [
+        "Propiedad",
+        "Pagos_Hipotecarios_Reales",
+        "Interes_Historico_Estimado",
+        "Seguro_Historico_Estimado",
+        "Capital_Historico_Estimado",
+        "Cuotas_Conciliadas"
+    ]
+
+    if (
+        creditos_detalle.empty
+        or pagos_hipotecarios.empty
+    ):
+        return pd.DataFrame(
+            columns=columnas_salida
+        )
+
+    resultados = []
+
+    for propiedad, grupo_creditos in (
+        creditos_detalle
+        .groupby("Propiedad")
+    ):
+        pagos_propiedad = (
+            pagos_hipotecarios[
+                pagos_hipotecarios[
+                    "Propiedad"
+                ] == propiedad
+            ]
+            .sort_values("Mes")
+            .reset_index(drop=True)
+        )
+
+        if pagos_propiedad.empty:
+            continue
+
+        grupo_creditos = (
+            grupo_creditos
+            .copy()
+            .reset_index(drop=True)
+        )
+
+        # Base contractual para repartir pagos entre
+        # créditos de una misma propiedad.
+        grupo_creditos["Base_Reparto"] = (
+            grupo_creditos[
+                "Cuota_Mensual"
+            ].fillna(0)
+            +
+            grupo_creditos[
+                "Cuota_Seguros"
+            ].fillna(0)
+        )
+
+        base_total = (
+            grupo_creditos[
+                "Base_Reparto"
+            ].sum()
+        )
+
+        for _, credito in grupo_creditos.iterrows():
+            cuota_actual = int(
+                credito["Cuota_Actual"]
+            )
+
+            n_pagos = len(
+                pagos_propiedad
+            )
+
+            if n_pagos <= 0:
+                continue
+
+            # Los pagos reales conocidos se alinean hacia
+            # atrás desde la cuota vigente.
+            cuota_inicial = max(
+                1,
+                cuota_actual
+                - n_pagos
+                + 1
+            )
+
+            amortizacion = calcular_amortizacion(
+                credito["Valor_Inicial"],
+                credito["Tasa_Interes"],
+                credito["Cuota_Mensual"],
+                cuota_actual
+            )
+
+            if amortizacion.empty:
+                continue
+
+            amortizacion = (
+                amortizacion
+                .set_index("Cuota")
+            )
+
+            if base_total > 0:
+                proporcion = (
+                    credito["Base_Reparto"]
+                    / base_total
+                )
+            else:
+                proporcion = (
+                    1
+                    / len(grupo_creditos)
+                )
+
+            for posicion, pago in (
+                pagos_propiedad
+                .iterrows()
+            ):
+                numero_cuota = (
+                    cuota_inicial
+                    + posicion
+                )
+
+                if numero_cuota not in amortizacion.index:
+                    continue
+
+                fila_amort = (
+                    amortizacion
+                    .loc[numero_cuota]
+                )
+
+                pago_credito = (
+                    pago["Pago_Real"]
+                    * proporcion
+                )
+
+                interes = max(
+                    0,
+                    float(
+                        fila_amort[
+                            "Interes_Teorico"
+                        ]
+                    )
+                )
+
+                seguro = max(
+                    0,
+                    float(
+                        credito[
+                            "Cuota_Seguros"
+                        ]
+                    )
+                )
+
+                capital = max(
+                    0,
+                    pago_credito
+                    - interes
+                    - seguro
+                )
+
+                resultados.append(
+                    {
+                        "Propiedad": propiedad,
+                        "Pago_Real": pago_credito,
+                        "Interes": min(
+                            interes,
+                            pago_credito
+                        ),
+                        "Seguro": min(
+                            seguro,
+                            max(
+                                0,
+                                pago_credito
+                                - min(
+                                    interes,
+                                    pago_credito
+                                )
+                            )
+                        ),
+                        "Capital": capital,
+                        "Cuota": numero_cuota
+                    }
+                )
+
+    if not resultados:
+        return pd.DataFrame(
+            columns=columnas_salida
+        )
+
+    detalle_amort = pd.DataFrame(
+        resultados
+    )
+
+    resumen = (
+        detalle_amort
+        .groupby(
+            "Propiedad",
+            as_index=False
+        )
+        .agg(
+            Pagos_Hipotecarios_Reales=(
+                "Pago_Real",
+                "sum"
+            ),
+            Interes_Historico_Estimado=(
+                "Interes",
+                "sum"
+            ),
+            Seguro_Historico_Estimado=(
+                "Seguro",
+                "sum"
+            ),
+            Capital_Historico_Estimado=(
+                "Capital",
+                "sum"
+            ),
+            Cuotas_Conciliadas=(
+                "Cuota",
+                "nunique"
+            )
+        )
+    )
+
+    return resumen
 
 
 # ============================================================
@@ -1877,7 +2450,16 @@ inversiones = cargar_inversiones()
 # DATOS DE CRÉDITOS / VALOR ACTUAL
 # ============================================================
 
-creditos = cargar_creditos()
+creditos_detalle, creditos = cargar_creditos(hoy)
+
+pagos_hipotecarios = cargar_pagos_hipotecarios()
+
+amortizacion_historica = (
+    calcular_amortizacion_historica(
+        creditos_detalle,
+        pagos_hipotecarios
+    )
+)
 
 
 # ============================================================
@@ -2137,13 +2719,16 @@ if st.session_state.vista_airbnb == "Propiedades":
     #
     # Se conserva exactamente el ingreso histórico combinado
     # y solamente se redistribuye entre las dos propiedades.
-    #
-    # Los gastos NO se modifican.
 
-    propiedades_corregidas = ["Torre Acqua", "Tempus 49"]
+    propiedades_corregidas = [
+        "Torre Acqua",
+        "Tempus 49"
+    ]
 
     ingreso_combinado = historico.loc[
-        historico["Nombre_Propiedad"].isin(propiedades_corregidas),
+        historico["Nombre_Propiedad"].isin(
+            propiedades_corregidas
+        ),
         "Ingresos_Historicos"
     ].sum()
 
@@ -2153,16 +2738,66 @@ if st.session_state.vista_airbnb == "Propiedades":
     historico.loc[
         historico["Nombre_Propiedad"] == "Torre Acqua",
         "Ingresos_Historicos"
-    ] = ingreso_combinado * proporcion_acqua
+    ] = (
+        ingreso_combinado
+        * proporcion_acqua
+    )
 
     historico.loc[
         historico["Nombre_Propiedad"] == "Tempus 49",
         "Ingresos_Historicos"
-    ] = ingreso_combinado * proporcion_tempus
+    ] = (
+        ingreso_combinado
+        * proporcion_tempus
+    )
+
+    # ========================================================
+    # AMORTIZACIÓN HISTÓRICA
+    # ========================================================
+    # Los pagos hipotecarios reales permanecen intactos.
+    # Solamente se separa el capital estimado para que no
+    # permanezca como gasto económico.
+    historico = historico.merge(
+        amortizacion_historica[
+            [
+                "Propiedad",
+                "Pagos_Hipotecarios_Reales",
+                "Interes_Historico_Estimado",
+                "Seguro_Historico_Estimado",
+                "Capital_Historico_Estimado",
+                "Cuotas_Conciliadas"
+            ]
+        ],
+        left_on="Nombre_Propiedad",
+        right_on="Propiedad",
+        how="left"
+    ).drop(
+        columns=["Propiedad"],
+        errors="ignore"
+    )
+
+    for col in [
+        "Pagos_Hipotecarios_Reales",
+        "Interes_Historico_Estimado",
+        "Seguro_Historico_Estimado",
+        "Capital_Historico_Estimado",
+        "Cuotas_Conciliadas"
+    ]:
+        historico[col] = (
+            historico[col]
+            .fillna(0)
+        )
+
+    # Capital hipotecario no es gasto económico:
+    # reduce deuda y aumenta patrimonio.
+    historico["Gastos_Historicos_Ajustados"] = (
+        historico["Gastos_Historicos"]
+        - historico["Capital_Historico_Estimado"]
+    ).clip(lower=0)
 
     historico["Flujo_Historico"] = (
         historico["Ingresos_Historicos"]
-        - historico["Gastos_Historicos"]
+        - historico["Gastos_Historicos_Ajustados"]
     )
 
     hoy_ts = pd.Timestamp(hoy)
@@ -2196,18 +2831,26 @@ if st.session_state.vista_airbnb == "Propiedades":
         historico["Flujo_Historico"]
         / historico["Inversion"]
         * 100
-    ).replace([float("inf"), -float("inf")], pd.NA)
+    ).replace(
+        [float("inf"), -float("inf")],
+        pd.NA
+    )
 
     historico["Yield_Anualizado"] = (
         historico["Flujo_Anualizado"]
         / historico["Inversion"]
         * 100
-    ).replace([float("inf"), -float("inf")], pd.NA)
+    ).replace(
+        [float("inf"), -float("inf")],
+        pd.NA
+    )
 
     historico["Payback_Anios"] = (
         historico["Inversion"]
         / historico["Flujo_Anualizado"]
-    ).where(historico["Flujo_Anualizado"] > 0)
+    ).where(
+        historico["Flujo_Anualizado"] > 0
+    )
 
     tabla = tabla.drop(
         columns=[
@@ -2224,6 +2867,10 @@ if st.session_state.vista_airbnb == "Propiedades":
                 "Fecha_Inicio",
                 "Ingresos_Historicos",
                 "Gastos_Historicos",
+                "Gastos_Historicos_Ajustados",
+                "Capital_Historico_Estimado",
+                "Interes_Historico_Estimado",
+                "Seguro_Historico_Estimado",
                 "Flujo_Historico",
                 "Meses_Operados",
                 "Ingreso_Mensual_Promedio",
@@ -2342,7 +2989,7 @@ if st.session_state.vista_airbnb == "Propiedades":
 </div>
 
 <div class="investment-subtitle">
-Desempeño histórico desde el inicio de operación · inversión total del activo
+Desempeño histórico · capital hipotecario separado por amortización
 </div>
 
 <table class="investment-table">
@@ -2356,7 +3003,7 @@ Desempeño histórico desde el inicio de operación · inversión total del acti
 <th>Equipamiento</th>
 <th>Patrimonio</th>
 <th>Ingresos hist.</th>
-<th>Gastos hist.</th>
+<th>Gastos hist. ajust.</th>
 <th>Flujo hist.</th>
 <th>ROI total</th>
 <th>Ingreso prom./mes</th>
@@ -2435,7 +3082,7 @@ Desempeño histórico desde el inicio de operación · inversión total del acti
 
 <td>{valor_tabla(row["Ingresos_Historicos"])}</td>
 
-<td>{valor_tabla(row["Gastos_Historicos"])}</td>
+<td>{valor_tabla(row["Gastos_Historicos_Ajustados"])}</td>
 
 <td>{flujo_html}</td>
 
@@ -2455,6 +3102,16 @@ Desempeño histórico desde el inicio de operación · inversión total del acti
     html_tabla += """
 </tbody>
 </table>
+
+<div style="
+    margin-top:8px;
+    font-size:8px;
+    color:#8A98AA;
+">
+    * Gastos históricos ajustados: se excluye el capital hipotecario,
+    tratado como amortización de deuda. Intereses y seguros permanecen
+    como gasto. Los pagos reales provienen de Movimientos_Operativos_Reparto.
+</div>
 
 </div>
 """
