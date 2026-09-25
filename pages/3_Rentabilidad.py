@@ -3196,20 +3196,14 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
     # RETORNO ECONÓMICO TOTAL
     # ========================================================
 
-    st.markdown(
-        """
-        <div class="investment-panel" style="margin-top:12px;">
-            <div class="investment-title">
-                📈 Retorno económico total
-            </div>
-            <div class="investment-subtitle">
-                Flujo histórico + valorización actual del activo · desde el inicio de operación
-            </div>
-        """,
-        unsafe_allow_html=True
-    )
-
     html_retorno = """
+    <div class="investment-panel" style="margin-top:12px;">
+        <div class="investment-title">
+            📈 Retorno económico total
+        </div>
+        <div class="investment-subtitle">
+            Flujo histórico + valorización actual del activo · desde el inicio de operación
+        </div>
     <table class="investment-table">
     <thead>
     <tr>
@@ -3305,22 +3299,16 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
         - tabla_cdt["Valor_CDT_Hoy"]
     )
 
-    st.markdown(
-        f"""
-        <div class="investment-panel" style="margin-top:12px;">
-            <div class="investment-title">
-                🏦 Inmobiliario vs CDT
-            </div>
-            <div class="investment-subtitle">
-                Mismo capital registrado en Vista_Inversiones_Prorrateadas,
-                capitalizado desde cada fecha real de inversión ·
-                benchmark CDT {TASA_CDT_BENCHMARK_EA * 100:.2f}% E.A.
-            </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    html_cdt = """
+    html_cdt = f"""
+    <div class="investment-panel" style="margin-top:12px;">
+        <div class="investment-title">
+            🏦 Inmobiliario vs CDT
+        </div>
+        <div class="investment-subtitle">
+            Mismo capital registrado en Vista_Inversiones_Prorrateadas,
+            capitalizado desde cada fecha real de inversión ·
+            benchmark CDT {TASA_CDT_BENCHMARK_EA * 100:.2f}% E.A.
+        </div>
     <table class="investment-table">
     <thead>
     <tr>
