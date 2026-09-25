@@ -2259,6 +2259,45 @@ if st.session_state.vista_airbnb == "Propiedades":
     ).drop(columns=["Propiedad"], errors="ignore")
 
     # ========================================================
+    # RETORNO ECONÓMICO TOTAL
+    # ========================================================
+    # Combina el flujo histórico generado por Airbnb con el
+    # valor económico actual del activo.
+
+    tabla["Valorizacion_Actual"] = (
+        tabla["Valor_Total_Actual"]
+        - tabla["Inversion"]
+    )
+
+    tabla["Ganancia_Economica"] = (
+        tabla["Flujo_Historico"]
+        + tabla["Valorizacion_Actual"]
+    )
+
+    tabla["ROI_Total"] = (
+        tabla["Ganancia_Economica"]
+        / tabla["Inversion"]
+        * 100
+    ).replace([float("inf"), -float("inf")], pd.NA)
+
+    tabla["Retorno_Anualizado_Total"] = (
+        (
+            1 + tabla["ROI_Total"] / 100
+        ) ** (1 / (tabla["Meses_Operados"] / 12))
+        - 1
+    ) * 100
+
+    tabla.loc[
+        tabla["Estado"] == "En desarrollo",
+        [
+            "Valorizacion_Actual",
+            "Ganancia_Economica",
+            "ROI_Total",
+            "Retorno_Anualizado_Total"
+        ]
+    ] = pd.NA
+
+    # ========================================================
     # ORDEN VISUAL IGUAL AL PORTAFOLIO
     # ========================================================
     orden_tabla = {
@@ -2425,6 +2464,98 @@ Desempeño histórico desde el inicio de operación · inversión total del acti
         unsafe_allow_html=True
     )
 
+    # ========================================================
+    # RETORNO ECONÓMICO TOTAL
+    # ========================================================
+
+    st.markdown(
+        """
+        <div class="investment-panel" style="margin-top:12px;">
+            <div class="investment-title">
+                📈 Retorno económico total
+            </div>
+            <div class="investment-subtitle">
+                Flujo histórico + valorización actual del activo · desde el inicio de operación
+            </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    html_retorno = """
+    <table class="investment-table">
+    <thead>
+    <tr>
+        <th>Propiedad</th>
+        <th>Inversión</th>
+        <th>Flujo hist.</th>
+        <th>Valor total actual</th>
+        <th>Valorización</th>
+        <th>Ganancia económica</th>
+        <th>ROI total</th>
+        <th>Retorno anualizado</th>
+    </tr>
+    </thead>
+    <tbody>
+    """
+
+    for _, row in tabla.iterrows():
+
+        valorizacion = row["Valorizacion_Actual"]
+        ganancia = row["Ganancia_Economica"]
+        roi_total = row["ROI_Total"]
+        retorno_anual = row["Retorno_Anualizado_Total"]
+
+        def retorno_dinero(valor):
+            if pd.isna(valor):
+                return '<span class="investment-muted">—</span>'
+            clase = (
+                "investment-flow-negative"
+                if float(valor) < 0
+                else "investment-flow-positive"
+            )
+            return (
+                f'<span class="{clase}">'
+                f'{dinero_corto(valor)}'
+                f'</span>'
+            )
+
+        def retorno_porcentaje(valor):
+            if pd.isna(valor):
+                return '<span class="investment-muted">—</span>'
+            clase = (
+                "investment-flow-negative"
+                if float(valor) < 0
+                else "investment-flow-positive"
+            )
+            return (
+                f'<span class="{clase}">'
+                f'{float(valor):.1f}%'
+                f'</span>'
+            )
+
+        html_retorno += f"""
+        <tr>
+            <td>{row["Nombre_Propiedad"]}</td>
+            <td>{dinero_corto(row["Inversion"])}</td>
+            <td>{retorno_dinero(row["Flujo_Historico"])}</td>
+            <td>{valor_tabla(row["Valor_Total_Actual"])}</td>
+            <td>{retorno_dinero(valorizacion)}</td>
+            <td>{retorno_dinero(ganancia)}</td>
+            <td>{retorno_porcentaje(roi_total)}</td>
+            <td>{retorno_porcentaje(retorno_anual)}</td>
+        </tr>
+        """
+
+    html_retorno += """
+    </tbody>
+    </table>
+    </div>
+    """
+
+    st.markdown(
+        html_retorno,
+        unsafe_allow_html=True
+    )
 
 
 # ============================================================
