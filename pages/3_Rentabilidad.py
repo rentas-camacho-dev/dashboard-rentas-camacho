@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import base64
+import textwrap
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -3274,6 +3275,8 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
     </div>
     """
 
+    html_retorno = textwrap.dedent(html_retorno).strip()
+
     st.markdown(
         html_retorno,
         unsafe_allow_html=True
@@ -3378,6 +3381,8 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
 
     </div>
     """
+
+    html_cdt = textwrap.dedent(html_cdt).strip()
 
     st.markdown(
         html_cdt,
