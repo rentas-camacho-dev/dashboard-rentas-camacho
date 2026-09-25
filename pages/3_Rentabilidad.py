@@ -1173,6 +1173,91 @@ def cargar_inversiones():
 
 
 # ============================================================
+# CAPITAL REAL REGISTRADO + CDT HIPOTÉTICO
+# ============================================================
+
+# Para la comparación contra CDT se utiliza EXCLUSIVAMENTE
+# el valor registrado en Vista_Inversiones_Prorrateadas.
+# No se resta ni se suma deuda/crédito.
+TASA_CDT_BENCHMARK_EA = 0.1231
+
+
+@st.cache_data(ttl=300)
+def cargar_capital_cdt(fecha_hoy):
+    query = """
+    SELECT
+        Activo_Proyecto,
+        DATE(Fecha) AS Fecha,
+        SUM(Valor_Prorrateado_Calculado) AS Capital
+    FROM `rentascamacho.rentas_cortas.Vista_Inversiones_Prorrateadas`
+    WHERE Activo_Proyecto IN (
+        'Torre Acqua',
+        'Torre Evoca',
+        'Torre Ventto',
+        'Lotus',
+        'Santa Marina',
+        'Base Loft',
+        'Tempus 49',
+        'Iwani'
+    )
+      AND Fecha IS NOT NULL
+      AND Valor_Prorrateado_Calculado IS NOT NULL
+    GROUP BY Activo_Proyecto, DATE(Fecha)
+    ORDER BY Activo_Proyecto, Fecha
+    """
+
+    capital = client.query(query).to_dataframe()
+
+    if capital.empty:
+        return pd.DataFrame(
+            columns=[
+                "Nombre_Propiedad",
+                "Capital_Registrado",
+                "Valor_CDT_Hoy",
+                "Ganancia_CDT"
+            ]
+        )
+
+    capital["Fecha"] = pd.to_datetime(
+        capital["Fecha"], errors="coerce"
+    )
+    capital["Capital"] = pd.to_numeric(
+        capital["Capital"], errors="coerce"
+    ).fillna(0)
+
+    fecha_hoy_ts = pd.Timestamp(fecha_hoy)
+
+    capital["Dias"] = (
+        fecha_hoy_ts - capital["Fecha"]
+    ).dt.days.clip(lower=0)
+
+    capital["Valor_CDT"] = (
+        capital["Capital"]
+        * (1 + TASA_CDT_BENCHMARK_EA)
+        ** (capital["Dias"] / 365.25)
+    )
+
+    resultado = (
+        capital
+        .groupby("Activo_Proyecto", as_index=False)
+        .agg(
+            Capital_Registrado=("Capital", "sum"),
+            Valor_CDT_Hoy=("Valor_CDT", "sum")
+        )
+        .rename(
+            columns={"Activo_Proyecto": "Nombre_Propiedad"}
+        )
+    )
+
+    resultado["Ganancia_CDT"] = (
+        resultado["Valor_CDT_Hoy"]
+        - resultado["Capital_Registrado"]
+    )
+
+    return resultado
+
+
+# ============================================================
 # CRÉDITOS, AMORTIZACIÓN Y VALOR ACTUAL DE LOS ACTIVOS
 # ============================================================
 
@@ -1972,6 +2057,8 @@ def cargar_reservas(
 df = cargar_datos_financieros()
 
 hoy = date.today()
+
+capital_cdt = cargar_capital_cdt(hoy)
 
 inicio_mes = date(
     hoy.year,
@@ -3195,6 +3282,117 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
 
     st.markdown(
         html_retorno,
+        unsafe_allow_html=True
+    )
+
+    # ========================================================
+    # COMPARACIÓN: INMOBILIARIO VS CDT
+    # ========================================================
+
+    tabla_cdt = tabla.merge(
+        capital_cdt,
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    tabla_cdt["Resultado_Inmobiliario"] = (
+        tabla_cdt["Flujo_Historico"].fillna(0)
+        + tabla_cdt["Patrimonio_Actual"].fillna(0)
+    )
+
+    tabla_cdt["Diferencia_vs_CDT"] = (
+        tabla_cdt["Resultado_Inmobiliario"]
+        - tabla_cdt["Valor_CDT_Hoy"]
+    )
+
+    st.markdown(
+        f"""
+        <div class="investment-panel" style="margin-top:12px;">
+            <div class="investment-title">
+                🏦 Inmobiliario vs CDT
+            </div>
+            <div class="investment-subtitle">
+                Mismo capital registrado en Vista_Inversiones_Prorrateadas,
+                capitalizado desde cada fecha real de inversión ·
+                benchmark CDT {TASA_CDT_BENCHMARK_EA * 100:.2f}% E.A.
+            </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    html_cdt = """
+    <table class="investment-table">
+    <thead>
+    <tr>
+        <th>Propiedad</th>
+        <th>Capital invertido</th>
+        <th>Valor CDT hoy</th>
+        <th>Ganancia CDT</th>
+        <th>Flujo + valor neto salida</th>
+        <th>Diferencia vs CDT</th>
+    </tr>
+    </thead>
+    <tbody>
+    """
+
+    for _, row in tabla_cdt.iterrows():
+
+        capital = row["Capital_Registrado"]
+        valor_cdt = row["Valor_CDT_Hoy"]
+        ganancia_cdt = row["Ganancia_CDT"]
+        resultado_inmobiliario = row["Resultado_Inmobiliario"]
+        diferencia = row["Diferencia_vs_CDT"]
+
+        if pd.isna(capital):
+            continue
+
+        def cdt_money(valor):
+            if pd.isna(valor):
+                return '<span class="investment-muted">—</span>'
+
+            clase = (
+                "investment-flow-negative"
+                if float(valor) < 0
+                else "investment-flow-positive"
+            )
+
+            return (
+                f'<span class="{clase}">'
+                f'{dinero_corto(valor)}'
+                f'</span>'
+            )
+
+        html_cdt += f"""
+        <tr>
+            <td>{row["Nombre_Propiedad"]}</td>
+            <td>{dinero_corto(capital)}</td>
+            <td>{dinero_corto(valor_cdt)}</td>
+            <td>{cdt_money(ganancia_cdt)}</td>
+            <td>{dinero_corto(resultado_inmobiliario)}</td>
+            <td>{cdt_money(diferencia)}</td>
+        </tr>
+        """
+
+    html_cdt += """
+    </tbody>
+    </table>
+
+    <div style="
+        margin-top:8px;
+        font-size:8px;
+        color:#8A98AA;
+    ">
+        El escenario CDT es hipotético: toma únicamente el capital
+        registrado en la base de inversiones y respeta la fecha de cada
+        inversión. No se incorpora deuda al capital CDT. El resultado
+        inmobiliario suma el flujo histórico y el valor neto de salida.
+    </div>
+
+    </div>
+    """
+
+    st.markdown(
+        html_cdt,
         unsafe_allow_html=True
     )
 
