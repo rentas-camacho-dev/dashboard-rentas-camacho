@@ -3277,6 +3277,8 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
 
     html_retorno = textwrap.dedent(html_retorno).strip()
 
+    html_retorno = textwrap.dedent(html_retorno).strip()
+
     st.markdown(
         html_retorno,
         unsafe_allow_html=True
@@ -3381,6 +3383,8 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
 
     </div>
     """
+
+    html_cdt = textwrap.dedent(html_cdt).strip()
 
     html_cdt = textwrap.dedent(html_cdt).strip()
 
