@@ -3275,9 +3275,12 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
     </div>
     """
 
-    html_retorno = textwrap.dedent(html_retorno).strip()
-
-    html_retorno = textwrap.dedent(html_retorno).strip()
+    # Elimina toda indentación inicial para evitar que Streamlit
+    # interprete el HTML como bloque de código Markdown.
+    html_retorno = "\n".join(
+        linea.strip()
+        for linea in html_retorno.splitlines()
+    ).strip()
 
     st.markdown(
         html_retorno,
@@ -3384,9 +3387,12 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
     </div>
     """
 
-    html_cdt = textwrap.dedent(html_cdt).strip()
-
-    html_cdt = textwrap.dedent(html_cdt).strip()
+    # Elimina toda indentación inicial para evitar que Streamlit
+    # interprete el HTML como bloque de código Markdown.
+    html_cdt = "\n".join(
+        linea.strip()
+        for linea in html_cdt.splitlines()
+    ).strip()
 
     st.markdown(
         html_cdt,
