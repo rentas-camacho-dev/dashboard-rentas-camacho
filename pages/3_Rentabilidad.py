@@ -1136,6 +1136,39 @@ def cargar_inversiones():
         errors="coerce"
     ).fillna(0)
 
+    # ========================================================
+    # INVERSIÓN TOTAL DEL ACTIVO
+    # ========================================================
+    # La inversión utilizada para el análisis corresponde al
+    # valor total del activo: apartamento + amoblamiento +
+    # equipamiento + demás inversión registrada.
+    #
+    # Excepciones definidas para el portafolio:
+    # - Torre Acqua: inversión registrada + crédito
+    # - Torre Evoca: inversión registrada (contado)
+    # - Torre Ventto: valor total informado externamente
+    # - Lotus: valor total del activo informado
+    # - Santa Marina: inversión registrada + créditos
+    # - Base Loft: inversión registrada ya incluye el crédito
+    # - Tempus 49: inversión registrada + crédito
+    # - Iwani: se mantiene la inversión registrada
+
+    inversiones_totales = {
+        "Torre Acqua": 174662034,
+        "Torre Evoca": 172456719,
+        "Torre Ventto": 190000000,
+        "Lotus": 349775542,
+        "Santa Marina": 181281438,
+        "Base Loft": 166613251,
+        "Tempus 49": 183969093,
+    }
+
+    for propiedad, valor in inversiones_totales.items():
+        inversiones.loc[
+            inversiones["Activo_Proyecto"] == propiedad,
+            "Inversion"
+        ] = valor
+
     return inversiones
 
 
@@ -2177,7 +2210,7 @@ if st.session_state.vista_airbnb == "Propiedades":
 </div>
 
 <div class="investment-subtitle">
-Desempeño histórico desde el inicio de operación · inversión de bolsillo
+Desempeño histórico desde el inicio de operación · inversión total del activo
 </div>
 
 <table class="investment-table">
