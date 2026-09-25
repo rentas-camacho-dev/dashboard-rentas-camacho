@@ -1173,6 +1173,70 @@ def cargar_inversiones():
 
 
 # ============================================================
+# CRÉDITOS Y VALOR ACTUAL DE LOS ACTIVOS
+# ============================================================
+
+@st.cache_data(ttl=300)
+def cargar_creditos():
+
+    query = """
+    SELECT
+        Propiedad,
+        Saldo_Actual,
+        Cuota_Mensual,
+        Cuota_Seguros,
+        Valor_Actual,
+        Equipamiento,
+        Valor_Total_Actual,
+        Patrimonio_Actual,
+        Costo_Mensual_Total
+    FROM `rentascamacho.rentas_cortas.Creditos_Vista`
+    WHERE Propiedad IS NOT NULL
+    """
+
+    creditos = client.query(query).to_dataframe()
+
+    for col in [
+        "Saldo_Actual",
+        "Cuota_Mensual",
+        "Cuota_Seguros",
+        "Valor_Actual",
+        "Equipamiento",
+        "Valor_Total_Actual",
+        "Patrimonio_Actual",
+        "Costo_Mensual_Total"
+    ]:
+        creditos[col] = pd.to_numeric(
+            creditos[col],
+            errors="coerce"
+        )
+
+    # Una propiedad puede tener más de un crédito
+    # (por ejemplo Santa Marina).
+    # La valoración del activo no se suma: se toma una sola vez.
+    creditos_propiedad = (
+        creditos
+        .groupby("Propiedad", as_index=False)
+        .agg(
+            Saldo_Actual=("Saldo_Actual", "sum"),
+            Cuota_Mensual=("Cuota_Mensual", "sum"),
+            Cuota_Seguros=("Cuota_Seguros", "sum"),
+            Valor_Actual=("Valor_Actual", "max"),
+            Equipamiento=("Equipamiento", "max"),
+            Valor_Total_Actual=("Valor_Total_Actual", "max"),
+            Costo_Mensual_Total=("Costo_Mensual_Total", "sum")
+        )
+    )
+
+    creditos_propiedad["Patrimonio_Actual"] = (
+        creditos_propiedad["Valor_Total_Actual"].fillna(0)
+        - creditos_propiedad["Saldo_Actual"].fillna(0)
+    )
+
+    return creditos_propiedad
+
+
+# ============================================================
 # RESERVAS AIRBNB / OCUPACIÓN
 # ============================================================
 
@@ -1810,6 +1874,13 @@ resumen = (
 inversiones = cargar_inversiones()
 
 # ============================================================
+# DATOS DE CRÉDITOS / VALOR ACTUAL
+# ============================================================
+
+creditos = cargar_creditos()
+
+
+# ============================================================
 # TARJETA PROPIEDAD
 # ============================================================
 
@@ -2167,7 +2238,29 @@ if st.session_state.vista_airbnb == "Propiedades":
         how="left"
     )
 
-    # Orden visual igual al portafolio
+    # ========================================================
+    # VALOR ACTUAL / EQUIPAMIENTO / PATRIMONIO
+    # ========================================================
+    tabla = tabla.merge(
+        creditos[
+            [
+                "Propiedad",
+                "Saldo_Actual",
+                "Valor_Actual",
+                "Equipamiento",
+                "Valor_Total_Actual",
+                "Patrimonio_Actual",
+                "Costo_Mensual_Total"
+            ]
+        ],
+        left_on="Nombre_Propiedad",
+        right_on="Propiedad",
+        how="left"
+    ).drop(columns=["Propiedad"], errors="ignore")
+
+    # ========================================================
+    # ORDEN VISUAL IGUAL AL PORTAFOLIO
+    # ========================================================
     orden_tabla = {
         "Torre Acqua": 1,
         "Torre Evoca": 2,
@@ -2220,6 +2313,9 @@ Desempeño histórico desde el inicio de operación · inversión total del acti
 <th>Propiedad</th>
 <th>Estado</th>
 <th>Inversión</th>
+<th>Valor actual</th>
+<th>Equipamiento</th>
+<th>Patrimonio</th>
 <th>Ingresos hist.</th>
 <th>Gastos hist.</th>
 <th>Flujo hist.</th>
@@ -2285,6 +2381,16 @@ Desempeño histórico desde el inicio de operación · inversión total del acti
 <td>
 <span class="investment-money">
 {dinero_corto(row["Inversion"])}
+</span>
+</td>
+
+<td>{valor_tabla(row["Valor_Actual"])}</td>
+
+<td>{valor_tabla(row["Equipamiento"])}</td>
+
+<td>
+<span class="investment-money">
+{valor_tabla(row["Patrimonio_Actual"])}
 </span>
 </td>
 
