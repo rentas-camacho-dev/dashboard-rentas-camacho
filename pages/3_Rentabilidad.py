@@ -1174,16 +1174,39 @@ def cargar_inversiones():
 
 
 # ============================================================
-# CAPITAL PROPIO + CDT HIPOTÉTICO
+# ============================================================
+# CAPITAL PROPIO / CASH + CDT HIPOTÉTICO
 # ============================================================
 
-# Para la comparación contra CDT se utiliza únicamente
-# el capital propio efectivamente invertido.
+# REGLA DEL CASH PARA EL CDT
+# ------------------------------------------------------------
+# El capital de comparación contra CDT sale EXCLUSIVAMENTE
+# de la base real de inversiones:
 #
-# El valor financiado mediante crédito NO entra al CDT.
+#   Vista_Inversiones_Prorrateadas
+#   SUM(Valor_Prorrateado_Calculado)
 #
-# Las inversiones mantienen su fecha original para conservar
-# la lógica histórica de capitalización.
+# NO se utilizan:
+#   - ingresos Airbnb
+#   - flujo histórico
+#   - valor actual del inmueble
+#   - patrimonio
+#   - valorización
+#   - créditos de otras propiedades
+#
+# ÚNICA EXCEPCIÓN:
+# Base Loft tiene el crédito incluido dentro de la inversión
+# registrada en la base, por lo que para obtener el CASH propio
+# se descuenta únicamente su crédito inicial.
+#
+# Para todas las demás propiedades:
+#   Capital propio = inversión registrada en la base
+#
+# Para Base Loft:
+#   Capital propio = inversión registrada - crédito inicial
+#
+# Las fechas originales de cada inversión se conservan para
+# capitalizar el CDT desde la fecha real de cada aporte.
 
 TASA_CDT_BENCHMARK_EA = 0.1231
 
@@ -1192,7 +1215,7 @@ TASA_CDT_BENCHMARK_EA = 0.1231
 def cargar_capital_cdt(fecha_hoy):
 
     # --------------------------------------------------------
-    # 1. INVERSIONES REALES POR FECHA
+    # 1. INVERSIONES REALES DE LA BASE
     # --------------------------------------------------------
     query_inversiones = """
     SELECT
@@ -1246,89 +1269,84 @@ def cargar_capital_cdt(fecha_hoy):
     ).fillna(0)
 
     # --------------------------------------------------------
-    # 2. CRÉDITOS INICIALES POR PROPIEDAD
+    # 2. ÚNICO CRÉDITO QUE SE DESCUENTA DEL CASH:
+    #    BASE LOFT
     # --------------------------------------------------------
-    query_creditos = """
+    query_credito_base_loft = """
     SELECT
-        Propiedad,
-        SUM(
-            COALESCE(Valor_Inicial, 0)
-        ) AS Credito_Inicial
+        SUM(COALESCE(Valor_Inicial, 0)) AS Credito_Base_Loft
     FROM `rentascamacho.rentas_cortas.Creditos_Vista`
-    WHERE Propiedad IN (
-        'Torre Acqua',
-        'Torre Evoca',
-        'Torre Ventto',
-        'Lotus',
-        'Santa Marina',
-        'Base Loft',
-        'Tempus 49',
-        'Iwani'
-    )
-    GROUP BY Propiedad
+    WHERE Propiedad = 'Base Loft'
     """
 
-    creditos = client.query(
-        query_creditos
+    credito_base_loft = client.query(
+        query_credito_base_loft
     ).to_dataframe()
 
-    creditos["Credito_Inicial"] = pd.to_numeric(
-        creditos["Credito_Inicial"],
-        errors="coerce"
-    ).fillna(0)
-
-    # --------------------------------------------------------
-    # 3. UNIR CRÉDITO A LAS INVERSIONES
-    # --------------------------------------------------------
-    capital = capital.merge(
-        creditos,
-        left_on="Activo_Proyecto",
-        right_on="Propiedad",
-        how="left"
+    credito_base_loft = float(
+        pd.to_numeric(
+            credito_base_loft["Credito_Base_Loft"].iloc[0],
+            errors="coerce"
+        )
+        if not credito_base_loft.empty
+        else 0
     )
 
-    capital["Credito_Inicial"] = (
-        capital["Credito_Inicial"]
-        .fillna(0)
-    )
+    if pd.isna(credito_base_loft):
+        credito_base_loft = 0.0
 
     # --------------------------------------------------------
-    # 4. CAPITAL PROPIO
+    # 3. CAPITAL CASH
+    # --------------------------------------------------------
     #
-    # El crédito se descuenta proporcionalmente de las
-    # inversiones de cada propiedad para conservar las fechas
-    # históricas de inversión.
-    # --------------------------------------------------------
+    # Por defecto el CASH es exactamente el valor registrado
+    # en la base de inversiones.
+    #
+    # Solo Base Loft recibe el ajuste por su crédito.
+    #
     capital_por_propiedad = (
         capital
-        .groupby(
-            "Activo_Proyecto"
-        )["Capital"]
+        .groupby("Activo_Proyecto")["Capital"]
         .transform("sum")
     )
 
-    capital["Factor_Capital_Propio"] = 1.0
+    capital["Capital_Propio"] = capital["Capital"]
 
-    mask = capital_por_propiedad > 0
+    mask_base_loft = (
+        capital["Activo_Proyecto"] == "Base Loft"
+    ) & (
+        capital_por_propiedad > 0
+    )
 
-    capital.loc[mask, "Factor_Capital_Propio"] = (
-        (
-            capital_por_propiedad[mask]
-            - capital.loc[mask, "Credito_Inicial"]
+    # Como no tenemos la fecha histórica del desembolso del
+    # crédito, la deducción se distribuye proporcionalmente
+    # entre las inversiones de Base Loft. Esto conserva las
+    # fechas originales para la capitalización del CDT.
+    if credito_base_loft > 0:
+        factor_base_loft = (
+            (
+                capital_por_propiedad[mask_base_loft]
+                - credito_base_loft
+            )
+            / capital_por_propiedad[mask_base_loft]
+        ).clip(
+            lower=0,
+            upper=1
         )
-        / capital_por_propiedad[mask]
-    ).clip(
-        lower=0,
-        upper=1
-    )
 
-    capital["Capital_Propio"] = (
-        capital["Capital"]
-        * capital["Factor_Capital_Propio"]
-    )
+        capital.loc[
+            mask_base_loft,
+            "Capital_Propio"
+        ] = (
+            capital.loc[
+                mask_base_loft,
+                "Capital"
+            ]
+            * factor_base_loft
+        )
 
     # --------------------------------------------------------
-    # 5. CAPITALIZACIÓN DEL CDT
+    # 4. CAPITALIZACIÓN DEL CDT
     # --------------------------------------------------------
     fecha_hoy_ts = pd.Timestamp(
         fecha_hoy
@@ -1352,7 +1370,7 @@ def cargar_capital_cdt(fecha_hoy):
     )
 
     # --------------------------------------------------------
-    # 6. RESUMEN POR PROPIEDAD
+    # 5. RESUMEN POR PROPIEDAD
     # --------------------------------------------------------
     resultado = (
         capital
@@ -1388,9 +1406,6 @@ def cargar_capital_cdt(fecha_hoy):
     )
 
     return resultado
-
-
-# ============================================================
 # CRÉDITOS, AMORTIZACIÓN Y VALOR ACTUAL DE LOS ACTIVOS
 # ============================================================
 
