@@ -1208,7 +1208,89 @@ def cargar_inversiones():
 # Las fechas originales de cada inversión se conservan para
 # capitalizar el CDT desde la fecha real de cada aporte.
 
-TASA_CDT_BENCHMARK_EA = 0.1231
+# ============================================================
+# TASAS CDT HISTÓRICAS POR AÑO
+# ============================================================
+# Benchmark hipotético para comparar cada aporte de capital
+# contra un CDT, respetando la tasa correspondiente a cada año.
+#
+# 2020-2025: promedio anual utilizado para el ejercicio.
+# 2026: promedio provisional del año, al ser un año aún abierto.
+#
+# La capitalización se hace año por año y conserva la fecha
+# real de cada aporte de inversión.
+#
+TASAS_CDT_ANUALES = {
+    2020: 0.0338,
+    2021: 0.0207,
+    2022: 0.0850,
+    2023: 0.1321,
+    2024: 0.1017,
+    2025: 0.0896,
+    2026: 0.1000,
+}
+
+
+def valor_cdt_historico(
+    capital_inicial,
+    fecha_inicio,
+    fecha_fin
+):
+    """
+    Capitaliza un aporte de capital utilizando la tasa anual
+    correspondiente a cada año del período.
+
+    Se utiliza capitalización efectiva anual prorrateada por
+    fracción de año para los períodos parciales.
+    """
+    if (
+        pd.isna(capital_inicial)
+        or pd.isna(fecha_inicio)
+        or pd.isna(fecha_fin)
+    ):
+        return float(capital_inicial or 0)
+
+    valor = float(capital_inicial)
+
+    inicio = pd.Timestamp(fecha_inicio)
+    fin = pd.Timestamp(fecha_fin)
+
+    if fin <= inicio:
+        return valor
+
+    for anio in range(
+        inicio.year,
+        fin.year + 1
+    ):
+        tasa = TASAS_CDT_ANUALES.get(anio)
+
+        if tasa is None:
+            continue
+
+        inicio_anio = max(
+            inicio,
+            pd.Timestamp(anio, 1, 1)
+        )
+
+        fin_anio = min(
+            fin,
+            pd.Timestamp(anio + 1, 1, 1)
+        )
+
+        dias = (
+            fin_anio - inicio_anio
+        ).days
+
+        if dias <= 0:
+            continue
+
+        valor *= (
+            1 + tasa
+        ) ** (
+            dias / 365.25
+        )
+
+    return valor
 
 
 @st.cache_data(ttl=300)
@@ -1352,21 +1434,13 @@ def cargar_capital_cdt(fecha_hoy):
         fecha_hoy
     )
 
-    capital["Dias"] = (
-        fecha_hoy_ts
-        - capital["Fecha"]
-    ).dt.days.clip(
-        lower=0
-    )
-
-    capital["Valor_CDT"] = (
-        capital["Capital_Propio"]
-        * (
-            1 + TASA_CDT_BENCHMARK_EA
-        )
-        ** (
-            capital["Dias"] / 365.25
-        )
+    capital["Valor_CDT"] = capital.apply(
+        lambda row: valor_cdt_historico(
+            row["Capital_Propio"],
+            row["Fecha"],
+            fecha_hoy_ts
+        ),
+        axis=1
     )
 
     # --------------------------------------------------------
@@ -3462,7 +3536,7 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
         <div class="investment-subtitle">
             Solo capital propio de las inversiones, excluyendo crédito,
             capitalizado desde cada fecha real de inversión ·
-            benchmark CDT {TASA_CDT_BENCHMARK_EA * 100:.2f}% E.A.
+            benchmark CDT histórico 2020–2026 · tasas promedio anuales
         </div>
     <table class="investment-table">
     <thead>
