@@ -1293,6 +1293,70 @@ def valor_cdt_historico(
     return valor
 
 
+def tasa_cdt_promedio_historica(
+    fecha_inicio,
+    fecha_fin
+):
+    """
+    Calcula la tasa promedio anual del CDT para el período
+    comprendido entre la primera inversión y la fecha actual.
+
+    El promedio es ponderado por días, de forma que un año
+    completo pesa más que un período parcial.
+    """
+    if (
+        pd.isna(fecha_inicio)
+        or pd.isna(fecha_fin)
+    ):
+        return pd.NA
+
+    inicio = pd.Timestamp(fecha_inicio)
+    fin = pd.Timestamp(fecha_fin)
+
+    if fin <= inicio:
+        return pd.NA
+
+    suma_tasa_dias = 0.0
+    total_dias = 0
+
+    for anio in range(
+        inicio.year,
+        fin.year + 1
+    ):
+        tasa = TASAS_CDT_ANUALES.get(anio)
+
+        if tasa is None:
+            continue
+
+        inicio_anio = max(
+            inicio,
+            pd.Timestamp(anio, 1, 1)
+        )
+
+        fin_anio = min(
+            fin,
+            pd.Timestamp(anio + 1, 1, 1)
+        )
+
+        dias = (
+            fin_anio - inicio_anio
+        ).days
+
+        if dias <= 0:
+            continue
+
+        suma_tasa_dias += tasa * dias
+        total_dias += dias
+
+    if total_dias == 0:
+        return pd.NA
+
+    return (
+        suma_tasa_dias
+        / total_dias
+    )
+
+
 @st.cache_data(ttl=300)
 def cargar_capital_cdt(fecha_hoy):
 
@@ -1336,7 +1400,8 @@ def cargar_capital_cdt(fecha_hoy):
                 "Capital_Registrado",
                 "Capital_Propio",
                 "Valor_CDT_Hoy",
-                "Ganancia_CDT"
+                "Ganancia_CDT",
+                "Tasa_CDT_Promedio"
             ]
         )
 
@@ -1444,7 +1509,33 @@ def cargar_capital_cdt(fecha_hoy):
     )
 
     # --------------------------------------------------------
-    # 5. RESUMEN POR PROPIEDAD
+    # 5. TASA PROMEDIO CDT POR PROPIEDAD
+    # --------------------------------------------------------
+    # Se toma desde la primera fecha real de inversión de cada
+    # propiedad hasta hoy, ponderando la tasa de cada año por
+    # el número de días del período.
+    fecha_inicio_propiedad = (
+        capital
+        .groupby("Activo_Proyecto")["Fecha"]
+        .min()
+        .rename("Fecha_Inicio_CDT")
+        .reset_index()
+    )
+
+    fecha_hoy_ts = pd.Timestamp(fecha_hoy)
+
+    fecha_inicio_propiedad["Tasa_CDT_Promedio"] = (
+        fecha_inicio_propiedad["Fecha_Inicio_CDT"]
+        .apply(
+            lambda fecha: tasa_cdt_promedio_historica(
+                fecha,
+                fecha_hoy_ts
+            )
+        )
+    )
+
+    # --------------------------------------------------------
+    # 6. RESUMEN POR PROPIEDAD
     # --------------------------------------------------------
     resultado = (
         capital
@@ -1472,6 +1563,17 @@ def cargar_capital_cdt(fecha_hoy):
                     "Nombre_Propiedad"
             }
         )
+    )
+
+    resultado = resultado.merge(
+        fecha_inicio_propiedad[
+            [
+                "Activo_Proyecto",
+                "Tasa_CDT_Promedio"
+            ]
+        ],
+        on="Activo_Proyecto",
+        how="left"
     )
 
     resultado["Ganancia_CDT"] = (
@@ -3272,6 +3374,19 @@ if st.session_state.vista_airbnb == "Propiedades":
         .reset_index(drop=True)
     )
 
+    # Tasa promedio histórica de CDT desde la primera inversión
+    # real de cada propiedad hasta hoy.
+    tabla = tabla.merge(
+        capital_cdt[
+            [
+                "Nombre_Propiedad",
+                "Tasa_CDT_Promedio"
+            ]
+        ],
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
     def valor_tabla(valor):
         if pd.isna(valor):
             return "—"
@@ -3290,7 +3405,7 @@ if st.session_state.vista_airbnb == "Propiedades":
 </div>
 
 <div class="investment-subtitle">
-Desempeño histórico · capital hipotecario separado por amortización · valor neto de salida
+Desempeño histórico · capital hipotecario separado por amortización · valor neto de salida · comparación con CDT histórico
 </div>
 
 <table class="investment-table">
@@ -3310,6 +3425,7 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
 <th>Ingreso prom./mes</th>
 <th>Flujo prom./mes</th>
 <th>Yield total anual</th>
+<th>CDT prom. anual</th>
 
 </tr>
 </thead>
@@ -3347,6 +3463,7 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
 
         roi_html = porcentaje_tabla(row["ROI_Total"])
         yield_html = porcentaje_tabla(row["Retorno_Anualizado_Total"])
+        cdt_promedio_html = porcentaje_tabla(row["Tasa_CDT_Promedio"])
 
         html_tabla += f"""
 <tr>
@@ -3388,6 +3505,8 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
 <td>{valor_tabla(row["Flujo_Mensual_Promedio"])}</td>
 
 <td>{yield_html}</td>
+
+<td>{cdt_promedio_html}</td>
 
 </tr>
 """
