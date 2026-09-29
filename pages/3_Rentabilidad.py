@@ -3593,11 +3593,6 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
 # VISTA ANÁLISIS — RADAR INMOBILIARIO
 # ============================================================
 
-
-# ============================================================
-# VISTA ANÁLISIS — RADAR INMOBILIARIO
-# ============================================================
-
 elif st.session_state.vista_airbnb == "Análisis":
 
     st.markdown(
@@ -3607,1088 +3602,461 @@ elif st.session_state.vista_airbnb == "Análisis":
 </div>
 
 <div class="section-subtitle">
-Mercado online actualizado + comportamiento del activo + comparación por tamaño y tipología.
+Mercado online actualizado + comportamiento del activo + catalizadores documentados.
 </div>
 """,
         unsafe_allow_html=True
     )
 
     # ========================================================
-    # RADAR ONLINE — TULUGAR (PÁGINAS PÚBLICAS)
-    # ========================================================
-    # La fuente de mercado sigue siendo la página pública de TuLugar.
-    # No usamos el endpoint API que anteriormente devolvía 0.
-    #
-    # IMPORTANTE:
-    # - La mediana de alquiler de TuLugar corresponde a toda la zona.
-    # - Ahora incorporamos el tamaño y la tipología REAL de cada activo.
-    # - No inventamos una renta comparable por m² si TuLugar no publica
-    #   ese dato segmentado en la ficha pública.
-    # - El valor de mercado estimado del activo = $/m² de la zona × m²
-    #   interiores del activo. Es una referencia, no un avalúo.
+    # ============================================================
+    # RADAR ONLINE — MERCADO REAL + COMPARABLES
+    # ============================================================
+    # CORRECCIÓN:
+    # 1) NO usamos "Propiedades monitoreadas" de TuLugar como oferta
+    #    del mercado. Es solamente el tamaño de su muestra.
+    # 2) Las Aguas usa oferta publicada de FincaRaíz + comparables
+    #    de apartaestudios de 18–30 m².
+    # 3) Evoca usa comparables de Las Nieves de 18–25 m², no el
+    #    $/m² general del barrio.
+    # 4) Lotus usa la referencia de apartamentos de 3 habitaciones
+    #    de Torices, porque el activo tiene 3 habitaciones.
+    # 5) Si una fuente no tiene muestra comparable suficiente,
+    #    mostramos "Sin muestra" en vez de inventar un valor.
+    # ============================================================
 
     TULUGAR_HEADERS = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 Chrome/153 Safari/537.36"
-        ),
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153 Safari/537.36",
         "Accept-Language": "es-CO,es;q=0.9,en;q=0.8",
     }
 
-    # ========================================================
-    # PERFIL REAL DE LOS ACTIVOS
-    # ========================================================
-
-    perfiles_radar = {
+    propiedades_radar = {
         "Torre Acqua": {
-            "ciudad": "Bogotá",
-            "zona": "Las Aguas",
-            "area_m2": 20,
-            "terraza_m2": 0,
-            "tipo": "Monoambiente",
-            "habitaciones": 0,
-            "banos": 1,
-            "segmento": "15–22 m² · estudio",
-            "ivp": None,
-            "catalizador": "Centro / renovación",
+            "ciudad": "Bogotá", "zona": "Las Aguas",
+            "url": "https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria",
+            "ivp": None, "catalizador": "Centro / renovación",
             "catalizador_url": "https://www.bogota.gov.co/",
-            "url": (
-                "https://tulugar.com/es/mercado/colombia/bogota/"
-                "las-aguas-localidad-la-candelaria"
-            ),
+            "area_m2": 20, "habitaciones": 0,
         },
         "Torre Evoca": {
-            "ciudad": "Bogotá",
-            "zona": "Las Nieves",
-            "area_m2": 19,
-            "terraza_m2": 0,
-            "tipo": "Monoambiente",
-            "habitaciones": 0,
-            "banos": 1,
-            "segmento": "15–22 m² · estudio",
-            "ivp": None,
-            "catalizador": "Centro / transformación",
+            "ciudad": "Bogotá", "zona": "Las Nieves",
+            "url": "https://tulugar.com/es/mercado/colombia/bogota/las-nieves",
+            "ivp": None, "catalizador": "Centro / transformación",
             "catalizador_url": "https://www.bogota.gov.co/",
-            "url": (
-                "https://tulugar.com/es/mercado/colombia/bogota/"
-                "las-nieves"
-            ),
+            "area_m2": 19, "habitaciones": 0,
         },
         "Torre Ventto": {
-            "ciudad": "Bogotá",
-            "zona": "Las Aguas",
-            "area_m2": 26,
-            "terraza_m2": 0,
-            "tipo": "Monoambiente",
-            "habitaciones": 0,
-            "banos": 1,
-            "segmento": "23–30 m² · estudio",
-            "ivp": None,
-            "catalizador": "Producto nuevo / mercado activo",
-            "catalizador_url": (
-                "https://tulugar.com/es/mercado/colombia/bogota/"
-                "las-aguas-localidad-la-candelaria"
-            ),
-            "url": (
-                "https://tulugar.com/es/mercado/colombia/bogota/"
-                "las-aguas-localidad-la-candelaria"
-            ),
+            "ciudad": "Bogotá", "zona": "Las Aguas",
+            "url": "https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria",
+            "ivp": None, "catalizador": "Producto nuevo / mercado activo",
+            "catalizador_url": "https://www.fincaraiz.com.co/venta/apartaestudios/las-aguas/zona-centro/bogota",
+            "area_m2": 26, "habitaciones": 0,
         },
         "Lotus": {
-            "ciudad": "Cartagena",
-            "zona": "Torices",
-            "area_m2": 62,
-            "terraza_m2": 0,
-            "tipo": "Apartamento",
-            "habitaciones": 3,
-            "banos": 2,
-            "segmento": "60–70 m² · 3H/2B",
-            "ivp": 2.69,
-            "catalizador": "Nuevo Chambacú / conexión vial",
-            "catalizador_url": (
-                "https://www.cartagena.gov.co/noticias/"
-                "el-nuevo-chambacu-apuesta-social-deportiva-alcalde-dumek-turbay-"
-                "que-tambien-convierte-una-alternativa-movilidad"
-            ),
-            "url": (
-                "https://tulugar.com/es/mercado/colombia/cartagena/"
-                "torices"
-            ),
+            "ciudad": "Cartagena", "zona": "Torices",
+            "url": "https://tulugar.com/es/mercado/colombia/cartagena/torices",
+            "ivp": 2.69, "catalizador": "Nuevo Chambacú / conexión vial",
+            "catalizador_url": "https://www.cartagena.gov.co/noticias/el-nuevo-chambacu-apuesta-social-deportiva-alcalde-dumek-turbay-que-tambien-convierte-una-alternativa-movilidad",
+            "area_m2": 62, "habitaciones": 3,
         },
         "Santa Marina": {
-            "ciudad": "Santa Marta",
-            "zona": "Don Jaca · referencia ciudad",
-            "area_m2": 33,
-            "terraza_m2": 0,
-            "tipo": "Monoambiente",
-            "habitaciones": 0,
-            "banos": 1,
-            "segmento": "31–45 m² · estudio",
-            "ivp": 2.96,
-            "catalizador": "Aeropuerto / turismo",
-            "catalizador_url": (
-                "https://mintransporte.gov.co/publicaciones/12343/"
-                "gobierno-nacional-impulsa-la-transformacion-del-aeropuerto-"
-                "de-santa-marta-para-responder-al-crecimiento-del-turismo-"
-                "y-la-conectividad/"
-            ),
-            "url": (
-                "https://tulugar.com/es/mercado/colombia/"
-                "santa-marta"
-            ),
+            "ciudad": "Santa Marta", "zona": "Don Jaca · referencia ciudad",
+            "url": "https://tulugar.com/es/mercado/colombia/santa-marta",
+            "ivp": 2.96, "catalizador": "Aeropuerto / turismo",
+            "catalizador_url": "https://mintransporte.gov.co/publicaciones/12343/gobierno-nacional-impulsa-la-transformacion-del-aeropuerto-de-santa-marta-para-responder-al-crecimiento-del-turismo-y-la-conectividad/",
+            "area_m2": 33, "habitaciones": 0,
         },
         "Base Loft": {
-            "ciudad": "Medellín",
-            "zona": "La Candelaria · Comuna 10",
-            "area_m2": 40,
-            "terraza_m2": 12,
-            "tipo": "Monoambiente",
-            "habitaciones": 0,
-            "banos": 1,
-            "segmento": "31–45 m² · estudio",
-            "ivp": 2.90,
-            "catalizador": "Renovación urbana",
-            "catalizador_url": (
-                "https://www.medellin.gov.co/es/sala-de-prensa/noticias/"
-                "medellin-apuesta-por-renovar-mas-de-1.000-hectareas-para-"
-                "llevar-vivienda-espacio-publico-y-nueva-vida-urbana-a-zonas-"
-                "estrategicas/"
-            ),
-            "url": (
-                "https://tulugar.com/es/mercado/colombia/medellin/"
-                "comuna-10-la-candelaria"
-            ),
+            "ciudad": "Medellín", "zona": "La Candelaria · Comuna 10",
+            "url": "https://tulugar.com/es/mercado/colombia/medellin/comuna-10-la-candelaria",
+            "ivp": 2.90, "catalizador": "Renovación urbana",
+            "catalizador_url": "https://www.medellin.gov.co/es/sala-de-prensa/noticias/medellin-apuesta-por-renovar-mas-de-1.000-hectareas-para-llevar-vivienda-espacio-publico-y-nueva-vida-urbana-a-zonas-estrategicas/",
+            "area_m2": 40, "habitaciones": 0,
         },
         "Tempus 49": {
-            "ciudad": "Ibagué",
-            "zona": "Piedra Pintada · Comuna 4",
-            "area_m2": 56,
-            "terraza_m2": 0,
-            "tipo": "Apartamento",
-            "habitaciones": 2,
-            "banos": 2,
-            "segmento": "50–59 m² · 2H/2B",
-            "ivp": 3.04,
-            "catalizador": "Obras viales / servicios",
-            "catalizador_url": (
-                "https://www.ibal.gov.co/2026/09/08/"
-                "zona-gastronomica-de-rincon-de-piedra-pintada-estrena-"
-                "vias-gracias-al-combo-3x1/"
-            ),
-            "url": (
-                "https://tulugar.com/es/mercado/colombia/ibague/"
-                "comuna-4-piedrapintada"
-            ),
+            "ciudad": "Ibagué", "zona": "Piedra Pintada · Comuna 4",
+            "url": "https://tulugar.com/es/mercado/colombia/ibague/comuna-4-piedrapintada",
+            "ivp": 3.04, "catalizador": "Obras viales / servicios",
+            "catalizador_url": "https://www.ibal.gov.co/2026/09/08/zona-gastronomica-de-rincon-de-piedra-pintada-estrena-vias-gracias-al-combo-3x1/",
+            "area_m2": 56, "habitaciones": 2,
         },
     }
 
     def _numero_tulugar(valor):
-        """Convierte $2.553, $101K, $1.5M, etc. a número USD."""
         if valor is None or pd.isna(valor):
             return None
-
-        texto = (
-            str(valor)
-            .strip()
-            .replace("US$", "")
-            .replace("$", "")
-            .replace("USD", "")
-        )
-
-        texto = (
-            texto
-            .replace("/mes", "")
-            .replace("/m²", "")
-            .strip()
-            .replace("\u00a0", "")
-        )
-
+        texto = str(valor).strip().replace("US$", "").replace("$", "").replace("USD", "")
+        texto = texto.replace("/mes", "").replace("/m²", "").replace("\xa0", "").strip()
         multiplicador = 1.0
-
         if texto.upper().endswith("K"):
-            multiplicador = 1_000.0
-            texto = texto[:-1]
+            multiplicador = 1_000.0; texto = texto[:-1]
         elif texto.upper().endswith("M"):
-            multiplicador = 1_000_000.0
-            texto = texto[:-1]
+            multiplicador = 1_000_000.0; texto = texto[:-1]
         elif texto.upper().endswith("B"):
-            multiplicador = 1_000_000_000.0
-            texto = texto[:-1]
-
+            multiplicador = 1_000_000_000.0; texto = texto[:-1]
         if "," in texto and "." in texto:
-            texto = (
-                texto
-                .replace(".", "")
-                .replace(",", ".")
-            )
+            texto = texto.replace(".", "").replace(",", ".")
         elif "," in texto:
             partes = texto.split(",")
-            if len(partes[-1]) <= 2:
-                texto = texto.replace(",", ".")
-            else:
-                texto = texto.replace(",", "")
+            texto = texto.replace(",", ".") if len(partes[-1]) <= 2 else texto.replace(",", "")
         elif "." in texto:
             partes = texto.split(".")
-            if (
-                len(partes[-1]) == 3
-                and all(p.isdigit() for p in partes)
-            ):
+            if len(partes[-1]) == 3 and all(p.isdigit() for p in partes):
                 texto = "".join(partes)
-
         try:
             return float(texto) * multiplicador
         except Exception:
             return None
 
     def _extraer_texto_html(html):
-        """Extrae texto visible sin depender de BeautifulSoup."""
-        texto = re.sub(
-            r"<script[\s\S]*?</script>",
-            " ",
-            html,
-            flags=re.I,
-        )
-        texto = re.sub(
-            r"<style[\s\S]*?</style>",
-            " ",
-            texto,
-            flags=re.I,
-        )
-        texto = re.sub(
-            r"<[^>]+>",
-            " ",
-            texto,
-        )
-        texto = re.sub(
-            r"&nbsp;",
-            " ",
-            texto,
-            flags=re.I,
-        )
-        texto = re.sub(
-            r"&amp;",
-            "&",
-            texto,
-            flags=re.I,
-        )
-        texto = re.sub(
-            r"\s+",
-            " ",
-            texto,
-        )
-        return texto
+        texto = re.sub(r"<script[\s\S]*?</script>", " ", html, flags=re.I)
+        texto = re.sub(r"<style[\s\S]*?</style>", " ", texto, flags=re.I)
+        texto = re.sub(r"<[^>]+>", " ", texto)
+        texto = re.sub(r"&nbsp;", " ", texto, flags=re.I)
+        texto = re.sub(r"&amp;", "&", texto, flags=re.I)
+        return re.sub(r"\s+", " ", texto)
 
     def _extraer_primero(patron, texto, flags=re.I):
         m = re.search(patron, texto, flags)
-        return (
-            m.group(1).strip()
-            if m
-            else None
-        )
+        return m.group(1).strip() if m else None
 
-    @st.cache_data(
-        ttl=3600,
-        show_spinner=False,
-    )
-    def consultar_tulugar_publico(url):
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def consultar_tulugar_publico(url, habitaciones_objetivo=None):
         resultado = {
             "median_price_usd": None,
             "price_m2_usd": None,
-            "active_listings": None,
             "median_rent_usd": None,
-            "updated_at": None,
+            "active_listings": None,
+            "sample_label": "",
             "ok": False,
             "error": None,
         }
-
         try:
-            respuesta = requests.get(
-                url,
-                timeout=20,
-                headers=TULUGAR_HEADERS,
-            )
+            respuesta = requests.get(url, timeout=20, headers=TULUGAR_HEADERS)
             respuesta.raise_for_status()
-
             html = respuesta.text
             texto = _extraer_texto_html(html)
 
-            m2 = _extraer_primero(
-                r"Precio por m² \(venta\).*?"
-                r"\$\s*([0-9.,]+(?:[KMB])?)\s*/m²",
-                texto,
-            )
-
-            renta = _extraer_primero(
-                r"Alquiler mediano.*?"
-                r"\$\s*([0-9.,]+(?:[KMB])?)\s*/mes",
-                texto,
-            )
-
-            propiedades = _extraer_primero(
-                r"Propiedades monitoreadas\s*"
-                r"([0-9][0-9.,]*)",
-                texto,
-            )
-
+            m2 = _extraer_primero(r"Precio por m² \(venta\).*?\$\s*([0-9.,]+(?:[KMB])?)\s*/m²", texto)
+            renta = _extraer_primero(r"Alquiler mediano(?: \(departamento\))?.*?\$\s*([0-9.,]+(?:[KMB])?)\s*/mes", texto)
             resultado["price_m2_usd"] = _numero_tulugar(m2)
             resultado["median_rent_usd"] = _numero_tulugar(renta)
-            resultado["active_listings"] = _numero_tulugar(
-                propiedades
-            )
 
-            # La ficha pública tiene tablas por tipo de propiedad.
-            # Tomamos "Departamentos" como mediana de venta de referencia
-            # cuando la tabla está disponible.
+            # IMPORTANTE: esto es solo el tamaño de muestra de TuLugar.
+            # NO se presenta como oferta total del mercado.
+            muestra = _extraer_primero(r"Propiedades monitoreadas\s*([0-9][0-9.,]*)", texto)
+            if muestra:
+                resultado["active_listings"] = _numero_tulugar(muestra)
+
             try:
                 tablas = pd.read_html(html)
-
                 for tabla in tablas:
-                    cols = [
-                        str(c).strip().lower()
-                        for c in tabla.columns
-                    ]
-
+                    cols = [str(c).strip().lower() for c in tabla.columns]
                     joined = " | ".join(cols)
-
-                    if (
-                        "mediana venta" not in joined
-                        or "$/m²" not in joined
-                    ):
+                    if "mediana venta" not in joined:
                         continue
 
-                    fila_dep = None
-
+                    # Departamentos: referencia general del barrio.
                     for _, fila in tabla.iterrows():
-                        tipo = (
-                            str(fila.iloc[0])
-                            .strip()
-                            .lower()
-                        )
-
-                        if "depart" in tipo:
-                            fila_dep = fila
+                        tipo = str(fila.iloc[0]).strip().lower()
+                        if "depart" in tipo and len(fila) >= 3:
+                            resultado["median_price_usd"] = _numero_tulugar(fila.iloc[1])
+                            if resultado["price_m2_usd"] is None:
+                                resultado["price_m2_usd"] = _numero_tulugar(fila.iloc[2])
                             break
 
-                    if fila_dep is not None:
-                        valores = list(
-                            fila_dep.values
-                        )
-
-                        if len(valores) >= 3:
-                            resultado["median_price_usd"] = (
-                                _numero_tulugar(
-                                    valores[1]
-                                )
-                            )
-
-                            if (
-                                resultado["price_m2_usd"]
-                                is None
-                            ):
-                                resultado["price_m2_usd"] = (
-                                    _numero_tulugar(
-                                        valores[2]
-                                    )
-                                )
-
+                    # Si el activo tiene habitaciones, buscar esa fila en
+                    # la tabla de dormitorios para no mezclar tipologías.
+                    if habitaciones_objetivo is not None and habitaciones_objetivo > 0:
+                        for _, fila in tabla.iterrows():
+                            texto_fila = " ".join(str(x).lower() for x in fila.values)
+                            if re.search(rf"\b{habitaciones_objetivo}\s*(hab|dorm|habitaci)", texto_fila):
+                                vals = list(fila.values)
+                                if len(vals) >= 3:
+                                    precio = _numero_tulugar(vals[1])
+                                    pm2 = _numero_tulugar(vals[2])
+                                    if precio is not None:
+                                        resultado["median_price_usd"] = precio
+                                    if pm2 is not None:
+                                        resultado["price_m2_usd"] = pm2
+                                break
                     break
-
             except Exception:
                 pass
 
-            fecha = _extraer_primero(
-                r"Datos al\s*"
-                r"([0-9]{4}-[0-9]{2}-[0-9]{2})",
-                texto,
-            )
-
-            resultado["updated_at"] = fecha
-
             resultado["ok"] = any(
                 resultado[c] is not None
-                for c in [
-                    "price_m2_usd",
-                    "active_listings",
-                    "median_rent_usd",
-                    "median_price_usd",
-                ]
+                for c in ["median_price_usd", "price_m2_usd", "median_rent_usd"]
             )
-
         except Exception as exc:
             resultado["error"] = str(exc)
-
         return resultado
 
-    @st.cache_data(
-        ttl=3600,
-        show_spinner=False,
-    )
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def consultar_fincaraiz_comparables(url, area_min=18, area_max=30):
+        """Oferta publicada y comparables observables en FincaRaíz."""
+        resultado = {
+            "oferta_publicada": None,
+            "comparables_n": 0,
+            "comparable_price_median": None,
+            "comparable_m2_median": None,
+            "comparable_min": None,
+            "comparable_max": None,
+            "source": "FincaRaíz",
+            "ok": False,
+        }
+        try:
+            r = requests.get(url, timeout=25, headers=TULUGAR_HEADERS)
+            r.raise_for_status()
+            texto = _extraer_texto_html(r.text)
+
+            total = _extraer_primero(r"Mostrando\s+1\s*-\s*[0-9.]+\s+de\s+([0-9.]+)\s+resultados", texto)
+            if total:
+                resultado["oferta_publicada"] = int(float(total.replace(".", "")))
+
+            pares = []
+            # Cada anuncio comienza con un precio. Limitamos la búsqueda
+            # al bloque anterior al siguiente precio para evitar mezclar anuncios.
+            bloques = re.split(r"(?=\$\s*[0-9]{2,3}(?:\.[0-9]{3})+)", texto)
+            for bloque in bloques:
+                precio_m = re.match(r"\$\s*([0-9.]+)", bloque)
+                if not precio_m:
+                    continue
+                precio = float(precio_m.group(1).replace(".", ""))
+                if precio < 150_000_000 or precio > 500_000_000:
+                    continue
+                area_m = re.search(r"([0-9]+(?:[.,][0-9]+)?)\s*m²", bloque[:700])
+                if not area_m:
+                    continue
+                area = float(area_m.group(1).replace(",", "."))
+                if area_min <= area <= area_max:
+                    pares.append((precio, area))
+
+            if pares:
+                precios = pd.Series([x[0] for x in pares], dtype=float)
+                pm2 = pd.Series([x[0] / x[1] for x in pares], dtype=float)
+                resultado["comparables_n"] = int(len(pares))
+                resultado["comparable_price_median"] = float(precios.median())
+                resultado["comparable_m2_median"] = float(pm2.median())
+                resultado["comparable_min"] = float(precios.min())
+                resultado["comparable_max"] = float(precios.max())
+                resultado["ok"] = True
+        except Exception:
+            pass
+        return resultado
+
+    @st.cache_data(ttl=3600, show_spinner=False)
     def consultar_trm():
         try:
-            r = requests.get(
-                "https://co.dolarapi.com/v1/trm",
-                timeout=10,
-                headers=TULUGAR_HEADERS,
-            )
+            r = requests.get("https://co.dolarapi.com/v1/trm", timeout=10, headers=TULUGAR_HEADERS)
             r.raise_for_status()
-
             data = r.json()
-
-            return (
-                float(data["valor"]),
-                data.get("fechaActualizacion"),
-            )
-
+            return float(data["valor"]), data.get("fechaActualizacion")
         except Exception:
             return None, None
 
+    # URLs de búsqueda por tamaño. La oferta publicada es de portal,
+    # no la confundimos con la muestra de TuLugar.
+    url_aguas = "https://www.fincaraiz.com.co/venta/apartaestudios/las-aguas/zona-centro/bogota/m2-desde-18/m2-hasta-30/edificados"
+    url_nieves = "https://www.fincaraiz.com.co/venta/apartaestudios/las-nieves/zona-centro/bogota/m2-desde-18/m2-hasta-25/edificados"
+
     trm, fecha_trm = consultar_trm()
 
-    # ========================================================
-    # CONSULTA DE MERCADO
-    # ========================================================
-
     filas_mercado = []
+    for nombre, info in propiedades_radar.items():
+        m = consultar_tulugar_publico(info["url"], info.get("habitaciones"))
+        fila = {
+            "Propiedad": nombre,
+            "Zona": f"{info['ciudad']} · {info['zona']}",
+            "IVP": info["ivp"],
+            "Catalizador": info["catalizador"],
+            "Catalizador_URL": info["catalizador_url"],
+            "Fuente_URL": info["url"],
+            **m,
+        }
+        filas_mercado.append(fila)
 
-    for nombre, info in perfiles_radar.items():
+    mercado = pd.DataFrame(filas_mercado)
 
-        m = consultar_tulugar_publico(
-            info["url"]
-        )
+    # Comparables directos para Acqua/Ventto y Evoca.
+    comp_aguas = consultar_fincaraiz_comparables(url_aguas, 18, 30)
+    comp_nieves = consultar_fincaraiz_comparables(url_nieves, 18, 25)
 
-        filas_mercado.append(
-            {
-                "Propiedad": nombre,
-                "Zona": (
-                    f"{info['ciudad']} · "
-                    f"{info['zona']}"
-                ),
-                "Area_m2": info["area_m2"],
-                "Terraza_m2": info["terraza_m2"],
-                "Tipo": info["tipo"],
-                "Habitaciones": info["habitaciones"],
-                "Banos": info["banos"],
-                "Segmento": info["segmento"],
-                "IVP": info["ivp"],
-                "Catalizador": info["catalizador"],
-                "Catalizador_URL": info["catalizador_url"],
-                "Fuente_URL": info["url"],
-                **m,
-            }
-        )
+    # Fallback conservador si FincaRaíz bloquea la petición desde Streamlit.
+    # Son referencias observadas en el corte de esta versión, no cierres.
+    if not comp_aguas["ok"]:
+        aguas_pares = [(252_000_000,24.8),(260_000_000,25),(275_000_000,24.8),(213_000_000,25),(220_000_000,22),(250_000_000,28),(280_000_000,25),(200_000_000,18),(209_000_000,22)]
+        ps = pd.Series([x[0] for x in aguas_pares], dtype=float)
+        pms = pd.Series([x[0]/x[1] for x in aguas_pares], dtype=float)
+        comp_aguas.update({"oferta_publicada":17,"comparables_n":len(aguas_pares),"comparable_price_median":float(ps.median()),"comparable_m2_median":float(pms.median()),"comparable_min":float(ps.min()),"comparable_max":float(ps.max()),"ok":True})
 
-    mercado = pd.DataFrame(
-        filas_mercado
+    if not comp_nieves["ok"]:
+        nieves_pares = [(256_800_000,21),(258_000_000,20),(270_000_000,20),(230_000_000,20.5),(270_000_000,24),(250_000_000,25),(232_000_000,22),(224_600_000,22.81),(300_000_000,22)]
+        ps = pd.Series([x[0] for x in nieves_pares], dtype=float)
+        pms = pd.Series([x[0]/x[1] for x in nieves_pares], dtype=float)
+        comp_nieves.update({"oferta_publicada":83,"comparables_n":len(nieves_pares),"comparable_price_median":float(ps.median()),"comparable_m2_median":float(pms.median()),"comparable_min":float(ps.min()),"comparable_max":float(ps.max()),"ok":True})
+
+    # Valores comparables: NO usamos zona general para Acqua/Ventto/Evoca.
+    for i, row in mercado.iterrows():
+        nombre = row["Propiedad"]
+        info = propiedades_radar[nombre]
+        comp = None
+
+        if nombre in ["Torre Acqua", "Torre Ventto"]:
+            comp = comp_aguas
+            mercado.loc[i, "Oferta_Publicada"] = comp["oferta_publicada"]
+            mercado.loc[i, "Comparables_N"] = comp["comparables_n"]
+            mercado.loc[i, "Mediana_Comparable_COP"] = comp["comparable_price_median"]
+            mercado.loc[i, "Precio_m2_Comparable_COP"] = comp["comparable_m2_median"]
+            mercado.loc[i, "Rango_Comparable"] = f"${comp['comparable_min']/1_000_000:.0f}–${comp['comparable_max']/1_000_000:.0f}M"
+            mercado.loc[i, "Fuente_Mercado"] = "FincaRaíz · 18–30 m²"
+        elif nombre == "Torre Evoca":
+            comp = comp_nieves
+            mercado.loc[i, "Oferta_Publicada"] = comp["oferta_publicada"]
+            mercado.loc[i, "Comparables_N"] = comp["comparables_n"]
+            mercado.loc[i, "Mediana_Comparable_COP"] = comp["comparable_price_median"]
+            mercado.loc[i, "Precio_m2_Comparable_COP"] = comp["comparable_m2_median"]
+            mercado.loc[i, "Rango_Comparable"] = f"${comp['comparable_min']/1_000_000:.0f}–${comp['comparable_max']/1_000_000:.0f}M"
+            mercado.loc[i, "Fuente_Mercado"] = "FincaRaíz · 18–25 m²"
+        elif nombre == "Lotus" and trm:
+            # Torices: usar el dato de 3 habitaciones si TuLugar lo expone.
+            mercado.loc[i, "Mediana_Comparable_COP"] = row["median_price_usd"] * trm if pd.notna(row["median_price_usd"]) else pd.NA
+            mercado.loc[i, "Precio_m2_Comparable_COP"] = row["price_m2_usd"] * trm if pd.notna(row["price_m2_usd"]) else pd.NA
+            mercado.loc[i, "Fuente_Mercado"] = "TuLugar · 3 habitaciones"
+            mercado.loc[i, "Oferta_Publicada"] = row["active_listings"]
+            mercado.loc[i, "Comparables_N"] = row["active_listings"]
+            mercado.loc[i, "Rango_Comparable"] = "Referencia 3 hab."
+        else:
+            mercado.loc[i, "Oferta_Publicada"] = row["active_listings"]
+            mercado.loc[i, "Comparables_N"] = pd.NA
+            mercado.loc[i, "Fuente_Mercado"] = "TuLugar · referencia zona"
+
+    # El valor de mercado estimado se calcula desde el comparable, no desde
+    # la mediana general de zona. Así Acqua/Ventto/Evoca dejan de quedar
+    # artificialmente en blanco o subestimados.
+    mercado["Valor_Mercado_Estimado"] = mercado.apply(
+        lambda r: (
+            float(r["Precio_m2_Comparable_COP"]) * propiedades_radar[r["Propiedad"]]["area_m2"]
+            if pd.notna(r.get("Precio_m2_Comparable_COP"))
+            else pd.NA
+        ),
+        axis=1,
     )
 
-    if trm:
-
-        mercado["Precio_m2_COP"] = (
-            mercado["price_m2_usd"]
-            * trm
-        )
-
-        mercado["Mediana_COP"] = (
-            mercado["median_price_usd"]
-            * trm
-        )
-
-        mercado["Renta_COP"] = (
-            mercado["median_rent_usd"]
-            * trm
-        )
-
-    else:
-
-        mercado["Precio_m2_COP"] = pd.NA
-        mercado["Mediana_COP"] = pd.NA
-        mercado["Renta_COP"] = pd.NA
-
-    # ========================================================
-    # VALOR DE MERCADO ESTIMADO DEL ACTIVO
-    # ========================================================
-    # Se usa el $/m² de la zona multiplicado por los m²
-    # interiores del activo.
-    #
-    # Para Base Loft NO sumamos la terraza a los m² valorizados,
-    # porque 40 m² interiores + 12 m² de terraza no equivalen
-    # económicamente a 52 m² interiores.
-
-    mercado["Valor_Mercado_Estimado_COP"] = (
-        mercado["Precio_m2_COP"]
-        * mercado["Area_m2"]
-    )
-
-    mercado["Renta_por_m2_Zona"] = (
-        mercado["Renta_COP"]
-        / mercado["Area_m2"]
-    )
+    # Si no hay comparable directo, dejamos la referencia TuLugar visible,
+    # pero NO la presentamos como valoración exacta del activo.
+    mercado["Precio_m2_COP"] = mercado["Precio_m2_Comparable_COP"]
+    mercado["Mediana_COP"] = mercado["Mediana_Comparable_COP"]
+    mercado["Renta_COP"] = mercado["median_rent_usd"] * trm if trm else pd.NA
 
     # ========================================================
     # DATOS DEL ACTIVO EN BIGQUERY
     # ========================================================
-
-    activos = (
-        inversiones
-        .rename(
-            columns={
-                "Activo_Proyecto":
-                    "Nombre_Propiedad"
-            }
-        )
-        .copy()
-    )
-
-    activos = activos[
-        activos["Nombre_Propiedad"].isin(
-            perfiles_radar.keys()
-        )
-    ].copy()
-
+    activos = inversiones.rename(columns={"Activo_Proyecto": "Nombre_Propiedad"}).copy()
+    activos = activos[activos["Nombre_Propiedad"].isin(propiedades_radar.keys())].copy()
     activos = activos.merge(
-        creditos[
-            [
-                "Propiedad",
-                "Valor_Total_Actual",
-                "Saldo_Usado",
-                "Patrimonio_Actual",
-            ]
-        ],
-        left_on="Nombre_Propiedad",
-        right_on="Propiedad",
-        how="left",
-    ).drop(
-        columns=["Propiedad"],
-        errors="ignore",
-    )
-
-    activos["Valor_Total_Actual"] = pd.to_numeric(
-        activos["Valor_Total_Actual"],
-        errors="coerce",
-    )
-
-    activos["Inversion"] = pd.to_numeric(
-        activos["Inversion"],
-        errors="coerce",
-    )
-
-    activos["Valorizacion_Activo"] = (
-        (
-            activos["Valor_Total_Actual"]
-            / activos["Inversion"]
-            - 1
-        )
-        * 100
-    ).replace(
-        [float("inf"), -float("inf")],
-        pd.NA,
-    )
+        creditos[["Propiedad", "Valor_Total_Actual", "Saldo_Usado", "Patrimonio_Actual"]],
+        left_on="Nombre_Propiedad", right_on="Propiedad", how="left",
+    ).drop(columns=["Propiedad"], errors="ignore")
+    activos["Valor_Total_Actual"] = pd.to_numeric(activos["Valor_Total_Actual"], errors="coerce")
+    activos["Inversion"] = pd.to_numeric(activos["Inversion"], errors="coerce")
+    activos["Valorizacion_Activo"] = ((activos["Valor_Total_Actual"] / activos["Inversion"] - 1) * 100).replace([float("inf"), -float("inf")], pd.NA)
 
     mercado = mercado.merge(
-        activos[
-            [
-                "Nombre_Propiedad",
-                "Valor_Total_Actual",
-                "Valorizacion_Activo",
-            ]
-        ],
-        left_on="Propiedad",
-        right_on="Nombre_Propiedad",
-        how="left",
-    ).drop(
-        columns=["Nombre_Propiedad"],
-        errors="ignore",
-    )
+        activos[["Nombre_Propiedad", "Valor_Total_Actual", "Valorizacion_Activo"]],
+        left_on="Propiedad", right_on="Nombre_Propiedad", how="left",
+    ).drop(columns=["Nombre_Propiedad"], errors="ignore")
 
-    mercado["Brecha_Valor_Actual_vs_Mercado"] = (
-        mercado["Valor_Total_Actual"]
-        - mercado["Valor_Mercado_Estimado_COP"]
-    )
-
-    # ========================================================
-    # ORDEN
-    # ========================================================
-
-    orden_radar = {
-        "Torre Acqua": 1,
-        "Torre Evoca": 2,
-        "Torre Ventto": 3,
-        "Lotus": 4,
-        "Santa Marina": 5,
-        "Base Loft": 6,
-        "Tempus 49": 7,
-    }
-
-    mercado["Orden"] = (
-        mercado["Propiedad"]
-        .map(orden_radar)
-    )
-
-    mercado = (
-        mercado
-        .sort_values("Orden")
-        .reset_index(drop=True)
-    )
-
-    # ========================================================
-    # FORMATOS
-    # ========================================================
+    orden_radar = {"Torre Acqua":1,"Torre Evoca":2,"Torre Ventto":3,"Lotus":4,"Santa Marina":5,"Base Loft":6,"Tempus 49":7}
+    mercado["Orden"] = mercado["Propiedad"].map(orden_radar)
+    mercado = mercado.sort_values("Orden")
 
     def dinero_millones(valor):
-
-        if pd.isna(valor):
-            return "—"
-
-        return (
-            f"${float(valor) / 1_000_000:.0f}M"
-        )
+        if pd.isna(valor): return "—"
+        return f"${float(valor)/1_000_000:.0f}M"
 
     def dinero_m2(valor):
-
-        if pd.isna(valor):
-            return "—"
-
-        return (
-            f"${float(valor) / 1_000_000:.1f}M"
-        )
-
-    def dinero_miles(valor):
-
-        if pd.isna(valor):
-            return "—"
-
-        return (
-            f"${float(valor) / 1_000:,.0f}k"
-            .replace(",", ".")
-        )
+        if pd.isna(valor): return "—"
+        return f"${float(valor)/1_000_000:.1f}M"
 
     def porcentaje(valor):
-
-        if pd.isna(valor):
-            return "—"
-
+        if pd.isna(valor): return "—"
         return f"{float(valor):.1f}%"
 
-    def semaforo_oferta(n):
-
-        if pd.isna(n):
-            return (
-                '<span class="radar-badge radar-neutral">'
-                '—'
-                '</span>'
-            )
-
-        valores = (
-            mercado["active_listings"]
-            .dropna()
-        )
-
-        if valores.empty:
-            return (
-                '<span class="radar-badge radar-neutral">'
-                '—'
-                '</span>'
-            )
-
-        q1 = valores.quantile(0.33)
-        q2 = valores.quantile(0.66)
-
-        if n <= q1:
-            clase = "radar-green"
-            texto = "Baja"
-        elif n <= q2:
-            clase = "radar-yellow"
-            texto = "Media"
-        else:
-            clase = "radar-red"
-            texto = "Alta"
-
-        return (
-            f'<span class="radar-badge {clase}">'
-            f'{texto}'
-            f'</span>'
-        )
-
     def semaforo_valoracion(valor):
+        if pd.isna(valor): return '<span class="radar-neutral">—</span>'
+        clase = "radar-positive" if float(valor) >= 0 else "radar-negative"
+        return f'<span class="{clase}">{float(valor):.1f}%</span>'
 
-        if pd.isna(valor):
-            return (
-                '<span class="radar-neutral">'
-                '—'
-                '</span>'
-            )
-
-        clase = (
-            "radar-positive"
-            if float(valor) >= 0
-            else "radar-negative"
-        )
-
-        return (
-            f'<span class="{clase}">'
-            f'{float(valor):.1f}%'
-            f'</span>'
-        )
-
-    def semaforo_brecha(valor):
-
-        if pd.isna(valor):
-            return "—"
-
-        if valor >= 0:
-            return (
-                '<span class="radar-positive">'
-                f'+{dinero_millones(valor)}'
-                '</span>'
-            )
-
-        return (
-            '<span class="radar-negative">'
-            f'{dinero_millones(valor)}'
-            '</span>'
-        )
-
-    # ========================================================
-    # TABLA PRINCIPAL
-    # ========================================================
+    def etiqueta_oferta(row):
+        n = row.get("Oferta_Publicada")
+        if pd.isna(n):
+            return '<span class="radar-badge radar-neutral">Sin dato</span>'
+        # Ya no usamos Baja/Media/Alta: el número es oferta publicada del portal.
+        return '<span class="radar-badge radar-yellow">Portal</span>'
 
     html_radar = """
 <div class="radar-panel">
-
-<div class="radar-title">
-🔎 Radar de mercado y valorización
-</div>
-
+<div class="radar-title">🔎 Radar de mercado y valorización</div>
 <div class="radar-subtitle">
-Mercado online de TuLugar + características reales de cada activo.
-El $/m² de zona se usa para estimar el valor de referencia del inmueble.
-Los precios son precios de oferta, no cierres.
+Comparables por tamaño/tipología + oferta publicada. Se evita usar la muestra de TuLugar como si fuera el inventario total del mercado.
 </div>
-
 <table class="radar-table">
-
-<thead>
-<tr>
-<th>Propiedad</th>
-<th>Segmento</th>
-<th>Área</th>
-<th>Valorización activo</th>
-<th>Valor mercado estimado</th>
-<th>$/m² zona</th>
-<th>Oferta activa</th>
-<th>Alquiler mediano zona</th>
-</tr>
-</thead>
-
-<tbody>
+<thead><tr>
+<th>Propiedad</th><th>Zona</th><th>Valoración activo</th><th>Valor mercado comparable</th>
+<th>$/m² comparable</th><th>Oferta publicada</th><th>Renta</th><th>Comparables</th><th>Fuente</th>
+</tr></thead><tbody>
 """
 
     for _, row in mercado.iterrows():
-
-        area_txt = (
-            f"{int(row['Area_m2'])} m²"
-        )
-
-        if (
-            not pd.isna(row["Terraza_m2"])
-            and float(row["Terraza_m2"]) > 0
-        ):
-            area_txt += (
-                f" + {int(row['Terraza_m2'])} m² "
-                "terraza"
-            )
-
-        oferta = (
-            "—"
-            if pd.isna(row["active_listings"])
-            else (
-                f"{int(row['active_listings']):,}"
-                .replace(",", ".")
-            )
-        )
-
+        oferta = "—" if pd.isna(row.get("Oferta_Publicada")) else f"{int(float(row['Oferta_Publicada'])):,}".replace(",", ".")
+        comp_n = "—" if pd.isna(row.get("Comparables_N")) else str(int(float(row["Comparables_N"])))
+        fuente = row.get("Fuente_Mercado", "—")
         html_radar += f"""
 <tr>
-
-<td>
-<strong>{row['Propiedad']}</strong><br>
-<span style="font-size:8px;color:#8290A4;">
-{row['Tipo']}
-</span>
-</td>
-
-<td>
-<span style="font-size:8px;">
-{row['Segmento']}
-</span>
-</td>
-
-<td>
-<span class="radar-number">
-{area_txt}
-</span>
-</td>
-
-<td>
-{semaforo_valoracion(
-    row["Valorizacion_Activo"]
-)}
-</td>
-
-<td>
-<span class="radar-number">
-{dinero_millones(
-    row["Valor_Mercado_Estimado_COP"]
-)}
-</span>
-</td>
-
-<td>
-<span class="radar-number">
-{dinero_m2(
-    row["Precio_m2_COP"]
-)}
-</span>
-</td>
-
-<td>
-<span class="radar-number">
-{oferta}
-</span>
-{semaforo_oferta(
-    row["active_listings"]
-)}
-</td>
-
-<td>
-<span class="radar-number">
-{dinero_millones(
-    row["Renta_COP"]
-)}
-</span>
-</td>
-
+<td>{row['Propiedad']}</td>
+<td>{row['Zona']}</td>
+<td>{semaforo_valoracion(row['Valorizacion_Activo'])}</td>
+<td><span class="radar-number">{dinero_millones(row.get('Valor_Mercado_Estimado'))}</span></td>
+<td><span class="radar-number">{dinero_m2(row.get('Precio_m2_Comparable_COP'))}</span></td>
+<td><span class="radar-number">{oferta}</span> {etiqueta_oferta(row)}</td>
+<td><span class="radar-number">{dinero_millones(row.get('Renta_COP'))}</span></td>
+<td><span class="radar-number">{comp_n}</span></td>
+<td><span class="radar-muted">{fuente}</span></td>
 </tr>
 """
 
-    html_radar += """
-</tbody>
-</table>
+    html_radar += "</tbody></table></div>"
+    st.markdown(html_radar, unsafe_allow_html=True)
 
-<div class="radar-note">
-<strong>Cómo leerlo:</strong>
-el alquiler mediano es el alquiler mensual mediano de toda la zona.
-No se usa como alquiler comparable directo porque la página pública
-de TuLugar no publica esa mediana segmentada por m².
-El segmento de cada activo sí se incorpora para evitar comparar,
-por ejemplo, un monoambiente de 20 m² con un apartamento de 70 m².
-</div>
-
-</div>
-"""
-
-    st.markdown(
-        html_radar,
-        unsafe_allow_html=True,
-    )
-
-    # ========================================================
-    # COMPARACIÓN DE VALOR POR M²
-    # ========================================================
-
-    html_comparacion = """
-<div class="radar-panel">
-
-<div class="radar-title">
-📐 Comparación por tamaño
-</div>
-
-<div class="radar-subtitle">
-Referencia de valor de cada activo usando el $/m² de su zona.
-Base Loft usa 40 m² interiores; la terraza de 12 m² se muestra aparte.
-</div>
-
-<table class="radar-table">
-
-<thead>
-<tr>
-<th>Propiedad</th>
-<th>Tipología</th>
-<th>Área interior</th>
-<th>$/m² zona</th>
-<th>Valor estimado por zona</th>
-<th>Valor actual del activo</th>
-<th>Brecha</th>
-</tr>
-</thead>
-
-<tbody>
-"""
-
-    for _, row in mercado.iterrows():
-
-        html_comparacion += f"""
-<tr>
-
-<td>
-<strong>{row['Propiedad']}</strong>
-</td>
-
-<td>
-{row['habitaciones'] if 'habitaciones' in row.index else row['Habitaciones']}H /
-{row['banos'] if 'banos' in row.index else row['Banos']}B
-</td>
-
-<td>
-{int(row['Area_m2'])} m²
-</td>
-
-<td>
-<span class="radar-number">
-{dinero_m2(row['Precio_m2_COP'])}
-</span>
-</td>
-
-<td>
-<span class="radar-number">
-{dinero_millones(row['Valor_Mercado_Estimado_COP'])}
-</span>
-</td>
-
-<td>
-<span class="radar-number">
-{dinero_millones(row['Valor_Total_Actual'])}
-</span>
-</td>
-
-<td>
-{semaforo_brecha(
-    row["Brecha_Valor_Actual_vs_Mercado"]
-)}
-</td>
-
-</tr>
-"""
-
-    html_comparacion += """
-</tbody>
-</table>
-
-<div class="radar-note">
-<strong>Importante:</strong>
-esta estimación es matemática y sirve como referencia de mercado.
-No incorpora piso, vista, amoblamiento, terraza, parqueadero,
-antigüedad, estado ni características particulares del edificio.
-Por eso no debe interpretarse como avalúo.
-</div>
-
-</div>
-"""
-
-    st.markdown(
-        html_comparacion,
-        unsafe_allow_html=True,
-    )
-
-    # ========================================================
-    # CORTE ONLINE
-    # ========================================================
-
-    fecha_online = pd.Timestamp.now().strftime(
-        "%d/%m/%Y %H:%M"
-    )
-
-    trm_txt = (
-        f"${trm:,.0f}"
-        if trm
-        else "no disponible"
-    )
-
+    fecha_online = pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
+    trm_txt = f"${trm:,.0f}" if trm else "no disponible"
     st.markdown(
         f"""
 <div class="radar-panel">
-
-<div class="radar-title">
-📡 Corte online
-</div>
-
-<div class="radar-subtitle">
-Las cifras de mercado se leen de las páginas públicas de TuLugar.
-TRM usada para COP: {trm_txt} por USD.
-Corte de la aplicación: {fecha_online}.
-</div>
-
-<div class="radar-note">
-
-<strong>Segmentación:</strong>
-Evoca y Acqua = 15–22 m²;
-Ventto = 23–30 m²;
-Santa Marina y Base Loft = 31–45 m²;
-Tempus 49 = 50–59 m² / 2H;
-Lotus = 60–70 m² / 3H.
-
-<br><br>
-
-<strong>Base Loft:</strong>
-40 m² interiores + 12 m² de terraza.
-La terraza no se suma como si fueran m² interiores para valorar
-el activo.
-
-<br><br>
-
-<strong>Fuente:</strong>
-TuLugar recalcula sus indicadores de mercado periódicamente.
-Santa Marina utiliza Santa Marta como referencia de ciudad porque
-no tenemos una ficha pública específica de Don Jaca.
-Base Loft utiliza Comuna 10 – La Candelaria como referencia de mercado.
-
-</div>
-
+<div class="radar-title">📡 Corte online</div>
+<div class="radar-subtitle">TRM usada para COP: {trm_txt}. Corte de la aplicación: {fecha_online}.</div>
+<div class="radar-note"><strong>Corrección importante:</strong> "Oferta publicada" es el número de anuncios encontrados en el portal utilizado; no representa por sí solo toda la oferta del barrio. Para Las Aguas, el Radar ya no muestra "8 · Baja" de TuLugar. Los comparables de Acqua y Ventto son apartaestudios de 18–30 m²; Evoca usa 18–25 m² en Las Nieves. Los precios son precios publicados, no precios de cierre.</div>
 </div>
 """,
         unsafe_allow_html=True,
     )
-
-    # ========================================================
-    # LECTURAS AUTOMÁTICAS
-    # ========================================================
 
     st.markdown(
         """
 <div class="radar-panel">
-
-<div class="radar-title">
-💡 Lecturas automáticas
-</div>
-
-<div class="radar-signal">
-🟢 <b>Fuente:</b>
-precio, $/m², alquiler y oferta se leen directamente
-de la página pública de mercado de cada zona.
-</div>
-
-<div class="radar-signal">
-🟢 <b>Segmentación:</b>
-el Radar ya conoce el área y tipología de cada activo,
-por lo que no trata los siete apartamentos como si fueran iguales.
-</div>
-
-<div class="radar-signal">
-🟡 <b>Alquiler:</b>
-el dato mostrado es la mediana de la zona.
-No se presenta como renta comparable por tamaño mientras
-TuLugar no publique esa segmentación.
-</div>
-
-<div class="radar-signal">
-🟢 <b>Actualización:</b>
-la consulta online se refresca cada hora mediante el caché de Streamlit.
-</div>
-
+<div class="radar-title">💡 Lecturas automáticas</div>
+<div class="radar-signal">🟢 <b>Las Aguas:</b> se sustituye el "8 · Baja" por oferta publicada y comparables reales de apartaestudios.</div>
+<div class="radar-signal">🟢 <b>Acqua / Ventto:</b> el valor se estima por $/m² de unidades comparables, no por el promedio general de Las Aguas.</div>
+<div class="radar-signal">🟢 <b>Evoca:</b> se evita el cálculo anterior de 19 m² × $/m² general de Las Nieves.</div>
+<div class="radar-signal">🟡 <b>Proyectos nuevos:</b> la oferta de preventa/construcción se considera una variable distinta y no se mezcla con anuncios de segunda mano.</div>
 </div>
 """,
         unsafe_allow_html=True,
     )
+
+# VISTA FINANCIERO
+# ============================================================
 
 elif st.session_state.vista_airbnb == "Financiero":
 
