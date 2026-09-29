@@ -3285,13 +3285,6 @@ if st.session_state.vista_airbnb == "Propiedades":
         how="left"
     )
 
-    # Diferencia entre el retorno anualizado del activo y la
-    # tasa promedio histórica de CDT utilizada en el benchmark.
-    tabla["Diferencia_vs_CDT"] = (
-        tabla["Retorno_Anualizado_Total"]
-        - tabla["CDT_Promedio"]
-    )
-
     # ========================================================
     # RETORNO ECONÓMICO TOTAL
     # ========================================================
@@ -3330,6 +3323,14 @@ if st.session_state.vista_airbnb == "Propiedades":
             "Retorno_Anualizado_Total"
         ]
     ] = pd.NA
+
+    # Diferencia entre el retorno anualizado del activo y la
+    # tasa promedio histórica de CDT utilizada en el benchmark.
+    # Debe calcularse DESPUÉS de crear Retorno_Anualizado_Total.
+    tabla["Diferencia_vs_CDT"] = (
+        tabla["Retorno_Anualizado_Total"]
+        - tabla["CDT_Promedio"]
+    )
 
     # ========================================================
     # ORDEN VISUAL IGUAL AL PORTAFOLIO
