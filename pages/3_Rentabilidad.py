@@ -3635,14 +3635,25 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
         "Torre Evoca": {
             "zona": "Bogotá · Las Nieves",
             "area_objetivo": 19,
+            # Comparables actuales de Las Nieves, 20–25 m².
+            # Se excluyen resultados identificados como Torre Ventto y
+            # publicaciones de 20 m² del edificio Trend cuando la ficha
+            # no aporta comparabilidad directa con Evoca.
             "comparables": [
-                (20, 230_000_000), (21, 256_800_000), (23, 270_000_000),
-                (24, 270_000_000), (25, 280_000_000), (26, 290_000_000),
-                (20, 320_000_000)
+                (20, 225_000_000),
+                (22, 232_000_000),
+                (21, 240_000_000),
+                (24, 238_000_000),
+                (25, 240_000_000),
+                (21, 256_800_000),
+                (25, 250_000_000),
             ],
-            "fuente": "FincaRaíz · Las Nieves · 20–26 m²",
-            "url": "https://www.fincaraiz.com.co/venta/apartaestudios/las-nieves/zona-centro/bogota",
-            "oferta_publicada": 79,
+            "fuente": "FincaRaíz · Las Nieves · 20–25 m² · sin Ventto",
+            "url": "https://www.fincaraiz.com.co/venta/apartaestudios/las-nieves/zona-centro/bogota/m2-desde-20/m2-hasta-32/edificados",
+            # No mostramos el total de resultados de la búsqueda porque
+            # incluye inmuebles de otros edificios y no representa oferta
+            # específica de Evoca.
+            "oferta_publicada": None,
         },
         "Torre Ventto": {
             "zona": "Bogotá · Las Aguas",
@@ -3923,9 +3934,10 @@ Primero se prioriza el mismo conjunto; si no hay suficientes anuncios, se usan
 edificios y conjuntos del entorno inmediato.
 </div>
 <div class="radar-note">
-<strong>Oferta:</strong> el número de portal representa anuncios publicados en la
-fuente consultada y no equivale a todo el inventario del sector ni a proyectos
-en construcción.
+<strong>Oferta:</strong> solo se muestra cuando el conteo de la fuente es
+razonablemente interpretable. Si la búsqueda mezcla edificios o no permite
+separar el inventario del activo/entorno, se deja <b>—</b> en lugar de inventar
+una cifra.
 </div>
 </div>
 """,
@@ -4358,4 +4370,3 @@ Reservas
             cards_html,
             unsafe_allow_html=True
         )
-
