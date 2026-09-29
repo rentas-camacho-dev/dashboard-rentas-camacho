@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import base64
 import textwrap
+import requests
+import re
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -3600,126 +3602,210 @@ elif st.session_state.vista_airbnb == "Análisis":
 </div>
 
 <div class="section-subtitle">
-Mercado de la zona + comportamiento del activo + señales para interpretar el momento del portafolio.
+Mercado online actualizado + comportamiento del activo + catalizadores documentados.
 </div>
 """,
         unsafe_allow_html=True
     )
 
     # ========================================================
-    # DATOS DE MERCADO — CORTE INICIAL
+    # RADAR ONLINE — TULUGAR API
     # ========================================================
-    # Esta primera versión utiliza datos externos documentados
-    # como referencia. Posteriormente esta tabla se conectará a
-    # fuentes online para actualizar automáticamente el corte.
-    #
-    # IVP 2025 DANE: no incluye Bogotá.
-    # Las señales de catalizadores/riesgos son una lectura
-    # cualitativa de la zona, no una tasación del inmueble.
+    # TuLugar ofrece una API REST pública de lectura, sin API key.
+    # El endpoint de mercado entrega precio mediano, $/m² e inventario activo.
+    # Los datos de mercado se refrescan online; usamos cache de 1 hora para
+    # no golpear innecesariamente la API.
 
-    radar_mercado = {
+    TULUGAR_API = "https://tulugar.com/api/v1"
+
+    propiedades_radar = {
         "Torre Acqua": {
-            "ciudad": "Bogotá · Las Aguas",
+            "ciudad": "Bogotá",
+            "barrio": "Las Aguas",
             "ivp": None,
-            "tendencia": "🟢 Activa",
-            "demanda": "🟢",
-            "oferta": "🟡",
-            "catalizador": "🟢 Centro / renovación",
-            "liquidez": "🟡",
-            "riesgo": "🟡",
-            "fuente": "Mercado de Las Aguas"
+            "catalizador": "Centro / renovación",
+            "catalizador_url": "https://www.bogota.gov.co/"
         },
         "Torre Evoca": {
-            "ciudad": "Bogotá · Las Nieves",
+            "ciudad": "Bogotá",
+            "barrio": "Las Nieves",
             "ivp": None,
-            "tendencia": "🟢 Activa",
-            "demanda": "🟢",
-            "oferta": "🟡",
-            "catalizador": "🟢 Centro / transformación",
-            "liquidez": "🟡",
-            "riesgo": "🟡",
-            "fuente": "Mercado centro Bogotá"
+            "catalizador": "Centro / transformación",
+            "catalizador_url": "https://www.bogota.gov.co/"
         },
         "Torre Ventto": {
-            "ciudad": "Bogotá · Las Aguas",
+            "ciudad": "Bogotá",
+            "barrio": "Las Aguas",
             "ivp": None,
-            "tendencia": "🟢 Activa",
-            "demanda": "🟢",
-            "oferta": "🟢",
-            "catalizador": "🟢 Producto nuevo",
-            "liquidez": "🟢",
-            "riesgo": "🟡",
-            "fuente": "Mercado de Las Aguas"
+            "catalizador": "Producto nuevo / mercado activo",
+            "catalizador_url": "https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria"
         },
         "Lotus": {
-            "ciudad": "Cartagena · Torices",
+            "ciudad": "Cartagena",
+            "barrio": "Torices",
             "ivp": 2.69,
-            "tendencia": "🟢 En transformación",
-            "demanda": "🟢",
-            "oferta": "🟡",
-            "catalizador": "🟢 Malecón / renovación",
-            "liquidez": "🟡",
-            "riesgo": "🟡",
-            "fuente": "DANE IVP 2025 · Torices"
+            "catalizador": "Nuevo Chambacú / conexión vial",
+            "catalizador_url": "https://www.cartagena.gov.co/noticias/el-nuevo-chambacu-apuesta-social-deportiva-alcalde-dumek-turbay-que-tambien-convierte-una-alternativa-movilidad"
         },
         "Santa Marina": {
-            "ciudad": "Santa Marta · Don Jaca",
+            "ciudad": "Santa Marta",
+            "barrio": "Don Jaca",
             "ivp": 2.96,
-            "tendencia": "🟢 En desarrollo",
-            "demanda": "🟢",
-            "oferta": "🟡",
-            "catalizador": "🟢 Proyecto / aeropuerto",
-            "liquidez": "🟡",
-            "riesgo": "🟡",
-            "fuente": "DANE IVP 2025 · corredor sur"
+            "catalizador": "Aeropuerto / turismo",
+            "catalizador_url": "https://mintransporte.gov.co/publicaciones/12343/gobierno-nacional-impulsa-la-transformacion-del-aeropuerto-de-santa-marta-para-responder-al-crecimiento-del-turismo-y-la-conectividad/"
         },
         "Base Loft": {
-            "ciudad": "Medellín · La Candelaria",
+            "ciudad": "Medellín",
+            "barrio": "La Candelaria",
             "ivp": 2.90,
-            "tendencia": "🟡 Mixta",
-            "demanda": "🟡",
-            "oferta": "🟡",
-            "catalizador": "🟢 Renovación urbana",
-            "liquidez": "🟡",
-            "riesgo": "🟡",
-            "fuente": "DANE IVP 2025 · La Candelaria"
+            "catalizador": "Renovación urbana",
+            "catalizador_url": "https://www.medellin.gov.co/es/sala-de-prensa/noticias/medellin-apuesta-por-renovar-mas-de-1.000-hectareas-para-llevar-vivienda-espacio-publico-y-nueva-vida-urbana-a-zonas-estrategicas/"
         },
         "Tempus 49": {
-            "ciudad": "Ibagué · Piedra Pintada",
+            "ciudad": "Ibagué",
+            "barrio": "Piedra Pintada",
             "ivp": 3.04,
-            "tendencia": "🟡 Moderada",
-            "demanda": "🟡",
-            "oferta": "🟢",
-            "catalizador": "🟡 Zona consolidada",
-            "liquidez": "🟢",
-            "riesgo": "🟢",
-            "fuente": "DANE IVP 2025 · Piedra Pintada"
+            "catalizador": "Obras viales / servicios",
+            "catalizador_url": "https://www.ibal.gov.co/2026/09/08/zona-gastronomica-de-rincon-de-piedra-pintada-estrena-vias-gracias-al-combo-3x1/"
         }
     }
 
-    # ========================================================
-    # REFERENCIAS DE MERCADO OBSERVADAS
-    # ========================================================
-    # Son precios publicados/observados, no precios de cierre.
-    referencias = {
-        "Torre Acqua": "$235M",
-        "Torre Evoca": "$241M",
-        "Torre Ventto": "$275M",
-        "Lotus": "$365M",
-        "Santa Marina": "$300M",
-        "Base Loft": "$278M",
-        "Tempus 49": "$230M"
-    }
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def consultar_tulugar(ciudad, barrio):
+        """Consulta mercado de venta y renta + STR para un barrio."""
+        resultado = {
+            "median_price_usd": None,
+            "price_m2_usd": None,
+            "active_listings": None,
+            "updated_at": None,
+            "median_rent_usd": None,
+            "str_occupancy": None,
+            "str_listings": None,
+            "str_nightly_usd": None,
+            "source": f"{TULUGAR_API}/market/summary",
+            "ok": False,
+            "error": None
+        }
+
+        try:
+            params_sale = {
+                "country": "Colombia",
+                "city": ciudad,
+                "neighborhood": barrio,
+                "property_type": "apartment",
+                "listing_type": "sale"
+            }
+            r = requests.get(
+                f"{TULUGAR_API}/market/summary",
+                params=params_sale,
+                timeout=12,
+                headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
+            )
+            r.raise_for_status()
+            data = r.json().get("data", {}) or {}
+
+            resultado["median_price_usd"] = data.get("median_price")
+            resultado["price_m2_usd"] = data.get("avg_price_per_sqm")
+            resultado["active_listings"] = data.get("total_active_listings")
+            resultado["updated_at"] = data.get("updated_at")
+            resultado["ok"] = True
+
+            # Renta residencial: sirve como contexto de profundidad del mercado.
+            params_rent = dict(params_sale)
+            params_rent["listing_type"] = "rent"
+            rr = requests.get(
+                f"{TULUGAR_API}/market/summary",
+                params=params_rent,
+                timeout=12,
+                headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
+            )
+            if rr.ok:
+                rent_data = rr.json().get("data", {}) or {}
+                resultado["median_rent_usd"] = rent_data.get("median_price")
+
+            # Mercado de renta corta / Airbnb del barrio.
+            params_str = {
+                "country": "Colombia",
+                "city": ciudad,
+                "neighborhood": barrio
+            }
+            rs = requests.get(
+                f"{TULUGAR_API}/market/str",
+                params=params_str,
+                timeout=12,
+                headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
+            )
+            if rs.ok:
+                str_data = rs.json().get("data", {}) or {}
+                barrios = str_data.get("neighborhoods", []) or []
+                objetivo = next(
+                    (
+                        x for x in barrios
+                        if str(x.get("neighborhood_name", "")).strip().lower()
+                        == barrio.strip().lower()
+                    ),
+                    None
+                )
+                if objetivo:
+                    resultado["str_occupancy"] = objetivo.get("occupancy_rate")
+                    resultado["str_listings"] = objetivo.get("total_listings")
+                    resultado["str_nightly_usd"] = objetivo.get("median_nightly_rate")
+
+        except Exception as exc:
+            resultado["error"] = str(exc)
+
+        return resultado
+
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def consultar_trm():
+        """TRM oficial de Colombia a través de una API pública que usa fuente Superfinanciera."""
+        try:
+            r = requests.get(
+                "https://co.dolarapi.com/v1/trm",
+                timeout=10,
+                headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
+            )
+            r.raise_for_status()
+            data = r.json()
+            return float(data["valor"]), data.get("fechaActualizacion")
+        except Exception:
+            return None, None
+
+    trm, fecha_trm = consultar_trm()
+
+    filas_mercado = []
+    for nombre, info in propiedades_radar.items():
+        m = consultar_tulugar(info["ciudad"], info["barrio"])
+        fila = {
+            "Propiedad": nombre,
+            "Zona": f"{info['ciudad']} · {info['barrio']}",
+            "IVP": info["ivp"],
+            "Catalizador": info["catalizador"],
+            "Catalizador_URL": info["catalizador_url"],
+            **m
+        }
+        filas_mercado.append(fila)
+
+    mercado = pd.DataFrame(filas_mercado)
+
+    if trm:
+        mercado["Precio_m2_COP"] = mercado["price_m2_usd"] * trm
+        mercado["Mediana_COP"] = mercado["median_price_usd"] * trm
+        mercado["Renta_COP"] = mercado["median_rent_usd"] * trm
+    else:
+        mercado["Precio_m2_COP"] = pd.NA
+        mercado["Mediana_COP"] = pd.NA
+        mercado["Renta_COP"] = pd.NA
 
     # ========================================================
-    # ACTIVOS / INVERSIÓN / VALOR ACTUAL
+    # DATOS DEL ACTIVO EN BIGQUERY
     # ========================================================
     activos = inversiones.rename(
         columns={"Activo_Proyecto": "Nombre_Propiedad"}
     ).copy()
 
     activos = activos[
-        activos["Nombre_Propiedad"].isin(radar_mercado.keys())
+        activos["Nombre_Propiedad"].isin(propiedades_radar.keys())
     ].copy()
 
     activos = activos.merge(
@@ -3742,10 +3828,16 @@ Mercado de la zona + comportamiento del activo + señales para interpretar el mo
     activos["Inversion"] = pd.to_numeric(
         activos["Inversion"], errors="coerce"
     )
-
     activos["Valorizacion_Activo"] = (
         (activos["Valor_Total_Actual"] / activos["Inversion"] - 1) * 100
     ).replace([float("inf"), -float("inf")], pd.NA)
+
+    mercado = mercado.merge(
+        activos[["Nombre_Propiedad", "Valor_Total_Actual", "Valorizacion_Activo"]],
+        left_on="Propiedad",
+        right_on="Nombre_Propiedad",
+        how="left"
+    ).drop(columns=["Nombre_Propiedad"], errors="ignore")
 
     orden_radar = {
         "Torre Acqua": 1,
@@ -3756,114 +3848,134 @@ Mercado de la zona + comportamiento del activo + señales para interpretar el mo
         "Base Loft": 6,
         "Tempus 49": 7
     }
+    mercado["Orden"] = mercado["Propiedad"].map(orden_radar)
+    mercado = mercado.sort_values("Orden")
 
-    activos["Orden"] = activos["Nombre_Propiedad"].map(orden_radar)
-    activos = activos.sort_values("Orden")
+    def dinero_millones(valor):
+        if pd.isna(valor):
+            return "—"
+        return f"${float(valor) / 1_000_000:.0f}M"
 
-    def badge(texto):
-        texto = str(texto)
-        if texto.startswith("🟢"):
-            clase = "radar-green"
-            texto = texto.replace("🟢", "", 1).strip()
-        elif texto.startswith("🟡"):
-            clase = "radar-yellow"
-            texto = texto.replace("🟡", "", 1).strip()
-        elif texto.startswith("🔴"):
-            clase = "radar-red"
-            texto = texto.replace("🔴", "", 1).strip()
-        else:
-            clase = "radar-neutral"
-        return f'<span class="radar-badge {clase}">{texto}</span>'
+    def dinero_m2(valor):
+        if pd.isna(valor):
+            return "—"
+        return f"${float(valor) / 1_000_000:.1f}M"
 
-    def pct_activo(valor):
+    def porcentaje(valor):
+        if pd.isna(valor):
+            return "—"
+        return f"{float(valor):.1f}%"
+
+    def ocupacion(valor):
+        if pd.isna(valor):
+            return "—"
+        return f"{float(valor) * 100:.0f}%"
+
+    def semaforo_oferta(n):
+        if pd.isna(n):
+            return '<span class="radar-badge radar-neutral">—</span>'
+        # El semáforo se calcula sobre la distribución del propio radar,
+        # no sobre una opinión manual.
+        q1 = mercado["active_listings"].dropna().quantile(0.33)
+        q2 = mercado["active_listings"].dropna().quantile(0.66)
+        if n <= q1:
+            return '<span class="radar-badge radar-green">Baja</span>'
+        if n <= q2:
+            return '<span class="radar-badge radar-yellow">Media</span>'
+        return '<span class="radar-badge radar-red">Alta</span>'
+
+    def semaforo_valoracion(valor):
         if pd.isna(valor):
             return '<span class="radar-neutral">—</span>'
         clase = "radar-positive" if float(valor) >= 0 else "radar-negative"
         return f'<span class="{clase}">{float(valor):.1f}%</span>'
 
+    # ========================================================
+    # TABLA PRINCIPAL
+    # ========================================================
     html_radar = """
 <div class="radar-panel">
 <div class="radar-title">🔎 Radar de mercado y valorización</div>
 <div class="radar-subtitle">
-La lectura combina datos del activo en BigQuery con indicadores de mercado. Los semáforos son señales de contexto, no una recomendación automática de compra o venta.
+Datos de mercado consultados online. El activo proviene de BigQuery. Los precios de mercado son precios de oferta, no cierres.
 </div>
 <table class="radar-table">
 <thead>
 <tr>
 <th>Propiedad</th>
 <th>Zona</th>
-<th>Valorización activo</th>
+<th>Valoración activo</th>
+<th>Precio mediano mercado</th>
+<th>$/m²</th>
+<th>Oferta activa</th>
+<th>Demanda turística</th>
+<th>Alquiler mediano</th>
 <th>IVP 2025</th>
-<th>Referencia mercado</th>
-<th>Demanda</th>
-<th>Oferta</th>
 <th>Catalizador</th>
-<th>Liquidez</th>
-<th>Riesgo</th>
 </tr>
 </thead>
 <tbody>
 """
 
-    for _, row in activos.iterrows():
-        nombre = row["Nombre_Propiedad"]
-        info = radar_mercado[nombre]
-        ivp = (
-            '<span class="radar-number">—</span>'
-            if info["ivp"] is None
-            else f'<span class="radar-number">{info["ivp"]:.2f}%</span>'
-        )
-
+    for _, row in mercado.iterrows():
         html_radar += f"""
 <tr>
-<td>{nombre}</td>
-<td>{info['ciudad']}</td>
-<td>{pct_activo(row['Valorizacion_Activo'])}</td>
-<td>{ivp}</td>
-<td><span class="radar-number">{referencias[nombre]}</span></td>
-<td>{badge(info['demanda'])}</td>
-<td>{badge(info['oferta'])}</td>
-<td>{badge(info['catalizador'])}</td>
-<td>{badge(info['liquidez'])}</td>
-<td>{badge(info['riesgo'])}</td>
+<td>{row['Propiedad']}</td>
+<td>{row['Zona']}</td>
+<td>{semaforo_valoracion(row['Valorizacion_Activo'])}</td>
+<td><span class="radar-number">{dinero_millones(row['Mediana_COP'])}</span></td>
+<td><span class="radar-number">{dinero_m2(row['Precio_m2_COP'])}</span></td>
+<td>
+    <span class="radar-number">{int(row['active_listings']) if not pd.isna(row['active_listings']) else '—'}</span>
+    {semaforo_oferta(row['active_listings'])}
+</td>
+<td><span class="radar-number">{ocupacion(row['str_occupancy'])}</span></td>
+<td><span class="radar-number">{dinero_millones(row['Renta_COP'])}</span></td>
+<td><span class="radar-number">{porcentaje(row['IVP'])}</span></td>
+<td><a href="{row['Catalizador_URL']}" target="_blank" style="text-decoration:none;">{row['Catalizador']}</a></td>
 </tr>
 """
 
     html_radar += """
 </tbody>
 </table>
-<div class="radar-note">
-IVP 2025: DANE. Bogotá no hace parte del IVP de DANE y por eso se muestra como “—”. Las referencias de mercado corresponden a precios publicados/observados y no equivalen a precios de cierre. El valor actual del activo proviene de la información de inversión/crédito disponible en la aplicación.
-</div>
 </div>
 """
 
-    st.markdown(
-        html_radar,
-        unsafe_allow_html=True
-    )
+    st.markdown(html_radar, unsafe_allow_html=True)
 
     # ========================================================
-    # SEÑALES DE LECTURA RÁPIDA
+    # PIE DEL RADAR
     # ========================================================
+    fecha_online = pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
+    trm_txt = f"${trm:,.0f}" if trm else "no disponible"
 
     st.markdown(
-        """
+        f"""
 <div class="radar-panel">
-<div class="radar-title">💡 Señales para revisar</div>
-<div class="radar-signal"><b>Acqua:</b> el valor de referencia usado en el radar ($235M) es superior al valor conservador de $221M utilizado actualmente en el análisis financiero.</div>
-<div class="radar-signal"><b>Base Loft:</b> La Candelaria muestra una tesis de transformación urbana, pero el mercado activo debe vigilarse por oferta y tiempo de publicación.</div>
-<div class="radar-signal"><b>Tempus 49:</b> el IVP 2025 de Ibagué fue 3,04%; el mercado observado de Piedra Pintada muestra referencias de venta activas.</div>
-<div class="radar-signal"><b>Santa Marina / Lotus:</b> la tesis depende más de la evolución de los proyectos y del mercado turístico de la costa que del IVP por sí solo.</div>
+<div class="radar-title">📡 Corte online</div>
+<div class="radar-subtitle">
+TuLugar se consulta directamente desde la aplicación y entrega precio mediano, $/m² e inventario activo. La TRM usada para convertir a COP es {trm_txt} por USD. Corte de la aplicación: {fecha_online}.
+</div>
+<div class="radar-note">
+<strong>Importante:</strong> el mercado inmobiliario mostrado corresponde a precios publicados/ofertados, no precios de escritura o cierre. El IVP es el indicador oficial DANE 2025 y Bogotá no está incluida en ese índice. La ocupación turística es un indicador de contexto y puede tener muestras pequeñas por barrio.
+</div>
 </div>
 """,
         unsafe_allow_html=True
     )
 
+    # ========================================================
+    # SEÑALES AUTOMÁTICAS BASADAS EN DATOS
+    # ========================================================
     st.markdown(
         """
-<div class="radar-note">
-📌 Próxima etapa: sustituir las referencias manuales por consultas online y guardar cada corte para construir histórico de precio/m², oferta y liquidez.
+<div class="radar-panel">
+<div class="radar-title">💡 Lecturas automáticas</div>
+<div class="radar-signal">🟢 <b>Mercado:</b> ahora la referencia de precio y la oferta salen de una consulta online; ya no son valores escritos manualmente en el código.</div>
+<div class="radar-signal">🟢 <b>Oferta:</b> el semáforo se calcula con la distribución de avisos activos entre las zonas del propio portafolio.</div>
+<div class="radar-signal">🟡 <b>Demanda:</b> la ocupación turística se muestra como indicador de contexto, no como una medición directa de demanda de compra.</div>
+<div class="radar-signal">🟡 <b>Siguiente nivel:</b> guardar cada corte en BigQuery para construir histórico de $/m², inventario, alquiler y ocupación y ver tendencia mes a mes.</div>
 </div>
 """,
         unsafe_allow_html=True
