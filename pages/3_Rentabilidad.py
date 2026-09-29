@@ -3671,8 +3671,44 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
     }
 
     @st.cache_data(ttl=3600, show_spinner=False)
+    def resolver_barrio(ciudad, barrio):
+        """Devuelve el nombre canónico del barrio según TuLugar."""
+        try:
+            r = requests.get(
+                f"{TULUGAR_API}/locations/neighborhoods",
+                params={"city": ciudad},
+                timeout=12,
+                headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
+            )
+            r.raise_for_status()
+            items = r.json().get("data", []) or []
+            objetivo = barrio.strip().lower()
+
+            # 1) Coincidencia exacta
+            for x in items:
+                nombre = str(x.get("name", "")).strip()
+                if nombre.lower() == objetivo:
+                    return nombre
+
+            # 2) Coincidencia parcial, útil para nombres como
+            # "Las Aguas" vs "Las Aguas, Localidad La Candelaria".
+            for x in items:
+                nombre = str(x.get("name", "")).strip()
+                if objetivo in nombre.lower() or nombre.lower() in objetivo:
+                    return nombre
+        except Exception:
+            pass
+        return barrio
+
+    def extraer_data_api(payload):
+        """Soporta tanto respuestas envueltas en data como respuestas directas."""
+        if isinstance(payload, dict) and isinstance(payload.get("data"), dict):
+            return payload["data"]
+        return payload if isinstance(payload, dict) else {}
+
+    @st.cache_data(ttl=3600, show_spinner=False)
     def consultar_tulugar(ciudad, barrio):
-        """Consulta mercado de venta y renta + STR para un barrio."""
+        """Consulta mercado online por barrio en TuLugar."""
         resultado = {
             "median_price_usd": None,
             "price_m2_usd": None,
@@ -3682,27 +3718,32 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
             "str_occupancy": None,
             "str_listings": None,
             "str_nightly_usd": None,
+            "barrio_online": barrio,
             "source": f"{TULUGAR_API}/market/summary",
             "ok": False,
             "error": None
         }
 
         try:
+            barrio_online = resolver_barrio(ciudad, barrio)
+            resultado["barrio_online"] = barrio_online
+
             params_sale = {
                 "country": "Colombia",
                 "city": ciudad,
-                "neighborhood": barrio,
+                "neighborhood": barrio_online,
                 "property_type": "apartment",
                 "listing_type": "sale"
             }
+
             r = requests.get(
                 f"{TULUGAR_API}/market/summary",
                 params=params_sale,
-                timeout=12,
+                timeout=15,
                 headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
             )
             r.raise_for_status()
-            data = r.json().get("data", {}) or {}
+            data = extraer_data_api(r.json())
 
             resultado["median_price_usd"] = data.get("median_price")
             resultado["price_m2_usd"] = data.get("avg_price_per_sqm")
@@ -3710,46 +3751,98 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
             resultado["updated_at"] = data.get("updated_at")
             resultado["ok"] = True
 
-            # Renta residencial: sirve como contexto de profundidad del mercado.
+            # Respaldo: si el resumen devuelve vacío/0, consultamos el inventario
+            # de avisos y calculamos la mediana con los anuncios realmente activos.
+            if (resultado["active_listings"] in (None, 0)) or (
+                resultado["median_price_usd"] is None
+                and resultado["price_m2_usd"] is None
+            ):
+                precios_usd = []
+                precios_m2_usd = []
+                total = 0
+                offset = 0
+                while True:
+                    lr = requests.get(
+                        f"{TULUGAR_API}/listings",
+                        params={**params_sale, "limit": 100, "offset": offset},
+                        timeout=15,
+                        headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
+                    )
+                    lr.raise_for_status()
+                    lp = lr.json()
+                    items = lp.get("data", []) or []
+                    pag = lp.get("pagination", {}) or {}
+                    total = int(pag.get("total", len(items)) or 0)
+
+                    for item in items:
+                        precio = pd.to_numeric(item.get("price"), errors="coerce")
+                        area = pd.to_numeric(item.get("area_sqm"), errors="coerce")
+                        moneda = str(item.get("currency", "USD")).upper()
+                        if pd.notna(precio) and moneda == "USD":
+                            precios_usd.append(float(precio))
+                            if pd.notna(area) and float(area) > 0:
+                                precios_m2_usd.append(float(precio) / float(area))
+
+                    offset += len(items)
+                    if not items or offset >= total:
+                        break
+
+                if total:
+                    resultado["active_listings"] = total
+                if precios_usd:
+                    resultado["median_price_usd"] = float(pd.Series(precios_usd).median())
+                if precios_m2_usd:
+                    resultado["price_m2_usd"] = float(pd.Series(precios_m2_usd).median())
+
+            # Renta residencial.
             params_rent = dict(params_sale)
             params_rent["listing_type"] = "rent"
             rr = requests.get(
                 f"{TULUGAR_API}/market/summary",
                 params=params_rent,
-                timeout=12,
+                timeout=15,
                 headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
             )
             if rr.ok:
-                rent_data = rr.json().get("data", {}) or {}
+                rent_data = extraer_data_api(rr.json())
                 resultado["median_rent_usd"] = rent_data.get("median_price")
 
-            # Mercado de renta corta / Airbnb del barrio.
+            # STR: la API documenta que acepta ciudad + barrio directamente.
             params_str = {
                 "country": "Colombia",
                 "city": ciudad,
-                "neighborhood": barrio
+                "neighborhood": barrio_online
             }
             rs = requests.get(
                 f"{TULUGAR_API}/market/str",
                 params=params_str,
-                timeout=12,
+                timeout=15,
                 headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
             )
             if rs.ok:
-                str_data = rs.json().get("data", {}) or {}
+                str_data = extraer_data_api(rs.json())
                 barrios = str_data.get("neighborhoods", []) or []
-                objetivo = next(
+                objetivo = barrio_online.strip().lower()
+                encontrado = next(
                     (
                         x for x in barrios
-                        if str(x.get("neighborhood_name", "")).strip().lower()
-                        == barrio.strip().lower()
+                        if str(x.get("neighborhood_name", "")).strip().lower() == objetivo
                     ),
                     None
                 )
-                if objetivo:
-                    resultado["str_occupancy"] = objetivo.get("occupancy_rate")
-                    resultado["str_listings"] = objetivo.get("total_listings")
-                    resultado["str_nightly_usd"] = objetivo.get("median_nightly_rate")
+                if encontrado is None and barrios:
+                    encontrado = next(
+                        (
+                            x for x in barrios
+                            if objetivo in str(x.get("neighborhood_name", "")).strip().lower()
+                            or str(x.get("neighborhood_name", "")).strip().lower() in objetivo
+                        ),
+                        None
+                    )
+                if encontrado:
+                    resultado["str_occupancy"] = encontrado.get("occupancy_rate")
+                    resultado["str_listings"] = encontrado.get("total_listings")
+                    resultado["str_nightly_usd"] = encontrado.get("median_nightly_rate")
 
         except Exception as exc:
             resultado["error"] = str(exc)
