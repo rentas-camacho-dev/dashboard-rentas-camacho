@@ -5,6 +5,7 @@ import base64
 import textwrap
 import requests
 import re
+from html import unescape
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -3670,182 +3671,331 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
         }
     }
 
-    @st.cache_data(ttl=3600, show_spinner=False)
-    def resolver_barrio(ciudad, barrio):
-        """Devuelve el nombre canónico del barrio según TuLugar."""
+    # ========================================================
+    # FUENTE ONLINE PRINCIPAL — PÁGINAS DE MERCADO TULUGAR
+    # ========================================================
+    # La API pública de TuLugar existe y documenta /market/summary,
+    # pero para Colombia el resumen API puede devolver inventario vacío
+    # aun cuando la página pública del barrio sí tiene datos. Por eso
+    # usamos la página pública como fuente principal y la API como respaldo.
+    # Las páginas se recalculan diariamente según la metodología de TuLugar.
+
+    def parsear_numero_local(texto):
+        """Convierte 5.466 / 2,553 / 1.542 a número."""
+        if texto is None:
+            return None
+        texto = str(texto).strip().replace('\xa0', ' ')
         try:
-            r = requests.get(
-                f"{TULUGAR_API}/locations/neighborhoods",
-                params={"city": ciudad},
-                timeout=12,
-                headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
-            )
-            r.raise_for_status()
-            items = r.json().get("data", []) or []
-            objetivo = barrio.strip().lower()
-
-            # 1) Coincidencia exacta
-            for x in items:
-                nombre = str(x.get("name", "")).strip()
-                if nombre.lower() == objetivo:
-                    return nombre
-
-            # 2) Coincidencia parcial, útil para nombres como
-            # "Las Aguas" vs "Las Aguas, Localidad La Candelaria".
-            for x in items:
-                nombre = str(x.get("name", "")).strip()
-                if objetivo in nombre.lower() or nombre.lower() in objetivo:
-                    return nombre
+            # En estas páginas los miles pueden venir con punto o coma.
+            limpio = texto.replace('.', '').replace(',', '')
+            return float(limpio)
         except Exception:
-            pass
-        return barrio
+            return None
 
-    def extraer_data_api(payload):
-        """Soporta tanto respuestas envueltas en data como respuestas directas."""
-        if isinstance(payload, dict) and isinstance(payload.get("data"), dict):
-            return payload["data"]
-        return payload if isinstance(payload, dict) else {}
+    def parsear_usd(texto):
+        """Convierte tokens como 101K, 1.5M o 234K a USD."""
+        if texto is None:
+            return None
+        t = str(texto).strip().replace('\xa0', '').replace('US$', '$')
+        m = re.search(r'([\d.,]+)\s*([KM])?', t, re.I)
+        if not m:
+            return None
+        try:
+            numero = float(m.group(1).replace(',', ''))
+        except Exception:
+            try:
+                numero = float(m.group(1).replace('.', '').replace(',', '.'))
+            except Exception:
+                return None
+        sufijo = (m.group(2) or '').upper()
+        if sufijo == 'K':
+            numero *= 1_000
+        elif sufijo == 'M':
+            numero *= 1_000_000
+        return numero
 
-    @st.cache_data(ttl=3600, show_spinner=False)
-    def consultar_tulugar(ciudad, barrio):
-        """Consulta mercado online por barrio en TuLugar."""
-        resultado = {
-            "median_price_usd": None,
-            "price_m2_usd": None,
-            "active_listings": None,
-            "updated_at": None,
-            "median_rent_usd": None,
-            "str_occupancy": None,
-            "str_listings": None,
-            "str_nightly_usd": None,
-            "barrio_online": barrio,
-            "source": f"{TULUGAR_API}/market/summary",
-            "ok": False,
-            "error": None
+    def texto_plano(html):
+        html = unescape(html or '')
+        html = re.sub(r'<script[\s\S]*?</script>', ' ', html, flags=re.I)
+        html = re.sub(r'<style[\s\S]*?</style>', ' ', html, flags=re.I)
+        html = re.sub(r'<[^>]+>', ' ', html)
+        html = re.sub(r'\s+', ' ', html)
+        return html.strip()
+
+    def extraer_mercado_desde_pagina(html):
+        """Extrae las métricas visibles de la página pública de TuLugar."""
+        t = texto_plano(html)
+        out = {
+            'median_price_usd': None,
+            'price_m2_usd': None,
+            'active_listings': None,
+            'median_rent_usd': None,
+            'updated_at': None,
+            'listing_age_days': None,
         }
 
+        # Inventario total monitoreado.
+        patrones_listados = [
+            r'Propiedades monitoreadas\s*([\d.,]+)',
+            r'Monitored listings\s*([\d.,]+)',
+            r'Propiedades Activas\s*([\d.,]+)',
+            r'Active Properties\s*([\d.,]+)',
+        ]
+        for patron in patrones_listados:
+            m = re.search(patron, t, flags=re.I)
+            if m:
+                out['active_listings'] = parsear_numero_local(m.group(1))
+                break
+
+        # Índice TuLugar de precios / precio por m².
+        patrones_m2 = [
+            r'(?:Índice TuLugar de Precios|Precio por m² \(venta\)|TuLugar Price Index|Price per m² \(sale\))\s*\$?\s*([\d.,]+)\s*/m²',
+        ]
+        for patron in patrones_m2:
+            m = re.search(patron, t, flags=re.I)
+            if m:
+                out['price_m2_usd'] = parsear_numero_local(m.group(1))
+                break
+
+        # Alquiler mediano residencial.
+        patrones_renta = [
+            r'Alquiler mediano \(departamento\)\s*\$\s*([\d.,]+)',
+            r'Median apartment rent\s*\$\s*([\d.,]+)',
+        ]
+        for patron in patrones_renta:
+            m = re.search(patron, t, flags=re.I)
+            if m:
+                out['median_rent_usd'] = parsear_numero_local(m.group(1))
+                break
+
+        # Precio mediano de departamento en venta. Se toma del bloque
+        # "Por tipo de propiedad / By property type", no de la serie histórica.
+        bloques = re.split(r'Por tipo de propiedad|By property type', t, flags=re.I)
+        if len(bloques) > 1:
+            bloque = bloques[1]
+            bloque = re.split(r'Por dormitorios|By bedrooms|Distribución de precios|Price distribution', bloque, flags=re.I)[0]
+            patrones_depto = [
+                r'Departamentos[^$]{0,120}\$\s*([\d.,]+\s*[KM]?)\s+\$\s*[\d.,]+',
+                r'Apartments[^$]{0,120}\$\s*([\d.,]+\s*[KM]?)\s+\$\s*[\d.,]+',
+            ]
+            for patron in patrones_depto:
+                m = re.search(patron, bloque, flags=re.I)
+                if m:
+                    out['median_price_usd'] = parsear_usd(m.group(1))
+                    break
+
+        # Antigüedad mediana de avisos activos = indicador de ritmo/liquidez.
+        patrones_antiguedad = [
+            r'Antigüedad mediana de las publicaciones activas\s*([\d.,]+)\s*días',
+            r'Median age of active listings\s*([\d.,]+)\s*days',
+        ]
+        for patron in patrones_antiguedad:
+            m = re.search(patron, t, flags=re.I)
+            if m:
+                out['listing_age_days'] = parsear_numero_local(m.group(1))
+                break
+
+        # Fecha de corte publicada por TuLugar.
+        m = re.search(r'Datos al\s*(\d{4}-\d{2}-\d{2})', t, flags=re.I)
+        if not m:
+            m = re.search(r'Data as of\s*(\d{4}-\d{2}-\d{2})', t, flags=re.I)
+        if m:
+            out['updated_at'] = m.group(1)
+
+        return out
+
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def consultar_pagina_tulugar(url):
+        """Consulta online la página pública de mercado de TuLugar."""
+        resultado = {
+            'median_price_usd': None,
+            'price_m2_usd': None,
+            'active_listings': None,
+            'updated_at': None,
+            'median_rent_usd': None,
+            'listing_age_days': None,
+            'ok': False,
+            'error': None,
+            'source': url,
+        }
         try:
-            barrio_online = resolver_barrio(ciudad, barrio)
-            resultado["barrio_online"] = barrio_online
-
-            params_sale = {
-                "country": "Colombia",
-                "city": ciudad,
-                "neighborhood": barrio_online,
-                "property_type": "apartment",
-                "listing_type": "sale"
-            }
-
             r = requests.get(
-                f"{TULUGAR_API}/market/summary",
-                params=params_sale,
-                timeout=15,
-                headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
+                url,
+                timeout=20,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 Airbnb-Financial-Hub/1.0'
+                }
             )
             r.raise_for_status()
-            data = extraer_data_api(r.json())
+            resultado.update(extraer_mercado_desde_pagina(r.text))
+            resultado['ok'] = any(
+                resultado[k] is not None
+                for k in ['median_price_usd', 'price_m2_usd', 'active_listings', 'median_rent_usd']
+            )
+        except Exception as exc:
+            resultado['error'] = str(exc)
+        return resultado
 
-            resultado["median_price_usd"] = data.get("median_price")
-            resultado["price_m2_usd"] = data.get("avg_price_per_sqm")
-            resultado["active_listings"] = data.get("total_active_listings")
-            resultado["updated_at"] = data.get("updated_at")
-            resultado["ok"] = True
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def consultar_api_tulugar(ciudad, barrio):
+        """Respaldo API de TuLugar para zonas que no tengan página específica."""
+        resultado = {
+            'median_price_usd': None,
+            'price_m2_usd': None,
+            'active_listings': None,
+            'updated_at': None,
+            'median_rent_usd': None,
+            'str_occupancy': None,
+            'str_listings': None,
+            'str_nightly_usd': None,
+            'listing_age_days': None,
+            'barrio_online': barrio,
+            'source': f'{TULUGAR_API}/market/summary',
+            'ok': False,
+            'error': None
+        }
+        try:
+            params_sale = {
+                'country': 'Colombia',
+                'city': ciudad,
+                'neighborhood': barrio,
+                'property_type': 'apartment',
+                'listing_type': 'sale'
+            }
+            r = requests.get(
+                f'{TULUGAR_API}/market/summary',
+                params=params_sale,
+                timeout=15,
+                headers={'User-Agent': 'Mozilla/5.0 Airbnb-Financial-Hub'}
+            )
+            r.raise_for_status()
+            data = r.json().get('data', {}) or {}
+            resultado['median_price_usd'] = data.get('median_price')
+            resultado['price_m2_usd'] = data.get('avg_price_per_sqm')
+            resultado['active_listings'] = data.get('total_active_listings')
+            resultado['updated_at'] = data.get('updated_at')
+            resultado['ok'] = True
+        except Exception as exc:
+            resultado['error'] = str(exc)
+        return resultado
 
-            # Respaldo: si el resumen devuelve vacío/0, consultamos el inventario
-            # de avisos y calculamos la mediana con los anuncios realmente activos.
-            if (resultado["active_listings"] in (None, 0)) or (
-                resultado["median_price_usd"] is None
-                and resultado["price_m2_usd"] is None
-            ):
-                precios_usd = []
-                precios_m2_usd = []
-                total = 0
-                offset = 0
-                while True:
-                    lr = requests.get(
-                        f"{TULUGAR_API}/listings",
-                        params={**params_sale, "limit": 100, "offset": offset},
-                        timeout=15,
-                        headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
-                    )
-                    lr.raise_for_status()
-                    lp = lr.json()
-                    items = lp.get("data", []) or []
-                    pag = lp.get("pagination", {}) or {}
-                    total = int(pag.get("total", len(items)) or 0)
+    # URLs públicas con cobertura actual de las zonas del portafolio.
+    # Para Santa Marina se usa Santa Marta como mercado de referencia porque
+    # TuLugar no publica actualmente una página específica para Don Jaca.
+    # Para Base Loft usamos Comuna 10 - La Candelaria, que es la escala de
+    # mercado con cobertura amplia y no la muestra de solo 3 propiedades.
+    propiedades_radar.update({
+        'Torre Acqua': {
+            **propiedades_radar['Torre Acqua'],
+            'market_url': 'https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria',
+            'str_url': 'https://tulugar.com/es/airbnb/colombia/bogota/las-aguas'
+        },
+        'Torre Evoca': {
+            **propiedades_radar['Torre Evoca'],
+            'market_url': 'https://tulugar.com/es/mercado/colombia/bogota/las-nieves',
+            'str_url': None
+        },
+        'Torre Ventto': {
+            **propiedades_radar['Torre Ventto'],
+            'market_url': 'https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria',
+            'str_url': 'https://tulugar.com/es/airbnb/colombia/bogota/las-aguas'
+        },
+        'Lotus': {
+            **propiedades_radar['Lotus'],
+            'market_url': 'https://tulugar.com/es/mercado/colombia/cartagena/torices',
+            'str_url': 'https://tulugar.com/en/airbnb/colombia/cartagena/torices'
+        },
+        'Santa Marina': {
+            **propiedades_radar['Santa Marina'],
+            'market_url': 'https://tulugar.com/es/mercado/colombia/santa-marta',
+            'market_scope': 'Santa Marta',
+            'str_url': None
+        },
+        'Base Loft': {
+            **propiedades_radar['Base Loft'],
+            'market_url': 'https://tulugar.com/es/mercado/colombia/medellin/comuna-10-la-candelaria',
+            'market_scope': 'Comuna 10 - La Candelaria',
+            'str_url': 'https://tulugar.com/es/airbnb/colombia/medellin/la-candelaria'
+        },
+        'Tempus 49': {
+            **propiedades_radar['Tempus 49'],
+            'market_url': 'https://tulugar.com/es/mercado/colombia/ibague/comuna-4-piedrapintada',
+            'market_scope': 'Comuna 4 - Piedrapintada',
+            'str_url': None
+        }
+    })
 
-                    for item in items:
-                        precio = pd.to_numeric(item.get("price"), errors="coerce")
-                        area = pd.to_numeric(item.get("area_sqm"), errors="coerce")
-                        moneda = str(item.get("currency", "USD")).upper()
-                        if pd.notna(precio) and moneda == "USD":
-                            precios_usd.append(float(precio))
-                            if pd.notna(area) and float(area) > 0:
-                                precios_m2_usd.append(float(precio) / float(area))
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def consultar_tulugar(ciudad, barrio, market_url=None, str_url=None):
+        """Fuente online: página pública primero, API después."""
+        resultado = {
+            'median_price_usd': None,
+            'price_m2_usd': None,
+            'active_listings': None,
+            'updated_at': None,
+            'median_rent_usd': None,
+            'str_occupancy': None,
+            'str_listings': None,
+            'str_nightly_usd': None,
+            'listing_age_days': None,
+            'barrio_online': barrio,
+            'source': market_url or f'{TULUGAR_API}/market/summary',
+            'ok': False,
+            'error': None
+        }
 
-                    offset += len(items)
-                    if not items or offset >= total:
+        # 1. Mercado desde página pública de TuLugar.
+        if market_url:
+            pagina = consultar_pagina_tulugar(market_url)
+            for k in [
+                'median_price_usd', 'price_m2_usd', 'active_listings',
+                'updated_at', 'median_rent_usd', 'listing_age_days'
+            ]:
+                if pagina.get(k) is not None:
+                    resultado[k] = pagina[k]
+            resultado['source'] = market_url
+            resultado['ok'] = pagina.get('ok', False)
+            resultado['error'] = pagina.get('error')
+
+        # 2. Respaldo API si la página no entregó una métrica.
+        if any(resultado[k] is None for k in ['median_price_usd', 'price_m2_usd', 'active_listings', 'median_rent_usd']):
+            api = consultar_api_tulugar(ciudad, barrio)
+            for k in ['median_price_usd', 'price_m2_usd', 'active_listings', 'updated_at', 'median_rent_usd']:
+                if resultado[k] is None and api.get(k) is not None:
+                    resultado[k] = api[k]
+            if not resultado['ok'] and api.get('ok'):
+                resultado['ok'] = True
+
+        # 3. STR desde página pública cuando existe.
+        if str_url:
+            try:
+                rs = requests.get(
+                    str_url,
+                    timeout=20,
+                    headers={'User-Agent': 'Mozilla/5.0 Airbnb-Financial-Hub/1.0'}
+                )
+                rs.raise_for_status()
+                ts = texto_plano(rs.text)
+
+                for patron in [r'Ocupación\s*([\d.,]+)%', r'Occupancy\s*([\d.,]+)%']:
+                    m = re.search(patron, ts, flags=re.I)
+                    if m:
+                        resultado['str_occupancy'] = float(m.group(1).replace(',', '.')) / 100
                         break
 
-                if total:
-                    resultado["active_listings"] = total
-                if precios_usd:
-                    resultado["median_price_usd"] = float(pd.Series(precios_usd).median())
-                if precios_m2_usd:
-                    resultado["price_m2_usd"] = float(pd.Series(precios_m2_usd).median())
+                for patron in [r'Propiedades (?:Analizadas|Activas)\s*([\d.,]+)', r'(?:Analyzed|Active) Properties\s*([\d.,]+)']:
+                    m = re.search(patron, ts, flags=re.I)
+                    if m:
+                        resultado['str_listings'] = parsear_numero_local(m.group(1))
+                        break
 
-            # Renta residencial.
-            params_rent = dict(params_sale)
-            params_rent["listing_type"] = "rent"
-            rr = requests.get(
-                f"{TULUGAR_API}/market/summary",
-                params=params_rent,
-                timeout=15,
-                headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
-            )
-            if rr.ok:
-                rent_data = extraer_data_api(rr.json())
-                resultado["median_rent_usd"] = rent_data.get("median_price")
-
-            # STR: la API documenta que acepta ciudad + barrio directamente.
-            params_str = {
-                "country": "Colombia",
-                "city": ciudad,
-                "neighborhood": barrio_online
-            }
-            rs = requests.get(
-                f"{TULUGAR_API}/market/str",
-                params=params_str,
-                timeout=15,
-                headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
-            )
-            if rs.ok:
-                str_data = extraer_data_api(rs.json())
-                barrios = str_data.get("neighborhoods", []) or []
-                objetivo = barrio_online.strip().lower()
-                encontrado = next(
-                    (
-                        x for x in barrios
-                        if str(x.get("neighborhood_name", "")).strip().lower() == objetivo
-                    ),
-                    None
-                )
-                if encontrado is None and barrios:
-                    encontrado = next(
-                        (
-                            x for x in barrios
-                            if objetivo in str(x.get("neighborhood_name", "")).strip().lower()
-                            or str(x.get("neighborhood_name", "")).strip().lower() in objetivo
-                        ),
-                        None
-                    )
-                if encontrado:
-                    resultado["str_occupancy"] = encontrado.get("occupancy_rate")
-                    resultado["str_listings"] = encontrado.get("total_listings")
-                    resultado["str_nightly_usd"] = encontrado.get("median_nightly_rate")
-
-        except Exception as exc:
-            resultado["error"] = str(exc)
+                for patron in [r'Precio/Noche\s*([\d.,]+)', r'Nightly Rate\s*\$?\s*([\d.,]+)']:
+                    m = re.search(patron, ts, flags=re.I)
+                    if m:
+                        resultado['str_nightly_usd'] = parsear_numero_local(m.group(1))
+                        break
+            except Exception:
+                pass
 
         return resultado
 
