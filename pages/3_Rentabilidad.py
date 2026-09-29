@@ -1033,6 +1033,101 @@ div[data-testid="column"] {{
 )
 
 # ============================================================
+# ESTILOS — RADAR INMOBILIARIO
+# ============================================================
+
+st.markdown("""
+<style>
+.radar-panel {
+    background:#FFFFFF;
+    border:1px solid #DCE5EE;
+    border-radius:14px;
+    padding:16px 18px 12px;
+    margin-top:12px;
+    overflow-x:auto;
+}
+.radar-title {
+    font-size:18px;
+    font-weight:850;
+    color:#17345E;
+}
+.radar-subtitle {
+    font-size:9px;
+    color:#8A98AA;
+    margin-top:4px;
+    margin-bottom:12px;
+}
+.radar-table {
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    font-size:10px;
+    color:#50637B;
+    min-width:1080px;
+}
+.radar-table th {
+    background:#F4F7FA;
+    color:#71839A;
+    font-size:8px;
+    font-weight:800;
+    text-transform:uppercase;
+    padding:9px 8px;
+    border-bottom:1px solid #DCE5EE;
+    white-space:nowrap;
+    text-align:center;
+}
+.radar-table th:first-child, .radar-table th:nth-child(2) { text-align:left; }
+.radar-table td {
+    padding:10px 8px;
+    border-bottom:1px solid #EDF1F5;
+    white-space:nowrap;
+    text-align:center;
+    vertical-align:middle;
+}
+.radar-table tr:last-child td { border-bottom:none; }
+.radar-table td:first-child {
+    text-align:left;
+    font-weight:800;
+    color:#17345E;
+}
+.radar-table td:nth-child(2) { text-align:left; color:#8290A4; font-size:9px; }
+.radar-badge {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:62px;
+    padding:4px 7px;
+    border-radius:20px;
+    font-size:8px;
+    font-weight:800;
+}
+.radar-green { background:#E8F8F2; color:#008866; }
+.radar-yellow { background:#FFF3D9; color:#B57900; }
+.radar-red { background:#FDEBE9; color:#D33A2C; }
+.radar-neutral { background:#EEF2F6; color:#71839A; }
+.radar-number { font-weight:800; color:#17345E; }
+.radar-positive { color:#009B70; font-weight:800; }
+.radar-negative { color:#E84235; font-weight:800; }
+.radar-note {
+    font-size:8px;
+    color:#8A98AA;
+    margin-top:9px;
+    line-height:1.45;
+}
+.radar-signal {
+    margin-top:10px;
+    padding:9px 11px;
+    background:#F8FAFC;
+    border:1px solid #E5EBF1;
+    border-radius:10px;
+    font-size:9px;
+    color:#61738C;
+}
+.radar-signal b { color:#17345E; }
+</style>
+""", unsafe_allow_html=True)
+
+# ============================================================
 # FORMATO DINERO
 # ============================================================
 
@@ -3488,6 +3583,289 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
 
     st.markdown(
         html_tabla,
+        unsafe_allow_html=True
+    )
+
+
+# ============================================================
+# VISTA ANÁLISIS — RADAR INMOBILIARIO
+# ============================================================
+
+elif st.session_state.vista_airbnb == "Análisis":
+
+    st.markdown(
+        """
+<div class="section-title">
+📊 Radar inmobiliario
+</div>
+
+<div class="section-subtitle">
+Mercado de la zona + comportamiento del activo + señales para interpretar el momento del portafolio.
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+    # ========================================================
+    # DATOS DE MERCADO — CORTE INICIAL
+    # ========================================================
+    # Esta primera versión utiliza datos externos documentados
+    # como referencia. Posteriormente esta tabla se conectará a
+    # fuentes online para actualizar automáticamente el corte.
+    #
+    # IVP 2025 DANE: no incluye Bogotá.
+    # Las señales de catalizadores/riesgos son una lectura
+    # cualitativa de la zona, no una tasación del inmueble.
+
+    radar_mercado = {
+        "Torre Acqua": {
+            "ciudad": "Bogotá · Las Aguas",
+            "ivp": None,
+            "tendencia": "🟢 Activa",
+            "demanda": "🟢",
+            "oferta": "🟡",
+            "catalizador": "🟢 Centro / renovación",
+            "liquidez": "🟡",
+            "riesgo": "🟡",
+            "fuente": "Mercado de Las Aguas"
+        },
+        "Torre Evoca": {
+            "ciudad": "Bogotá · Las Nieves",
+            "ivp": None,
+            "tendencia": "🟢 Activa",
+            "demanda": "🟢",
+            "oferta": "🟡",
+            "catalizador": "🟢 Centro / transformación",
+            "liquidez": "🟡",
+            "riesgo": "🟡",
+            "fuente": "Mercado centro Bogotá"
+        },
+        "Torre Ventto": {
+            "ciudad": "Bogotá · Las Aguas",
+            "ivp": None,
+            "tendencia": "🟢 Activa",
+            "demanda": "🟢",
+            "oferta": "🟢",
+            "catalizador": "🟢 Producto nuevo",
+            "liquidez": "🟢",
+            "riesgo": "🟡",
+            "fuente": "Mercado de Las Aguas"
+        },
+        "Lotus": {
+            "ciudad": "Cartagena · Torices",
+            "ivp": 2.69,
+            "tendencia": "🟢 En transformación",
+            "demanda": "🟢",
+            "oferta": "🟡",
+            "catalizador": "🟢 Malecón / renovación",
+            "liquidez": "🟡",
+            "riesgo": "🟡",
+            "fuente": "DANE IVP 2025 · Torices"
+        },
+        "Santa Marina": {
+            "ciudad": "Santa Marta · Don Jaca",
+            "ivp": 2.96,
+            "tendencia": "🟢 En desarrollo",
+            "demanda": "🟢",
+            "oferta": "🟡",
+            "catalizador": "🟢 Proyecto / aeropuerto",
+            "liquidez": "🟡",
+            "riesgo": "🟡",
+            "fuente": "DANE IVP 2025 · corredor sur"
+        },
+        "Base Loft": {
+            "ciudad": "Medellín · La Candelaria",
+            "ivp": 2.90,
+            "tendencia": "🟡 Mixta",
+            "demanda": "🟡",
+            "oferta": "🟡",
+            "catalizador": "🟢 Renovación urbana",
+            "liquidez": "🟡",
+            "riesgo": "🟡",
+            "fuente": "DANE IVP 2025 · La Candelaria"
+        },
+        "Tempus 49": {
+            "ciudad": "Ibagué · Piedra Pintada",
+            "ivp": 3.04,
+            "tendencia": "🟡 Moderada",
+            "demanda": "🟡",
+            "oferta": "🟢",
+            "catalizador": "🟡 Zona consolidada",
+            "liquidez": "🟢",
+            "riesgo": "🟢",
+            "fuente": "DANE IVP 2025 · Piedra Pintada"
+        }
+    }
+
+    # ========================================================
+    # REFERENCIAS DE MERCADO OBSERVADAS
+    # ========================================================
+    # Son precios publicados/observados, no precios de cierre.
+    referencias = {
+        "Torre Acqua": "$235M",
+        "Torre Evoca": "$241M",
+        "Torre Ventto": "$275M",
+        "Lotus": "$365M",
+        "Santa Marina": "$300M",
+        "Base Loft": "$278M",
+        "Tempus 49": "$230M"
+    }
+
+    # ========================================================
+    # ACTIVOS / INVERSIÓN / VALOR ACTUAL
+    # ========================================================
+    activos = inversiones.rename(
+        columns={"Activo_Proyecto": "Nombre_Propiedad"}
+    ).copy()
+
+    activos = activos[
+        activos["Nombre_Propiedad"].isin(radar_mercado.keys())
+    ].copy()
+
+    activos = activos.merge(
+        creditos[
+            [
+                "Propiedad",
+                "Valor_Total_Actual",
+                "Saldo_Usado",
+                "Patrimonio_Actual"
+            ]
+        ],
+        left_on="Nombre_Propiedad",
+        right_on="Propiedad",
+        how="left"
+    ).drop(columns=["Propiedad"], errors="ignore")
+
+    activos["Valor_Total_Actual"] = pd.to_numeric(
+        activos["Valor_Total_Actual"], errors="coerce"
+    )
+    activos["Inversion"] = pd.to_numeric(
+        activos["Inversion"], errors="coerce"
+    )
+
+    activos["Valorizacion_Activo"] = (
+        (activos["Valor_Total_Actual"] / activos["Inversion"] - 1) * 100
+    ).replace([float("inf"), -float("inf")], pd.NA)
+
+    orden_radar = {
+        "Torre Acqua": 1,
+        "Torre Evoca": 2,
+        "Torre Ventto": 3,
+        "Lotus": 4,
+        "Santa Marina": 5,
+        "Base Loft": 6,
+        "Tempus 49": 7
+    }
+
+    activos["Orden"] = activos["Nombre_Propiedad"].map(orden_radar)
+    activos = activos.sort_values("Orden")
+
+    def badge(texto):
+        texto = str(texto)
+        if texto.startswith("🟢"):
+            clase = "radar-green"
+            texto = texto.replace("🟢", "", 1).strip()
+        elif texto.startswith("🟡"):
+            clase = "radar-yellow"
+            texto = texto.replace("🟡", "", 1).strip()
+        elif texto.startswith("🔴"):
+            clase = "radar-red"
+            texto = texto.replace("🔴", "", 1).strip()
+        else:
+            clase = "radar-neutral"
+        return f'<span class="radar-badge {clase}">{texto}</span>'
+
+    def pct_activo(valor):
+        if pd.isna(valor):
+            return '<span class="radar-neutral">—</span>'
+        clase = "radar-positive" if float(valor) >= 0 else "radar-negative"
+        return f'<span class="{clase}">{float(valor):.1f}%</span>'
+
+    html_radar = """
+<div class="radar-panel">
+<div class="radar-title">🔎 Radar de mercado y valorización</div>
+<div class="radar-subtitle">
+La lectura combina datos del activo en BigQuery con indicadores de mercado. Los semáforos son señales de contexto, no una recomendación automática de compra o venta.
+</div>
+<table class="radar-table">
+<thead>
+<tr>
+<th>Propiedad</th>
+<th>Zona</th>
+<th>Valorización activo</th>
+<th>IVP 2025</th>
+<th>Referencia mercado</th>
+<th>Demanda</th>
+<th>Oferta</th>
+<th>Catalizador</th>
+<th>Liquidez</th>
+<th>Riesgo</th>
+</tr>
+</thead>
+<tbody>
+"""
+
+    for _, row in activos.iterrows():
+        nombre = row["Nombre_Propiedad"]
+        info = radar_mercado[nombre]
+        ivp = (
+            '<span class="radar-number">—</span>'
+            if info["ivp"] is None
+            else f'<span class="radar-number">{info["ivp"]:.2f}%</span>'
+        )
+
+        html_radar += f"""
+<tr>
+<td>{nombre}</td>
+<td>{info['ciudad']}</td>
+<td>{pct_activo(row['Valorizacion_Activo'])}</td>
+<td>{ivp}</td>
+<td><span class="radar-number">{referencias[nombre]}</span></td>
+<td>{badge(info['demanda'])}</td>
+<td>{badge(info['oferta'])}</td>
+<td>{badge(info['catalizador'])}</td>
+<td>{badge(info['liquidez'])}</td>
+<td>{badge(info['riesgo'])}</td>
+</tr>
+"""
+
+    html_radar += """
+</tbody>
+</table>
+<div class="radar-note">
+IVP 2025: DANE. Bogotá no hace parte del IVP de DANE y por eso se muestra como “—”. Las referencias de mercado corresponden a precios publicados/observados y no equivalen a precios de cierre. El valor actual del activo proviene de la información de inversión/crédito disponible en la aplicación.
+</div>
+</div>
+"""
+
+    st.markdown(
+        html_radar,
+        unsafe_allow_html=True
+    )
+
+    # ========================================================
+    # SEÑALES DE LECTURA RÁPIDA
+    # ========================================================
+
+    st.markdown(
+        """
+<div class="radar-panel">
+<div class="radar-title">💡 Señales para revisar</div>
+<div class="radar-signal"><b>Acqua:</b> el valor de referencia usado en el radar ($235M) es superior al valor conservador de $221M utilizado actualmente en el análisis financiero.</div>
+<div class="radar-signal"><b>Base Loft:</b> La Candelaria muestra una tesis de transformación urbana, pero el mercado activo debe vigilarse por oferta y tiempo de publicación.</div>
+<div class="radar-signal"><b>Tempus 49:</b> el IVP 2025 de Ibagué fue 3,04%; el mercado observado de Piedra Pintada muestra referencias de venta activas.</div>
+<div class="radar-signal"><b>Santa Marina / Lotus:</b> la tesis depende más de la evolución de los proyectos y del mercado turístico de la costa que del IVP por sí solo.</div>
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+<div class="radar-note">
+📌 Próxima etapa: sustituir las referencias manuales por consultas online y guardar cada corte para construir histórico de precio/m², oferta y liquidez.
+</div>
+""",
         unsafe_allow_html=True
     )
 
