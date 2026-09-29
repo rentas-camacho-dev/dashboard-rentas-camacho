@@ -1336,7 +1336,8 @@ def cargar_capital_cdt(fecha_hoy):
                 "Capital_Registrado",
                 "Capital_Propio",
                 "Valor_CDT_Hoy",
-                "Ganancia_CDT"
+                "Ganancia_CDT",
+                "CDT_Promedio"
             ]
         )
 
@@ -1444,7 +1445,52 @@ def cargar_capital_cdt(fecha_hoy):
     )
 
     # --------------------------------------------------------
-    # 5. RESUMEN POR PROPIEDAD
+    # 5. TASA CDT PROMEDIO POR PROPIEDAD
+    # --------------------------------------------------------
+    # Promedio ponderado por capital y días de exposición.
+    # Se calcula sobre los años para los cuales existe una tasa
+    # definida en TASAS_CDT_ANUALES.
+    fecha_hoy_ts = pd.Timestamp(fecha_hoy)
+    capital["Dias_Exposicion"] = (
+        fecha_hoy_ts - capital["Fecha"]
+    ).dt.days.clip(lower=0)
+
+    def tasa_promedio_fila(row):
+        dias = int(row["Dias_Exposicion"])
+        if dias <= 0 or row["Capital_Propio"] <= 0:
+            return 0.0, 0.0
+
+        inicio = pd.Timestamp(row["Fecha"])
+        fin = fecha_hoy_ts
+        suma = 0.0
+        peso = 0.0
+
+        for anio in range(inicio.year, fin.year + 1):
+            tasa = TASAS_CDT_ANUALES.get(anio)
+            if tasa is None:
+                continue
+
+            inicio_anio = max(inicio, pd.Timestamp(anio, 1, 1))
+            fin_anio = min(fin, pd.Timestamp(anio + 1, 1, 1))
+            dias_anio = max(0, (fin_anio - inicio_anio).days)
+
+            if dias_anio > 0:
+                peso_tramo = float(row["Capital_Propio"]) * dias_anio
+                suma += peso_tramo * tasa
+                peso += peso_tramo
+
+        return suma, peso
+
+    tasas_tmp = capital.apply(
+        tasa_promedio_fila,
+        axis=1,
+        result_type="expand"
+    )
+    tasas_tmp.columns = ["Peso_Tasa_CDT", "Peso_Capital_CDT"]
+    capital[["Peso_Tasa_CDT", "Peso_Capital_CDT"]] = tasas_tmp
+
+    # --------------------------------------------------------
+    # 6. RESUMEN POR PROPIEDAD
     # --------------------------------------------------------
     resultado = (
         capital
@@ -1464,6 +1510,14 @@ def cargar_capital_cdt(fecha_hoy):
             Valor_CDT_Hoy=(
                 "Valor_CDT",
                 "sum"
+            ),
+            Peso_Tasa_CDT=(
+                "Peso_Tasa_CDT",
+                "sum"
+            ),
+            Peso_Capital_CDT=(
+                "Peso_Capital_CDT",
+                "sum"
             )
         )
         .rename(
@@ -1472,6 +1526,15 @@ def cargar_capital_cdt(fecha_hoy):
                     "Nombre_Propiedad"
             }
         )
+    )
+
+    resultado["CDT_Promedio"] = (
+        resultado["Peso_Tasa_CDT"]
+        / resultado["Peso_Capital_CDT"]
+        * 100
+    ).replace(
+        [float("inf"), -float("inf")],
+        pd.NA
     )
 
     resultado["Ganancia_CDT"] = (
@@ -3194,6 +3257,7 @@ if st.session_state.vista_airbnb == "Propiedades":
             [
                 "Propiedad",
                 "Saldo_Actual",
+                "Saldo_Usado",
                 "Valor_Actual",
                 "Equipamiento",
                 "Valor_Total_Actual",
@@ -3205,6 +3269,28 @@ if st.session_state.vista_airbnb == "Propiedades":
         right_on="Propiedad",
         how="left"
     ).drop(columns=["Propiedad"], errors="ignore")
+
+    # ========================================================
+    # CAPITAL PROPIO / CDT
+    # ========================================================
+    # Se incorpora el capital propio utilizado como base del
+    # benchmark CDT. No se mezcla con la inversión total.
+    tabla = tabla.merge(
+        capital_cdt[[
+            "Nombre_Propiedad",
+            "Capital_Propio",
+            "CDT_Promedio"
+        ]],
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    # Diferencia entre el retorno anualizado del activo y la
+    # tasa promedio histórica de CDT utilizada en el benchmark.
+    tabla["Diferencia_vs_CDT"] = (
+        tabla["Retorno_Anualizado_Total"]
+        - tabla["CDT_Promedio"]
+    )
 
     # ========================================================
     # RETORNO ECONÓMICO TOTAL
@@ -3277,118 +3363,102 @@ if st.session_state.vista_airbnb == "Propiedades":
             return "—"
         return dinero_corto(valor)
 
-    def porcentaje_tabla(valor):
+    def porcentaje_tabla(valor, puntos=False):
         if pd.isna(valor):
-            return "—"
-        return f'{float(valor):.1f}%'
+            return '<span class="investment-muted">—</span>'
+        clase = (
+            "investment-flow-negative"
+            if float(valor) < 0
+            else "investment-flow-positive"
+        )
+        sufijo = " pp" if puntos else "%"
+        return (
+            f'<span class="{clase}">'
+            f'{float(valor):.1f}{sufijo}'
+            f'</span>'
+        )
+
+    # ========================================================
+    # TABLA ÚNICA DE ANÁLISIS INMOBILIARIO
+    # ========================================================
+    # Se consolidan en una sola vista los datos que antes estaban
+    # distribuidos entre tres tablas: inversión, retorno económico
+    # y comparación contra CDT.
 
     html_tabla = """
 <div class="investment-panel">
 
 <div class="investment-title">
-📊 Análisis de inversión
+📊 Análisis inmobiliario
 </div>
 
 <div class="investment-subtitle">
-Desempeño histórico · capital hipotecario separado por amortización · valor neto de salida
+Capital propio · inversión total · valor actual · deuda · patrimonio neto · flujo histórico · retorno anualizado · benchmark CDT
 </div>
 
 <table class="investment-table">
-
 <thead>
 <tr>
-<th>Propiedad</th>
-<th>Estado</th>
-<th>Inversión</th>
-<th>Valor actual</th>
-<th>Equipamiento</th>
-<th>Valor neto salida</th>
-<th>Ingresos hist.</th>
-<th>Gastos hist. ajust.</th>
-<th>Flujo hist.</th>
-<th>ROI total</th>
-<th>Ingreso prom./mes</th>
-<th>Flujo prom./mes</th>
-<th>Yield total anual</th>
-
+    <th>Propiedad</th>
+    <th>Capital propio</th>
+    <th>Inversión total</th>
+    <th>Valor actual</th>
+    <th>Deuda actual</th>
+    <th>Patrimonio neto</th>
+    <th>Flujo histórico</th>
+    <th>Flujo prom./mes</th>
+    <th>Retorno anualizado</th>
+    <th>CDT promedio</th>
+    <th>Dif. vs CDT</th>
 </tr>
 </thead>
-
 <tbody>
 """
 
     for _, row in tabla.iterrows():
 
-        nombre = row["Nombre_Propiedad"]
-        estado = row["Estado"]
-
-        estado_class = (
-            "development"
-            if estado == "En desarrollo"
-            else ""
-        )
-
         flujo = row["Flujo_Historico"]
 
         if pd.isna(flujo):
             flujo_html = '<span class="investment-muted">—</span>'
-        elif float(flujo) < 0:
-            flujo_html = (
-                f'<span class="investment-flow-negative">'
-                f'{dinero_corto(flujo)}'
-                f'</span>'
-            )
         else:
+            clase = (
+                "investment-flow-negative"
+                if float(flujo) < 0
+                else "investment-flow-positive"
+            )
             flujo_html = (
-                f'<span class="investment-flow-positive">'
+                f'<span class="{clase}">'
                 f'{dinero_corto(flujo)}'
                 f'</span>'
             )
 
-        roi_html = porcentaje_tabla(row["ROI_Total"])
-        yield_html = porcentaje_tabla(row["Retorno_Anualizado_Total"])
+        retorno_html = porcentaje_tabla(
+            row["Retorno_Anualizado_Total"]
+        )
+
+        cdt_html = porcentaje_tabla(
+            row["CDT_Promedio"]
+        )
+
+        diferencia_html = porcentaje_tabla(
+            row["Diferencia_vs_CDT"],
+            puntos=True
+        )
 
         html_tabla += f"""
 <tr>
-
-<td>{nombre}</td>
-
-<td>
-<span class="investment-status {estado_class}">
-{estado}
-</span>
-</td>
-
-<td>
-<span class="investment-money">
-{dinero_corto(row["Inversion"])}
-</span>
-</td>
-
-<td>{valor_tabla(row["Valor_Actual"])}</td>
-
-<td>{valor_tabla(row["Equipamiento"])}</td>
-
-<td>
-<span class="investment-money">
-{valor_tabla(row["Patrimonio_Actual"])}
-</span>
-</td>
-
-<td>{valor_tabla(row["Ingresos_Historicos"])}</td>
-
-<td>{valor_tabla(row["Gastos_Historicos_Ajustados"])}</td>
-
-<td>{flujo_html}</td>
-
-<td>{roi_html}</td>
-
-<td>{valor_tabla(row["Ingreso_Mensual_Promedio"])}</td>
-
-<td>{valor_tabla(row["Flujo_Mensual_Promedio"])}</td>
-
-<td>{yield_html}</td>
-
+    <td>{row["Nombre_Propiedad"]}</td>
+    <td><span class="investment-money">{valor_tabla(row["Capital_Propio"])}</span></td>
+    <td><span class="investment-money">{valor_tabla(row["Inversion"])}</span></td>
+    <td>{valor_tabla(row["Valor_Total_Actual"])}</td>
+    <td>{valor_tabla(row["Saldo_Usado"] if "Saldo_Usado" in row.index else row["Saldo_Actual"])}</td>
+    <td><span class="investment-money">{valor_tabla(row["Patrimonio_Actual"])}</span></td>
+    <td>{flujo_html}</td>
+    <td>{valor_tabla(row["Flujo_Mensual_Promedio"])}</td>
+    <td>{retorno_html}</td>
+    <td>{cdt_html}</td>
+    <td>{diferencia_html}</td>
 </tr>
 """
 
@@ -3401,222 +3471,22 @@ Desempeño histórico · capital hipotecario separado por amortización · valor
     font-size:8px;
     color:#8A98AA;
 ">
-    * Gastos históricos ajustados: se excluye el capital hipotecario,
-    tratado como amortización de deuda. Intereses y seguros permanecen
-    como gasto. Los pagos reales provienen de Movimientos_Operativos_Reparto.
+    Inversión total = capital propio + financiación incluida en la inversión registrada.
+    Patrimonio neto = valor actual del activo + equipamiento − deuda actual.
+    CDT promedio = benchmark histórico ponderado por capital y tiempo de exposición.
+    La diferencia se expresa en puntos porcentuales frente al retorno anualizado.
 </div>
 
 </div>
 """
 
+    html_tabla = "\n".join(
+        linea.strip()
+        for linea in html_tabla.splitlines()
+    ).strip()
+
     st.markdown(
         html_tabla,
-        unsafe_allow_html=True
-    )
-
-    # ========================================================
-    # RETORNO ECONÓMICO TOTAL
-    # ========================================================
-
-    html_retorno = """
-    <div class="investment-panel" style="margin-top:12px;">
-        <div class="investment-title">
-            📈 Retorno económico total
-        </div>
-        <div class="investment-subtitle">
-            Flujo histórico + valorización actual del activo · desde el inicio de operación
-        </div>
-    <table class="investment-table">
-    <thead>
-    <tr>
-        <th>Propiedad</th>
-        <th>Inversión</th>
-        <th>Flujo hist.</th>
-        <th>Valor total actual</th>
-        <th>Valorización</th>
-        <th>Ganancia económica</th>
-        <th>ROI total</th>
-        <th>Retorno anualizado</th>
-    </tr>
-    </thead>
-    <tbody>
-    """
-
-    for _, row in tabla.iterrows():
-
-        valorizacion = row["Valorizacion_Actual"]
-        ganancia = row["Ganancia_Economica"]
-        roi_total = row["ROI_Total"]
-        retorno_anual = row["Retorno_Anualizado_Total"]
-
-        def retorno_dinero(valor):
-            if pd.isna(valor):
-                return '<span class="investment-muted">—</span>'
-            clase = (
-                "investment-flow-negative"
-                if float(valor) < 0
-                else "investment-flow-positive"
-            )
-            return (
-                f'<span class="{clase}">'
-                f'{dinero_corto(valor)}'
-                f'</span>'
-            )
-
-        def retorno_porcentaje(valor):
-            if pd.isna(valor):
-                return '<span class="investment-muted">—</span>'
-            clase = (
-                "investment-flow-negative"
-                if float(valor) < 0
-                else "investment-flow-positive"
-            )
-            return (
-                f'<span class="{clase}">'
-                f'{float(valor):.1f}%'
-                f'</span>'
-            )
-
-        html_retorno += f"""
-        <tr>
-            <td>{row["Nombre_Propiedad"]}</td>
-            <td>{dinero_corto(row["Inversion"])}</td>
-            <td>{retorno_dinero(row["Flujo_Historico"])}</td>
-            <td>{valor_tabla(row["Valor_Total_Actual"])}</td>
-            <td>{retorno_dinero(valorizacion)}</td>
-            <td>{retorno_dinero(ganancia)}</td>
-            <td>{retorno_porcentaje(roi_total)}</td>
-            <td>{retorno_porcentaje(retorno_anual)}</td>
-        </tr>
-        """
-
-    html_retorno += """
-    </tbody>
-    </table>
-    </div>
-    """
-
-    # Elimina toda indentación inicial para evitar que Streamlit
-    # interprete el HTML como bloque de código Markdown.
-    html_retorno = "\n".join(
-        linea.strip()
-        for linea in html_retorno.splitlines()
-    ).strip()
-
-    st.markdown(
-        html_retorno,
-        unsafe_allow_html=True
-    )
-
-    # ========================================================
-    # COMPARACIÓN: INMOBILIARIO VS CDT
-    # ========================================================
-
-    tabla_cdt = tabla.merge(
-        capital_cdt,
-        on="Nombre_Propiedad",
-        how="left"
-    )
-
-    tabla_cdt["Resultado_Inmobiliario"] = (
-        tabla_cdt["Flujo_Historico"].fillna(0)
-        + tabla_cdt["Patrimonio_Actual"].fillna(0)
-    )
-
-    tabla_cdt["Diferencia_vs_CDT"] = (
-        tabla_cdt["Resultado_Inmobiliario"]
-        - tabla_cdt["Valor_CDT_Hoy"]
-    )
-
-    html_cdt = f"""
-    <div class="investment-panel" style="margin-top:12px;">
-        <div class="investment-title">
-            🏦 Inmobiliario vs CDT
-        </div>
-        <div class="investment-subtitle">
-            Solo capital propio de las inversiones, excluyendo crédito,
-            capitalizado desde cada fecha real de inversión ·
-            benchmark CDT histórico 2020–2026 · tasas promedio anuales
-        </div>
-    <table class="investment-table">
-    <thead>
-    <tr>
-        <th>Propiedad</th>
-        <th>Capital propio</th>
-        <th>Valor CDT hoy</th>
-        <th>Ganancia CDT</th>
-        <th>Flujo + valor neto salida</th>
-        <th>Diferencia vs CDT</th>
-    </tr>
-    </thead>
-    <tbody>
-    """
-
-    for _, row in tabla_cdt.iterrows():
-
-        capital = row["Capital_Propio"]
-        valor_cdt = row["Valor_CDT_Hoy"]
-        ganancia_cdt = row["Ganancia_CDT"]
-        resultado_inmobiliario = row["Resultado_Inmobiliario"]
-        diferencia = row["Diferencia_vs_CDT"]
-
-        if pd.isna(capital):
-            continue
-
-        def cdt_money(valor):
-            if pd.isna(valor):
-                return '<span class="investment-muted">—</span>'
-
-            clase = (
-                "investment-flow-negative"
-                if float(valor) < 0
-                else "investment-flow-positive"
-            )
-
-            return (
-                f'<span class="{clase}">'
-                f'{dinero_corto(valor)}'
-                f'</span>'
-            )
-
-        html_cdt += f"""
-        <tr>
-            <td>{row["Nombre_Propiedad"]}</td>
-            <td>{dinero_corto(capital)}</td>
-            <td>{dinero_corto(valor_cdt)}</td>
-            <td>{cdt_money(ganancia_cdt)}</td>
-            <td>{dinero_corto(resultado_inmobiliario)}</td>
-            <td>{cdt_money(diferencia)}</td>
-        </tr>
-        """
-
-    html_cdt += """
-    </tbody>
-    </table>
-
-    <div style="
-        margin-top:8px;
-        font-size:8px;
-        color:#8A98AA;
-    ">
-        El escenario CDT es hipotético: toma únicamente el capital propio
-        de la base de inversiones, excluye el crédito y respeta la fecha
-        de cada inversión. El resultado
-        inmobiliario suma el flujo histórico y el valor neto de salida.
-    </div>
-
-    </div>
-    """
-
-    # Elimina toda indentación inicial para evitar que Streamlit
-    # interprete el HTML como bloque de código Markdown.
-    html_cdt = "\n".join(
-        linea.strip()
-        for linea in html_cdt.splitlines()
-    ).strip()
-
-    st.markdown(
-        html_cdt,
         unsafe_allow_html=True
     )
 
