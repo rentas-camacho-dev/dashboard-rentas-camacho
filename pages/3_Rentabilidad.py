@@ -3593,6 +3593,11 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
 # VISTA ANÁLISIS — RADAR INMOBILIARIO
 # ============================================================
 
+
+# ============================================================
+# VISTA ANÁLISIS — RADAR INMOBILIARIO
+# ============================================================
+
 elif st.session_state.vista_airbnb == "Análisis":
 
     st.markdown(
@@ -3602,81 +3607,178 @@ elif st.session_state.vista_airbnb == "Análisis":
 </div>
 
 <div class="section-subtitle">
-Mercado online actualizado + comportamiento del activo + catalizadores documentados.
+Mercado online actualizado + comportamiento del activo + comparación por tamaño y tipología.
 </div>
 """,
         unsafe_allow_html=True
     )
 
     # ========================================================
-    # ============================================================
     # RADAR ONLINE — TULUGAR (PÁGINAS PÚBLICAS)
-    # ============================================================
-    # No dependemos de /api/v1/market/summary porque en Streamlit Cloud
-    # estaba devolviendo 0 aunque TuLugar sí mostraba los datos públicamente.
-    # Ahora consultamos directamente las páginas públicas de mercado.
+    # ========================================================
+    # La fuente de mercado sigue siendo la página pública de TuLugar.
+    # No usamos el endpoint API que anteriormente devolvía 0.
+    #
+    # IMPORTANTE:
+    # - La mediana de alquiler de TuLugar corresponde a toda la zona.
+    # - Ahora incorporamos el tamaño y la tipología REAL de cada activo.
+    # - No inventamos una renta comparable por m² si TuLugar no publica
+    #   ese dato segmentado en la ficha pública.
+    # - El valor de mercado estimado del activo = $/m² de la zona × m²
+    #   interiores del activo. Es una referencia, no un avalúo.
 
     TULUGAR_HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153 Safari/537.36",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 Chrome/153 Safari/537.36"
+        ),
         "Accept-Language": "es-CO,es;q=0.9,en;q=0.8",
     }
 
-    propiedades_radar = {
+    # ========================================================
+    # PERFIL REAL DE LOS ACTIVOS
+    # ========================================================
+
+    perfiles_radar = {
         "Torre Acqua": {
             "ciudad": "Bogotá",
             "zona": "Las Aguas",
-            "url": "https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria",
+            "area_m2": 20,
+            "terraza_m2": 0,
+            "tipo": "Monoambiente",
+            "habitaciones": 0,
+            "banos": 1,
+            "segmento": "15–22 m² · estudio",
             "ivp": None,
             "catalizador": "Centro / renovación",
             "catalizador_url": "https://www.bogota.gov.co/",
+            "url": (
+                "https://tulugar.com/es/mercado/colombia/bogota/"
+                "las-aguas-localidad-la-candelaria"
+            ),
         },
         "Torre Evoca": {
             "ciudad": "Bogotá",
             "zona": "Las Nieves",
-            "url": "https://tulugar.com/es/mercado/colombia/bogota/las-nieves",
+            "area_m2": 19,
+            "terraza_m2": 0,
+            "tipo": "Monoambiente",
+            "habitaciones": 0,
+            "banos": 1,
+            "segmento": "15–22 m² · estudio",
             "ivp": None,
             "catalizador": "Centro / transformación",
             "catalizador_url": "https://www.bogota.gov.co/",
+            "url": (
+                "https://tulugar.com/es/mercado/colombia/bogota/"
+                "las-nieves"
+            ),
         },
         "Torre Ventto": {
             "ciudad": "Bogotá",
             "zona": "Las Aguas",
-            "url": "https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria",
+            "area_m2": 26,
+            "terraza_m2": 0,
+            "tipo": "Monoambiente",
+            "habitaciones": 0,
+            "banos": 1,
+            "segmento": "23–30 m² · estudio",
             "ivp": None,
             "catalizador": "Producto nuevo / mercado activo",
-            "catalizador_url": "https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria",
+            "catalizador_url": (
+                "https://tulugar.com/es/mercado/colombia/bogota/"
+                "las-aguas-localidad-la-candelaria"
+            ),
+            "url": (
+                "https://tulugar.com/es/mercado/colombia/bogota/"
+                "las-aguas-localidad-la-candelaria"
+            ),
         },
         "Lotus": {
             "ciudad": "Cartagena",
             "zona": "Torices",
-            "url": "https://tulugar.com/es/mercado/colombia/cartagena/torices",
+            "area_m2": 62,
+            "terraza_m2": 0,
+            "tipo": "Apartamento",
+            "habitaciones": 3,
+            "banos": 2,
+            "segmento": "60–70 m² · 3H/2B",
             "ivp": 2.69,
             "catalizador": "Nuevo Chambacú / conexión vial",
-            "catalizador_url": "https://www.cartagena.gov.co/noticias/el-nuevo-chambacu-apuesta-social-deportiva-alcalde-dumek-turbay-que-tambien-convierte-una-alternativa-movilidad",
+            "catalizador_url": (
+                "https://www.cartagena.gov.co/noticias/"
+                "el-nuevo-chambacu-apuesta-social-deportiva-alcalde-dumek-turbay-"
+                "que-tambien-convierte-una-alternativa-movilidad"
+            ),
+            "url": (
+                "https://tulugar.com/es/mercado/colombia/cartagena/"
+                "torices"
+            ),
         },
         "Santa Marina": {
             "ciudad": "Santa Marta",
             "zona": "Don Jaca · referencia ciudad",
-            "url": "https://tulugar.com/es/mercado/colombia/santa-marta",
+            "area_m2": 33,
+            "terraza_m2": 0,
+            "tipo": "Monoambiente",
+            "habitaciones": 0,
+            "banos": 1,
+            "segmento": "31–45 m² · estudio",
             "ivp": 2.96,
             "catalizador": "Aeropuerto / turismo",
-            "catalizador_url": "https://mintransporte.gov.co/publicaciones/12343/gobierno-nacional-impulsa-la-transformacion-del-aeropuerto-de-santa-marta-para-responder-al-crecimiento-del-turismo-y-la-conectividad/",
+            "catalizador_url": (
+                "https://mintransporte.gov.co/publicaciones/12343/"
+                "gobierno-nacional-impulsa-la-transformacion-del-aeropuerto-"
+                "de-santa-marta-para-responder-al-crecimiento-del-turismo-"
+                "y-la-conectividad/"
+            ),
+            "url": (
+                "https://tulugar.com/es/mercado/colombia/"
+                "santa-marta"
+            ),
         },
         "Base Loft": {
             "ciudad": "Medellín",
             "zona": "La Candelaria · Comuna 10",
-            "url": "https://tulugar.com/es/mercado/colombia/medellin/comuna-10-la-candelaria",
+            "area_m2": 40,
+            "terraza_m2": 12,
+            "tipo": "Monoambiente",
+            "habitaciones": 0,
+            "banos": 1,
+            "segmento": "31–45 m² · estudio",
             "ivp": 2.90,
             "catalizador": "Renovación urbana",
-            "catalizador_url": "https://www.medellin.gov.co/es/sala-de-prensa/noticias/medellin-apuesta-por-renovar-mas-de-1.000-hectareas-para-llevar-vivienda-espacio-publico-y-nueva-vida-urbana-a-zonas-estrategicas/",
+            "catalizador_url": (
+                "https://www.medellin.gov.co/es/sala-de-prensa/noticias/"
+                "medellin-apuesta-por-renovar-mas-de-1.000-hectareas-para-"
+                "llevar-vivienda-espacio-publico-y-nueva-vida-urbana-a-zonas-"
+                "estrategicas/"
+            ),
+            "url": (
+                "https://tulugar.com/es/mercado/colombia/medellin/"
+                "comuna-10-la-candelaria"
+            ),
         },
         "Tempus 49": {
             "ciudad": "Ibagué",
             "zona": "Piedra Pintada · Comuna 4",
-            "url": "https://tulugar.com/es/mercado/colombia/ibague/comuna-4-piedrapintada",
+            "area_m2": 56,
+            "terraza_m2": 0,
+            "tipo": "Apartamento",
+            "habitaciones": 2,
+            "banos": 2,
+            "segmento": "50–59 m² · 2H/2B",
             "ivp": 3.04,
             "catalizador": "Obras viales / servicios",
-            "catalizador_url": "https://www.ibal.gov.co/2026/09/08/zona-gastronomica-de-rincon-de-piedra-pintada-estrena-vias-gracias-al-combo-3x1/",
+            "catalizador_url": (
+                "https://www.ibal.gov.co/2026/09/08/"
+                "zona-gastronomica-de-rincon-de-piedra-pintada-estrena-"
+                "vias-gracias-al-combo-3x1/"
+            ),
+            "url": (
+                "https://tulugar.com/es/mercado/colombia/ibague/"
+                "comuna-4-piedrapintada"
+            ),
         },
     }
 
@@ -3684,10 +3786,25 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
         """Convierte $2.553, $101K, $1.5M, etc. a número USD."""
         if valor is None or pd.isna(valor):
             return None
-        texto = str(valor).strip().replace("US$", "").replace("$", "").replace("USD", "")
-        texto = texto.replace("/mes", "").replace("/m²", "").strip()
-        texto = texto.replace("\u00a0", "")
+
+        texto = (
+            str(valor)
+            .strip()
+            .replace("US$", "")
+            .replace("$", "")
+            .replace("USD", "")
+        )
+
+        texto = (
+            texto
+            .replace("/mes", "")
+            .replace("/m²", "")
+            .strip()
+            .replace("\u00a0", "")
+        )
+
         multiplicador = 1.0
+
         if texto.upper().endswith("K"):
             multiplicador = 1_000.0
             texto = texto[:-1]
@@ -3697,9 +3814,13 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
         elif texto.upper().endswith("B"):
             multiplicador = 1_000_000_000.0
             texto = texto[:-1]
-        # TuLugar usa punto como separador de miles en sus páginas en español.
+
         if "," in texto and "." in texto:
-            texto = texto.replace(".", "").replace(",", ".")
+            texto = (
+                texto
+                .replace(".", "")
+                .replace(",", ".")
+            )
         elif "," in texto:
             partes = texto.split(",")
             if len(partes[-1]) <= 2:
@@ -3708,8 +3829,12 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
                 texto = texto.replace(",", "")
         elif "." in texto:
             partes = texto.split(".")
-            if len(partes[-1]) == 3 and all(p.isdigit() for p in partes):
+            if (
+                len(partes[-1]) == 3
+                and all(p.isdigit() for p in partes)
+            ):
                 texto = "".join(partes)
+
         try:
             return float(texto) * multiplicador
         except Exception:
@@ -3717,26 +3842,60 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
 
     def _extraer_texto_html(html):
         """Extrae texto visible sin depender de BeautifulSoup."""
-        texto = re.sub(r"<script[\s\S]*?</script>", " ", html, flags=re.I)
-        texto = re.sub(r"<style[\s\S]*?</style>", " ", texto, flags=re.I)
-        texto = re.sub(r"<[^>]+>", " ", texto)
-        texto = re.sub(r"&nbsp;", " ", texto, flags=re.I)
-        texto = re.sub(r"&amp;", "&", texto, flags=re.I)
-        texto = re.sub(r"\s+", " ", texto)
+        texto = re.sub(
+            r"<script[\s\S]*?</script>",
+            " ",
+            html,
+            flags=re.I,
+        )
+        texto = re.sub(
+            r"<style[\s\S]*?</style>",
+            " ",
+            texto,
+            flags=re.I,
+        )
+        texto = re.sub(
+            r"<[^>]+>",
+            " ",
+            texto,
+        )
+        texto = re.sub(
+            r"&nbsp;",
+            " ",
+            texto,
+            flags=re.I,
+        )
+        texto = re.sub(
+            r"&amp;",
+            "&",
+            texto,
+            flags=re.I,
+        )
+        texto = re.sub(
+            r"\s+",
+            " ",
+            texto,
+        )
         return texto
 
     def _extraer_primero(patron, texto, flags=re.I):
         m = re.search(patron, texto, flags)
-        return m.group(1).strip() if m else None
+        return (
+            m.group(1).strip()
+            if m
+            else None
+        )
 
-    @st.cache_data(ttl=3600, show_spinner=False)
+    @st.cache_data(
+        ttl=3600,
+        show_spinner=False,
+    )
     def consultar_tulugar_publico(url):
         resultado = {
             "median_price_usd": None,
             "price_m2_usd": None,
             "active_listings": None,
             "median_rent_usd": None,
-            "str_occupancy": None,
             "updated_at": None,
             "ok": False,
             "error": None,
@@ -3749,61 +3908,110 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
                 headers=TULUGAR_HEADERS,
             )
             respuesta.raise_for_status()
+
             html = respuesta.text
             texto = _extraer_texto_html(html)
 
-            # Indicadores principales de la ficha pública.
             m2 = _extraer_primero(
-                r"Precio por m² \(venta\).*?\$\s*([0-9.,]+(?:[KMB])?)\s*/m²",
+                r"Precio por m² \(venta\).*?"
+                r"\$\s*([0-9.,]+(?:[KMB])?)\s*/m²",
                 texto,
             )
+
             renta = _extraer_primero(
-                r"Alquiler mediano(?: \(departamento\))?.*?\$\s*([0-9.,]+(?:[KMB])?)\s*/mes",
+                r"Alquiler mediano.*?"
+                r"\$\s*([0-9.,]+(?:[KMB])?)\s*/mes",
                 texto,
             )
+
             propiedades = _extraer_primero(
-                r"Propiedades monitoreadas\s*([0-9][0-9.,]*)",
+                r"Propiedades monitoreadas\s*"
+                r"([0-9][0-9.,]*)",
                 texto,
             )
 
             resultado["price_m2_usd"] = _numero_tulugar(m2)
             resultado["median_rent_usd"] = _numero_tulugar(renta)
-            resultado["active_listings"] = _numero_tulugar(propiedades)
+            resultado["active_listings"] = _numero_tulugar(
+                propiedades
+            )
 
-            # El HTML contiene tablas de "Por tipo de propiedad". Las leemos
-            # con pandas para obtener la mediana de venta de departamentos.
+            # La ficha pública tiene tablas por tipo de propiedad.
+            # Tomamos "Departamentos" como mediana de venta de referencia
+            # cuando la tabla está disponible.
             try:
                 tablas = pd.read_html(html)
+
                 for tabla in tablas:
-                    cols = [str(c).strip().lower() for c in tabla.columns]
+                    cols = [
+                        str(c).strip().lower()
+                        for c in tabla.columns
+                    ]
+
                     joined = " | ".join(cols)
-                    if "mediana venta" in joined and "$/m²" in joined:
-                        fila_dep = None
-                        for _, fila in tabla.iterrows():
-                            tipo = str(fila.iloc[0]).strip().lower()
-                            if "depart" in tipo:
-                                fila_dep = fila
-                                break
-                        if fila_dep is not None:
-                            valores = list(fila_dep.values)
-                            if len(valores) >= 3:
-                                resultado["median_price_usd"] = _numero_tulugar(valores[1])
-                                # Solo usar este $/m² si el indicador principal
-                                # de la ficha no pudo obtenerse.
-                                if resultado["price_m2_usd"] is None:
-                                    resultado["price_m2_usd"] = _numero_tulugar(valores[2])
-                        break
+
+                    if (
+                        "mediana venta" not in joined
+                        or "$/m²" not in joined
+                    ):
+                        continue
+
+                    fila_dep = None
+
+                    for _, fila in tabla.iterrows():
+                        tipo = (
+                            str(fila.iloc[0])
+                            .strip()
+                            .lower()
+                        )
+
+                        if "depart" in tipo:
+                            fila_dep = fila
+                            break
+
+                    if fila_dep is not None:
+                        valores = list(
+                            fila_dep.values
+                        )
+
+                        if len(valores) >= 3:
+                            resultado["median_price_usd"] = (
+                                _numero_tulugar(
+                                    valores[1]
+                                )
+                            )
+
+                            if (
+                                resultado["price_m2_usd"]
+                                is None
+                            ):
+                                resultado["price_m2_usd"] = (
+                                    _numero_tulugar(
+                                        valores[2]
+                                    )
+                                )
+
+                    break
+
             except Exception:
                 pass
 
             fecha = _extraer_primero(
-                r"Datos al\s*([0-9]{4}-[0-9]{2}-[0-9]{2})",
+                r"Datos al\s*"
+                r"([0-9]{4}-[0-9]{2}-[0-9]{2})",
                 texto,
             )
+
             resultado["updated_at"] = fecha
+
             resultado["ok"] = any(
                 resultado[c] is not None
-                for c in ["price_m2_usd", "active_listings", "median_rent_usd", "median_price_usd"]
+                for c in [
+                    "price_m2_usd",
+                    "active_listings",
+                    "median_rent_usd",
+                    "median_price_usd",
+                ]
             )
 
         except Exception as exc:
@@ -3811,7 +4019,10 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
 
         return resultado
 
-    @st.cache_data(ttl=3600, show_spinner=False)
+    @st.cache_data(
+        ttl=3600,
+        show_spinner=False,
+    )
     def consultar_trm():
         try:
             r = requests.get(
@@ -3820,62 +4031,183 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
                 headers=TULUGAR_HEADERS,
             )
             r.raise_for_status()
+
             data = r.json()
-            return float(data["valor"]), data.get("fechaActualizacion")
+
+            return (
+                float(data["valor"]),
+                data.get("fechaActualizacion"),
+            )
+
         except Exception:
             return None, None
 
     trm, fecha_trm = consultar_trm()
 
-    filas_mercado = []
-    for nombre, info in propiedades_radar.items():
-        m = consultar_tulugar_publico(info["url"])
-        filas_mercado.append({
-            "Propiedad": nombre,
-            "Zona": f"{info['ciudad']} · {info['zona']}",
-            "IVP": info["ivp"],
-            "Catalizador": info["catalizador"],
-            "Catalizador_URL": info["catalizador_url"],
-            "Fuente_URL": info["url"],
-            **m,
-        })
+    # ========================================================
+    # CONSULTA DE MERCADO
+    # ========================================================
 
-    mercado = pd.DataFrame(filas_mercado)
+    filas_mercado = []
+
+    for nombre, info in perfiles_radar.items():
+
+        m = consultar_tulugar_publico(
+            info["url"]
+        )
+
+        filas_mercado.append(
+            {
+                "Propiedad": nombre,
+                "Zona": (
+                    f"{info['ciudad']} · "
+                    f"{info['zona']}"
+                ),
+                "Area_m2": info["area_m2"],
+                "Terraza_m2": info["terraza_m2"],
+                "Tipo": info["tipo"],
+                "Habitaciones": info["habitaciones"],
+                "Banos": info["banos"],
+                "Segmento": info["segmento"],
+                "IVP": info["ivp"],
+                "Catalizador": info["catalizador"],
+                "Catalizador_URL": info["catalizador_url"],
+                "Fuente_URL": info["url"],
+                **m,
+            }
+        )
+
+    mercado = pd.DataFrame(
+        filas_mercado
+    )
 
     if trm:
-        mercado["Precio_m2_COP"] = mercado["price_m2_usd"] * trm
-        mercado["Mediana_COP"] = mercado["median_price_usd"] * trm
-        mercado["Renta_COP"] = mercado["median_rent_usd"] * trm
+
+        mercado["Precio_m2_COP"] = (
+            mercado["price_m2_usd"]
+            * trm
+        )
+
+        mercado["Mediana_COP"] = (
+            mercado["median_price_usd"]
+            * trm
+        )
+
+        mercado["Renta_COP"] = (
+            mercado["median_rent_usd"]
+            * trm
+        )
+
     else:
+
         mercado["Precio_m2_COP"] = pd.NA
         mercado["Mediana_COP"] = pd.NA
         mercado["Renta_COP"] = pd.NA
 
     # ========================================================
+    # VALOR DE MERCADO ESTIMADO DEL ACTIVO
+    # ========================================================
+    # Se usa el $/m² de la zona multiplicado por los m²
+    # interiores del activo.
+    #
+    # Para Base Loft NO sumamos la terraza a los m² valorizados,
+    # porque 40 m² interiores + 12 m² de terraza no equivalen
+    # económicamente a 52 m² interiores.
+
+    mercado["Valor_Mercado_Estimado_COP"] = (
+        mercado["Precio_m2_COP"]
+        * mercado["Area_m2"]
+    )
+
+    mercado["Renta_por_m2_Zona"] = (
+        mercado["Renta_COP"]
+        / mercado["Area_m2"]
+    )
+
+    # ========================================================
     # DATOS DEL ACTIVO EN BIGQUERY
     # ========================================================
-    activos = inversiones.rename(columns={"Activo_Proyecto": "Nombre_Propiedad"}).copy()
-    activos = activos[activos["Nombre_Propiedad"].isin(propiedades_radar.keys())].copy()
+
+    activos = (
+        inversiones
+        .rename(
+            columns={
+                "Activo_Proyecto":
+                    "Nombre_Propiedad"
+            }
+        )
+        .copy()
+    )
+
+    activos = activos[
+        activos["Nombre_Propiedad"].isin(
+            perfiles_radar.keys()
+        )
+    ].copy()
 
     activos = activos.merge(
-        creditos[["Propiedad", "Valor_Total_Actual", "Saldo_Usado", "Patrimonio_Actual"]],
+        creditos[
+            [
+                "Propiedad",
+                "Valor_Total_Actual",
+                "Saldo_Usado",
+                "Patrimonio_Actual",
+            ]
+        ],
         left_on="Nombre_Propiedad",
         right_on="Propiedad",
         how="left",
-    ).drop(columns=["Propiedad"], errors="ignore")
+    ).drop(
+        columns=["Propiedad"],
+        errors="ignore",
+    )
 
-    activos["Valor_Total_Actual"] = pd.to_numeric(activos["Valor_Total_Actual"], errors="coerce")
-    activos["Inversion"] = pd.to_numeric(activos["Inversion"], errors="coerce")
+    activos["Valor_Total_Actual"] = pd.to_numeric(
+        activos["Valor_Total_Actual"],
+        errors="coerce",
+    )
+
+    activos["Inversion"] = pd.to_numeric(
+        activos["Inversion"],
+        errors="coerce",
+    )
+
     activos["Valorizacion_Activo"] = (
-        (activos["Valor_Total_Actual"] / activos["Inversion"] - 1) * 100
-    ).replace([float("inf"), -float("inf")], pd.NA)
+        (
+            activos["Valor_Total_Actual"]
+            / activos["Inversion"]
+            - 1
+        )
+        * 100
+    ).replace(
+        [float("inf"), -float("inf")],
+        pd.NA,
+    )
 
     mercado = mercado.merge(
-        activos[["Nombre_Propiedad", "Valor_Total_Actual", "Valorizacion_Activo"]],
+        activos[
+            [
+                "Nombre_Propiedad",
+                "Valor_Total_Actual",
+                "Valorizacion_Activo",
+            ]
+        ],
         left_on="Propiedad",
         right_on="Nombre_Propiedad",
         how="left",
-    ).drop(columns=["Nombre_Propiedad"], errors="ignore")
+    ).drop(
+        columns=["Nombre_Propiedad"],
+        errors="ignore",
+    )
+
+    mercado["Brecha_Valor_Actual_vs_Mercado"] = (
+        mercado["Valor_Total_Actual"]
+        - mercado["Valor_Mercado_Estimado_COP"]
+    )
+
+    # ========================================================
+    # ORDEN
+    # ========================================================
 
     orden_radar = {
         "Torre Acqua": 1,
@@ -3886,103 +4218,477 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
         "Base Loft": 6,
         "Tempus 49": 7,
     }
-    mercado["Orden"] = mercado["Propiedad"].map(orden_radar)
-    mercado = mercado.sort_values("Orden")
+
+    mercado["Orden"] = (
+        mercado["Propiedad"]
+        .map(orden_radar)
+    )
+
+    mercado = (
+        mercado
+        .sort_values("Orden")
+        .reset_index(drop=True)
+    )
+
+    # ========================================================
+    # FORMATOS
+    # ========================================================
 
     def dinero_millones(valor):
+
         if pd.isna(valor):
             return "—"
-        return f"${float(valor) / 1_000_000:.0f}M"
+
+        return (
+            f"${float(valor) / 1_000_000:.0f}M"
+        )
 
     def dinero_m2(valor):
+
         if pd.isna(valor):
             return "—"
-        return f"${float(valor) / 1_000_000:.1f}M"
+
+        return (
+            f"${float(valor) / 1_000_000:.1f}M"
+        )
+
+    def dinero_miles(valor):
+
+        if pd.isna(valor):
+            return "—"
+
+        return (
+            f"${float(valor) / 1_000:,.0f}k"
+            .replace(",", ".")
+        )
 
     def porcentaje(valor):
+
         if pd.isna(valor):
             return "—"
+
         return f"{float(valor):.1f}%"
 
     def semaforo_oferta(n):
+
         if pd.isna(n):
-            return '<span class="radar-badge radar-neutral">—</span>'
-        valores = mercado["active_listings"].dropna()
+            return (
+                '<span class="radar-badge radar-neutral">'
+                '—'
+                '</span>'
+            )
+
+        valores = (
+            mercado["active_listings"]
+            .dropna()
+        )
+
         if valores.empty:
-            return '<span class="radar-badge radar-neutral">—</span>'
+            return (
+                '<span class="radar-badge radar-neutral">'
+                '—'
+                '</span>'
+            )
+
         q1 = valores.quantile(0.33)
         q2 = valores.quantile(0.66)
+
         if n <= q1:
-            return '<span class="radar-badge radar-green">Baja</span>'
-        if n <= q2:
-            return '<span class="radar-badge radar-yellow">Media</span>'
-        return '<span class="radar-badge radar-red">Alta</span>'
+            clase = "radar-green"
+            texto = "Baja"
+        elif n <= q2:
+            clase = "radar-yellow"
+            texto = "Media"
+        else:
+            clase = "radar-red"
+            texto = "Alta"
+
+        return (
+            f'<span class="radar-badge {clase}">'
+            f'{texto}'
+            f'</span>'
+        )
 
     def semaforo_valoracion(valor):
+
         if pd.isna(valor):
-            return '<span class="radar-neutral">—</span>'
-        clase = "radar-positive" if float(valor) >= 0 else "radar-negative"
-        return f'<span class="{clase}">{float(valor):.1f}%</span>'
+            return (
+                '<span class="radar-neutral">'
+                '—'
+                '</span>'
+            )
+
+        clase = (
+            "radar-positive"
+            if float(valor) >= 0
+            else "radar-negative"
+        )
+
+        return (
+            f'<span class="{clase}">'
+            f'{float(valor):.1f}%'
+            f'</span>'
+        )
+
+    def semaforo_brecha(valor):
+
+        if pd.isna(valor):
+            return "—"
+
+        if valor >= 0:
+            return (
+                '<span class="radar-positive">'
+                f'+{dinero_millones(valor)}'
+                '</span>'
+            )
+
+        return (
+            '<span class="radar-negative">'
+            f'{dinero_millones(valor)}'
+            '</span>'
+        )
+
+    # ========================================================
+    # TABLA PRINCIPAL
+    # ========================================================
 
     html_radar = """
 <div class="radar-panel">
-<div class="radar-title">🔎 Radar de mercado y valorización</div>
-<div class="radar-subtitle">
-Mercado consultado directamente en las páginas públicas de TuLugar. El activo proviene de BigQuery. Los precios son precios de oferta, no cierres.
+
+<div class="radar-title">
+🔎 Radar de mercado y valorización
 </div>
+
+<div class="radar-subtitle">
+Mercado online de TuLugar + características reales de cada activo.
+El $/m² de zona se usa para estimar el valor de referencia del inmueble.
+Los precios son precios de oferta, no cierres.
+</div>
+
 <table class="radar-table">
-<thead><tr>
-<th>Propiedad</th><th>Zona</th><th>Valoración activo</th><th>Precio mediano mercado</th>
-<th>$/m²</th><th>Oferta activa</th><th>Alquiler mediano</th><th>IVP 2025</th><th>Catalizador</th>
-</tr></thead><tbody>
+
+<thead>
+<tr>
+<th>Propiedad</th>
+<th>Segmento</th>
+<th>Área</th>
+<th>Valorización activo</th>
+<th>Valor mercado estimado</th>
+<th>$/m² zona</th>
+<th>Oferta activa</th>
+<th>Alquiler mediano zona</th>
+</tr>
+</thead>
+
+<tbody>
 """
 
     for _, row in mercado.iterrows():
-        oferta = "—" if pd.isna(row["active_listings"]) else f"{int(row['active_listings']):,}".replace(",", ".")
+
+        area_txt = (
+            f"{int(row['Area_m2'])} m²"
+        )
+
+        if (
+            not pd.isna(row["Terraza_m2"])
+            and float(row["Terraza_m2"]) > 0
+        ):
+            area_txt += (
+                f" + {int(row['Terraza_m2'])} m² "
+                "terraza"
+            )
+
+        oferta = (
+            "—"
+            if pd.isna(row["active_listings"])
+            else (
+                f"{int(row['active_listings']):,}"
+                .replace(",", ".")
+            )
+        )
+
         html_radar += f"""
 <tr>
-<td>{row['Propiedad']}</td>
-<td>{row['Zona']}</td>
-<td>{semaforo_valoracion(row['Valorizacion_Activo'])}</td>
-<td><span class="radar-number">{dinero_millones(row['Mediana_COP'])}</span></td>
-<td><span class="radar-number">{dinero_m2(row['Precio_m2_COP'])}</span></td>
-<td><span class="radar-number">{oferta}</span> {semaforo_oferta(row['active_listings'])}</td>
-<td><span class="radar-number">{dinero_millones(row['Renta_COP'])}</span></td>
-<td><span class="radar-number">{porcentaje(row['IVP'])}</span></td>
-<td><a href="{row['Catalizador_URL']}" target="_blank" style="text-decoration:none;">{row['Catalizador']}</a></td>
+
+<td>
+<strong>{row['Propiedad']}</strong><br>
+<span style="font-size:8px;color:#8290A4;">
+{row['Tipo']}
+</span>
+</td>
+
+<td>
+<span style="font-size:8px;">
+{row['Segmento']}
+</span>
+</td>
+
+<td>
+<span class="radar-number">
+{area_txt}
+</span>
+</td>
+
+<td>
+{semaforo_valoracion(
+    row["Valorizacion_Activo"]
+)}
+</td>
+
+<td>
+<span class="radar-number">
+{dinero_millones(
+    row["Valor_Mercado_Estimado_COP"]
+)}
+</span>
+</td>
+
+<td>
+<span class="radar-number">
+{dinero_m2(
+    row["Precio_m2_COP"]
+)}
+</span>
+</td>
+
+<td>
+<span class="radar-number">
+{oferta}
+</span>
+{semaforo_oferta(
+    row["active_listings"]
+)}
+</td>
+
+<td>
+<span class="radar-number">
+{dinero_millones(
+    row["Renta_COP"]
+)}
+</span>
+</td>
+
 </tr>
 """
 
-    html_radar += "</tbody></table></div>"
-    st.markdown(html_radar, unsafe_allow_html=True)
+    html_radar += """
+</tbody>
+</table>
 
-    fecha_online = pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
-    trm_txt = f"${trm:,.0f}" if trm else "no disponible"
+<div class="radar-note">
+<strong>Cómo leerlo:</strong>
+el alquiler mediano es el alquiler mensual mediano de toda la zona.
+No se usa como alquiler comparable directo porque la página pública
+de TuLugar no publica esa mediana segmentada por m².
+El segmento de cada activo sí se incorpora para evitar comparar,
+por ejemplo, un monoambiente de 20 m² con un apartamento de 70 m².
+</div>
+
+</div>
+"""
+
+    st.markdown(
+        html_radar,
+        unsafe_allow_html=True,
+    )
+
+    # ========================================================
+    # COMPARACIÓN DE VALOR POR M²
+    # ========================================================
+
+    html_comparacion = """
+<div class="radar-panel">
+
+<div class="radar-title">
+📐 Comparación por tamaño
+</div>
+
+<div class="radar-subtitle">
+Referencia de valor de cada activo usando el $/m² de su zona.
+Base Loft usa 40 m² interiores; la terraza de 12 m² se muestra aparte.
+</div>
+
+<table class="radar-table">
+
+<thead>
+<tr>
+<th>Propiedad</th>
+<th>Tipología</th>
+<th>Área interior</th>
+<th>$/m² zona</th>
+<th>Valor estimado por zona</th>
+<th>Valor actual del activo</th>
+<th>Brecha</th>
+</tr>
+</thead>
+
+<tbody>
+"""
+
+    for _, row in mercado.iterrows():
+
+        html_comparacion += f"""
+<tr>
+
+<td>
+<strong>{row['Propiedad']}</strong>
+</td>
+
+<td>
+{row['habitaciones'] if 'habitaciones' in row.index else row['Habitaciones']}H /
+{row['banos'] if 'banos' in row.index else row['Banos']}B
+</td>
+
+<td>
+{int(row['Area_m2'])} m²
+</td>
+
+<td>
+<span class="radar-number">
+{dinero_m2(row['Precio_m2_COP'])}
+</span>
+</td>
+
+<td>
+<span class="radar-number">
+{dinero_millones(row['Valor_Mercado_Estimado_COP'])}
+</span>
+</td>
+
+<td>
+<span class="radar-number">
+{dinero_millones(row['Valor_Total_Actual'])}
+</span>
+</td>
+
+<td>
+{semaforo_brecha(
+    row["Brecha_Valor_Actual_vs_Mercado"]
+)}
+</td>
+
+</tr>
+"""
+
+    html_comparacion += """
+</tbody>
+</table>
+
+<div class="radar-note">
+<strong>Importante:</strong>
+esta estimación es matemática y sirve como referencia de mercado.
+No incorpora piso, vista, amoblamiento, terraza, parqueadero,
+antigüedad, estado ni características particulares del edificio.
+Por eso no debe interpretarse como avalúo.
+</div>
+
+</div>
+"""
+
+    st.markdown(
+        html_comparacion,
+        unsafe_allow_html=True,
+    )
+
+    # ========================================================
+    # CORTE ONLINE
+    # ========================================================
+
+    fecha_online = pd.Timestamp.now().strftime(
+        "%d/%m/%Y %H:%M"
+    )
+
+    trm_txt = (
+        f"${trm:,.0f}"
+        if trm
+        else "no disponible"
+    )
+
     st.markdown(
         f"""
 <div class="radar-panel">
-<div class="radar-title">📡 Corte online</div>
-<div class="radar-subtitle">Las cifras de mercado se leen de las páginas públicas de TuLugar. TRM usada para COP: {trm_txt} por USD. Corte de la aplicación: {fecha_online}.</div>
-<div class="radar-note"><strong>Importante:</strong> son precios publicados/ofertados, no precios de escritura o cierre. Santa Marina utiliza Santa Marta como referencia de ciudad porque no hay una ficha pública específica de Don Jaca en TuLugar. Base Loft utiliza Comuna 10 – La Candelaria para tener una muestra de mercado representativa.</div>
+
+<div class="radar-title">
+📡 Corte online
+</div>
+
+<div class="radar-subtitle">
+Las cifras de mercado se leen de las páginas públicas de TuLugar.
+TRM usada para COP: {trm_txt} por USD.
+Corte de la aplicación: {fecha_online}.
+</div>
+
+<div class="radar-note">
+
+<strong>Segmentación:</strong>
+Evoca y Acqua = 15–22 m²;
+Ventto = 23–30 m²;
+Santa Marina y Base Loft = 31–45 m²;
+Tempus 49 = 50–59 m² / 2H;
+Lotus = 60–70 m² / 3H.
+
+<br><br>
+
+<strong>Base Loft:</strong>
+40 m² interiores + 12 m² de terraza.
+La terraza no se suma como si fueran m² interiores para valorar
+el activo.
+
+<br><br>
+
+<strong>Fuente:</strong>
+TuLugar recalcula sus indicadores de mercado periódicamente.
+Santa Marina utiliza Santa Marta como referencia de ciudad porque
+no tenemos una ficha pública específica de Don Jaca.
+Base Loft utiliza Comuna 10 – La Candelaria como referencia de mercado.
+
+</div>
+
 </div>
 """,
         unsafe_allow_html=True,
     )
+
+    # ========================================================
+    # LECTURAS AUTOMÁTICAS
+    # ========================================================
 
     st.markdown(
         """
 <div class="radar-panel">
-<div class="radar-title">💡 Lecturas automáticas</div>
-<div class="radar-signal">🟢 <b>Fuente:</b> el precio, $/m², alquiler y oferta se leen directamente de la página pública de mercado de cada zona.</div>
-<div class="radar-signal">🟢 <b>Actualización:</b> la consulta se refresca cada hora mediante el caché de Streamlit.</div>
-<div class="radar-signal">🟡 <b>Oferta:</b> el semáforo compara el inventario activo entre las zonas del portafolio; no es una calificación absoluta del mercado.</div>
+
+<div class="radar-title">
+💡 Lecturas automáticas
+</div>
+
+<div class="radar-signal">
+🟢 <b>Fuente:</b>
+precio, $/m², alquiler y oferta se leen directamente
+de la página pública de mercado de cada zona.
+</div>
+
+<div class="radar-signal">
+🟢 <b>Segmentación:</b>
+el Radar ya conoce el área y tipología de cada activo,
+por lo que no trata los siete apartamentos como si fueran iguales.
+</div>
+
+<div class="radar-signal">
+🟡 <b>Alquiler:</b>
+el dato mostrado es la mediana de la zona.
+No se presenta como renta comparable por tamaño mientras
+TuLugar no publique esa segmentación.
+</div>
+
+<div class="radar-signal">
+🟢 <b>Actualización:</b>
+la consulta online se refresca cada hora mediante el caché de Streamlit.
+</div>
+
 </div>
 """,
         unsafe_allow_html=True,
     )
-# ============================================================
-# VISTA FINANCIERO
-# ============================================================
 
 elif st.session_state.vista_airbnb == "Financiero":
 
