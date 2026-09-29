@@ -5,7 +5,6 @@ import base64
 import textwrap
 import requests
 import re
-from html import unescape
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -3610,403 +3609,215 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
     )
 
     # ========================================================
-    # RADAR ONLINE — TULUGAR API
-    # ========================================================
-    # TuLugar ofrece una API REST pública de lectura, sin API key.
-    # El endpoint de mercado entrega precio mediano, $/m² e inventario activo.
-    # Los datos de mercado se refrescan online; usamos cache de 1 hora para
-    # no golpear innecesariamente la API.
+    # ============================================================
+    # RADAR ONLINE — TULUGAR (PÁGINAS PÚBLICAS)
+    # ============================================================
+    # No dependemos de /api/v1/market/summary porque en Streamlit Cloud
+    # estaba devolviendo 0 aunque TuLugar sí mostraba los datos públicamente.
+    # Ahora consultamos directamente las páginas públicas de mercado.
 
-    TULUGAR_API = "https://tulugar.com/api/v1"
+    TULUGAR_HEADERS = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153 Safari/537.36",
+        "Accept-Language": "es-CO,es;q=0.9,en;q=0.8",
+    }
 
     propiedades_radar = {
         "Torre Acqua": {
             "ciudad": "Bogotá",
-            "barrio": "Las Aguas",
+            "zona": "Las Aguas",
+            "url": "https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria",
             "ivp": None,
             "catalizador": "Centro / renovación",
-            "catalizador_url": "https://www.bogota.gov.co/"
+            "catalizador_url": "https://www.bogota.gov.co/",
         },
         "Torre Evoca": {
             "ciudad": "Bogotá",
-            "barrio": "Las Nieves",
+            "zona": "Las Nieves",
+            "url": "https://tulugar.com/es/mercado/colombia/bogota/las-nieves",
             "ivp": None,
             "catalizador": "Centro / transformación",
-            "catalizador_url": "https://www.bogota.gov.co/"
+            "catalizador_url": "https://www.bogota.gov.co/",
         },
         "Torre Ventto": {
             "ciudad": "Bogotá",
-            "barrio": "Las Aguas",
+            "zona": "Las Aguas",
+            "url": "https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria",
             "ivp": None,
             "catalizador": "Producto nuevo / mercado activo",
-            "catalizador_url": "https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria"
+            "catalizador_url": "https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria",
         },
         "Lotus": {
             "ciudad": "Cartagena",
-            "barrio": "Torices",
+            "zona": "Torices",
+            "url": "https://tulugar.com/es/mercado/colombia/cartagena/torices",
             "ivp": 2.69,
             "catalizador": "Nuevo Chambacú / conexión vial",
-            "catalizador_url": "https://www.cartagena.gov.co/noticias/el-nuevo-chambacu-apuesta-social-deportiva-alcalde-dumek-turbay-que-tambien-convierte-una-alternativa-movilidad"
+            "catalizador_url": "https://www.cartagena.gov.co/noticias/el-nuevo-chambacu-apuesta-social-deportiva-alcalde-dumek-turbay-que-tambien-convierte-una-alternativa-movilidad",
         },
         "Santa Marina": {
             "ciudad": "Santa Marta",
-            "barrio": "Don Jaca",
+            "zona": "Don Jaca · referencia ciudad",
+            "url": "https://tulugar.com/es/mercado/colombia/santa-marta",
             "ivp": 2.96,
             "catalizador": "Aeropuerto / turismo",
-            "catalizador_url": "https://mintransporte.gov.co/publicaciones/12343/gobierno-nacional-impulsa-la-transformacion-del-aeropuerto-de-santa-marta-para-responder-al-crecimiento-del-turismo-y-la-conectividad/"
+            "catalizador_url": "https://mintransporte.gov.co/publicaciones/12343/gobierno-nacional-impulsa-la-transformacion-del-aeropuerto-de-santa-marta-para-responder-al-crecimiento-del-turismo-y-la-conectividad/",
         },
         "Base Loft": {
             "ciudad": "Medellín",
-            "barrio": "La Candelaria",
+            "zona": "La Candelaria · Comuna 10",
+            "url": "https://tulugar.com/es/mercado/colombia/medellin/comuna-10-la-candelaria",
             "ivp": 2.90,
             "catalizador": "Renovación urbana",
-            "catalizador_url": "https://www.medellin.gov.co/es/sala-de-prensa/noticias/medellin-apuesta-por-renovar-mas-de-1.000-hectareas-para-llevar-vivienda-espacio-publico-y-nueva-vida-urbana-a-zonas-estrategicas/"
+            "catalizador_url": "https://www.medellin.gov.co/es/sala-de-prensa/noticias/medellin-apuesta-por-renovar-mas-de-1.000-hectareas-para-llevar-vivienda-espacio-publico-y-nueva-vida-urbana-a-zonas-estrategicas/",
         },
         "Tempus 49": {
             "ciudad": "Ibagué",
-            "barrio": "Piedra Pintada",
+            "zona": "Piedra Pintada · Comuna 4",
+            "url": "https://tulugar.com/es/mercado/colombia/ibague/comuna-4-piedrapintada",
             "ivp": 3.04,
             "catalizador": "Obras viales / servicios",
-            "catalizador_url": "https://www.ibal.gov.co/2026/09/08/zona-gastronomica-de-rincon-de-piedra-pintada-estrena-vias-gracias-al-combo-3x1/"
-        }
+            "catalizador_url": "https://www.ibal.gov.co/2026/09/08/zona-gastronomica-de-rincon-de-piedra-pintada-estrena-vias-gracias-al-combo-3x1/",
+        },
     }
 
-    # ========================================================
-    # FUENTE ONLINE PRINCIPAL — PÁGINAS DE MERCADO TULUGAR
-    # ========================================================
-    # La API pública de TuLugar existe y documenta /market/summary,
-    # pero para Colombia el resumen API puede devolver inventario vacío
-    # aun cuando la página pública del barrio sí tiene datos. Por eso
-    # usamos la página pública como fuente principal y la API como respaldo.
-    # Las páginas se recalculan diariamente según la metodología de TuLugar.
-
-    def parsear_numero_local(texto):
-        """Convierte 5.466 / 2,553 / 1.542 a número."""
-        if texto is None:
+    def _numero_tulugar(valor):
+        """Convierte $2.553, $101K, $1.5M, etc. a número USD."""
+        if valor is None or pd.isna(valor):
             return None
-        texto = str(texto).strip().replace('\xa0', ' ')
+        texto = str(valor).strip().replace("US$", "").replace("$", "").replace("USD", "")
+        texto = texto.replace("/mes", "").replace("/m²", "").strip()
+        texto = texto.replace("\u00a0", "")
+        multiplicador = 1.0
+        if texto.upper().endswith("K"):
+            multiplicador = 1_000.0
+            texto = texto[:-1]
+        elif texto.upper().endswith("M"):
+            multiplicador = 1_000_000.0
+            texto = texto[:-1]
+        elif texto.upper().endswith("B"):
+            multiplicador = 1_000_000_000.0
+            texto = texto[:-1]
+        # TuLugar usa punto como separador de miles en sus páginas en español.
+        if "," in texto and "." in texto:
+            texto = texto.replace(".", "").replace(",", ".")
+        elif "," in texto:
+            partes = texto.split(",")
+            if len(partes[-1]) <= 2:
+                texto = texto.replace(",", ".")
+            else:
+                texto = texto.replace(",", "")
+        elif "." in texto:
+            partes = texto.split(".")
+            if len(partes[-1]) == 3 and all(p.isdigit() for p in partes):
+                texto = "".join(partes)
         try:
-            # En estas páginas los miles pueden venir con punto o coma.
-            limpio = texto.replace('.', '').replace(',', '')
-            return float(limpio)
+            return float(texto) * multiplicador
         except Exception:
             return None
 
-    def parsear_usd(texto):
-        """Convierte tokens como 101K, 1.5M o 234K a USD."""
-        if texto is None:
-            return None
-        t = str(texto).strip().replace('\xa0', '').replace('US$', '$')
-        m = re.search(r'([\d.,]+)\s*([KM])?', t, re.I)
-        if not m:
-            return None
-        try:
-            numero = float(m.group(1).replace(',', ''))
-        except Exception:
-            try:
-                numero = float(m.group(1).replace('.', '').replace(',', '.'))
-            except Exception:
-                return None
-        sufijo = (m.group(2) or '').upper()
-        if sufijo == 'K':
-            numero *= 1_000
-        elif sufijo == 'M':
-            numero *= 1_000_000
-        return numero
+    def _extraer_texto_html(html):
+        """Extrae texto visible sin depender de BeautifulSoup."""
+        texto = re.sub(r"<script[\s\S]*?</script>", " ", html, flags=re.I)
+        texto = re.sub(r"<style[\s\S]*?</style>", " ", texto, flags=re.I)
+        texto = re.sub(r"<[^>]+>", " ", texto)
+        texto = re.sub(r"&nbsp;", " ", texto, flags=re.I)
+        texto = re.sub(r"&amp;", "&", texto, flags=re.I)
+        texto = re.sub(r"\s+", " ", texto)
+        return texto
 
-    def texto_plano(html):
-        html = unescape(html or '')
-        html = re.sub(r'<script[\s\S]*?</script>', ' ', html, flags=re.I)
-        html = re.sub(r'<style[\s\S]*?</style>', ' ', html, flags=re.I)
-        html = re.sub(r'<[^>]+>', ' ', html)
-        html = re.sub(r'\s+', ' ', html)
-        return html.strip()
-
-    def extraer_mercado_desde_pagina(html):
-        """Extrae las métricas visibles de la página pública de TuLugar."""
-        t = texto_plano(html)
-        out = {
-            'median_price_usd': None,
-            'price_m2_usd': None,
-            'active_listings': None,
-            'median_rent_usd': None,
-            'updated_at': None,
-            'listing_age_days': None,
-        }
-
-        # Inventario total monitoreado.
-        patrones_listados = [
-            r'Propiedades monitoreadas\s*([\d.,]+)',
-            r'Monitored listings\s*([\d.,]+)',
-            r'Propiedades Activas\s*([\d.,]+)',
-            r'Active Properties\s*([\d.,]+)',
-        ]
-        for patron in patrones_listados:
-            m = re.search(patron, t, flags=re.I)
-            if m:
-                out['active_listings'] = parsear_numero_local(m.group(1))
-                break
-
-        # Índice TuLugar de precios / precio por m².
-        patrones_m2 = [
-            r'(?:Índice TuLugar de Precios|Precio por m² \(venta\)|TuLugar Price Index|Price per m² \(sale\))\s*\$?\s*([\d.,]+)\s*/m²',
-        ]
-        for patron in patrones_m2:
-            m = re.search(patron, t, flags=re.I)
-            if m:
-                out['price_m2_usd'] = parsear_numero_local(m.group(1))
-                break
-
-        # Alquiler mediano residencial.
-        patrones_renta = [
-            r'Alquiler mediano \(departamento\)\s*\$\s*([\d.,]+)',
-            r'Median apartment rent\s*\$\s*([\d.,]+)',
-        ]
-        for patron in patrones_renta:
-            m = re.search(patron, t, flags=re.I)
-            if m:
-                out['median_rent_usd'] = parsear_numero_local(m.group(1))
-                break
-
-        # Precio mediano de departamento en venta. Se toma del bloque
-        # "Por tipo de propiedad / By property type", no de la serie histórica.
-        bloques = re.split(r'Por tipo de propiedad|By property type', t, flags=re.I)
-        if len(bloques) > 1:
-            bloque = bloques[1]
-            bloque = re.split(r'Por dormitorios|By bedrooms|Distribución de precios|Price distribution', bloque, flags=re.I)[0]
-            patrones_depto = [
-                r'Departamentos[^$]{0,120}\$\s*([\d.,]+\s*[KM]?)\s+\$\s*[\d.,]+',
-                r'Apartments[^$]{0,120}\$\s*([\d.,]+\s*[KM]?)\s+\$\s*[\d.,]+',
-            ]
-            for patron in patrones_depto:
-                m = re.search(patron, bloque, flags=re.I)
-                if m:
-                    out['median_price_usd'] = parsear_usd(m.group(1))
-                    break
-
-        # Antigüedad mediana de avisos activos = indicador de ritmo/liquidez.
-        patrones_antiguedad = [
-            r'Antigüedad mediana de las publicaciones activas\s*([\d.,]+)\s*días',
-            r'Median age of active listings\s*([\d.,]+)\s*days',
-        ]
-        for patron in patrones_antiguedad:
-            m = re.search(patron, t, flags=re.I)
-            if m:
-                out['listing_age_days'] = parsear_numero_local(m.group(1))
-                break
-
-        # Fecha de corte publicada por TuLugar.
-        m = re.search(r'Datos al\s*(\d{4}-\d{2}-\d{2})', t, flags=re.I)
-        if not m:
-            m = re.search(r'Data as of\s*(\d{4}-\d{2}-\d{2})', t, flags=re.I)
-        if m:
-            out['updated_at'] = m.group(1)
-
-        return out
+    def _extraer_primero(patron, texto, flags=re.I):
+        m = re.search(patron, texto, flags)
+        return m.group(1).strip() if m else None
 
     @st.cache_data(ttl=3600, show_spinner=False)
-    def consultar_pagina_tulugar(url):
-        """Consulta online la página pública de mercado de TuLugar."""
+    def consultar_tulugar_publico(url):
         resultado = {
-            'median_price_usd': None,
-            'price_m2_usd': None,
-            'active_listings': None,
-            'updated_at': None,
-            'median_rent_usd': None,
-            'listing_age_days': None,
-            'ok': False,
-            'error': None,
-            'source': url,
+            "median_price_usd": None,
+            "price_m2_usd": None,
+            "active_listings": None,
+            "median_rent_usd": None,
+            "str_occupancy": None,
+            "updated_at": None,
+            "ok": False,
+            "error": None,
         }
+
         try:
-            r = requests.get(
+            respuesta = requests.get(
                 url,
                 timeout=20,
-                headers={
-                    'User-Agent': 'Mozilla/5.0 Airbnb-Financial-Hub/1.0'
-                }
+                headers=TULUGAR_HEADERS,
             )
-            r.raise_for_status()
-            resultado.update(extraer_mercado_desde_pagina(r.text))
-            resultado['ok'] = any(
-                resultado[k] is not None
-                for k in ['median_price_usd', 'price_m2_usd', 'active_listings', 'median_rent_usd']
+            respuesta.raise_for_status()
+            html = respuesta.text
+            texto = _extraer_texto_html(html)
+
+            # Indicadores principales de la ficha pública.
+            m2 = _extraer_primero(
+                r"Precio por m² \(venta\).*?\$\s*([0-9.,]+(?:[KMB])?)\s*/m²",
+                texto,
             )
-        except Exception as exc:
-            resultado['error'] = str(exc)
-        return resultado
-
-    @st.cache_data(ttl=3600, show_spinner=False)
-    def consultar_api_tulugar(ciudad, barrio):
-        """Respaldo API de TuLugar para zonas que no tengan página específica."""
-        resultado = {
-            'median_price_usd': None,
-            'price_m2_usd': None,
-            'active_listings': None,
-            'updated_at': None,
-            'median_rent_usd': None,
-            'str_occupancy': None,
-            'str_listings': None,
-            'str_nightly_usd': None,
-            'listing_age_days': None,
-            'barrio_online': barrio,
-            'source': f'{TULUGAR_API}/market/summary',
-            'ok': False,
-            'error': None
-        }
-        try:
-            params_sale = {
-                'country': 'Colombia',
-                'city': ciudad,
-                'neighborhood': barrio,
-                'property_type': 'apartment',
-                'listing_type': 'sale'
-            }
-            r = requests.get(
-                f'{TULUGAR_API}/market/summary',
-                params=params_sale,
-                timeout=15,
-                headers={'User-Agent': 'Mozilla/5.0 Airbnb-Financial-Hub'}
+            renta = _extraer_primero(
+                r"Alquiler mediano(?: \(departamento\))?.*?\$\s*([0-9.,]+(?:[KMB])?)\s*/mes",
+                texto,
             )
-            r.raise_for_status()
-            data = r.json().get('data', {}) or {}
-            resultado['median_price_usd'] = data.get('median_price')
-            resultado['price_m2_usd'] = data.get('avg_price_per_sqm')
-            resultado['active_listings'] = data.get('total_active_listings')
-            resultado['updated_at'] = data.get('updated_at')
-            resultado['ok'] = True
-        except Exception as exc:
-            resultado['error'] = str(exc)
-        return resultado
+            propiedades = _extraer_primero(
+                r"Propiedades monitoreadas\s*([0-9][0-9.,]*)",
+                texto,
+            )
 
-    # URLs públicas con cobertura actual de las zonas del portafolio.
-    # Para Santa Marina se usa Santa Marta como mercado de referencia porque
-    # TuLugar no publica actualmente una página específica para Don Jaca.
-    # Para Base Loft usamos Comuna 10 - La Candelaria, que es la escala de
-    # mercado con cobertura amplia y no la muestra de solo 3 propiedades.
-    propiedades_radar.update({
-        'Torre Acqua': {
-            **propiedades_radar['Torre Acqua'],
-            'market_url': 'https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria',
-            'str_url': 'https://tulugar.com/es/airbnb/colombia/bogota/las-aguas'
-        },
-        'Torre Evoca': {
-            **propiedades_radar['Torre Evoca'],
-            'market_url': 'https://tulugar.com/es/mercado/colombia/bogota/las-nieves',
-            'str_url': None
-        },
-        'Torre Ventto': {
-            **propiedades_radar['Torre Ventto'],
-            'market_url': 'https://tulugar.com/es/mercado/colombia/bogota/las-aguas-localidad-la-candelaria',
-            'str_url': 'https://tulugar.com/es/airbnb/colombia/bogota/las-aguas'
-        },
-        'Lotus': {
-            **propiedades_radar['Lotus'],
-            'market_url': 'https://tulugar.com/es/mercado/colombia/cartagena/torices',
-            'str_url': 'https://tulugar.com/en/airbnb/colombia/cartagena/torices'
-        },
-        'Santa Marina': {
-            **propiedades_radar['Santa Marina'],
-            'market_url': 'https://tulugar.com/es/mercado/colombia/santa-marta',
-            'market_scope': 'Santa Marta',
-            'str_url': None
-        },
-        'Base Loft': {
-            **propiedades_radar['Base Loft'],
-            'market_url': 'https://tulugar.com/es/mercado/colombia/medellin/comuna-10-la-candelaria',
-            'market_scope': 'Comuna 10 - La Candelaria',
-            'str_url': 'https://tulugar.com/es/airbnb/colombia/medellin/la-candelaria'
-        },
-        'Tempus 49': {
-            **propiedades_radar['Tempus 49'],
-            'market_url': 'https://tulugar.com/es/mercado/colombia/ibague/comuna-4-piedrapintada',
-            'market_scope': 'Comuna 4 - Piedrapintada',
-            'str_url': None
-        }
-    })
+            resultado["price_m2_usd"] = _numero_tulugar(m2)
+            resultado["median_rent_usd"] = _numero_tulugar(renta)
+            resultado["active_listings"] = _numero_tulugar(propiedades)
 
-    @st.cache_data(ttl=3600, show_spinner=False)
-    def consultar_tulugar(ciudad, barrio, market_url=None, str_url=None):
-        """Fuente online: página pública primero, API después."""
-        resultado = {
-            'median_price_usd': None,
-            'price_m2_usd': None,
-            'active_listings': None,
-            'updated_at': None,
-            'median_rent_usd': None,
-            'str_occupancy': None,
-            'str_listings': None,
-            'str_nightly_usd': None,
-            'listing_age_days': None,
-            'barrio_online': barrio,
-            'source': market_url or f'{TULUGAR_API}/market/summary',
-            'ok': False,
-            'error': None
-        }
-
-        # 1. Mercado desde página pública de TuLugar.
-        if market_url:
-            pagina = consultar_pagina_tulugar(market_url)
-            for k in [
-                'median_price_usd', 'price_m2_usd', 'active_listings',
-                'updated_at', 'median_rent_usd', 'listing_age_days'
-            ]:
-                if pagina.get(k) is not None:
-                    resultado[k] = pagina[k]
-            resultado['source'] = market_url
-            resultado['ok'] = pagina.get('ok', False)
-            resultado['error'] = pagina.get('error')
-
-        # 2. Respaldo API si la página no entregó una métrica.
-        if any(resultado[k] is None for k in ['median_price_usd', 'price_m2_usd', 'active_listings', 'median_rent_usd']):
-            api = consultar_api_tulugar(ciudad, barrio)
-            for k in ['median_price_usd', 'price_m2_usd', 'active_listings', 'updated_at', 'median_rent_usd']:
-                if resultado[k] is None and api.get(k) is not None:
-                    resultado[k] = api[k]
-            if not resultado['ok'] and api.get('ok'):
-                resultado['ok'] = True
-
-        # 3. STR desde página pública cuando existe.
-        if str_url:
+            # El HTML contiene tablas de "Por tipo de propiedad". Las leemos
+            # con pandas para obtener la mediana de venta de departamentos.
             try:
-                rs = requests.get(
-                    str_url,
-                    timeout=20,
-                    headers={'User-Agent': 'Mozilla/5.0 Airbnb-Financial-Hub/1.0'}
-                )
-                rs.raise_for_status()
-                ts = texto_plano(rs.text)
-
-                for patron in [r'Ocupación\s*([\d.,]+)%', r'Occupancy\s*([\d.,]+)%']:
-                    m = re.search(patron, ts, flags=re.I)
-                    if m:
-                        resultado['str_occupancy'] = float(m.group(1).replace(',', '.')) / 100
-                        break
-
-                for patron in [r'Propiedades (?:Analizadas|Activas)\s*([\d.,]+)', r'(?:Analyzed|Active) Properties\s*([\d.,]+)']:
-                    m = re.search(patron, ts, flags=re.I)
-                    if m:
-                        resultado['str_listings'] = parsear_numero_local(m.group(1))
-                        break
-
-                for patron in [r'Precio/Noche\s*([\d.,]+)', r'Nightly Rate\s*\$?\s*([\d.,]+)']:
-                    m = re.search(patron, ts, flags=re.I)
-                    if m:
-                        resultado['str_nightly_usd'] = parsear_numero_local(m.group(1))
+                tablas = pd.read_html(html)
+                for tabla in tablas:
+                    cols = [str(c).strip().lower() for c in tabla.columns]
+                    joined = " | ".join(cols)
+                    if "mediana venta" in joined and "$/m²" in joined:
+                        fila_dep = None
+                        for _, fila in tabla.iterrows():
+                            tipo = str(fila.iloc[0]).strip().lower()
+                            if "depart" in tipo:
+                                fila_dep = fila
+                                break
+                        if fila_dep is not None:
+                            valores = list(fila_dep.values)
+                            if len(valores) >= 3:
+                                resultado["median_price_usd"] = _numero_tulugar(valores[1])
+                                # Solo usar este $/m² si el indicador principal
+                                # de la ficha no pudo obtenerse.
+                                if resultado["price_m2_usd"] is None:
+                                    resultado["price_m2_usd"] = _numero_tulugar(valores[2])
                         break
             except Exception:
                 pass
+
+            fecha = _extraer_primero(
+                r"Datos al\s*([0-9]{4}-[0-9]{2}-[0-9]{2})",
+                texto,
+            )
+            resultado["updated_at"] = fecha
+            resultado["ok"] = any(
+                resultado[c] is not None
+                for c in ["price_m2_usd", "active_listings", "median_rent_usd", "median_price_usd"]
+            )
+
+        except Exception as exc:
+            resultado["error"] = str(exc)
 
         return resultado
 
     @st.cache_data(ttl=3600, show_spinner=False)
     def consultar_trm():
-        """TRM oficial de Colombia a través de una API pública que usa fuente Superfinanciera."""
         try:
             r = requests.get(
                 "https://co.dolarapi.com/v1/trm",
                 timeout=10,
-                headers={"User-Agent": "Mozilla/5.0 Airbnb-Financial-Hub"}
+                headers=TULUGAR_HEADERS,
             )
             r.raise_for_status()
             data = r.json()
@@ -4018,16 +3829,16 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
 
     filas_mercado = []
     for nombre, info in propiedades_radar.items():
-        m = consultar_tulugar(info["ciudad"], info["barrio"])
-        fila = {
+        m = consultar_tulugar_publico(info["url"])
+        filas_mercado.append({
             "Propiedad": nombre,
-            "Zona": f"{info['ciudad']} · {info['barrio']}",
+            "Zona": f"{info['ciudad']} · {info['zona']}",
             "IVP": info["ivp"],
             "Catalizador": info["catalizador"],
             "Catalizador_URL": info["catalizador_url"],
-            **m
-        }
-        filas_mercado.append(fila)
+            "Fuente_URL": info["url"],
+            **m,
+        })
 
     mercado = pd.DataFrame(filas_mercado)
 
@@ -4043,34 +3854,18 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
     # ========================================================
     # DATOS DEL ACTIVO EN BIGQUERY
     # ========================================================
-    activos = inversiones.rename(
-        columns={"Activo_Proyecto": "Nombre_Propiedad"}
-    ).copy()
-
-    activos = activos[
-        activos["Nombre_Propiedad"].isin(propiedades_radar.keys())
-    ].copy()
+    activos = inversiones.rename(columns={"Activo_Proyecto": "Nombre_Propiedad"}).copy()
+    activos = activos[activos["Nombre_Propiedad"].isin(propiedades_radar.keys())].copy()
 
     activos = activos.merge(
-        creditos[
-            [
-                "Propiedad",
-                "Valor_Total_Actual",
-                "Saldo_Usado",
-                "Patrimonio_Actual"
-            ]
-        ],
+        creditos[["Propiedad", "Valor_Total_Actual", "Saldo_Usado", "Patrimonio_Actual"]],
         left_on="Nombre_Propiedad",
         right_on="Propiedad",
-        how="left"
+        how="left",
     ).drop(columns=["Propiedad"], errors="ignore")
 
-    activos["Valor_Total_Actual"] = pd.to_numeric(
-        activos["Valor_Total_Actual"], errors="coerce"
-    )
-    activos["Inversion"] = pd.to_numeric(
-        activos["Inversion"], errors="coerce"
-    )
+    activos["Valor_Total_Actual"] = pd.to_numeric(activos["Valor_Total_Actual"], errors="coerce")
+    activos["Inversion"] = pd.to_numeric(activos["Inversion"], errors="coerce")
     activos["Valorizacion_Activo"] = (
         (activos["Valor_Total_Actual"] / activos["Inversion"] - 1) * 100
     ).replace([float("inf"), -float("inf")], pd.NA)
@@ -4079,7 +3874,7 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
         activos[["Nombre_Propiedad", "Valor_Total_Actual", "Valorizacion_Activo"]],
         left_on="Propiedad",
         right_on="Nombre_Propiedad",
-        how="left"
+        how="left",
     ).drop(columns=["Nombre_Propiedad"], errors="ignore")
 
     orden_radar = {
@@ -4089,7 +3884,7 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
         "Lotus": 4,
         "Santa Marina": 5,
         "Base Loft": 6,
-        "Tempus 49": 7
+        "Tempus 49": 7,
     }
     mercado["Orden"] = mercado["Propiedad"].map(orden_radar)
     mercado = mercado.sort_values("Orden")
@@ -4109,18 +3904,14 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
             return "—"
         return f"{float(valor):.1f}%"
 
-    def ocupacion(valor):
-        if pd.isna(valor):
-            return "—"
-        return f"{float(valor) * 100:.0f}%"
-
     def semaforo_oferta(n):
         if pd.isna(n):
             return '<span class="radar-badge radar-neutral">—</span>'
-        # El semáforo se calcula sobre la distribución del propio radar,
-        # no sobre una opinión manual.
-        q1 = mercado["active_listings"].dropna().quantile(0.33)
-        q2 = mercado["active_listings"].dropna().quantile(0.66)
+        valores = mercado["active_listings"].dropna()
+        if valores.empty:
+            return '<span class="radar-badge radar-neutral">—</span>'
+        q1 = valores.quantile(0.33)
+        q2 = valores.quantile(0.66)
         if n <= q1:
             return '<span class="radar-badge radar-green">Baja</span>'
         if n <= q2:
@@ -4133,34 +3924,21 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
         clase = "radar-positive" if float(valor) >= 0 else "radar-negative"
         return f'<span class="{clase}">{float(valor):.1f}%</span>'
 
-    # ========================================================
-    # TABLA PRINCIPAL
-    # ========================================================
     html_radar = """
 <div class="radar-panel">
 <div class="radar-title">🔎 Radar de mercado y valorización</div>
 <div class="radar-subtitle">
-Datos de mercado consultados online. El activo proviene de BigQuery. Los precios de mercado son precios de oferta, no cierres.
+Mercado consultado directamente en las páginas públicas de TuLugar. El activo proviene de BigQuery. Los precios son precios de oferta, no cierres.
 </div>
 <table class="radar-table">
-<thead>
-<tr>
-<th>Propiedad</th>
-<th>Zona</th>
-<th>Valoración activo</th>
-<th>Precio mediano mercado</th>
-<th>$/m²</th>
-<th>Oferta activa</th>
-<th>Demanda turística</th>
-<th>Alquiler mediano</th>
-<th>IVP 2025</th>
-<th>Catalizador</th>
-</tr>
-</thead>
-<tbody>
+<thead><tr>
+<th>Propiedad</th><th>Zona</th><th>Valoración activo</th><th>Precio mediano mercado</th>
+<th>$/m²</th><th>Oferta activa</th><th>Alquiler mediano</th><th>IVP 2025</th><th>Catalizador</th>
+</tr></thead><tbody>
 """
 
     for _, row in mercado.iterrows():
+        oferta = "—" if pd.isna(row["active_listings"]) else f"{int(row['active_listings']):,}".replace(",", ".")
         html_radar += f"""
 <tr>
 <td>{row['Propiedad']}</td>
@@ -4168,63 +3946,40 @@ Datos de mercado consultados online. El activo proviene de BigQuery. Los precios
 <td>{semaforo_valoracion(row['Valorizacion_Activo'])}</td>
 <td><span class="radar-number">{dinero_millones(row['Mediana_COP'])}</span></td>
 <td><span class="radar-number">{dinero_m2(row['Precio_m2_COP'])}</span></td>
-<td>
-    <span class="radar-number">{int(row['active_listings']) if not pd.isna(row['active_listings']) else '—'}</span>
-    {semaforo_oferta(row['active_listings'])}
-</td>
-<td><span class="radar-number">{ocupacion(row['str_occupancy'])}</span></td>
+<td><span class="radar-number">{oferta}</span> {semaforo_oferta(row['active_listings'])}</td>
 <td><span class="radar-number">{dinero_millones(row['Renta_COP'])}</span></td>
 <td><span class="radar-number">{porcentaje(row['IVP'])}</span></td>
 <td><a href="{row['Catalizador_URL']}" target="_blank" style="text-decoration:none;">{row['Catalizador']}</a></td>
 </tr>
 """
 
-    html_radar += """
-</tbody>
-</table>
-</div>
-"""
-
+    html_radar += "</tbody></table></div>"
     st.markdown(html_radar, unsafe_allow_html=True)
 
-    # ========================================================
-    # PIE DEL RADAR
-    # ========================================================
     fecha_online = pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
     trm_txt = f"${trm:,.0f}" if trm else "no disponible"
-
     st.markdown(
         f"""
 <div class="radar-panel">
 <div class="radar-title">📡 Corte online</div>
-<div class="radar-subtitle">
-TuLugar se consulta directamente desde la aplicación y entrega precio mediano, $/m² e inventario activo. La TRM usada para convertir a COP es {trm_txt} por USD. Corte de la aplicación: {fecha_online}.
-</div>
-<div class="radar-note">
-<strong>Importante:</strong> el mercado inmobiliario mostrado corresponde a precios publicados/ofertados, no precios de escritura o cierre. El IVP es el indicador oficial DANE 2025 y Bogotá no está incluida en ese índice. La ocupación turística es un indicador de contexto y puede tener muestras pequeñas por barrio.
-</div>
+<div class="radar-subtitle">Las cifras de mercado se leen de las páginas públicas de TuLugar. TRM usada para COP: {trm_txt} por USD. Corte de la aplicación: {fecha_online}.</div>
+<div class="radar-note"><strong>Importante:</strong> son precios publicados/ofertados, no precios de escritura o cierre. Santa Marina utiliza Santa Marta como referencia de ciudad porque no hay una ficha pública específica de Don Jaca en TuLugar. Base Loft utiliza Comuna 10 – La Candelaria para tener una muestra de mercado representativa.</div>
 </div>
 """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
-    # ========================================================
-    # SEÑALES AUTOMÁTICAS BASADAS EN DATOS
-    # ========================================================
     st.markdown(
         """
 <div class="radar-panel">
 <div class="radar-title">💡 Lecturas automáticas</div>
-<div class="radar-signal">🟢 <b>Mercado:</b> ahora la referencia de precio y la oferta salen de una consulta online; ya no son valores escritos manualmente en el código.</div>
-<div class="radar-signal">🟢 <b>Oferta:</b> el semáforo se calcula con la distribución de avisos activos entre las zonas del propio portafolio.</div>
-<div class="radar-signal">🟡 <b>Demanda:</b> la ocupación turística se muestra como indicador de contexto, no como una medición directa de demanda de compra.</div>
-<div class="radar-signal">🟡 <b>Siguiente nivel:</b> guardar cada corte en BigQuery para construir histórico de $/m², inventario, alquiler y ocupación y ver tendencia mes a mes.</div>
+<div class="radar-signal">🟢 <b>Fuente:</b> el precio, $/m², alquiler y oferta se leen directamente de la página pública de mercado de cada zona.</div>
+<div class="radar-signal">🟢 <b>Actualización:</b> la consulta se refresca cada hora mediante el caché de Streamlit.</div>
+<div class="radar-signal">🟡 <b>Oferta:</b> el semáforo compara el inventario activo entre las zonas del portafolio; no es una calificación absoluta del mercado.</div>
 </div>
 """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
-
-
 # ============================================================
 # VISTA FINANCIERO
 # ============================================================
