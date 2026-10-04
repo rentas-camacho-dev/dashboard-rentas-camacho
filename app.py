@@ -1316,11 +1316,19 @@ def cargar_estudio_mercado_inmobiliario():
     numeric_cols = [
         "Venta_Min_M", "Venta_Max_M",
         "Renta_Amoblada_Min_M", "Renta_Amoblada_Max_M",
-        "Renta_Sin_Amoblar_Min_M", "Renta_Sin_Amoblar_Max_M",
-        "Proyeccion_Zona_5A"
+        "Renta_Sin_Amoblar_Min_M", "Renta_Sin_Amoblar_Max_M"
     ]
     for col in numeric_cols:
         estudio[col] = pd.to_numeric(estudio[col], errors="coerce")
+
+    # Proyección: Google Sheets puede entregar decimal con coma (ej. 7,8).
+    estudio["Proyeccion_Zona_5A"] = pd.to_numeric(
+        estudio["Proyeccion_Zona_5A"]
+        .astype(str)
+        .str.strip()
+        .str.replace(",", ".", regex=False),
+        errors="coerce"
+    )
     text_cols = [
         "ID_Activo", "Nombre_Entidad", "Ciudad", "Conjunto_Proyecto",
         "Direccion", "Facilidad_Venta", "Facilidad_Arriendo",
@@ -1331,14 +1339,14 @@ def cargar_estudio_mercado_inmobiliario():
     return estudio
 
 
-def rango_millones(minimo, maximo):
+def rango_millones(minimo, maximo, decimales=0):
     if pd.isna(minimo) and pd.isna(maximo):
         return "—"
     if pd.isna(maximo):
-        return f"${float(minimo)/1_000_000:.0f}M"
+        return f"${float(minimo)/1_000_000:.{decimales}f}M"
     if pd.isna(minimo):
-        return f"${float(maximo)/1_000_000:.0f}M"
-    return f"${float(minimo)/1_000_000:.0f}–{float(maximo)/1_000_000:.0f}M"
+        return f"${float(maximo)/1_000_000:.{decimales}f}M"
+    return f"${float(minimo)/1_000_000:.{decimales}f}–{float(maximo)/1_000_000:.{decimales}f}M"
 
 
 def extraer_decision_y_lectura(rol):
@@ -3707,7 +3715,6 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
     )
 
     # ============================================================
-    # ============================================================
     # RADAR EJECUTIVO — DECISIÓN DEL PORTAFOLIO
     # ============================================================
 
@@ -3715,14 +3722,26 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
 
     if not estudio.empty:
         html_decision = """
-        <div class="radar-decision-panel">
-            <div class="radar-decision-title">🎯 Radar de decisión</div>
-            <div class="radar-decision-subtitle">Resumen ejecutivo del estudio de mercado: valor estimado, renta, proyección, liquidez y decisión estratégica.</div>
-            <table class="radar-decision-table">
-                <thead><tr>
-                    <th>Activo</th><th>Valor estimado</th><th>Renta amoblada</th><th>Proyección</th><th>Venta</th><th>Decisión</th><th>Lectura</th>
-                </tr></thead><tbody>
-        """
+<div class="radar-decision-panel">
+    <div class="radar-decision-title">🎯 Radar de decisión</div>
+    <div class="radar-decision-subtitle">
+        Resumen ejecutivo del estudio de mercado: valor estimado, renta, proyección, liquidez y decisión estratégica.
+    </div>
+    <table class="radar-decision-table">
+        <thead>
+            <tr>
+                <th>Activo</th>
+                <th>Valor estimado</th>
+                <th>Renta amoblada</th>
+                <th>Proyección</th>
+                <th>Venta</th>
+                <th>Decisión</th>
+                <th>Lectura</th>
+            </tr>
+        </thead>
+        <tbody>
+"""
+
         orden_decision = {
             "ENT-0001": 1,
             "ENT-0002": 2,
@@ -3732,42 +3751,83 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
             "ENT-0006": 6,
             "ENT-0007": 7,
         }
-        estudio["Orden"] = estudio["ID_Activo"].map(orden_decision).fillna(99)
-        estudio = estudio.sort_values(["Orden", "Nombre_Entidad"])
+
+        estudio["Orden"] = (
+            estudio["ID_Activo"]
+            .map(orden_decision)
+            .fillna(99)
+        )
+        estudio = estudio.sort_values(
+            ["Orden", "Nombre_Entidad"]
+        )
 
         for _, row in estudio.iterrows():
-            decision, lectura = extraer_decision_y_lectura(row["Rol_Portafolio"])
-            valor_estimado = rango_millones(row["Venta_Min_M"], row["Venta_Max_M"])
-            renta_amoblada = rango_millones(row["Renta_Amoblada_Min_M"], row["Renta_Amoblada_Max_M"])
-            proyeccion = "—" if pd.isna(row["Proyeccion_Zona_5A"]) else f"{float(row['Proyeccion_Zona_5A']):.1f}/10"
-            venta = str(row["Facilidad_Venta"] or "—")
+            decision, lectura = extraer_decision_y_lectura(
+                row["Rol_Portafolio"]
+            )
+
+            valor_estimado = rango_millones(
+                row["Venta_Min_M"],
+                row["Venta_Max_M"]
+            )
+
+            renta_amoblada = rango_millones(
+                row["Renta_Amoblada_Min_M"],
+                row["Renta_Amoblada_Max_M"],
+                decimales=1
+            )
+
+            proyeccion = (
+                "—"
+                if pd.isna(row["Proyeccion_Zona_5A"])
+                else f"{float(row['Proyeccion_Zona_5A']):.1f}/10"
+            )
+
+            venta = str(
+                row["Facilidad_Venta"] or "—"
+            )
 
             html_decision += f"""
-                <tr>
-                    <td>{row['Nombre_Entidad']}</td>
-                    <td><span class="radar-decision-value">{valor_estimado}</span></td>
-                    <td><span class="radar-decision-value">{renta_amoblada}</span></td>
-                    <td><span class="radar-decision-projection">{proyeccion}</span></td>
-                    <td><span class="radar-decision-badge {clase_venta(venta)}">{venta}</span></td>
-                    <td><span class="radar-decision-badge {clase_decision(decision)}">{decision or '—'}</span></td>
-                    <td>{lectura or '—'}</td>
-                </tr>
-            """
+<tr>
+    <td>{row['Nombre_Entidad']}</td>
+    <td><span class="radar-decision-value">{valor_estimado}</span></td>
+    <td><span class="radar-decision-value">{renta_amoblada}</span></td>
+    <td><span class="radar-decision-projection">{proyeccion}</span></td>
+    <td><span class="radar-decision-badge {clase_venta(venta)}">{venta}</span></td>
+    <td><span class="radar-decision-badge {clase_decision(decision)}">{decision or '—'}</span></td>
+    <td>{lectura or '—'}</td>
+</tr>
+"""
 
         html_decision += """
-                </tbody>
-            </table>
-        </div>
-        """
-        st.markdown(html_decision, unsafe_allow_html=True)
+        </tbody>
+    </table>
+</div>
+"""
+
+        # Limpieza final: evita que Streamlit interprete líneas HTML
+        # como bloque de código Markdown por la indentación.
+        html_decision = "\n".join(
+            linea.strip()
+            for linea in html_decision.splitlines()
+            if linea.strip()
+        )
+
+        st.markdown(
+            html_decision,
+            unsafe_allow_html=True
+        )
+
     else:
         st.markdown(
             """
-            <div class="radar-decision-panel">
-                <div class="radar-decision-title">🎯 Radar de decisión</div>
-                <div class="radar-note">No hay datos disponibles en Estudio_Mercado_Inmobiliario.</div>
-            </div>
-            """,
+<div class="radar-decision-panel">
+    <div class="radar-decision-title">🎯 Radar de decisión</div>
+    <div class="radar-note">
+        No hay datos disponibles en Estudio_Mercado_Inmobiliario.
+    </div>
+</div>
+""",
             unsafe_allow_html=True
         )
 
