@@ -1,4 +1,4 @@
-import streamlit as st
+    import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import base64
@@ -3690,8 +3690,21 @@ if st.session_state.vista_airbnb == "Propiedades":
     )
 
     # --------------------------------------------------------
-    # 5. GASTOS PROMEDIO MENSUAL PARA LA COMPARACIÓN
+    # 5. PROMEDIO DE GASTOS COMPARABLES POR REGISTROS
     # --------------------------------------------------------
+    # NO se divide entre los meses del año.
+    #
+    # Regla definida:
+    #   promedio = suma de registros identificados /
+    #              cantidad de registros identificados.
+    #
+    # Ejemplo:
+    #   Acqua tiene 4 registros de Internet en 2026
+    #   -> suma de esos 4 registros / 4.
+    #
+    # Si un mes no tiene registro porque la cuenta se mezcló,
+    # ese mes NO se considera $0.
+
     promedio_anual = promedio_anual.merge(
         aseo_anual,
         on="Nombre_Propiedad",
@@ -3710,41 +3723,103 @@ if st.session_state.vista_airbnb == "Propiedades":
         how="left"
     )
 
+    # Contar registros reales de cada categoría.
+    conteo_gastos = (
+        df_anual_promedio[
+            df_anual_promedio[
+                "_Categoria_Comparable"
+            ] != ""
+        ]
+        .groupby(
+            [
+                "Nombre_Propiedad",
+                "_Categoria_Comparable"
+            ],
+            as_index=False
+        )
+        .size()
+        .rename(columns={"size": "Cantidad_Registros"})
+        .pivot(
+            index="Nombre_Propiedad",
+            columns="_Categoria_Comparable",
+            values="Cantidad_Registros"
+        )
+        .reset_index()
+    )
+
+    # Garantizar las tres columnas de conteo.
+    for columna in [
+        "ASEO",
+        "INTERNET",
+        "SERVICIOS"
+    ]:
+        if columna not in conteo_gastos.columns:
+            conteo_gastos[columna] = 0
+
+    conteo_gastos = conteo_gastos.rename(
+        columns={
+            "ASEO": "Aseo_Registros_YTD",
+            "INTERNET": "Internet_Registros_YTD",
+            "SERVICIOS": "Servicios_Registros_YTD"
+        }
+    )
+
+    promedio_anual = promedio_anual.merge(
+        conteo_gastos,
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
     for columna in [
         "Aseo_Anual_YTD",
         "Internet_Anual_YTD",
-        "Servicios_Anual_YTD"
+        "Servicios_Anual_YTD",
+        "Aseo_Registros_YTD",
+        "Internet_Registros_YTD",
+        "Servicios_Registros_YTD"
     ]:
         promedio_anual[columna] = (
-            promedio_anual[columna]
+            pd.to_numeric(
+                promedio_anual[columna],
+                errors="coerce"
+            )
             .fillna(0)
         )
 
+    # --------------------------------------------------------
+    # 6. PROMEDIO POR REGISTRO
+    # --------------------------------------------------------
     promedio_anual[
         "Aseo_Mensual_Medio_Anual"
     ] = (
-        promedio_anual[
-            "Aseo_Anual_YTD"
-        ]
-        / meses_promedio_anual
+        promedio_anual["Aseo_Anual_YTD"]
+        /
+        promedio_anual["Aseo_Registros_YTD"].replace(
+            0,
+            pd.NA
+        )
     )
 
     promedio_anual[
         "Internet_Mensual_Medio_Anual"
     ] = (
-        promedio_anual[
-            "Internet_Anual_YTD"
-        ]
-        / meses_promedio_anual
+        promedio_anual["Internet_Anual_YTD"]
+        /
+        promedio_anual["Internet_Registros_YTD"].replace(
+            0,
+            pd.NA
+        )
     )
 
     promedio_anual[
         "Servicios_Mensual_Medio_Anual"
     ] = (
-        promedio_anual[
-            "Servicios_Anual_YTD"
-        ]
-        / meses_promedio_anual
+        promedio_anual["Servicios_Anual_YTD"]
+        /
+        promedio_anual["Servicios_Registros_YTD"].replace(
+            0,
+            pd.NA
+        )
     )
 
     # --------------------------------------------------------
@@ -3779,6 +3854,9 @@ if st.session_state.vista_airbnb == "Propiedades":
                 "Aseo_Mensual_Medio_Anual",
                 "Internet_Mensual_Medio_Anual",
                 "Servicios_Mensual_Medio_Anual",
+                "Aseo_Registros_YTD",
+                "Internet_Registros_YTD",
+                "Servicios_Registros_YTD",
                 "Airbnb_Comparable_Mensual"
             ]
         ],
@@ -4286,16 +4364,87 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
 
         meses_utilizados = len(resumen_mensual)
 
+        # Promedio del ingreso: por meses.
+        ingreso_promedio_auditoria = (
+            resumen_mensual["Ingreso"].sum()
+            / meses_utilizados
+            if meses_utilizados
+            else 0
+        )
+
+        # Promedio de gastos: por registros identificados,
+        # NO por meses. Los meses sin registro no se consideran cero.
+        mask_aseo_aud = (
+            df_acqua_auditoria["Categoria_Auditoria"] == "ASEO"
+        )
+        mask_internet_aud = (
+            df_acqua_auditoria["Categoria_Auditoria"] == "INTERNET"
+        )
+        mask_servicios_aud = (
+            df_acqua_auditoria["Categoria_Auditoria"] == "SERVICIOS"
+        )
+
+        aseo_suma_aud = df_acqua_auditoria.loc[
+            mask_aseo_aud,
+            "Gasto"
+        ].sum()
+        internet_suma_aud = df_acqua_auditoria.loc[
+            mask_internet_aud,
+            "Gasto"
+        ].sum()
+        servicios_suma_aud = df_acqua_auditoria.loc[
+            mask_servicios_aud,
+            "Gasto"
+        ].sum()
+
+        aseo_n_aud = int(mask_aseo_aud.sum())
+        internet_n_aud = int(mask_internet_aud.sum())
+        servicios_n_aud = int(mask_servicios_aud.sum())
+
+        aseo_prom_aud = (
+            aseo_suma_aud / aseo_n_aud
+            if aseo_n_aud
+            else 0
+        )
+        internet_prom_aud = (
+            internet_suma_aud / internet_n_aud
+            if internet_n_aud
+            else 0
+        )
+        servicios_prom_aud = (
+            servicios_suma_aud / servicios_n_aud
+            if servicios_n_aud
+            else 0
+        )
+
+        comparable_solo_aseo_aud = (
+            ingreso_promedio_auditoria
+            - aseo_prom_aud
+        )
+
+        comparable_sin_servicios_aud = (
+            ingreso_promedio_auditoria
+            - aseo_prom_aud
+            - internet_prom_aud
+        )
+
+        comparable_completo_aud = (
+            ingreso_promedio_auditoria
+            - aseo_prom_aud
+            - internet_prom_aud
+            - servicios_prom_aud
+        )
+
         # Mostrar promedio del año al final.
         fila_promedio = pd.DataFrame([{
             "Mes": "PROMEDIO",
-            "Ingreso": resumen_mensual["Ingreso"].sum() / meses_utilizados,
-            "Aseo": resumen_mensual["Aseo"].sum() / meses_utilizados,
-            "Internet": resumen_mensual["Internet"].sum() / meses_utilizados,
-            "Servicios": resumen_mensual["Servicios"].sum() / meses_utilizados,
-            "Comparable_solo_aseo": resumen_mensual["Comparable_solo_aseo"].sum() / meses_utilizados,
-            "Comparable_sin_servicios": resumen_mensual["Comparable_sin_servicios"].sum() / meses_utilizados,
-            "Comparable_completo": resumen_mensual["Comparable_completo"].sum() / meses_utilizados
+            "Ingreso": ingreso_promedio_auditoria,
+            "Aseo": aseo_prom_aud,
+            "Internet": internet_prom_aud,
+            "Servicios": servicios_prom_aud,
+            "Comparable_solo_aseo": comparable_solo_aseo_aud,
+            "Comparable_sin_servicios": comparable_sin_servicios_aud,
+            "Comparable_completo": comparable_completo_aud
         }])
 
         resumen_mensual_mostrar = pd.concat(
