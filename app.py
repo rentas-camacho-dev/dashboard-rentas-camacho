@@ -1374,12 +1374,107 @@ def rango_millones(minimo, maximo):
     return f"${float(minimo)/1_000_000:.1f}–{float(maximo)/1_000_000:.1f}M"
 
 
-def extraer_decision_y_lectura(rol):
-    rol = str(rol or "").strip()
-    if ":" in rol:
-        decision, lectura = rol.split(":", 1)
-        return decision.strip(), lectura.strip()
-    return rol, ""
+def generar_lectura_numerica_radar(
+    row,
+    comparable
+):
+    """Genera la lectura del Radar usando los números visibles del activo.
+
+    No utiliza Rol_Portafolio ni comentarios almacenados en BigQuery.
+    Toma únicamente valor estimado, renta amoblada, proyección, liquidez
+    y Airbnb comparable.
+    """
+
+    nombre = str(row.get("Nombre_Entidad", "Activo"))
+    id_activo = str(row.get("ID_Activo", ""))
+
+    valor = rango_millones(
+        row.get("Venta_Min_M"),
+        row.get("Venta_Max_M")
+    )
+
+    renta = rango_millones(
+        row.get("Renta_Amoblada_Min_M"),
+        row.get("Renta_Amoblada_Max_M")
+    )
+
+    venta = str(
+        row.get("Facilidad_Venta", "—")
+        or "—"
+    ).strip()
+
+    proyeccion_val = pd.to_numeric(
+        row.get("Proyeccion_Zona_5A"),
+        errors="coerce"
+    )
+
+    proyeccion = (
+        f"{float(proyeccion_val):.1f}/10"
+        if pd.notna(proyeccion_val)
+        else "sin dato"
+    )
+
+    comparable_txt = (
+        dinero_corto(comparable)
+        if pd.notna(comparable)
+        else "sin dato"
+    )
+
+    venta_upper = venta.upper()
+
+    # Tempus: el ingreso observado no sirve para medir capacidad real
+    # porque el inmueble tiene uso familiar. La lectura debe apoyarse
+    # principalmente en valoración, proyección y liquidez.
+    if id_activo == "ENT-0004":
+        return (
+            f"Valor estimado {valor}, proyección {proyeccion} y venta {venta}. "
+            f"El Airbnb comparable ({comparable_txt}) no es representativo por el uso familiar; "
+            "por eso la señal para rotación debe apoyarse en el valor y la liquidez del activo."
+        )
+
+    # Base Loft: los números sugieren probar primero otro modelo de renta
+    # antes de tomar una decisión de venta.
+    if id_activo == "ENT-0007":
+        return (
+            f"Valor estimado {valor}, renta amoblada {renta}, proyección {proyeccion} y venta {venta}. "
+            "La proyección no destaca frente a los activos líderes, pero la renta potencial justifica "
+            "probar renta tradicional amoblada antes de vender."
+        )
+
+    # Activos con proyección alta: la combinación de crecimiento esperado
+    # y renta/mercado favorece conservar y optimizar.
+    if pd.notna(proyeccion_val) and float(proyeccion_val) >= 8.5:
+        return (
+            f"Proyección {proyeccion}, renta amoblada {renta}, valor {valor} y venta {venta}. "
+            "La combinación de proyección y capacidad de renta favorece mantener y optimizar."
+        )
+
+    # Proyección intermedia + buena liquidez: mantener por equilibrio.
+    if (
+        pd.notna(proyeccion_val)
+        and float(proyeccion_val) >= 7.5
+        and "BUENA" in venta_upper
+    ):
+        return (
+            f"Proyección {proyeccion}, renta amoblada {renta}, valor {valor} y venta {venta}. "
+            f"El activo muestra una combinación equilibrada; el Airbnb comparable es {comparable_txt}. "
+            "Los números respaldan mantener mientras la renta se sostenga."
+        )
+
+    # Proyección baja con liquidez razonable: señal para revisar rotación.
+    if pd.notna(proyeccion_val) and float(proyeccion_val) <= 7.0:
+        return (
+            f"Proyección {proyeccion}, valor {valor}, renta amoblada {renta} y venta {venta}. "
+            "La fortaleza de zona es menor que la de los activos líderes, por lo que conviene "
+            "comparar la permanencia contra una alternativa de inversión con mejor proyección."
+        )
+
+    # Caso general.
+    return (
+        f"Valor {valor}, renta amoblada {renta}, proyección {proyeccion} y venta {venta}. "
+        f"Airbnb comparable: {comparable_txt}. "
+        "La lectura es de equilibrio entre renta, valorización esperada y liquidez."
+    )
 
 
 def clase_decision(decision):
@@ -4682,23 +4777,47 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
         )
 
         for _, row in estudio.iterrows():
-            decision, lectura = extraer_decision_y_lectura(row["Rol_Portafolio"])
-            valor_estimado = rango_millones(row["Venta_Min_M"], row["Venta_Max_M"])
-            renta_amoblada = rango_millones(row["Renta_Amoblada_Min_M"], row["Renta_Amoblada_Max_M"])
-            proyeccion = "—" if pd.isna(row["Proyeccion_Zona_5A"]) else f"{float(row['Proyeccion_Zona_5A']):.1f}/10"
+            # La decisión visual se conserva, pero la lectura ya NO sale
+            # de Rol_Portafolio ni de comentarios escritos en BigQuery.
+            # Se genera directamente con los números del Radar.
+            decision_label = str(
+                row.get("Rol_Portafolio", "—")
+                or "—"
+            )
+
+            if ":" in decision_label:
+                decision_label = decision_label.split(":", 1)[0].strip()
+
+            valor_estimado = rango_millones(
+                row["Venta_Min_M"],
+                row["Venta_Max_M"]
+            )
+            renta_amoblada = rango_millones(
+                row["Renta_Amoblada_Min_M"],
+                row["Renta_Amoblada_Max_M"]
+            )
+            proyeccion = (
+                "—"
+                if pd.isna(row["Proyeccion_Zona_5A"])
+                else f"{float(row['Proyeccion_Zona_5A']):.1f}/10"
+            )
             venta_label = str(
                 row.get("Facilidad_Venta", "—")
                 or "—"
             )
 
-            venta_css = clase_venta(
-                venta_label
-            )
+            # Resolver el color de venta localmente para evitar
+            # dependencias de funciones externas en el bloque Radar.
+            venta_upper = venta_label.upper()
 
-            decision_label = str(
-                decision
-                or "—"
-            )
+            if "BUENA" in venta_upper:
+                venta_css = "radar-decision-good"
+            elif "MEDIA" in venta_upper:
+                venta_css = "radar-decision-medium"
+            elif "BAJA" in venta_upper:
+                venta_css = "radar-decision-low"
+            else:
+                venta_css = "radar-decision-neutral"
 
             decision_css = clase_decision(
                 decision_label
@@ -4715,16 +4834,11 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
                 else "—"
             )
 
-            lectura_radar = str(
-                lectura
-                or "—"
+            # Lectura calculada con números visibles del activo.
+            lectura_radar = generar_lectura_numerica_radar(
+                row,
+                comparable
             )
-
-            if row.get("ID_Activo") == "ENT-0004":
-                lectura_radar += (
-                    " Uso familiar: el ingreso Airbnb comparable "
-                    "no es representativo de su capacidad real de renta."
-                )
 
             html_decision += f"""
 <tr>
@@ -4743,11 +4857,12 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
                 </tbody>
             </table>
             <div class="radar-note">
-                <b>Airbnb comparable:</b> ingreso bruto promedio YTD menos aseo/limpieza,
-                internet/wifi y servicios públicos identificados. Los gastos prorrateados se
-                consolidan primero por mes y luego se promedian solo los meses con información.
-                En <b>Tempus 49</b> se muestra solo como referencia: el inmueble tiene uso familiar
-                y ese ingreso Airbnb observado no representa su capacidad real de renta.
+                <b>Lectura:</b> se genera con los números visibles del Radar (valor estimado, renta amoblada,
+                proyección, liquidez de venta y Airbnb comparable). No utiliza el comentario almacenado
+                en <b>Rol_Portafolio</b> para redactar la explicación.
+                <b>Airbnb comparable</b> = ingreso bruto promedio YTD menos aseo/limpieza, internet/wifi
+                y servicios públicos identificados; los gastos prorrateados se consolidan primero por mes
+                y luego se promedian solo los meses con información.
             </div>
         </div>
         """
