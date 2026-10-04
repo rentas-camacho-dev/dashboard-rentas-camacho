@@ -1393,6 +1393,28 @@ def clase_decision(decision):
     return "radar-decision-neutral"
 
 
+def clase_venta(facilidad):
+    f = str(facilidad or "").upper()
+    if "BUENA" in f:
+        return "radar-decision-good"
+    if "MEDIA" in f:
+        return "radar-decision-medium"
+    if "BAJA" in f:
+        return "radar-decision-low"
+    return "radar-decision-neutral"
+
+
+def escape_html(valor):
+    return (
+        str(valor)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&#39;")
+    )
+
+
 def calcular_airbnb_comparable_radar(
     df_base,
     fecha_fin_radar
@@ -4664,12 +4686,27 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
             valor_estimado = rango_millones(row["Venta_Min_M"], row["Venta_Max_M"])
             renta_amoblada = rango_millones(row["Renta_Amoblada_Min_M"], row["Renta_Amoblada_Max_M"])
             proyeccion = "—" if pd.isna(row["Proyeccion_Zona_5A"]) else f"{float(row['Proyeccion_Zona_5A']):.1f}/10"
-            venta = str(row["Facilidad_Venta"] or "—")
+            venta_label = str(
+                row.get("Facilidad_Venta", "—")
+                or "—"
+            )
 
-            comparable = (
-                row["Airbnb_Comparable_Mensual"]
-                if "Airbnb_Comparable_Mensual" in row.index
-                else pd.NA
+            venta_css = clase_venta(
+                venta_label
+            )
+
+            decision_label = str(
+                decision
+                or "—"
+            )
+
+            decision_css = clase_decision(
+                decision_label
+            )
+
+            comparable = row.get(
+                "Airbnb_Comparable_Mensual",
+                pd.NA
             )
 
             comparable_txt = (
@@ -4678,27 +4715,29 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
                 else "—"
             )
 
-            lectura_radar = lectura or "—"
+            lectura_radar = str(
+                lectura
+                or "—"
+            )
 
-            if row["ID_Activo"] == "ENT-0004":
-                lectura_radar = (
-                    f"{lectura_radar} "
-                    "Uso familiar: el ingreso Airbnb comparable "
+            if row.get("ID_Activo") == "ENT-0004":
+                lectura_radar += (
+                    " Uso familiar: el ingreso Airbnb comparable "
                     "no es representativo de su capacidad real de renta."
                 )
 
             html_decision += f"""
-                <tr>
-                    <td>{row['Nombre_Entidad']}</td>
-                    <td><span class="radar-decision-value">{valor_estimado}</span></td>
-                    <td><span class="radar-decision-value">{renta_amoblada}</span></td>
-                    <td><span class="radar-decision-value">{comparable_txt}</span></td>
-                    <td><span class="radar-decision-projection">{proyeccion}</span></td>
-                    <td><span class="radar-decision-badge {clase_venta(venta)}">{venta}</span></td>
-                    <td><span class="radar-decision-badge {clase_decision(decision)}">{decision or '—'}</span></td>
-                    <td>{escape_html(lectura_radar)}</td>
-                </tr>
-            """
+<tr>
+    <td>{escape_html(row.get("Nombre_Entidad", "—"))}</td>
+    <td><span class="radar-decision-value">{valor_estimado}</span></td>
+    <td><span class="radar-decision-value">{renta_amoblada}</span></td>
+    <td><span class="radar-decision-value">{comparable_txt}</span></td>
+    <td><span class="radar-decision-projection">{proyeccion}</span></td>
+    <td><span class="radar-decision-badge {venta_css}">{escape_html(venta_label)}</span></td>
+    <td><span class="radar-decision-badge {decision_css}">{escape_html(decision_label)}</span></td>
+    <td>{escape_html(lectura_radar)}</td>
+</tr>
+"""
 
         html_decision += """
                 </tbody>
@@ -4743,16 +4782,6 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
     # Esta conclusión usa únicamente los datos disponibles en
     # Estudio_Mercado_Inmobiliario. No pretende ser una señal automática
     # de venta ni reemplaza una revisión puntual del mercado externo.
-
-    def escape_html(valor):
-        return (
-            str(valor)
-            .replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace('"', "&quot;")
-            .replace("'", "&#39;")
-        )
 
     if not estudio.empty:
         estudio_conclusion = estudio.copy()
