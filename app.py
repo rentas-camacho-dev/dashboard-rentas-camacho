@@ -3727,7 +3727,7 @@ elif st.session_state.vista_airbnb == "Análisis":
 </div>
 
 <div class="section-subtitle">
-Mercado online actualizado + comportamiento del activo + catalizadores documentados.
+Estudio de mercado + comportamiento del activo + posición estratégica del portafolio.
 </div>
 """,
         unsafe_allow_html=True
@@ -3812,354 +3812,114 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
         )
 
     # ============================================================
-    # RADAR ONLINE — COMPARABLES REALES POR CONJUNTO + ENTORNO
+    # CONCLUSIÓN EJECUTIVA DEL PORTAFOLIO
     # ============================================================
-    # IMPORTANTE:
-    # No usamos el inventario de TuLugar como si fuera la oferta total.
-    # Para valorar cada activo se priorizan comparables del mismo conjunto
-    # y, cuando no hay suficientes, edificios/sectores inmediatamente cercanos.
-    #
-    # Las referencias de venta son precios publicados, no precios de cierre.
-    # El bloque mantiene las 7 propiedades aunque alguna fuente no tenga datos.
+    # Esta conclusión usa únicamente los datos disponibles en
+    # Estudio_Mercado_Inmobiliario. No pretende ser una señal automática
+    # de venta ni reemplaza una revisión puntual del mercado externo.
 
-    comparables_radar = {
-        "Torre Acqua": {
-            "zona": "Bogotá · Las Aguas",
-            "area_objetivo": 20,
-            "comparables": [
-                (24.8, 252_000_000), (25, 260_000_000), (24.8, 275_000_000),
-                (25, 280_000_000), (22, 220_000_000), (18, 200_000_000),
-                (25, 213_000_000)
-            ],
-            "fuente": "FincaRaíz · Las Aguas · 18–30 m²",
-            "url": "https://www.fincaraiz.com.co/venta/apartaestudios/las-aguas/zona-centro/bogota",
-            "oferta_publicada": 17,
-        },
-        "Torre Evoca": {
-            "zona": "Bogotá · Las Nieves",
-            "area_objetivo": 19,
-            # Comparables actuales de Las Nieves, 20–25 m².
-            # Se excluyen resultados identificados como Torre Ventto y
-            # publicaciones de 20 m² del edificio Trend cuando la ficha
-            # no aporta comparabilidad directa con Evoca.
-            "comparables": [
-                (20, 225_000_000),
-                (22, 232_000_000),
-                (21, 240_000_000),
-                (24, 238_000_000),
-                (25, 240_000_000),
-                (21, 256_800_000),
-                (25, 250_000_000),
-            ],
-            "fuente": "FincaRaíz · Las Nieves · 20–25 m² · sin Ventto",
-            "url": "https://www.fincaraiz.com.co/venta/apartaestudios/las-nieves/zona-centro/bogota/m2-desde-20/m2-hasta-32/edificados",
-            # No mostramos el total de resultados de la búsqueda porque
-            # incluye inmuebles de otros edificios y no representa oferta
-            # específica de Evoca.
-            "oferta_publicada": None,
-        },
-        "Torre Ventto": {
-            "zona": "Bogotá · Las Aguas",
-            "area_objetivo": 25,
-            "comparables": [
-                (24.8, 252_000_000), (25, 260_000_000), (24.8, 275_000_000),
-                (25, 260_000_000)
-            ],
-            "fuente": "FincaRaíz · Torre Ventto · 24.8–25 m²",
-            "url": "https://www.fincaraiz.com.co/venta/apartaestudios/las-aguas/zona-centro/bogota",
-            "oferta_publicada": 17,
-        },
-        "Lotus": {
-            "zona": "Cartagena · Torices",
-            "area_objetivo": 62,
-            "comparables": [
-                (58, 350_000_000), (56, 330_000_000), (56, 370_000_000),
-                (58, 370_000_000), (52, 330_000_000), (56, 350_000_000)
-            ],
-            "fuente": "FincaRaíz · Torices · 52–58 m²",
-            "url": "https://www.fincaraiz.com.co/venta/apartamentos/torices/cartagena",
-            "oferta_publicada": None,
-        },
-        "Santa Marina": {
-            "zona": "Santa Marta · Don Jaca",
-            "area_objetivo": 33,
-            "comparables": [
-                (30, 280_000_000), (33, 250_000_000), (31, 290_000_000),
-                (33, 330_000_000), (40, 460_000_000), (37, 390_000_000)
-            ],
-            "fuente": "FincaRaíz · Don Jaca · 30–40 m²",
-            "url": "https://www.fincaraiz.com.co/venta/apartamentos/don-jaca/santa-marta",
-            "oferta_publicada": None,
-        },
-        "Base Loft": {
-            "zona": "Medellín · La Candelaria / San Diego",
-            "area_objetivo": 40,
-            "comparables": [
-                (34, 310_000_000), (48, 368_000_000), (40, 350_000_000),
-                (44, 370_000_000), (36, 190_000_000), (35, 170_000_000)
-            ],
-            "fuente": "FincaRaíz · La Candelaria / San Diego · 34–48 m²",
-            "url": "https://www.fincaraiz.com.co/venta/apartaestudios/la-candelaria/medellin",
-            "oferta_publicada": None,
-        },
-        "Tempus 49": {
-            "zona": "Ibagué · Piedra Pintada",
-            "area_objetivo": 56,
-            "comparables": [
-                (55, 230_000_000), (62, 260_000_000), (61, 325_000_000),
-                (66, 260_000_000), (56, 290_000_000)
-            ],
-            "fuente": "FincaRaíz · Tempus 49 / Piedra Pintada · 55–66 m²",
-            "url": "https://www.fincaraiz.com.co/venta/apartamentos/piedra-pintada/piedrapintada/ibague",
-            "oferta_publicada": None,
-        },
-    }
-
-    # Renta: mantenemos la renta que ya tenía el Radar cuando existe.
-    # No se inventa una renta nueva si no hay una referencia suficiente.
-    rentas_radar = {
-        "Torre Evoca": 2_000_000,
-        "Lotus": 3_000_000,
-        "Santa Marina": 3_000_000,
-        "Base Loft": 4_000_000,
-        "Tempus 49": 2_000_000,
-    }
-
-    def _mediana_comparables(lista):
-        if not lista:
-            return None, None, None
-        precios = [float(p) for _, p in lista]
-        precio_m2 = [float(p) / float(a) for a, p in lista if a and p]
+    def escape_html(valor):
         return (
-            float(pd.Series(precios).median()),
-            float(pd.Series(precio_m2).median()) if precio_m2 else None,
-            len(lista),
+            str(valor)
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+            .replace("'", "&#39;")
         )
 
-    def _valor_por_area(lista, area_objetivo):
-        """
-        Calcula el valor de mercado del activo usando la mediana del $/m²
-        de comparables cercanos por tipología/tamaño.
-        """
-        _, mediana_m2, n = _mediana_comparables(lista)
-        if mediana_m2 is None or not area_objetivo:
-            return None, None, n
-        return mediana_m2 * float(area_objetivo), mediana_m2, n
-
-    filas_mercado = []
-
-    for nombre, info in comparables_radar.items():
-        valor_m2 = None
-        valor_mercado = None
-        mediana_precio, mediana_m2_directo, n_comp = _mediana_comparables(
-            info["comparables"]
+    if not estudio.empty:
+        estudio_conclusion = estudio.copy()
+        estudio_conclusion["Proyeccion_Num"] = pd.to_numeric(
+            estudio_conclusion["Proyeccion_Zona_5A"],
+            errors="coerce"
         )
 
-        # Para el valor del activo usamos $/m² comparable × área del activo.
-        valor_mercado, valor_m2, n_comp = _valor_por_area(
-            info["comparables"],
-            info["area_objetivo"]
+        proyeccion_promedio = estudio_conclusion["Proyeccion_Num"].mean()
+        row_max = estudio_conclusion.loc[
+            estudio_conclusion["Proyeccion_Num"].idxmax()
+        ] if estudio_conclusion["Proyeccion_Num"].notna().any() else None
+
+        candidatos_rotacion = estudio_conclusion[
+            estudio_conclusion["Rol_Portafolio"].str.upper().str.contains(
+                "VENDER|ROTAR", regex=True, na=False
+            )
+        ]
+
+        activos_alta_proyeccion = estudio_conclusion[
+            estudio_conclusion["Proyeccion_Num"] >= 8.5
+        ]
+
+        def nombres(df_tmp):
+            if df_tmp.empty:
+                return "ninguno"
+            return ", ".join(df_tmp["Nombre_Entidad"].astype(str).tolist())
+
+        rotacion_txt = nombres(candidatos_rotacion)
+        alta_proj_txt = nombres(activos_alta_proyeccion)
+
+        lectura_mercado = (
+            f"El estudio sitúa la proyección media del portafolio en "
+            f"{proyeccion_promedio:.1f}/10."
         )
 
-        # Si no existe una muestra, la propiedad sigue apareciendo.
-        if valor_mercado is None:
-            estado = "Sin muestra suficiente"
-        else:
-            estado = "OK"
+        if row_max is not None:
+            lectura_mercado += (
+                f" {row_max['Nombre_Entidad']} lidera la proyección de zona con "
+                f"{float(row_max['Proyeccion_Num']):.1f}/10."
+            )
 
-        filas_mercado.append({
-            "Propiedad": nombre,
-            "Zona": info["zona"],
-            "Area_objetivo": info["area_objetivo"],
-            "Mediana_COP": valor_mercado,
-            "Precio_m2_COP": valor_m2,
-            "Renta_COP": rentas_radar.get(nombre),
-            "Oferta_publicada": info.get("oferta_publicada"),
-            "Comparables": n_comp,
-            "Fuente": info["fuente"],
-            "Fuente_URL": info["url"],
-            "Estado_fuente": estado,
-        })
-
-    mercado = pd.DataFrame(filas_mercado)
-
-    # ============================================================
-    # DATOS DEL ACTIVO EN BIGQUERY
-    # ============================================================
-    activos = inversiones.rename(
-        columns={"Activo_Proyecto": "Nombre_Propiedad"}
-    ).copy()
-
-    activos = activos[
-        activos["Nombre_Propiedad"].isin(comparables_radar.keys())
-    ].copy()
-
-    activos = activos.merge(
-        creditos[
-            ["Propiedad", "Valor_Total_Actual", "Saldo_Usado", "Patrimonio_Actual"]
-        ],
-        left_on="Nombre_Propiedad",
-        right_on="Propiedad",
-        how="left",
-    ).drop(columns=["Propiedad"], errors="ignore")
-
-    activos["Valor_Total_Actual"] = pd.to_numeric(
-        activos["Valor_Total_Actual"], errors="coerce"
-    )
-    activos["Inversion"] = pd.to_numeric(
-        activos["Inversion"], errors="coerce"
-    )
-
-    activos["Valorizacion_Activo"] = (
-        (activos["Valor_Total_Actual"] / activos["Inversion"] - 1) * 100
-    ).replace([float("inf"), -float("inf")], pd.NA)
-
-    mercado = mercado.merge(
-        activos[
-            ["Nombre_Propiedad", "Valor_Total_Actual", "Valorizacion_Activo"]
-        ],
-        left_on="Propiedad",
-        right_on="Nombre_Propiedad",
-        how="left",
-    ).drop(columns=["Nombre_Propiedad"], errors="ignore")
-
-    orden_radar = {
-        "Torre Acqua": 1,
-        "Torre Evoca": 2,
-        "Torre Ventto": 3,
-        "Lotus": 4,
-        "Santa Marina": 5,
-        "Base Loft": 6,
-        "Tempus 49": 7,
-    }
-
-    mercado["Orden"] = mercado["Propiedad"].map(orden_radar)
-    mercado = mercado.sort_values("Orden")
-
-    def dinero_millones(valor):
-        if valor is None or pd.isna(valor):
-            return "—"
-        return f"${float(valor) / 1_000_000:.0f}M"
-
-    def dinero_m2(valor):
-        if valor is None or pd.isna(valor):
-            return "—"
-        return f"${float(valor) / 1_000_000:.1f}M"
-
-    def porcentaje(valor):
-        if valor is None or pd.isna(valor):
-            return "—"
-        return f"{float(valor):.1f}%"
-
-    def texto_oferta(valor):
-        if valor is None or pd.isna(valor):
-            return "—"
-        return f"{int(valor):,}".replace(",", ".")
-
-    def semaforo_valoracion(valor):
-        if valor is None or pd.isna(valor):
-            return '<span class="radar-neutral">—</span>'
-        clase = (
-            "radar-positive"
-            if float(valor) >= 0
-            else "radar-negative"
+        lectura_rotacion = (
+            f"El principal foco de rotación señalado por el estudio es {rotacion_txt}."
+            if not candidatos_rotacion.empty
+            else "El estudio no identifica actualmente un activo con señal explícita de venta/rotación."
         )
-        return f'<span class="{clase}">{float(valor):.1f}%</span>'
 
-    html_radar = """
-<div class="radar-panel">
-<div class="radar-title">🔎 Radar de mercado y valorización</div>
-<div class="radar-subtitle">
-Comparables por tamaño/tipología + conjunto y edificios cercanos. Se evita usar la muestra de TuLugar como si fuera el inventario total del mercado.
+        lectura_oportunidades = (
+            f"Los activos con proyección de zona igual o superior a 8.5/10 son {alta_proj_txt}, "
+            "por lo que conviene priorizar su conservación y optimización antes de plantear una venta."
+            if not activos_alta_proyeccion.empty
+            else "No hay activos con una proyección de zona de 8.5/10 o superior según el estudio."
+        )
+
+        lectura_final = (
+            "La lectura general favorece conservar los activos con mejor combinación de proyección, renta y liquidez, "
+            "y estudiar una rotación únicamente donde el capital pueda tener un uso más atractivo. "
+            "La decisión final debe contrastarse con deuda, flujo Airbnb, costo de salida y precio realmente negociable."
+        )
+
+        html_conclusion = f"""
+<div class="radar-decision-panel">
+    <div class="radar-decision-title">🧠 Conclusión ejecutiva</div>
+    <div class="radar-decision-subtitle">Lectura automática construida a partir del estudio de mercado cargado en BigQuery.</div>
+    <div class="radar-signal"><b>📊 Lectura de mercado:</b> {escape_html(lectura_mercado)}</div>
+    <div class="radar-signal"><b>🎯 Rotación:</b> {escape_html(lectura_rotacion)}</div>
+    <div class="radar-signal"><b>🚀 Activos a conservar:</b> {escape_html(lectura_oportunidades)}</div>
+    <div class="radar-signal"><b>✅ Conclusión:</b> {escape_html(lectura_final)}</div>
+    <div class="radar-note"><b>Nota:</b> esta conclusión usa el estudio disponible en BigQuery; no está haciendo una consulta en tiempo real a portales inmobiliarios ni pretende estimar precios de cierre.</div>
 </div>
-<table class="radar-table">
-<thead><tr>
-<th>Propiedad</th>
-<th>Zona</th>
-<th>Valoración activo</th>
-<th>Valor mercado comparable</th>
-<th>$/m² comparable</th>
-<th>Oferta publicada</th>
-<th>Renta</th>
-<th>Comparables</th>
-<th>Fuente</th>
-</tr></thead><tbody>
 """
 
-    for _, row in mercado.iterrows():
-        oferta = texto_oferta(row["Oferta_publicada"])
+        html_conclusion = "\n".join(
+            linea.strip()
+            for linea in html_conclusion.splitlines()
+            if linea.strip()
+        )
 
-        if row["Estado_fuente"] == "Sin muestra suficiente":
-            estado_html = '<span class="radar-badge radar-neutral">Sin muestra</span>'
-        else:
-            estado_html = '<span class="radar-badge radar-yellow">Portal</span>'
-
-        fuente = str(row["Fuente"])
-        fuente_url = str(row["Fuente_URL"])
-
-        html_radar += f"""
-<tr>
-<td><b>{row['Propiedad']}</b></td>
-<td>{row['Zona']}</td>
-<td>{semaforo_valoracion(row['Valorizacion_Activo'])}</td>
-<td><span class="radar-number">{dinero_millones(row['Mediana_COP'])}</span></td>
-<td><span class="radar-number">{dinero_m2(row['Precio_m2_COP'])}</span></td>
-<td>
-    <span class="radar-number">{oferta}</span>
-    {estado_html}
-</td>
-<td><span class="radar-number">{dinero_millones(row['Renta_COP'])}</span></td>
-<td><span class="radar-number">{int(row['Comparables']) if not pd.isna(row['Comparables']) else '—'}</span></td>
-<td>
-    <a href="{fuente_url}" target="_blank" style="text-decoration:none;">
-        {fuente}
-    </a>
-</td>
-</tr>
-"""
-
-    html_radar += "</tbody></table></div>"
-    st.markdown(html_radar, unsafe_allow_html=True)
-
-    fecha_online = pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
-
-    st.markdown(
-        f"""
-<div class="radar-panel">
-<div class="radar-title">📡 Corte online</div>
-<div class="radar-subtitle">
-Comparables de venta publicados en portales inmobiliarios. Corte de la aplicación: {fecha_online}.
-</div>
-<div class="radar-note">
-<strong>Metodología:</strong> el valor comparable se calcula con la mediana del $/m²
-de propiedades de tamaño/tipología similar y se aplica al área del activo.
-Primero se prioriza el mismo conjunto; si no hay suficientes anuncios, se usan
-edificios y conjuntos del entorno inmediato.
-</div>
-<div class="radar-note">
-<strong>Oferta:</strong> solo se muestra cuando el conteo de la fuente es
-razonablemente interpretable. Si la búsqueda mezcla edificios o no permite
-separar el inventario del activo/entorno, se deja <b>—</b> en lugar de inventar
-una cifra.
-</div>
+        st.markdown(
+            html_conclusion,
+            unsafe_allow_html=True
+        )
+    else:
+        st.markdown(
+            """
+<div class="radar-decision-panel">
+    <div class="radar-decision-title">🧠 Conclusión ejecutiva</div>
+    <div class="radar-note">No hay información suficiente en Estudio_Mercado_Inmobiliario para generar una conclusión.</div>
 </div>
 """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-<div class="radar-panel">
-<div class="radar-title">💡 Lecturas automáticas</div>
-<div class="radar-signal">🟢 <b>Lotus:</b> ahora se compara contra apartamentos de Torices de tamaño similar, no contra el promedio general de la zona.</div>
-<div class="radar-signal">🟢 <b>Acqua y Ventto:</b> se utilizan comparables de Las Aguas y, para Ventto, anuncios identificados específicamente en Torre Ventto.</div>
-<div class="radar-signal">🟢 <b>Evoca:</b> se utilizan apartaestudios pequeños de Las Nieves, evitando mezclar apartamentos grandes de toda la zona.</div>
-<div class="radar-signal">🟢 <b>Santa Marina, Base Loft y Tempus 49:</b> se incorporan referencias de venta de su conjunto/sector cercano para evitar que queden sin datos.</div>
-<div class="radar-signal">🟡 <b>Importante:</b> estos son precios publicados/ofertados; pueden diferir del precio final de negociación o escritura.</div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
+            unsafe_allow_html=True
+        )
 
 # ============================================================
 # VISTA FINANCIERO
