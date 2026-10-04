@@ -1132,7 +1132,7 @@ st.markdown("""
 .radar-decision-panel { background:#FFFFFF; border:1px solid #DCE5EE; border-radius:14px; padding:16px 18px 12px; margin-top:12px; overflow-x:auto; }
 .radar-decision-title { font-size:18px; font-weight:850; color:#17345E; }
 .radar-decision-subtitle { font-size:9px; color:#8A98AA; margin-top:4px; margin-bottom:12px; }
-.radar-decision-table { width:100%; border-collapse:separate; border-spacing:0; font-size:10px; color:#50637B; min-width:1050px; }
+.radar-decision-table { width:100%; border-collapse:separate; border-spacing:0; font-size:10px; color:#50637B; min-width:1180px; }
 .radar-decision-table th { background:#F4F7FA; color:#71839A; font-size:8px; font-weight:800; text-transform:uppercase; padding:9px 8px; border-bottom:1px solid #DCE5EE; white-space:nowrap; text-align:center; }
 .radar-decision-table th:first-child, .radar-decision-table th:last-child { text-align:left; }
 .radar-decision-table td { padding:10px 8px; border-bottom:1px solid #EDF1F5; text-align:center; vertical-align:middle; }
@@ -1393,15 +1393,386 @@ def clase_decision(decision):
     return "radar-decision-neutral"
 
 
-def clase_venta(facilidad):
-    f = str(facilidad or "").upper()
-    if "BUENA" in f:
-        return "radar-decision-good"
-    if "MEDIA" in f:
-        return "radar-decision-medium"
-    if "BAJA" in f:
-        return "radar-decision-low"
-    return "radar-decision-neutral"
+def calcular_airbnb_comparable_radar(
+    df_base,
+    fecha_fin_radar
+):
+    """
+    Calcula el ingreso Airbnb comparable mensual YTD para el Radar.
+
+    Ingreso:
+        acumulado del año / meses completos transcurridos.
+
+    Gastos:
+        primero suma de registros prorrateados del mismo mes;
+        luego promedio únicamente de los meses con información.
+
+    Si una categoría no tiene información:
+        se toma como 0.
+
+    No se descuentan:
+        administración, inmobiliaria ni comisiones.
+    """
+
+    fecha_fin_ts = pd.Timestamp(
+        fecha_fin_radar
+    )
+
+    anio = int(
+        fecha_fin_ts.year
+    )
+
+    if anio == int(hoy.year):
+
+        ultimo_mes_cerrado = (
+            pd.Timestamp(
+                hoy.year,
+                hoy.month,
+                1
+            )
+            - pd.offsets.MonthEnd(1)
+        )
+
+        fecha_corte = min(
+            fecha_fin_ts,
+            ultimo_mes_cerrado
+        )
+
+        meses = max(
+            1,
+            int(fecha_corte.month)
+        )
+
+    else:
+
+        fecha_corte = pd.Timestamp(
+            anio,
+            12,
+            31
+        )
+
+        meses = 12
+
+    anual = df_base[
+        (df_base["Fecha"].dt.year == anio)
+        &
+        (df_base["Fecha"] <= fecha_corte)
+    ].copy()
+
+    if anual.empty:
+
+        return pd.DataFrame(
+            columns=[
+                "Nombre_Propiedad",
+                "Ingreso_Mensual_Radar",
+                "Airbnb_Comparable_Mensual"
+            ]
+        )
+
+    for col in [
+        "Nombre_Subcategoria",
+        "Detalle",
+        "Nombre_Cuenta"
+    ]:
+
+        if col not in anual.columns:
+            anual[col] = ""
+
+        anual[col] = (
+            anual[col]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+        )
+
+    anual["_Texto_Gasto_Radar"] = (
+        anual["Nombre_Subcategoria"]
+        + " "
+        + anual["Detalle"]
+        + " "
+        + anual["Nombre_Cuenta"]
+    ).str.lower()
+
+    # ========================================================
+    # INGRESO BRUTO
+    # ========================================================
+    ingresos = (
+        anual
+        .groupby(
+            "Nombre_Propiedad",
+            as_index=False
+        )["Ingreso"]
+        .sum()
+        .rename(
+            columns={
+                "Ingreso":
+                    "Ingreso_Anual_Radar"
+            }
+        )
+    )
+
+    # Misma distribución especial de Acqua + Tempus 49.
+    mask_acqua_tempus = ingresos[
+        "Nombre_Propiedad"
+    ].isin(
+        [
+            "Torre Acqua",
+            "Tempus 49"
+        ]
+    )
+
+    ingreso_combinado = (
+        ingresos.loc[
+            mask_acqua_tempus,
+            "Ingreso_Anual_Radar"
+        ]
+        .sum()
+    )
+
+    if ingreso_combinado > 0:
+
+        ingresos.loc[
+            ingresos["Nombre_Propiedad"]
+            == "Torre Acqua",
+            "Ingreso_Anual_Radar"
+        ] = (
+            ingreso_combinado
+            * 0.703221459479914
+        )
+
+        ingresos.loc[
+            ingresos["Nombre_Propiedad"]
+            == "Tempus 49",
+            "Ingreso_Anual_Radar"
+        ] = (
+            ingreso_combinado
+            * 0.296778540520086
+        )
+
+    ingresos[
+        "Ingreso_Mensual_Radar"
+    ] = (
+        ingresos["Ingreso_Anual_Radar"]
+        / meses
+    )
+
+    # ========================================================
+    # CLASIFICACIÓN DE GASTOS
+    # ========================================================
+    no_comparable = (
+        anual["_Texto_Gasto_Radar"]
+        .str.contains(
+            r"\badministraci[oó]n\b|\binmobiliaria\b|\bcomisi[oó]n\b",
+            regex=True,
+            na=False
+        )
+    )
+
+    validos = (
+        (anual["Gasto"] > 0)
+        &
+        (~no_comparable)
+    )
+
+    categoria = pd.Series(
+        "",
+        index=anual.index,
+        dtype="object"
+    )
+
+    mask_aseo = (
+        validos
+        &
+        anual["_Texto_Gasto_Radar"].str.contains(
+            r"\baseo\b|\blimpieza\b|\bcleaning\b",
+            regex=True,
+            na=False
+        )
+    )
+
+    categoria.loc[
+        mask_aseo
+    ] = "ASEO"
+
+    mask_internet = (
+        validos
+        &
+        (categoria == "")
+        &
+        anual["_Texto_Gasto_Radar"].str.contains(
+            r"\binternet\b|\bwifi\b|\bwi[\s-]?fi\b",
+            regex=True,
+            na=False
+        )
+    )
+
+    categoria.loc[
+        mask_internet
+    ] = "INTERNET"
+
+    mask_servicios = (
+        validos
+        &
+        (categoria == "")
+        &
+        anual["_Texto_Gasto_Radar"].str.contains(
+            (
+                r"\bservicios?\s+p[úu]blicos?\b"
+                r"|\benerg[ií]a\b"
+                r"|\bagua\b"
+                r"|\bacueducto\b"
+                r"|\belectricidad\b"
+                r"|\bluz\b"
+                r"|\bgas\b"
+            ),
+            regex=True,
+            na=False
+        )
+    )
+
+    categoria.loc[
+        mask_servicios
+    ] = "SERVICIOS"
+
+    anual["_Categoria_Radar"] = categoria
+
+    gastos = anual[
+        anual["_Categoria_Radar"] != ""
+    ].copy()
+
+    # Si no hay gastos comparables, comparable = ingreso bruto.
+    if gastos.empty:
+
+        resultado = ingresos[
+            [
+                "Nombre_Propiedad",
+                "Ingreso_Mensual_Radar"
+            ]
+        ].copy()
+
+        resultado[
+            "Airbnb_Comparable_Mensual"
+        ] = resultado[
+            "Ingreso_Mensual_Radar"
+        ]
+
+        return resultado
+
+    # ========================================================
+    # CONSOLIDAR PRORRATEOS POR MES
+    # ========================================================
+    gastos["_Mes_Radar"] = (
+        gastos["Fecha"]
+        .dt.to_period("M")
+        .astype(str)
+    )
+
+    gastos_mensuales = (
+        gastos
+        .groupby(
+            [
+                "Nombre_Propiedad",
+                "_Categoria_Radar",
+                "_Mes_Radar"
+            ],
+            as_index=False
+        )["Gasto"]
+        .sum()
+    )
+
+    # Promedio de los meses que sí tienen información.
+    gastos_promedio = (
+        gastos_mensuales
+        .groupby(
+            [
+                "Nombre_Propiedad",
+                "_Categoria_Radar"
+            ],
+            as_index=False
+        )["Gasto"]
+        .mean()
+        .pivot(
+            index="Nombre_Propiedad",
+            columns="_Categoria_Radar",
+            values="Gasto"
+        )
+        .reset_index()
+    )
+
+    for col in [
+        "ASEO",
+        "INTERNET",
+        "SERVICIOS"
+    ]:
+
+        if col not in gastos_promedio.columns:
+            gastos_promedio[col] = 0
+
+    gastos_promedio = (
+        gastos_promedio
+        .rename(
+            columns={
+                "ASEO":
+                    "Aseo_Radar",
+                "INTERNET":
+                    "Internet_Radar",
+                "SERVICIOS":
+                    "Servicios_Radar"
+            }
+        )
+    )
+
+    resultado = (
+        ingresos[
+            [
+                "Nombre_Propiedad",
+                "Ingreso_Mensual_Radar"
+            ]
+        ]
+        .merge(
+            gastos_promedio[
+                [
+                    "Nombre_Propiedad",
+                    "Aseo_Radar",
+                    "Internet_Radar",
+                    "Servicios_Radar"
+                ]
+            ],
+            on="Nombre_Propiedad",
+            how="left"
+        )
+    )
+
+    for col in [
+        "Aseo_Radar",
+        "Internet_Radar",
+        "Servicios_Radar"
+    ]:
+
+        resultado[col] = (
+            pd.to_numeric(
+                resultado[col],
+                errors="coerce"
+            )
+            .fillna(0)
+        )
+
+    resultado[
+        "Airbnb_Comparable_Mensual"
+    ] = (
+        resultado["Ingreso_Mensual_Radar"]
+        - resultado["Aseo_Radar"]
+        - resultado["Internet_Radar"]
+        - resultado["Servicios_Radar"]
+    )
+
+    return resultado[
+        [
+            "Nombre_Propiedad",
+            "Ingreso_Mensual_Radar",
+            "Airbnb_Comparable_Mensual"
+        ]
+    ]
 
 # CAPITAL PROPIO / CASH + CDT HIPOTÉTICO
 # ============================================================
@@ -4258,10 +4629,10 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
         html_decision = """
         <div class="radar-decision-panel">
             <div class="radar-decision-title">🎯 Radar de decisión</div>
-            <div class="radar-decision-subtitle">Resumen ejecutivo del estudio de mercado: valor estimado, renta, proyección, liquidez y decisión estratégica.</div>
+            <div class="radar-decision-subtitle">Resumen ejecutivo: mercado estimado + Airbnb comparable + proyección + liquidez + decisión estratégica.</div>
             <table class="radar-decision-table">
                 <thead><tr>
-                    <th>Activo</th><th>Valor estimado</th><th>Renta amoblada</th><th>Proyección</th><th>Venta</th><th>Decisión</th><th>Lectura</th>
+                    <th>Activo</th><th>Valor estimado</th><th>Renta amoblada</th><th>Airbnb comparable / mes</th><th>Proyección</th><th>Venta</th><th>Decisión</th><th>Lectura</th>
                 </tr></thead><tbody>
         """
         orden_decision = {
@@ -4276,6 +4647,18 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
         estudio["Orden"] = estudio["ID_Activo"].map(orden_decision).fillna(99)
         estudio = estudio.sort_values(["Orden", "Nombre_Entidad"])
 
+        comparable_radar = calcular_airbnb_comparable_radar(
+            df,
+            fecha_fin
+        )
+
+        estudio = estudio.merge(
+            comparable_radar,
+            left_on="Nombre_Entidad",
+            right_on="Nombre_Propiedad",
+            how="left"
+        )
+
         for _, row in estudio.iterrows():
             decision, lectura = extraer_decision_y_lectura(row["Rol_Portafolio"])
             valor_estimado = rango_millones(row["Venta_Min_M"], row["Venta_Max_M"])
@@ -4283,21 +4666,50 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
             proyeccion = "—" if pd.isna(row["Proyeccion_Zona_5A"]) else f"{float(row['Proyeccion_Zona_5A']):.1f}/10"
             venta = str(row["Facilidad_Venta"] or "—")
 
+            comparable = (
+                row["Airbnb_Comparable_Mensual"]
+                if "Airbnb_Comparable_Mensual" in row.index
+                else pd.NA
+            )
+
+            comparable_txt = (
+                dinero_corto(comparable)
+                if pd.notna(comparable)
+                else "—"
+            )
+
+            lectura_radar = lectura or "—"
+
+            if row["ID_Activo"] == "ENT-0004":
+                lectura_radar = (
+                    f"{lectura_radar} "
+                    "Uso familiar: el ingreso Airbnb comparable "
+                    "no es representativo de su capacidad real de renta."
+                )
+
             html_decision += f"""
                 <tr>
                     <td>{row['Nombre_Entidad']}</td>
                     <td><span class="radar-decision-value">{valor_estimado}</span></td>
                     <td><span class="radar-decision-value">{renta_amoblada}</span></td>
+                    <td><span class="radar-decision-value">{comparable_txt}</span></td>
                     <td><span class="radar-decision-projection">{proyeccion}</span></td>
                     <td><span class="radar-decision-badge {clase_venta(venta)}">{venta}</span></td>
                     <td><span class="radar-decision-badge {clase_decision(decision)}">{decision or '—'}</span></td>
-                    <td>{lectura or '—'}</td>
+                    <td>{escape_html(lectura_radar)}</td>
                 </tr>
             """
 
         html_decision += """
                 </tbody>
             </table>
+            <div class="radar-note">
+                <b>Airbnb comparable:</b> ingreso bruto promedio YTD menos aseo/limpieza,
+                internet/wifi y servicios públicos identificados. Los gastos prorrateados se
+                consolidan primero por mes y luego se promedian solo los meses con información.
+                En <b>Tempus 49</b> se muestra solo como referencia: el inmueble tiene uso familiar
+                y ese ingreso Airbnb observado no representa su capacidad real de renta.
+            </div>
         </div>
         """
 
