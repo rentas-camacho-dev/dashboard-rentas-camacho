@@ -3738,8 +3738,18 @@ if st.session_state.vista_airbnb == "Propiedades":
     # El valor real de ese mes es:
     #   $42k + $42k + $42k = $126k
     #
-    # Primero sumamos TODOS los registros de la misma categoría
-    # dentro de cada mes.
+    # Primero tomamos únicamente los gastos que fueron
+    # clasificados como comparables.
+    df_gastos_clasificados = (
+        df_anual_promedio[
+            df_anual_promedio["_Categoria_Comparable"] != ""
+        ]
+        .copy()
+    )
+
+    # Luego sumamos TODOS los registros de la misma categoría
+    # dentro de cada mes. Los prorrateos del socio se consolidan
+    # antes de calcular el promedio.
     df_gastos_clasificados["_Mes_Gasto"] = (
         df_gastos_clasificados["Fecha"]
         .dt.to_period("M")
