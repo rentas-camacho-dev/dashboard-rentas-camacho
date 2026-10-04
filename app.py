@@ -3616,7 +3616,7 @@ if st.session_state.vista_airbnb == "Propiedades":
 </div>
 
 <div class="investment-subtitle">
-Capital propio · inversión total · valor actual · deuda · patrimonio neto · flujo histórico · retorno anualizado · benchmark CDT
+Capital propio · inversión total · valor actual · deuda · patrimonio neto · ingreso promedio mensual · flujo histórico · retorno anualizado · benchmark CDT
 </div>
 
 <table class="investment-table">
@@ -3629,6 +3629,7 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
     <th>Deuda actual</th>
     <th>Patrimonio neto</th>
     <th>Flujo histórico</th>
+    <th>Ingreso prom./mes</th>
     <th>Flujo prom./mes</th>
     <th>Retorno anualizado</th>
     <th>CDT promedio</th>
@@ -3678,6 +3679,7 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
     <td>{valor_tabla(row["Saldo_Usado"] if "Saldo_Usado" in row.index else row["Saldo_Actual"])}</td>
     <td><span class="investment-money">{valor_tabla(row["Patrimonio_Actual"])}</span></td>
     <td>{flujo_html}</td>
+    <td>{valor_tabla(row["Ingreso_Mensual_Promedio"])}</td>
     <td>{valor_tabla(row["Flujo_Mensual_Promedio"])}</td>
     <td>{retorno_html}</td>
     <td>{cdt_html}</td>
