@@ -3905,6 +3905,20 @@ if st.session_state.vista_airbnb == "Propiedades":
     # --------------------------------------------------------
     # 8. AIRBNB COMPARABLE
     # --------------------------------------------------------
+    # Si una propiedad no tiene registros de una categoría,
+    # esa categoría vale 0 para el cálculo.
+    for columna in [
+        "Aseo_Mensual_Medio_Anual",
+        "Internet_Mensual_Medio_Anual",
+        "Servicios_Mensual_Medio_Anual"
+    ]:
+        promedio_anual[columna] = (
+            pd.to_numeric(
+                promedio_anual[columna],
+                errors="coerce"
+            ).fillna(0)
+        )
+
     promedio_anual["Airbnb_Comparable_Mensual"] = (
         promedio_anual["Ingreso_Mensual_Medio_Anual"]
         - promedio_anual["Aseo_Mensual_Medio_Anual"]
@@ -3929,12 +3943,6 @@ if st.session_state.vista_airbnb == "Propiedades":
                 "Nombre_Propiedad",
                 "Ingreso_Anual_YTD",
                 "Ingreso_Mensual_Medio_Anual",
-                "Aseo_Mensual_Medio_Anual",
-                "Internet_Mensual_Medio_Anual",
-                "Servicios_Mensual_Medio_Anual",
-                "Aseo_Meses_Con_Informacion",
-                "Internet_Meses_Con_Informacion",
-                "Servicios_Meses_Con_Informacion",
                 "Airbnb_Comparable_Mensual"
             ]
         ],
@@ -4125,9 +4133,6 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
     <th>Patrimonio neto</th>
     <th>Flujo histórico</th>
     <th>Ingreso prom./mes</th>
-    <th>Aseo prom./mes</th>
-    <th>Internet prom./mes</th>
-    <th>Servicios prom./mes</th>
     <th>Airbnb comparable / mes</th>
     <th>Flujo prom./mes</th>
     <th>Retorno anualizado</th>
@@ -4179,9 +4184,6 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
     <td><span class="investment-money">{valor_tabla(row["Patrimonio_Actual"])}</span></td>
     <td>{flujo_html}</td>
     <td>{valor_tabla(row["Ingreso_Mensual_Medio_Anual"])}</td>
-    <td>{valor_tabla(row["Aseo_Mensual_Medio_Anual"])}</td>
-    <td>{valor_tabla(row["Internet_Mensual_Medio_Anual"])}</td>
-    <td>{valor_tabla(row["Servicios_Mensual_Medio_Anual"])}</td>
     <td>{valor_tabla(row["Airbnb_Comparable_Mensual"])}</td>
     <td>{valor_tabla(row["Flujo_Mensual_Promedio"])}</td>
     <td>{retorno_html}</td>
@@ -4201,7 +4203,7 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
 ">
     Inversión total = capital propio + financiación incluida en la inversión registrada.
     Patrimonio neto = valor actual del activo + equipamiento − deuda actual.
-    Ingreso prom./mes = ingreso bruto promedio del año seleccionado.
+    Ingreso prom./mes = ingreso bruto promedio del año seleccionado; los gastos comparables se consolidan por mes y se promedian solo los meses con información.
     Airbnb comparable = ingreso prom./mes − aseos − internet − servicios públicos.
     No se descuenta administración/inmobiliaria en esta comparación.
     CDT promedio = benchmark histórico ponderado por capital y tiempo de exposición.
@@ -4215,492 +4217,6 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
         linea.strip()
         for linea in html_tabla.splitlines()
     ).strip()
-
-    # ========================================================
-    # AUDITORÍA MENSUAL — TORRE ACQUA
-    # ========================================================
-    # Esta sección NO cambia el cálculo del comparable.
-    # Su único objetivo es permitir revisar mes a mes qué gastos
-    # fueron identificados como ASEO, INTERNET y SERVICIOS.
-    #
-    # Así podemos comprobar por qué, por ejemplo, Internet Acqua
-    # aparece en ~$48k promedio y detectar si faltan movimientos.
-
-    st.markdown(
-        """
-<div class="investment-panel" style="margin-top:10px;">
-    <div class="investment-title">🔎 Auditoría mensual — Torre Acqua</div>
-    <div class="investment-subtitle">
-        Revisión de movimientos reales del año seleccionado para comprobar
-        el promedio de internet, aseo y servicios.
-    </div>
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-    # Año y corte exactamente iguales al cálculo YTD.
-    anio_auditoria = anio_promedio
-    fecha_corte_auditoria = fecha_corte_promedio
-
-    df_acqua_auditoria = df[
-        (df["Nombre_Propiedad"] == "Torre Acqua")
-        &
-        (df["Fecha"].dt.year == anio_auditoria)
-        &
-        (df["Fecha"] <= fecha_corte_auditoria)
-        &
-        (df["Gasto"] > 0)
-    ].copy()
-
-    if not df_acqua_auditoria.empty:
-
-        for col in [
-            "Nombre_Subcategoria",
-            "Detalle",
-            "Nombre_Cuenta"
-        ]:
-            if col not in df_acqua_auditoria.columns:
-                df_acqua_auditoria[col] = ""
-
-            df_acqua_auditoria[col] = (
-                df_acqua_auditoria[col]
-                .fillna("")
-                .astype(str)
-                .str.strip()
-            )
-
-        df_acqua_auditoria["Texto_Auditoria"] = (
-            df_acqua_auditoria["Nombre_Subcategoria"]
-            + " "
-            + df_acqua_auditoria["Detalle"]
-            + " "
-            + df_acqua_auditoria["Nombre_Cuenta"]
-        ).str.lower()
-
-        # Clasificación exclusiva, igual que la metodología del comparable.
-        categoria = pd.Series(
-            "",
-            index=df_acqua_auditoria.index,
-            dtype="object"
-        )
-
-        no_comparable = df_acqua_auditoria[
-            "Texto_Auditoria"
-        ].str.contains(
-            r"\badministraci[oó]n\b|\binmobiliaria\b|\bcomisi[oó]n\b",
-            regex=True,
-            na=False
-        )
-
-        validos = ~no_comparable
-
-        mask_aseo = (
-            validos
-            &
-            df_acqua_auditoria[
-                "Texto_Auditoria"
-            ].str.contains(
-                r"\baseo\b|\blimpieza\b|\bcleaning\b",
-                regex=True,
-                na=False
-            )
-        )
-        categoria.loc[mask_aseo] = "ASEO"
-
-        mask_internet = (
-            validos
-            &
-            (categoria == "")
-            &
-            df_acqua_auditoria[
-                "Texto_Auditoria"
-            ].str.contains(
-                r"\binternet\b|\bwifi\b|\bwi[\s-]?fi\b",
-                regex=True,
-                na=False
-            )
-        )
-        categoria.loc[mask_internet] = "INTERNET"
-
-        mask_servicios = (
-            validos
-            &
-            (categoria == "")
-            &
-            df_acqua_auditoria[
-                "Texto_Auditoria"
-            ].str.contains(
-                (
-                    r"\bservicios?\s+p[úu]blicos?\b"
-                    r"|\benerg[ií]a\b"
-                    r"|\bagua\b"
-                    r"|\bacueducto\b"
-                    r"|\belectricidad\b"
-                    r"|\bluz\b"
-                    r"|\bgas\b"
-                ),
-                regex=True,
-                na=False
-            )
-        )
-        categoria.loc[mask_servicios] = "SERVICIOS"
-
-        df_acqua_auditoria["Categoria_Auditoria"] = categoria
-        df_acqua_auditoria["Mes"] = (
-            df_acqua_auditoria["Fecha"]
-            .dt.to_period("M")
-            .astype(str)
-        )
-
-        # ----------------------------------------------------
-        # RESUMEN MENSUAL
-        # ----------------------------------------------------
-        resumen_mensual = (
-            df_acqua_auditoria
-            .assign(
-                Aseo=df_acqua_auditoria["Gasto"].where(
-                    df_acqua_auditoria["Categoria_Auditoria"] == "ASEO",
-                    0
-                ),
-                Internet=df_acqua_auditoria["Gasto"].where(
-                    df_acqua_auditoria["Categoria_Auditoria"] == "INTERNET",
-                    0
-                ),
-                Servicios=df_acqua_auditoria["Gasto"].where(
-                    df_acqua_auditoria["Categoria_Auditoria"] == "SERVICIOS",
-                    0
-                )
-            )
-            .groupby("Mes", as_index=False)[
-                ["Aseo", "Internet", "Servicios"]
-            ]
-            .sum()
-        )
-
-        # Rehacer la secuencia mensual completa Jan -> corte.
-        meses = pd.period_range(
-            start=f"{anio_auditoria}-01",
-            end=fecha_corte_auditoria.to_period("M"),
-            freq="M"
-        ).astype(str)
-
-        resumen_mensual = (
-            pd.DataFrame({"Mes": meses})
-            .merge(
-                resumen_mensual,
-                on="Mes",
-                how="left"
-            )
-            .fillna(0)
-        )
-
-        # Ingreso mensual bruto de Acqua para comprobar que todas
-        # las magnitudes usan el mismo período.
-        ingreso_mensual = (
-            df[
-                (df["Nombre_Propiedad"] == "Torre Acqua")
-                &
-                (df["Fecha"].dt.year == anio_auditoria)
-                &
-                (df["Fecha"] <= fecha_corte_auditoria)
-            ]
-            .assign(
-                Mes=lambda x: x["Fecha"].dt.to_period("M").astype(str)
-            )
-            .groupby("Mes", as_index=False)["Ingreso"]
-            .sum()
-        )
-
-        resumen_mensual = (
-            resumen_mensual
-            .merge(
-                ingreso_mensual,
-                on="Mes",
-                how="left"
-            )
-            .fillna(0)
-        )
-
-        resumen_mensual["Comparable_solo_aseo"] = (
-            resumen_mensual["Ingreso"]
-            - resumen_mensual["Aseo"]
-        )
-
-        resumen_mensual["Comparable_sin_servicios"] = (
-            resumen_mensual["Ingreso"]
-            - resumen_mensual["Aseo"]
-            - resumen_mensual["Internet"]
-        )
-
-        resumen_mensual["Comparable_completo"] = (
-            resumen_mensual["Ingreso"]
-            - resumen_mensual["Aseo"]
-            - resumen_mensual["Internet"]
-            - resumen_mensual["Servicios"]
-        )
-
-        meses_utilizados = len(resumen_mensual)
-
-        # Promedio del ingreso: por meses.
-        ingreso_promedio_auditoria = (
-            resumen_mensual["Ingreso"].sum()
-            / meses_utilizados
-            if meses_utilizados
-            else 0
-        )
-
-        # Promedio del ingreso: por meses del período.
-        ingreso_promedio_auditoria = (
-            resumen_mensual["Ingreso"].sum()
-            / meses_utilizados
-            if meses_utilizados
-            else 0
-        )
-
-        # Promedio de gastos:
-        # 1) sumar prorrateos del mismo mes;
-        # 2) promediar SOLO los meses con información.
-        df_acqua_auditoria["_Mes_Auditoria"] = (
-            df_acqua_auditoria["Fecha"]
-            .dt.to_period("M")
-            .astype(str)
-        )
-
-        gastos_mensuales_auditoria = (
-            df_acqua_auditoria
-            .groupby(
-                [
-                    "Categoria_Auditoria",
-                    "_Mes_Auditoria"
-                ],
-                as_index=False
-            )["Gasto"]
-            .sum()
-        )
-
-        def promedio_meses_con_info(categoria):
-            serie = gastos_mensuales_auditoria.loc[
-                gastos_mensuales_auditoria[
-                    "Categoria_Auditoria"
-                ] == categoria,
-                "Gasto"
-            ]
-            return (
-                float(serie.mean())
-                if not serie.empty
-                else 0
-            )
-
-        def cantidad_meses_con_info(categoria):
-            return int(
-                gastos_mensuales_auditoria.loc[
-                    gastos_mensuales_auditoria[
-                        "Categoria_Auditoria"
-                    ] == categoria,
-                    "_Mes_Auditoria"
-                ].nunique()
-            )
-
-        aseo_prom_aud = promedio_meses_con_info("ASEO")
-        internet_prom_aud = promedio_meses_con_info("INTERNET")
-        servicios_prom_aud = promedio_meses_con_info("SERVICIOS")
-
-        aseo_meses_aud = cantidad_meses_con_info("ASEO")
-        internet_meses_aud = cantidad_meses_con_info("INTERNET")
-        servicios_meses_aud = cantidad_meses_con_info("SERVICIOS")
-
-        comparable_solo_aseo_aud = (
-            ingreso_promedio_auditoria
-            - aseo_prom_aud
-        )
-
-        comparable_sin_servicios_aud = (
-            ingreso_promedio_auditoria
-            - aseo_prom_aud
-            - internet_prom_aud
-        )
-
-        comparable_completo_aud = (
-            ingreso_promedio_auditoria
-            - aseo_prom_aud
-            - internet_prom_aud
-            - servicios_prom_aud
-        )
-
-        # Mostrar promedio del año al final.
-        fila_promedio = pd.DataFrame([{
-            "Mes": "PROMEDIO",
-            "Ingreso": ingreso_promedio_auditoria,
-            "Aseo": aseo_prom_aud,
-            "Internet": internet_prom_aud,
-            "Servicios": servicios_prom_aud,
-            "Meses Internet": internet_meses_aud,
-            "Meses Aseo": aseo_meses_aud,
-            "Meses Servicios": servicios_meses_aud,
-            "Comparable_solo_aseo": comparable_solo_aseo_aud,
-            "Comparable_sin_servicios": comparable_sin_servicios_aud,
-            "Comparable_completo": comparable_completo_aud
-        }])
-
-        resumen_mensual_mostrar = pd.concat(
-            [resumen_mensual, fila_promedio],
-            ignore_index=True
-        )
-
-        columnas_dinero = [
-            "Ingreso",
-            "Aseo",
-            "Internet",
-            "Servicios",
-            "Meses Internet",
-            "Meses Aseo",
-            "Meses Servicios",
-            "Comparable_solo_aseo",
-            "Comparable_sin_servicios",
-            "Comparable_completo"
-        ]
-
-        for col in columnas_dinero:
-            resumen_mensual_mostrar[col] = (
-                resumen_mensual_mostrar[col]
-                .apply(dinero_corto)
-            )
-
-        resumen_mensual_mostrar = (
-            resumen_mensual_mostrar
-            .rename(
-                columns={
-                    "Mes": "Mes",
-                    "Ingreso": "Ingreso bruto",
-                    "Aseo": "Aseo",
-                    "Internet": "Internet",
-                    "Servicios": "Servicios",
-                    "Comparable_solo_aseo": "Solo aseo",
-                    "Comparable_sin_servicios": "Sin servicios",
-                    "Comparable_completo": "Comparable"
-                }
-            )
-        )
-
-        st.dataframe(
-            resumen_mensual_mostrar,
-            use_container_width=True,
-            hide_index=True
-        )
-
-        # ----------------------------------------------------
-        # DETALLE DE MOVIMIENTOS DE INTERNET DETECTADOS
-        # ----------------------------------------------------
-        st.markdown(
-            "**Movimientos de internet detectados en Torre Acqua**",
-            unsafe_allow_html=True
-        )
-
-        detalle_internet = df_acqua_auditoria[
-            df_acqua_auditoria["Categoria_Auditoria"] == "INTERNET"
-        ].copy()
-
-        # Candidatos adicionales: telecomunicaciones/proveedores que
-        # podrían ser internet aunque no contengan literalmente
-        # "internet" o "wifi".
-        candidatos_proveedor = (
-            df_acqua_auditoria[
-                df_acqua_auditoria["Categoria_Auditoria"] == ""
-            ]
-            .loc[
-                lambda x: x["Texto_Auditoria"].str.contains(
-                    r"\bclaro\b|\bmovistar\b|\btigo\b|\betb\b|\bune\b|\btelecom\b|\bfibra\b",
-                    regex=True,
-                    na=False
-                )
-            ]
-            .copy()
-        )
-
-        if detalle_internet.empty:
-            st.info(
-                "No se detectaron movimientos con las palabras "
-                "'internet', 'wifi' o 'wi-fi'."
-            )
-        else:
-            cols_detalle = [
-                "Fecha",
-                "Nombre_Subcategoria",
-                "Detalle",
-                "Nombre_Cuenta",
-                "Gasto"
-            ]
-            for c in cols_detalle:
-                if c not in detalle_internet.columns:
-                    detalle_internet[c] = ""
-
-            detalle_internet["Gasto"] = (
-                detalle_internet["Gasto"]
-                .apply(dinero_corto)
-            )
-
-            st.dataframe(
-                detalle_internet[
-                    cols_detalle
-                ].rename(
-                    columns={
-                        "Fecha": "Fecha",
-                        "Nombre_Subcategoria": "Subcategoría",
-                        "Detalle": "Detalle",
-                        "Nombre_Cuenta": "Cuenta",
-                        "Gasto": "Gasto"
-                    }
-                ),
-                use_container_width=True,
-                hide_index=True
-            )
-
-        if not candidatos_proveedor.empty:
-            st.markdown(
-                "**Candidatos por proveedor que podrían ser internet "
-                "(revisión manual)**",
-                unsafe_allow_html=True
-            )
-
-            candidatos_proveedor["Gasto"] = (
-                candidatos_proveedor["Gasto"]
-                .apply(dinero_corto)
-            )
-
-            st.dataframe(
-                candidatos_proveedor[
-                    [
-                        "Fecha",
-                        "Nombre_Subcategoria",
-                        "Detalle",
-                        "Nombre_Cuenta",
-                        "Gasto"
-                    ]
-                ].rename(
-                    columns={
-                        "Fecha": "Fecha",
-                        "Nombre_Subcategoria": "Subcategoría",
-                        "Detalle": "Detalle",
-                        "Nombre_Cuenta": "Cuenta",
-                        "Gasto": "Gasto"
-                    }
-                ),
-                use_container_width=True,
-                hide_index=True
-            )
-
-    else:
-        st.info(
-            "No hay movimientos de gasto de Torre Acqua "
-            "para el período de auditoría seleccionado."
-        )
-
-    st.markdown(
-        html_tabla,
-        unsafe_allow_html=True
-    )
-
 
 # ============================================================
 # VISTA ANÁLISIS — RADAR INMOBILIARIO
