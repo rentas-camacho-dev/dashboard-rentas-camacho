@@ -1334,6 +1334,18 @@ def cargar_estudio_mercado_inmobiliario():
         "Renta_Sin_Amoblar_Min_M", "Renta_Sin_Amoblar_Max_M",
         "Proyeccion_Zona_5A"
     ]
+
+    # La hoja de Google Sheets usa coma decimal en la proyección
+    # (ej. 7,8 y 7,5). BigQuery la puede entregar como STRING.
+    # Convertimos coma decimal a punto antes de pasar a número.
+    estudio["Proyeccion_Zona_5A"] = (
+        estudio["Proyeccion_Zona_5A"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .str.replace(",", ".", regex=False)
+    )
+
     for col in numeric_cols:
         estudio[col] = pd.to_numeric(estudio[col], errors="coerce")
     text_cols = [
