@@ -3450,15 +3450,21 @@ if st.session_state.vista_airbnb == "Propiedades":
     # ========================================================
     # PROMEDIO MENSUAL DEL AÑO DEL FILTRO — YTD
     # ========================================================
+    # El indicador mostrado en la tabla corresponde al ingreso
+    # promedio mensual del año que se está consultando.
+    #
     # Año actual:
     #   se usan los meses completos cerrados.
-    #   Ejemplo: octubre 2026 -> enero-septiembre = 9 meses.
+    #   Ejemplo: octubre 2026 -> enero-septiembre / 9.
     #
-    # Años anteriores:
-    #   se considera el año completo = 12 meses.
+    # Año cerrado:
+    #   enero-diciembre / 12.
     #
-    # El ingreso promedio mensual mostrado en la tabla
-    # corresponde al ingreso acumulado del año / meses corridos.
+    # IMPORTANTE:
+    # Acqua y Tempus 49 comparten una base de ingresos combinados.
+    # La distribución se hace UNA SOLA VEZ sobre el total anual
+    # agregado, evitando multiplicar el ingreso por cada movimiento.
+
     anio_promedio = int(pd.Timestamp(fecha_fin).year)
 
     if anio_promedio == int(hoy.year):
@@ -3476,32 +3482,7 @@ if st.session_state.vista_airbnb == "Propiedades":
         & (df["Fecha"] <= fecha_corte_promedio)
     ].copy()
 
-    ingreso_combinado_anual = df_anual_promedio.loc[
-        df_anual_promedio["Nombre_Propiedad"].isin(
-            ["Torre Acqua", "Tempus 49"]
-        ),
-        "Ingreso"
-    ].sum()
-
-    proporcion_acqua = 0.703221459479914
-    proporcion_tempus = 0.296778540520086
-
-    # Reasignación anual de Acqua + Tempus con la misma proporción
-    # utilizada en el cálculo histórico.
-    df_anual_promedio.loc[
-        df_anual_promedio["Nombre_Propiedad"] == "Torre Acqua",
-        "Ingreso"
-    ] = (
-        ingreso_combinado_anual * proporcion_acqua
-    )
-
-    df_anual_promedio.loc[
-        df_anual_promedio["Nombre_Propiedad"] == "Tempus 49",
-        "Ingreso"
-    ] = (
-        ingreso_combinado_anual * proporcion_tempus
-    )
-
+    # Primero agregamos los ingresos reales del año por propiedad.
     promedio_anual = (
         df_anual_promedio
         .groupby("Nombre_Propiedad", as_index=False)["Ingreso"]
@@ -3509,21 +3490,34 @@ if st.session_state.vista_airbnb == "Propiedades":
         .rename(columns={"Ingreso": "Ingreso_Anual_YTD"})
     )
 
+    # Corrección Acqua + Tempus 49:
+    # el ingreso combinado se reparte sobre el TOTAL agregado,
+    # no fila por fila.
+    mask_acqua_tempus = promedio_anual["Nombre_Propiedad"].isin(
+        ["Torre Acqua", "Tempus 49"]
+    )
+
+    ingreso_combinado_anual = promedio_anual.loc[
+        mask_acqua_tempus,
+        "Ingreso_Anual_YTD"
+    ].sum()
+
+    proporcion_acqua = 0.703221459479914
+    proporcion_tempus = 0.296778540520086
+
+    promedio_anual.loc[
+        promedio_anual["Nombre_Propiedad"] == "Torre Acqua",
+        "Ingreso_Anual_YTD"
+    ] = ingreso_combinado_anual * proporcion_acqua
+
+    promedio_anual.loc[
+        promedio_anual["Nombre_Propiedad"] == "Tempus 49",
+        "Ingreso_Anual_YTD"
+    ] = ingreso_combinado_anual * proporcion_tempus
+
     promedio_anual["Ingreso_Mensual_Medio_Anual"] = (
         promedio_anual["Ingreso_Anual_YTD"]
         / meses_promedio_anual
-    )
-
-    tabla = tabla.merge(
-        promedio_anual[
-            [
-                "Nombre_Propiedad",
-                "Ingreso_Anual_YTD",
-                "Ingreso_Mensual_Medio_Anual"
-            ]
-        ],
-        on="Nombre_Propiedad",
-        how="left"
     )
 
     tabla = tabla.merge(
