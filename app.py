@@ -1187,8 +1187,6 @@ def cargar_datos_financieros():
         Nombre_Socio,
         Nombre_Tipo,
         Nombre_Subcategoria,
-        Detalle,
-        Nombre_Cuenta,
         Ingreso,
         Gasto
     FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
@@ -1216,9 +1214,7 @@ def cargar_datos_financieros():
         "Nombre_Propiedad",
         "Ciudad",
         "Nombre_Socio",
-        "Nombre_Subcategoria",
-        "Detalle",
-        "Nombre_Cuenta"
+        "Nombre_Subcategoria"
     ]:
 
         df[col] = (
@@ -3463,35 +3459,25 @@ if st.session_state.vista_airbnb == "Propiedades":
     #
     # 2. Airbnb comparable / mes
     #    Ingreso bruto promedio
-    #    - aseos / limpieza
-    #    - internet / wifi
-    #    - servicios públicos identificados
+    #    - aseos
+    #    - internet
+    #    - servicios públicos
     #
-    # NO se descuenta:
-    #    - administración
-    #    - inmobiliaria
-    #    - comisiones
-    #    - otros gastos no comparables
+    # NO se descuenta administración/inmobiliaria porque ese costo
+    # también puede existir en el modelo de renta tradicional.
     #
-    # Cada gasto comparable se clasifica UNA SOLA VEZ.
-    # La clasificación usa Subcategoría + Detalle + Cuenta.
-    #
-    # Año actual: meses completos cerrados.
+    # Para el año actual se usan los meses completos cerrados.
     # Ejemplo: octubre 2026 -> enero-septiembre / 9.
     #
-    # Año cerrado -> enero-diciembre / 12.
+    # Para años cerrados -> enero-diciembre / 12.
 
-    anio_promedio = int(
-        pd.Timestamp(fecha_fin).year
-    )
+    anio_promedio = int(pd.Timestamp(fecha_fin).year)
 
     if anio_promedio == int(hoy.year):
-
         meses_promedio_anual = max(
             1,
             int(hoy.month) - 1
         )
-
         fecha_corte_promedio = (
             pd.Timestamp(
                 hoy.year,
@@ -3500,11 +3486,8 @@ if st.session_state.vista_airbnb == "Propiedades":
             )
             + pd.offsets.MonthEnd(0)
         )
-
     else:
-
         meses_promedio_anual = 12
-
         fecha_corte_promedio = pd.Timestamp(
             anio_promedio,
             12,
@@ -3513,132 +3496,21 @@ if st.session_state.vista_airbnb == "Propiedades":
 
     df_anual_promedio = df[
         (df["Fecha"].dt.year == anio_promedio)
-        &
-        (
+        & (
             df["Fecha"]
             <= fecha_corte_promedio
         )
     ].copy()
 
-    # --------------------------------------------------------
-    # 1. TEXTO UNIFICADO PARA CLASIFICACIÓN
-    # --------------------------------------------------------
-    for col in [
-        "Nombre_Subcategoria",
-        "Detalle",
-        "Nombre_Cuenta"
-    ]:
-
-        df_anual_promedio[col] = (
-            df_anual_promedio[col]
-            .fillna("")
-            .astype(str)
-            .str.strip()
-        )
-
-    df_anual_promedio["_Texto_Gasto"] = (
+    df_anual_promedio["Nombre_Subcategoria"] = (
         df_anual_promedio["Nombre_Subcategoria"]
-        + " "
-        + df_anual_promedio["Detalle"]
-        + " "
-        + df_anual_promedio["Nombre_Cuenta"]
-    ).str.lower()
-
-    # --------------------------------------------------------
-    # 2. EXCLUIR GASTOS NO COMPARABLES
-    # --------------------------------------------------------
-    mascara_no_comparable = (
-        df_anual_promedio["_Texto_Gasto"].str.contains(
-            r"\badministraci[oó]n\b|\binmobiliaria\b|\bcomisi[oó]n\b",
-            case=False,
-            regex=True,
-            na=False
-        )
-    )
-
-    gastos_validos = (
-        (df_anual_promedio["Gasto"] > 0)
-        &
-        (~mascara_no_comparable)
+        .fillna("")
+        .astype(str)
+        .str.strip()
     )
 
     # --------------------------------------------------------
-    # 3. CLASIFICACIÓN EXCLUSIVA
-    # --------------------------------------------------------
-    categoria_gasto = pd.Series(
-        "",
-        index=df_anual_promedio.index,
-        dtype="object"
-    )
-
-    # ASEO / LIMPIEZA
-    mascara_aseo = (
-        gastos_validos
-        &
-        df_anual_promedio["_Texto_Gasto"].str.contains(
-            r"\baseo\b|\blimpieza\b|\bcleaning\b",
-            case=False,
-            regex=True,
-            na=False
-        )
-    )
-
-    categoria_gasto.loc[
-        mascara_aseo
-    ] = "ASEO"
-
-    # INTERNET / WIFI
-    mascara_internet = (
-        gastos_validos
-        &
-        (categoria_gasto == "")
-        &
-        df_anual_promedio["_Texto_Gasto"].str.contains(
-            r"\binternet\b|\bwifi\b|\bwi[\s-]?fi\b",
-            case=False,
-            regex=True,
-            na=False
-        )
-    )
-
-    categoria_gasto.loc[
-        mascara_internet
-    ] = "INTERNET"
-
-    # SERVICIOS PÚBLICOS
-    # Se usan palabras completas para no capturar cosas como
-    # "gasolina" cuando aparece "gas".
-    mascara_servicios = (
-        gastos_validos
-        &
-        (categoria_gasto == "")
-        &
-        df_anual_promedio["_Texto_Gasto"].str.contains(
-            (
-                r"\bservicios?\s+p[úu]blicos?\b"
-                r"|\benerg[ií]a\b"
-                r"|\bagua\b"
-                r"|\bacueducto\b"
-                r"|\belectricidad\b"
-                r"|\bluz\b"
-                r"|\bgas\b"
-            ),
-            case=False,
-            regex=True,
-            na=False
-        )
-    )
-
-    categoria_gasto.loc[
-        mascara_servicios
-    ] = "SERVICIOS"
-
-    df_anual_promedio["_Categoria_Comparable"] = (
-        categoria_gasto
-    )
-
-    # --------------------------------------------------------
-    # 4. INGRESO BRUTO ANUAL POR PROPIEDAD
+    # 1. INGRESO BRUTO ANUAL POR PROPIEDAD
     # --------------------------------------------------------
     promedio_anual = (
         df_anual_promedio
@@ -3656,61 +3528,93 @@ if st.session_state.vista_airbnb == "Propiedades":
     )
 
     # --------------------------------------------------------
-    # 5. GASTOS COMPARABLES POR PROPIEDAD
+    # 2. GASTOS QUE SE ELIMINAN SOLO PARA LA COMPARACIÓN
     # --------------------------------------------------------
-    gastos_comparables = (
+    #
+    # Aseo / limpieza
+    mascara_aseo = (
+        (df_anual_promedio["Gasto"] > 0)
+        &
         df_anual_promedio[
-            df_anual_promedio[
-                "_Categoria_Comparable"
-            ] != ""
-        ]
-        .groupby(
-            [
+            "Nombre_Subcategoria"
+        ].str.contains(
+            r"aseo|limpieza|cleaning",
+            case=False,
+            regex=True,
+            na=False
+        )
+    )
+
+    # Internet
+    mascara_internet = (
+        (df_anual_promedio["Gasto"] > 0)
+        &
+        df_anual_promedio[
+            "Nombre_Subcategoria"
+        ].str.contains(
+            r"internet|wifi|wi-fi",
+            case=False,
+            regex=True,
+            na=False
+        )
+    )
+
+    # Servicios públicos.
+    # No usamos la palabra "servicio" sola para evitar capturar
+    # conceptos ajenos a servicios públicos.
+    mascara_servicios = (
+        (df_anual_promedio["Gasto"] > 0)
+        &
+        df_anual_promedio[
+            "Nombre_Subcategoria"
+        ].str.contains(
+            r"servicios? públicos?|energ[ií]a|agua|acueducto|gas|electricidad|luz",
+            case=False,
+            regex=True,
+            na=False
+        )
+    )
+
+    def sumar_gasto_mensual(mascara, nombre):
+        resultado = (
+            df_anual_promedio.loc[
+                mascara
+            ]
+            .groupby(
                 "Nombre_Propiedad",
-                "_Categoria_Comparable"
-            ],
-            as_index=False
-        )["Gasto"]
-        .sum()
+                as_index=False
+            )["Gasto"]
+            .sum()
+            .rename(
+                columns={
+                    "Gasto":
+                        nombre
+                }
+            )
+        )
+
+        return resultado
+
+    aseo_anual = sumar_gasto_mensual(
+        mascara_aseo,
+        "Aseo_Anual_YTD"
     )
 
-    gastos_comparables = (
-        gastos_comparables
-        .pivot(
-            index="Nombre_Propiedad",
-            columns="_Categoria_Comparable",
-            values="Gasto"
-        )
-        .reset_index()
+    internet_anual = sumar_gasto_mensual(
+        mascara_internet,
+        "Internet_Anual_YTD"
     )
 
-    # Garantizar las tres columnas aunque no exista el gasto.
-    for columna in [
-        "ASEO",
-        "INTERNET",
-        "SERVICIOS"
-    ]:
-
-        if columna not in gastos_comparables.columns:
-            gastos_comparables[columna] = 0
-
-    gastos_comparables = (
-        gastos_comparables
-        .rename(
-            columns={
-                "ASEO":
-                    "Aseo_Anual_YTD",
-                "INTERNET":
-                    "Internet_Anual_YTD",
-                "SERVICIOS":
-                    "Servicios_Anual_YTD"
-            }
-        )
+    servicios_anual = sumar_gasto_mensual(
+        mascara_servicios,
+        "Servicios_Anual_YTD"
     )
 
     # --------------------------------------------------------
-    # 6. CORRECCIÓN ACQUA + TEMPUS 49
+    # 3. CORRECCIÓN ACQUA + TEMPUS 49
     # --------------------------------------------------------
+    # El ingreso combinado se distribuye UNA SOLA VEZ sobre el
+    # total agregado y no fila por fila.
     mask_acqua_tempus = promedio_anual[
         "Nombre_Propiedad"
     ].isin(
@@ -3752,7 +3656,7 @@ if st.session_state.vista_airbnb == "Propiedades":
     )
 
     # --------------------------------------------------------
-    # 7. PROMEDIO BRUTO MENSUAL
+    # 4. PROMEDIO BRUTO MENSUAL
     # --------------------------------------------------------
     promedio_anual[
         "Ingreso_Mensual_Medio_Anual"
@@ -3764,10 +3668,22 @@ if st.session_state.vista_airbnb == "Propiedades":
     )
 
     # --------------------------------------------------------
-    # 8. UNIR GASTOS COMPARABLES
+    # 5. GASTOS PROMEDIO MENSUAL PARA LA COMPARACIÓN
     # --------------------------------------------------------
     promedio_anual = promedio_anual.merge(
-        gastos_comparables,
+        aseo_anual,
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    promedio_anual = promedio_anual.merge(
+        internet_anual,
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    promedio_anual = promedio_anual.merge(
+        servicios_anual,
         on="Nombre_Propiedad",
         how="left"
     )
@@ -3777,18 +3693,11 @@ if st.session_state.vista_airbnb == "Propiedades":
         "Internet_Anual_YTD",
         "Servicios_Anual_YTD"
     ]:
-
         promedio_anual[columna] = (
-            pd.to_numeric(
-                promedio_anual[columna],
-                errors="coerce"
-            )
+            promedio_anual[columna]
             .fillna(0)
         )
 
-    # --------------------------------------------------------
-    # 9. PROMEDIOS MENSUALES DE LOS AJUSTES
-    # --------------------------------------------------------
     promedio_anual[
         "Aseo_Mensual_Medio_Anual"
     ] = (
@@ -3817,10 +3726,36 @@ if st.session_state.vista_airbnb == "Propiedades":
     )
 
     # --------------------------------------------------------
-    # 10. AIRBNB COMPARABLE
+    # 6. TRES ESCENARIOS DE AIRBNB COMPARABLE
     # --------------------------------------------------------
+    # Se calculan por separado para poder auditar qué está
+    # restando realmente la aplicación.
+    #
+    # A) SOLO ASEO:
+    #    bruto - aseo
+    #
+    # B) SIN SERVICIOS PÚBLICOS:
+    #    bruto - aseo - internet
+    #
+    # C) COMPLETO ACTUAL:
+    #    bruto - aseo - internet - servicios públicos
+    #
+    # Esto NO cambia todavía la lógica financiera ni elimina
+    # información de la tabla principal.
+
     promedio_anual[
-        "Airbnb_Comparable_Mensual"
+        "Airbnb_Comparable_Solo_Aseo_Mensual"
+    ] = (
+        promedio_anual[
+            "Ingreso_Mensual_Medio_Anual"
+        ]
+        - promedio_anual[
+            "Aseo_Mensual_Medio_Anual"
+        ]
+    )
+
+    promedio_anual[
+        "Airbnb_Comparable_Sin_Servicios_Mensual"
     ] = (
         promedio_anual[
             "Ingreso_Mensual_Medio_Anual"
@@ -3831,18 +3766,80 @@ if st.session_state.vista_airbnb == "Propiedades":
         - promedio_anual[
             "Internet_Mensual_Medio_Anual"
         ]
+    )
+
+    promedio_anual[
+        "Airbnb_Comparable_Mensual"
+    ] = (
+        promedio_anual[
+            "Airbnb_Comparable_Sin_Servicios_Mensual"
+        ]
         - promedio_anual[
             "Servicios_Mensual_Medio_Anual"
         ]
     )
 
-    df_anual_promedio = df_anual_promedio.drop(
-        columns=[
-            "_Texto_Gasto",
-            "_Categoria_Comparable"
-        ],
-        errors="ignore"
-    )
+    # --------------------------------------------------------
+    # AUDITORÍA DEL COMPARABLE
+    # --------------------------------------------------------
+    html_auditoria = """
+<div class="investment-panel" style="margin-top:10px;">
+    <div class="investment-title">
+        🔎 Auditoría del ingreso comparable
+    </div>
+
+    <div class="investment-subtitle">
+        Permite comprobar cuánto queda al restar solo aseo,
+        luego aseo + internet, y finalmente servicios públicos.
+    </div>
+
+    <table class="investment-table">
+        <thead>
+            <tr>
+                <th>Propiedad</th>
+                <th>Ingreso prom./mes</th>
+                <th>Aseo / mes</th>
+                <th>Internet / mes</th>
+                <th>Servicios / mes</th>
+                <th>Solo aseo</th>
+                <th>Sin serv. públicos</th>
+                <th>Comparable actual</th>
+            </tr>
+        </thead>
+        <tbody>
+"""
+
+    for _, row_a in promedio_anual.iterrows():
+
+        html_auditoria += f"""
+            <tr>
+                <td>{row_a["Nombre_Propiedad"]}</td>
+                <td>{valor_tabla(row_a["Ingreso_Mensual_Medio_Anual"])}</td>
+                <td>{valor_tabla(row_a["Aseo_Mensual_Medio_Anual"])}</td>
+                <td>{valor_tabla(row_a["Internet_Mensual_Medio_Anual"])}</td>
+                <td>{valor_tabla(row_a["Servicios_Mensual_Medio_Anual"])}</td>
+                <td><span class="investment-money">{valor_tabla(row_a["Airbnb_Comparable_Solo_Aseo_Mensual"])}</span></td>
+                <td><span class="investment-money">{valor_tabla(row_a["Airbnb_Comparable_Sin_Servicios_Mensual"])}</span></td>
+                <td><span class="investment-money">{valor_tabla(row_a["Airbnb_Comparable_Mensual"])}</span></td>
+            </tr>
+"""
+
+    html_auditoria += """
+        </tbody>
+    </table>
+
+    <div style="
+        margin-top:8px;
+        font-size:8px;
+        color:#8A98AA;
+    ">
+        Solo aseo = ingreso bruto − aseo.
+        Sin servicios públicos = ingreso bruto − aseo − internet.
+        Comparable actual = ingreso bruto − aseo − internet − servicios públicos.
+        Administración/inmobiliaria no se descuenta.
+    </div>
+</div>
+"""
 
     # Unir el promedio anual/YTD a la tabla principal.
     # Sin este merge, el HTML no encuentra la columna
@@ -3856,6 +3853,8 @@ if st.session_state.vista_airbnb == "Propiedades":
                 "Aseo_Mensual_Medio_Anual",
                 "Internet_Mensual_Medio_Anual",
                 "Servicios_Mensual_Medio_Anual",
+                "Airbnb_Comparable_Solo_Aseo_Mensual",
+                "Airbnb_Comparable_Sin_Servicios_Mensual",
                 "Airbnb_Comparable_Mensual"
             ]
         ],
@@ -4117,8 +4116,8 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
     Inversión total = capital propio + financiación incluida en la inversión registrada.
     Patrimonio neto = valor actual del activo + equipamiento − deuda actual.
     Ingreso prom./mes = ingreso bruto promedio del año seleccionado.
-    Airbnb comparable = ingreso prom./mes − aseos/limpieza − internet/wifi − servicios públicos identificados.
-    Cada gasto comparable se clasifica una sola vez usando subcategoría, detalle y cuenta. No se descuentan administración, inmobiliaria ni comisiones.
+    Airbnb comparable = ingreso prom./mes − aseos − internet − servicios públicos.
+    No se descuenta administración/inmobiliaria en esta comparación.
     CDT promedio = benchmark histórico ponderado por capital y tiempo de exposición.
     La diferencia se expresa en puntos porcentuales frente al retorno anualizado.
 </div>
@@ -4133,6 +4132,12 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
 
     st.markdown(
         html_tabla,
+        unsafe_allow_html=True
+    )
+
+    # Auditoría de los tres escenarios del ingreso comparable.
+    st.markdown(
+        html_auditoria,
         unsafe_allow_html=True
     )
 
