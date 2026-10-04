@@ -3520,6 +3520,21 @@ if st.session_state.vista_airbnb == "Propiedades":
         / meses_promedio_anual
     )
 
+    # Unir el promedio anual/YTD a la tabla principal.
+    # Sin este merge, el HTML no encuentra la columna
+    # `Ingreso_Mensual_Medio_Anual`.
+    tabla = tabla.merge(
+        promedio_anual[
+            [
+                "Nombre_Propiedad",
+                "Ingreso_Anual_YTD",
+                "Ingreso_Mensual_Medio_Anual"
+            ]
+        ],
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
     tabla = tabla.merge(
         historico[
             [
