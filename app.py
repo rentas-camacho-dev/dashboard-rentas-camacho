@@ -1186,6 +1186,7 @@ def cargar_datos_financieros():
         Ciudad,
         Nombre_Socio,
         Nombre_Tipo,
+        Nombre_Subcategoria,
         Ingreso,
         Gasto
     FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
@@ -3450,20 +3451,19 @@ if st.session_state.vista_airbnb == "Propiedades":
     # ========================================================
     # PROMEDIO MENSUAL DEL AÑO DEL FILTRO — YTD
     # ========================================================
-    # El indicador mostrado en la tabla corresponde al ingreso
-    # promedio mensual del año que se está consultando.
+    # El indicador comparable para contrastar Airbnb contra renta
+    # tradicional es:
     #
-    # Año actual:
-    #   se usan los meses completos cerrados.
-    #   Ejemplo: octubre 2026 -> enero-septiembre / 9.
+    #   ingreso bruto Airbnb promedio
+    #   - aseos promedio
     #
-    # Año cerrado:
-    #   enero-diciembre / 12.
+    # No se descuenta administración/inmobiliaria, porque ese costo
+    # también puede existir en la renta tradicional.
     #
-    # IMPORTANTE:
-    # Acqua y Tempus 49 comparten una base de ingresos combinados.
-    # La distribución se hace UNA SOLA VEZ sobre el total anual
-    # agregado, evitando multiplicar el ingreso por cada movimiento.
+    # Para el año actual se usan los meses completos cerrados.
+    # Ejemplo: octubre 2026 -> enero-septiembre / 9.
+    #
+    # Para un año cerrado -> enero-diciembre / 12.
 
     anio_promedio = int(pd.Timestamp(fecha_fin).year)
 
@@ -3482,7 +3482,9 @@ if st.session_state.vista_airbnb == "Propiedades":
         & (df["Fecha"] <= fecha_corte_promedio)
     ].copy()
 
-    # Primero agregamos los ingresos reales del año por propiedad.
+    # --------------------------------------------------------
+    # 1. INGRESO BRUTO ANUAL POR PROPIEDAD
+    # --------------------------------------------------------
     promedio_anual = (
         df_anual_promedio
         .groupby("Nombre_Propiedad", as_index=False)["Ingreso"]
@@ -3490,11 +3492,58 @@ if st.session_state.vista_airbnb == "Propiedades":
         .rename(columns={"Ingreso": "Ingreso_Anual_YTD"})
     )
 
-    # Corrección Acqua + Tempus 49:
-    # el ingreso combinado se reparte sobre el TOTAL agregado,
-    # no fila por fila.
-    mask_acqua_tempus = promedio_anual["Nombre_Propiedad"].isin(
-        ["Torre Acqua", "Tempus 49"]
+    # --------------------------------------------------------
+    # 2. ASEOS ANUALES POR PROPIEDAD
+    # --------------------------------------------------------
+    # Se identifican gastos de aseo/limpieza por el texto de la
+    # subcategoría. Administración NO entra en este ajuste.
+    df_anual_promedio["Nombre_Subcategoria"] = (
+        df_anual_promedio["Nombre_Subcategoria"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+    )
+
+    mascara_aseo = (
+        df_anual_promedio["Gasto"] > 0
+    ) & (
+        df_anual_promedio["Nombre_Subcategoria"]
+        .str.contains(
+            r"aseo|limpieza|cleaning",
+            case=False,
+            regex=True,
+            na=False
+        )
+    )
+
+    aseo_anual = (
+        df_anual_promedio.loc[
+            mascara_aseo
+        ]
+        .groupby(
+            "Nombre_Propiedad",
+            as_index=False
+        )["Gasto"]
+        .sum()
+        .rename(
+            columns={
+                "Gasto": "Aseo_Anual_YTD"
+            }
+        )
+    )
+
+    # --------------------------------------------------------
+    # 3. CORRECCIÓN ACQUA + TEMPUS 49
+    # --------------------------------------------------------
+    # Los ingresos de ambas propiedades se corrigen sobre el TOTAL
+    # agregado, una sola vez, usando las proporciones históricas.
+    mask_acqua_tempus = promedio_anual[
+        "Nombre_Propiedad"
+    ].isin(
+        [
+            "Torre Acqua",
+            "Tempus 49"
+        ]
     )
 
     ingreso_combinado_anual = promedio_anual.loc[
@@ -3506,18 +3555,52 @@ if st.session_state.vista_airbnb == "Propiedades":
     proporcion_tempus = 0.296778540520086
 
     promedio_anual.loc[
-        promedio_anual["Nombre_Propiedad"] == "Torre Acqua",
+        promedio_anual["Nombre_Propiedad"]
+        == "Torre Acqua",
         "Ingreso_Anual_YTD"
-    ] = ingreso_combinado_anual * proporcion_acqua
+    ] = (
+        ingreso_combinado_anual
+        * proporcion_acqua
+    )
 
     promedio_anual.loc[
-        promedio_anual["Nombre_Propiedad"] == "Tempus 49",
+        promedio_anual["Nombre_Propiedad"]
+        == "Tempus 49",
         "Ingreso_Anual_YTD"
-    ] = ingreso_combinado_anual * proporcion_tempus
+    ] = (
+        ingreso_combinado_anual
+        * proporcion_tempus
+    )
 
+    # --------------------------------------------------------
+    # 4. PROMEDIOS MENSUALES
+    # --------------------------------------------------------
     promedio_anual["Ingreso_Mensual_Medio_Anual"] = (
         promedio_anual["Ingreso_Anual_YTD"]
         / meses_promedio_anual
+    )
+
+    promedio_anual = promedio_anual.merge(
+        aseo_anual,
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    promedio_anual["Aseo_Anual_YTD"] = (
+        promedio_anual["Aseo_Anual_YTD"]
+        .fillna(0)
+    )
+
+    promedio_anual["Aseo_Mensual_Medio_Anual"] = (
+        promedio_anual["Aseo_Anual_YTD"]
+        / meses_promedio_anual
+    )
+
+    # Este es el indicador comparable contra renta tradicional:
+    # Airbnb bruto promedio menos aseos promedio.
+    promedio_anual["Airbnb_Comparable_Mensual"] = (
+        promedio_anual["Ingreso_Mensual_Medio_Anual"]
+        - promedio_anual["Aseo_Mensual_Medio_Anual"]
     )
 
     # Unir el promedio anual/YTD a la tabla principal.
@@ -3528,7 +3611,10 @@ if st.session_state.vista_airbnb == "Propiedades":
             [
                 "Nombre_Propiedad",
                 "Ingreso_Anual_YTD",
-                "Ingreso_Mensual_Medio_Anual"
+                "Ingreso_Mensual_Medio_Anual",
+                "Aseo_Anual_YTD",
+                "Aseo_Mensual_Medio_Anual",
+                "Airbnb_Comparable_Mensual"
             ]
         ],
         on="Nombre_Propiedad",
@@ -3704,7 +3790,7 @@ if st.session_state.vista_airbnb == "Propiedades":
 </div>
 
 <div class="investment-subtitle">
-Capital propio · inversión total · valor actual · deuda · patrimonio neto · ingreso promedio mensual YTD · flujo histórico · retorno anualizado · benchmark CDT
+Capital propio · inversión total · valor actual · deuda · patrimonio neto · Airbnb comparable mensual YTD (ingreso − aseos) · flujo histórico · retorno anualizado · benchmark CDT
 </div>
 
 <table class="investment-table">
@@ -3717,7 +3803,7 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
     <th>Deuda actual</th>
     <th>Patrimonio neto</th>
     <th>Flujo histórico</th>
-    <th>Ingreso prom./mes</th>
+    <th>Airbnb comparable / mes</th>
     <th>Flujo prom./mes</th>
     <th>Retorno anualizado</th>
     <th>CDT promedio</th>
@@ -3767,7 +3853,7 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
     <td>{valor_tabla(row["Saldo_Usado"] if "Saldo_Usado" in row.index else row["Saldo_Actual"])}</td>
     <td><span class="investment-money">{valor_tabla(row["Patrimonio_Actual"])}</span></td>
     <td>{flujo_html}</td>
-    <td>{valor_tabla(row["Ingreso_Mensual_Medio_Anual"])}</td>
+    <td>{valor_tabla(row["Airbnb_Comparable_Mensual"])}</td>
     <td>{valor_tabla(row["Flujo_Mensual_Promedio"])}</td>
     <td>{retorno_html}</td>
     <td>{cdt_html}</td>
@@ -3786,6 +3872,8 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
 ">
     Inversión total = capital propio + financiación incluida en la inversión registrada.
     Patrimonio neto = valor actual del activo + equipamiento − deuda actual.
+    Airbnb comparable mensual = ingreso promedio YTD − aseos promedio YTD.
+    No se descuenta administración/inmobiliaria para esta comparación.
     CDT promedio = benchmark histórico ponderado por capital y tiempo de exposición.
     La diferencia se expresa en puntos porcentuales frente al retorno anualizado.
 </div>
