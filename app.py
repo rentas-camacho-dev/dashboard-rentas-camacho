@@ -3524,12 +3524,34 @@ if st.session_state.vista_airbnb == "Propiedades":
         )
     ].copy()
 
-    df_anual_promedio["Nombre_Subcategoria"] = (
+    # --------------------------------------------------------
+    # PREPARAR CAMPOS PARA CLASIFICAR LOS GASTOS
+    # --------------------------------------------------------
+    # Se revisan Subcategoría + Detalle + Cuenta para no perder
+    # proveedores o conceptos que no contengan literalmente
+    # la palabra "internet".
+    for col in [
+        "Nombre_Subcategoria",
+        "Detalle",
+        "Nombre_Cuenta"
+    ]:
+        if col not in df_anual_promedio.columns:
+            df_anual_promedio[col] = ""
+
+        df_anual_promedio[col] = (
+            df_anual_promedio[col]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+        )
+
+    df_anual_promedio["_Texto_Gasto"] = (
         df_anual_promedio["Nombre_Subcategoria"]
-        .fillna("")
-        .astype(str)
-        .str.strip()
-    )
+        + " "
+        + df_anual_promedio["Detalle"]
+        + " "
+        + df_anual_promedio["Nombre_Cuenta"]
+    ).str.lower()
 
     # --------------------------------------------------------
     # 1. INGRESO BRUTO ANUAL POR PROPIEDAD
@@ -3550,93 +3572,126 @@ if st.session_state.vista_airbnb == "Propiedades":
     )
 
     # --------------------------------------------------------
-    # 2. GASTOS QUE SE ELIMINAN SOLO PARA LA COMPARACIÓN
+    # 2. CLASIFICACIÓN EXCLUSIVA DE GASTOS COMPARABLES
     # --------------------------------------------------------
-    #
+    # Cada registro entra a UNA SOLA categoría.
+    # Administración/inmobiliaria/comisiones NO se descuentan.
+
+    mascara_no_comparable = (
+        df_anual_promedio["_Texto_Gasto"].str.contains(
+            r"\badministraci[oó]n\b|\binmobiliaria\b|\bcomisi[oó]n\b",
+            regex=True,
+            na=False
+        )
+    )
+
+    gastos_validos = (
+        (df_anual_promedio["Gasto"] > 0)
+        &
+        (~mascara_no_comparable)
+    )
+
+    categoria_gasto = pd.Series(
+        "",
+        index=df_anual_promedio.index,
+        dtype="object"
+    )
+
     # Aseo / limpieza
     mascara_aseo = (
-        (df_anual_promedio["Gasto"] > 0)
+        gastos_validos
         &
-        df_anual_promedio[
-            "Nombre_Subcategoria"
-        ].str.contains(
-            r"aseo|limpieza|cleaning",
-            case=False,
+        df_anual_promedio["_Texto_Gasto"].str.contains(
+            r"\baseo\b|\blimpieza\b|\bcleaning\b",
             regex=True,
             na=False
         )
     )
+    categoria_gasto.loc[mascara_aseo] = "ASEO"
 
-    # Internet
+    # Internet / Wi-Fi
     mascara_internet = (
-        (df_anual_promedio["Gasto"] > 0)
+        gastos_validos
         &
-        df_anual_promedio[
-            "Nombre_Subcategoria"
-        ].str.contains(
-            r"internet|wifi|wi-fi",
-            case=False,
+        (categoria_gasto == "")
+        &
+        df_anual_promedio["_Texto_Gasto"].str.contains(
+            r"\binternet\b|\bwifi\b|\bwi[\s-]?fi\b",
             regex=True,
             na=False
         )
     )
+    categoria_gasto.loc[mascara_internet] = "INTERNET"
 
-    # Servicios públicos.
-    # No usamos la palabra "servicio" sola para evitar capturar
-    # conceptos ajenos a servicios públicos.
+    # Servicios públicos
     mascara_servicios = (
-        (df_anual_promedio["Gasto"] > 0)
+        gastos_validos
         &
-        df_anual_promedio[
-            "Nombre_Subcategoria"
-        ].str.contains(
-            r"servicios? públicos?|energ[ií]a|agua|acueducto|gas|electricidad|luz",
-            case=False,
+        (categoria_gasto == "")
+        &
+        df_anual_promedio["_Texto_Gasto"].str.contains(
+            (
+                r"\bservicios?\s+p[úu]blicos?\b"
+                r"|\benerg[ií]a\b"
+                r"|\bagua\b"
+                r"|\bacueducto\b"
+                r"|\belectricidad\b"
+                r"|\bluz\b"
+                r"|\bgas\b"
+            ),
             regex=True,
             na=False
         )
     )
+    categoria_gasto.loc[mascara_servicios] = "SERVICIOS"
 
-    def sumar_gasto_mensual(mascara, nombre):
-        resultado = (
-            df_anual_promedio.loc[
-                mascara
-            ]
-            .groupby(
+    # ESTA COLUMNA ERA LA QUE FALTABA EN LA VERSIÓN ANTERIOR.
+    # El KeyError de tu captura venía exactamente de intentar
+    # usar "_Categoria_Comparable" antes de crearla.
+    df_anual_promedio["_Categoria_Comparable"] = categoria_gasto
+
+    # --------------------------------------------------------
+    # 3. GASTOS COMPARABLES ANUALES
+    # --------------------------------------------------------
+    gastos_comparables = (
+        df_anual_promedio[
+            df_anual_promedio["_Categoria_Comparable"] != ""
+        ]
+        .groupby(
+            [
                 "Nombre_Propiedad",
-                as_index=False
-            )["Gasto"]
-            .sum()
-            .rename(
-                columns={
-                    "Gasto":
-                        nombre
-                }
-            )
+                "_Categoria_Comparable"
+            ],
+            as_index=False
+        )["Gasto"]
+        .sum()
+        .pivot(
+            index="Nombre_Propiedad",
+            columns="_Categoria_Comparable",
+            values="Gasto"
         )
-
-        return resultado
-
-    aseo_anual = sumar_gasto_mensual(
-        mascara_aseo,
-        "Aseo_Anual_YTD"
+        .reset_index()
     )
 
-    internet_anual = sumar_gasto_mensual(
-        mascara_internet,
-        "Internet_Anual_YTD"
-    )
+    for columna in [
+        "ASEO",
+        "INTERNET",
+        "SERVICIOS"
+    ]:
+        if columna not in gastos_comparables.columns:
+            gastos_comparables[columna] = 0
 
-    servicios_anual = sumar_gasto_mensual(
-        mascara_servicios,
-        "Servicios_Anual_YTD"
+    gastos_comparables = gastos_comparables.rename(
+        columns={
+            "ASEO": "Aseo_Anual_YTD",
+            "INTERNET": "Internet_Anual_YTD",
+            "SERVICIOS": "Servicios_Anual_YTD"
+        }
     )
 
     # --------------------------------------------------------
-    # 3. CORRECCIÓN ACQUA + TEMPUS 49
+    # 4. ACQUA + TEMPUS 49
     # --------------------------------------------------------
-    # El ingreso combinado se distribuye UNA SOLA VEZ sobre el
-    # total agregado y no fila por fila.
     mask_acqua_tempus = promedio_anual[
         "Nombre_Propiedad"
     ].isin(
@@ -3650,85 +3705,42 @@ if st.session_state.vista_airbnb == "Propiedades":
         promedio_anual.loc[
             mask_acqua_tempus,
             "Ingreso_Anual_YTD"
-        ]
-        .sum()
+        ].sum()
     )
 
     proporcion_acqua = 0.703221459479914
     proporcion_tempus = 0.296778540520086
 
     promedio_anual.loc[
-        promedio_anual[
-            "Nombre_Propiedad"
-        ] == "Torre Acqua",
+        promedio_anual["Nombre_Propiedad"] == "Torre Acqua",
         "Ingreso_Anual_YTD"
-    ] = (
-        ingreso_combinado_anual
-        * proporcion_acqua
-    )
+    ] = ingreso_combinado_anual * proporcion_acqua
 
     promedio_anual.loc[
-        promedio_anual[
-            "Nombre_Propiedad"
-        ] == "Tempus 49",
+        promedio_anual["Nombre_Propiedad"] == "Tempus 49",
         "Ingreso_Anual_YTD"
-    ] = (
-        ingreso_combinado_anual
-        * proporcion_tempus
-    )
+    ] = ingreso_combinado_anual * proporcion_tempus
 
     # --------------------------------------------------------
-    # 4. PROMEDIO BRUTO MENSUAL
+    # 5. PROMEDIO BRUTO MENSUAL
     # --------------------------------------------------------
-    promedio_anual[
-        "Ingreso_Mensual_Medio_Anual"
-    ] = (
-        promedio_anual[
-            "Ingreso_Anual_YTD"
-        ]
+    promedio_anual["Ingreso_Mensual_Medio_Anual"] = (
+        promedio_anual["Ingreso_Anual_YTD"]
         / meses_promedio_anual
     )
 
     # --------------------------------------------------------
-    # 5. PROMEDIO DE GASTOS COMPARABLES POR REGISTROS
+    # 6. GASTOS Y CONTEO DE REGISTROS
     # --------------------------------------------------------
-    # NO se divide entre los meses del año.
-    #
-    # Regla definida:
-    #   promedio = suma de registros identificados /
-    #              cantidad de registros identificados.
-    #
-    # Ejemplo:
-    #   Acqua tiene 4 registros de Internet en 2026
-    #   -> suma de esos 4 registros / 4.
-    #
-    # Si un mes no tiene registro porque la cuenta se mezcló,
-    # ese mes NO se considera $0.
-
     promedio_anual = promedio_anual.merge(
-        aseo_anual,
+        gastos_comparables,
         on="Nombre_Propiedad",
         how="left"
     )
 
-    promedio_anual = promedio_anual.merge(
-        internet_anual,
-        on="Nombre_Propiedad",
-        how="left"
-    )
-
-    promedio_anual = promedio_anual.merge(
-        servicios_anual,
-        on="Nombre_Propiedad",
-        how="left"
-    )
-
-    # Contar registros reales de cada categoría.
     conteo_gastos = (
         df_anual_promedio[
-            df_anual_promedio[
-                "_Categoria_Comparable"
-            ] != ""
+            df_anual_promedio["_Categoria_Comparable"] != ""
         ]
         .groupby(
             [
@@ -3738,7 +3750,11 @@ if st.session_state.vista_airbnb == "Propiedades":
             as_index=False
         )
         .size()
-        .rename(columns={"size": "Cantidad_Registros"})
+        .rename(
+            columns={
+                "size": "Cantidad_Registros"
+            }
+        )
         .pivot(
             index="Nombre_Propiedad",
             columns="_Categoria_Comparable",
@@ -3747,7 +3763,6 @@ if st.session_state.vista_airbnb == "Propiedades":
         .reset_index()
     )
 
-    # Garantizar las tres columnas de conteo.
     for columna in [
         "ASEO",
         "INTERNET",
@@ -3778,68 +3793,45 @@ if st.session_state.vista_airbnb == "Propiedades":
         "Internet_Registros_YTD",
         "Servicios_Registros_YTD"
     ]:
-        promedio_anual[columna] = (
-            pd.to_numeric(
-                promedio_anual[columna],
-                errors="coerce"
-            )
-            .fillna(0)
-        )
+        promedio_anual[columna] = pd.to_numeric(
+            promedio_anual[columna],
+            errors="coerce"
+        ).fillna(0)
 
     # --------------------------------------------------------
-    # 6. PROMEDIO POR REGISTRO
+    # 7. PROMEDIO DE GASTO POR REGISTRO
     # --------------------------------------------------------
-    promedio_anual[
-        "Aseo_Mensual_Medio_Anual"
-    ] = (
+    promedio_anual["Aseo_Mensual_Medio_Anual"] = (
         promedio_anual["Aseo_Anual_YTD"]
-        /
-        promedio_anual["Aseo_Registros_YTD"].replace(
-            0,
-            pd.NA
-        )
+        / promedio_anual["Aseo_Registros_YTD"].replace(0, pd.NA)
     )
 
-    promedio_anual[
-        "Internet_Mensual_Medio_Anual"
-    ] = (
+    promedio_anual["Internet_Mensual_Medio_Anual"] = (
         promedio_anual["Internet_Anual_YTD"]
-        /
-        promedio_anual["Internet_Registros_YTD"].replace(
-            0,
-            pd.NA
-        )
+        / promedio_anual["Internet_Registros_YTD"].replace(0, pd.NA)
     )
 
-    promedio_anual[
-        "Servicios_Mensual_Medio_Anual"
-    ] = (
+    promedio_anual["Servicios_Mensual_Medio_Anual"] = (
         promedio_anual["Servicios_Anual_YTD"]
-        /
-        promedio_anual["Servicios_Registros_YTD"].replace(
-            0,
-            pd.NA
-        )
+        / promedio_anual["Servicios_Registros_YTD"].replace(0, pd.NA)
     )
 
     # --------------------------------------------------------
-    # 6. AIRBNB COMPARABLE
+    # 8. AIRBNB COMPARABLE
     # --------------------------------------------------------
-    promedio_anual[
-        "Airbnb_Comparable_Mensual"
-    ] = (
-        promedio_anual[
-            "Ingreso_Mensual_Medio_Anual"
-        ]
-        - promedio_anual[
-            "Aseo_Mensual_Medio_Anual"
-        ]
-        - promedio_anual[
-            "Internet_Mensual_Medio_Anual"
-        ]
-        - promedio_anual[
-            "Servicios_Mensual_Medio_Anual"
-        ]
+    promedio_anual["Airbnb_Comparable_Mensual"] = (
+        promedio_anual["Ingreso_Mensual_Medio_Anual"]
+        - promedio_anual["Aseo_Mensual_Medio_Anual"]
+        - promedio_anual["Internet_Mensual_Medio_Anual"]
+        - promedio_anual["Servicios_Mensual_Medio_Anual"]
+    )
+
+    # Limpieza de columnas auxiliares.
+    df_anual_promedio = df_anual_promedio.drop(
+        columns=[
+            "_Texto_Gasto"
+        ],
+        errors="ignore"
     )
 
     # Unir el promedio anual/YTD a la tabla principal.
