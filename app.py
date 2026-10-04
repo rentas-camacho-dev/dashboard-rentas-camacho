@@ -4218,6 +4218,16 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
         for linea in html_tabla.splitlines()
     ).strip()
 
+    # Mostrar nuevamente la tabla completa de análisis.
+    # Conserva todos los indicadores financieros y deja únicamente
+    # las dos columnas de ingresos importantes:
+    #   - Ingreso prom./mes
+    #   - Airbnb comparable / mes
+    st.markdown(
+        html_tabla,
+        unsafe_allow_html=True
+    )
+
 # ============================================================
 # VISTA ANÁLISIS — RADAR INMOBILIARIO
 # ============================================================
