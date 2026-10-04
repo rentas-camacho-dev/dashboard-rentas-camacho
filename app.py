@@ -1350,10 +1350,10 @@ def rango_millones(minimo, maximo):
     if pd.isna(minimo) and pd.isna(maximo):
         return "—"
     if pd.isna(maximo):
-        return f"${float(minimo)/1_000_000:.0f}M"
+        return f"${float(minimo)/1_000_000:.1f}M"
     if pd.isna(minimo):
-        return f"${float(maximo)/1_000_000:.0f}M"
-    return f"${float(minimo)/1_000_000:.0f}–{float(maximo)/1_000_000:.0f}M"
+        return f"${float(maximo)/1_000_000:.1f}M"
+    return f"${float(minimo)/1_000_000:.1f}–{float(maximo)/1_000_000:.1f}M"
 
 
 def extraer_decision_y_lectura(rol):
@@ -3774,7 +3774,20 @@ Mercado online actualizado + comportamiento del activo + catalizadores documenta
             </table>
         </div>
         """
-        st.markdown(html_decision, unsafe_allow_html=True)
+
+        # IMPORTANTE: quitar toda la indentación antes de enviar
+        # el HTML a Streamlit. De lo contrario, Markdown lo interpreta
+        # como un bloque de código y muestra <tr>, <td>, etc.
+        html_decision = "\n".join(
+            linea.strip()
+            for linea in html_decision.splitlines()
+            if linea.strip()
+        )
+
+        st.markdown(
+            html_decision,
+            unsafe_allow_html=True
+        )
     else:
         st.markdown(
             """
