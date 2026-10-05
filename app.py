@@ -3814,175 +3814,976 @@ def tarjeta_portafolio():
 """
 
 # ============================================================
-# VISTA APORTES - CAPITAL FAMILIAR
+# ============================================================
+# VISTA APORTES - CAPITAL Y PATRIMONIO FAMILIAR
 # ============================================================
 
 if st.session_state.vista_airbnb == "Aportes":
 
-    aportes_base = aportes_socios.copy()
+    @st.cache_data(ttl=900)
+    def cargar_estudio_mercado_prorrateado():
+        """
+        Vista creada en BigQuery a partir de:
+        Estudio_Mercado_Inmobiliario + Participaciones.
 
-    st.markdown("""
+        Una fila por socio y activo.
+        Los valores de venta/renta ya llegan prorrateados según
+        la participación del socio.
+        """
+        query = """
+        SELECT
+            ID_Activo,
+            Nombre_Entidad,
+            Ciudad,
+            Conjunto_Proyecto,
+            Direccion,
+            Venta_Min_M_Prorrateada,
+            Venta_Max_M_Prorrateada,
+            Renta_Amoblada_Min_M_Prorrateada,
+            Renta_Amoblada_Max_M_Prorrateada,
+            Renta_Sin_Amoblar_Min_M_Prorrateada,
+            Renta_Sin_Amoblar_Max_M_Prorrateada,
+            Facilidad_Venta,
+            Facilidad_Arriendo,
+            Proyeccion_Zona_5A,
+            Rol_Portafolio,
+            Socio,
+            Nombre_Socio,
+            Participaci__n,
+            Propietario,
+            Anuncio
+        FROM `rentascamacho.rentas_cortas.Estudio_Mercado_Inmobiliario_Prorrateado`
+        ORDER BY ID_Activo, Nombre_Socio
+        """
+        vista = client.query(query).to_dataframe()
+
+        if vista.empty:
+            return vista
+
+        numeric_cols = [
+            "Venta_Min_M_Prorrateada",
+            "Venta_Max_M_Prorrateada",
+            "Renta_Amoblada_Min_M_Prorrateada",
+            "Renta_Amoblada_Max_M_Prorrateada",
+            "Renta_Sin_Amoblar_Min_M_Prorrateada",
+            "Renta_Sin_Amoblar_Max_M_Prorrateada",
+            "Proyeccion_Zona_5A",
+            "Participaci__n",
+        ]
+
+        for col in numeric_cols:
+            vista[col] = pd.to_numeric(
+                vista[col],
+                errors="coerce"
+            )
+
+        text_cols = [
+            "ID_Activo",
+            "Nombre_Entidad",
+            "Ciudad",
+            "Conjunto_Proyecto",
+            "Direccion",
+            "Facilidad_Venta",
+            "Facilidad_Arriendo",
+            "Rol_Portafolio",
+            "Socio",
+            "Nombre_Socio",
+            "Propietario",
+            "Anuncio",
+        ]
+
+        for col in text_cols:
+            vista[col] = (
+                vista[col]
+                .fillna("")
+                .astype(str)
+                .str.strip()
+            )
+
+        return vista
+
+    aportes_base = aportes_socios.copy()
+    vista_patrimonio = cargar_estudio_mercado_prorrateado()
+
+    st.markdown(
+        """
 <style>
-.aportes-dashboard { margin-top: 2px; }
-.aportes-hero { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px; }
-.aportes-hero-title { font-size:26px; line-height:1.05; font-weight:900; color:#17345E; letter-spacing:-.4px; }
-.aportes-hero-sub { font-size:11px; color:#8190A5; margin-top:7px; }
-.aportes-period { background:#FFFFFF; border:1px solid #DCE5EE; border-radius:10px; padding:9px 12px; min-width:185px; box-shadow:0 1px 2px rgba(23,52,94,.03); }
-.aportes-period-label { font-size:8px; font-weight:800; color:#738299; text-transform:uppercase; }
-.aportes-period-value { font-size:11px; font-weight:800; color:#17345E; margin-top:5px; }
-.aportes-kpi-grid5 { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:10px 0 14px; }
-.aportes-kpi5 { background:#FFFFFF; border:1px solid #E3E9F0; border-radius:12px; padding:13px 14px; min-height:84px; box-sizing:border-box; display:flex; align-items:center; gap:11px; box-shadow:0 1px 2px rgba(23,52,94,.025); }
-.aportes-kpi5-icon { width:40px; height:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:20px; flex:0 0 40px; }
-.aportes-kpi5:nth-child(1) .aportes-kpi5-icon { background:#FFE9EE; }
-.aportes-kpi5:nth-child(2) .aportes-kpi5-icon { background:#FFE9EE; }
-.aportes-kpi5:nth-child(3) .aportes-kpi5-icon { background:#E8F8F1; }
-.aportes-kpi5:nth-child(4) .aportes-kpi5-icon { background:#F1EAFE; }
-.aportes-kpi5:nth-child(5) .aportes-kpi5-icon { background:#FFF0E5; }
-.aportes-kpi5-label { font-size:8px; color:#7E8DA3; font-weight:700; }
-.aportes-kpi5-value { font-size:20px; line-height:1.05; color:#17345E; font-weight:900; margin-top:5px; white-space:nowrap; }
-.aportes-kpi5-sub { font-size:8px; color:#8795A8; margin-top:4px; }
-.aportes-chart-card { background:#FFFFFF; border:1px solid #E1E8EF; border-radius:13px; padding:12px 14px 8px; box-sizing:border-box; min-height:355px; }
-.aportes-card-heading { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:3px; }
-.aportes-card-title2 { font-size:13px; font-weight:900; color:#17345E; }
-.aportes-card-sub2 { font-size:9px; color:#8A98AA; margin-top:4px; }
-.aportes-mini-label { font-size:8px; font-weight:800; color:#71839A; margin-right:7px; }
-.aportes-mini-select { display:inline-block; border:1px solid #DCE5EE; border-radius:7px; padding:6px 10px; font-size:9px; color:#40536C; background:#FFFFFF; }
-.aportes-table-card { background:#FFFFFF; border:1px solid #E1E8EF; border-radius:13px; padding:12px 14px; min-height:240px; box-sizing:border-box; }
-.aportes-table2 { width:100%; border-collapse:collapse; font-size:8.5px; color:#50637B; margin-top:10px; }
-.aportes-table2 th { background:#F4F7FA; color:#71839A; font-size:7.5px; font-weight:800; text-transform:uppercase; padding:7px 8px; border-bottom:1px solid #DCE5EE; text-align:right; white-space:nowrap; }
-.aportes-table2 th:first-child,.aportes-table2 td:first-child { text-align:left; }
-.aportes-table2 td { padding:8px; border-bottom:1px solid #EDF1F5; text-align:right; white-space:nowrap; }
-.aportes-table2 td:first-child { font-weight:800; color:#17345E; }
+.aportes-dashboard { margin-top:2px; }
+
+.aportes-hero {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:12px;
+}
+.aportes-hero-title {
+    font-size:26px;
+    line-height:1.05;
+    font-weight:900;
+    color:#17345E;
+    letter-spacing:-.4px;
+}
+.aportes-hero-sub {
+    font-size:11px;
+    color:#8190A5;
+    margin-top:7px;
+}
+.aportes-period {
+    background:#FFFFFF;
+    border:1px solid #DCE5EE;
+    border-radius:10px;
+    padding:9px 12px;
+    min-width:205px;
+    box-shadow:0 1px 2px rgba(23,52,94,.03);
+}
+.aportes-period-label {
+    font-size:8px;
+    font-weight:800;
+    color:#738299;
+    text-transform:uppercase;
+}
+.aportes-period-value {
+    font-size:11px;
+    font-weight:800;
+    color:#17345E;
+    margin-top:5px;
+}
+
+/* ============================================================
+   KPI
+============================================================ */
+.aportes-kpi-grid6 {
+    display:grid;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:10px;
+    margin:10px 0 13px;
+}
+.aportes-kpi6 {
+    background:#FFFFFF;
+    border:1px solid #E3E9F0;
+    border-radius:12px;
+    padding:12px 13px;
+    min-height:88px;
+    box-sizing:border-box;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    box-shadow:0 1px 2px rgba(23,52,94,.025);
+}
+.aportes-kpi6-icon {
+    width:38px;
+    height:38px;
+    border-radius:11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:19px;
+    flex:0 0 38px;
+}
+.aportes-kpi6:nth-child(1) .aportes-kpi6-icon { background:#E8F8F1; }
+.aportes-kpi6:nth-child(2) .aportes-kpi6-icon { background:#F1EAFE; }
+.aportes-kpi6:nth-child(3) .aportes-kpi6-icon { background:#EAF2FF; }
+.aportes-kpi6:nth-child(4) .aportes-kpi6-icon { background:#F6ECFF; }
+.aportes-kpi6:nth-child(5) .aportes-kpi6-icon { background:#FFF0E5; }
+.aportes-kpi6:nth-child(6) .aportes-kpi6-icon { background:#FFE9EE; }
+
+.aportes-kpi6-label {
+    font-size:8px;
+    color:#7E8DA3;
+    font-weight:800;
+    line-height:1.15;
+}
+.aportes-kpi6-value {
+    font-size:21px;
+    line-height:1.05;
+    color:#17345E;
+    font-weight:900;
+    margin-top:5px;
+    white-space:nowrap;
+}
+.aportes-kpi6-sub {
+    font-size:8px;
+    color:#8795A8;
+    margin-top:4px;
+}
+
+/* ============================================================
+   PANELES SUPERIORES
+============================================================ */
+.aportes-chart-card {
+    background:#FFFFFF;
+    border:1px solid #E1E8EF;
+    border-radius:13px;
+    padding:12px 14px 8px;
+    box-sizing:border-box;
+    min-height:340px;
+    overflow:hidden;
+}
+.aportes-card-heading {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:3px;
+}
+.aportes-card-title2 {
+    font-size:13px;
+    font-weight:900;
+    color:#17345E;
+}
+.aportes-card-sub2 {
+    font-size:9px;
+    color:#8A98AA;
+    margin-top:4px;
+}
+.aportes-mini-label {
+    font-size:8px;
+    font-weight:800;
+    color:#71839A;
+    margin-right:7px;
+}
+.aportes-mini-select {
+    display:inline-block;
+    border:1px solid #DCE5EE;
+    border-radius:7px;
+    padding:6px 10px;
+    font-size:9px;
+    color:#40536C;
+    background:#FFFFFF;
+}
+.aportes-legend {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:3px;
+    margin-bottom:2px;
+}
+.aportes-legend-item {
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:8px;
+    color:#71839A;
+}
+.aportes-legend-dot {
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    display:inline-block;
+}
+
+/* ============================================================
+   RESUMEN PATRIMONIAL
+============================================================ */
+.aportes-patrimonio-card {
+    border:1px solid #E1E8EF;
+    border-radius:13px;
+    background:#FFFFFF;
+    padding:12px 13px 8px;
+    min-height:340px;
+    box-sizing:border-box;
+}
+.aportes-patrimonio-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:13px;
+}
+.aportes-patrimonio-name {
+    font-size:9px;
+    font-weight:800;
+    color:#50637B;
+}
+.aportes-patrimonio-value {
+    font-size:10px;
+    font-weight:900;
+    color:#17345E;
+}
+.aportes-patrimonio-track {
+    height:8px;
+    background:#EEF2F6;
+    border-radius:8px;
+    overflow:hidden;
+    margin-top:5px;
+}
+.aportes-patrimonio-fill {
+    height:100%;
+    border-radius:8px;
+}
+.aportes-patrimonio-pct {
+    text-align:right;
+    font-size:7.5px;
+    color:#71839A;
+    margin-top:2px;
+}
+.aportes-visual-note {
+    margin-top:12px;
+    padding:9px 10px;
+    background:#F8FAFC;
+    border:1px solid #E5EBF1;
+    border-radius:9px;
+    font-size:8px;
+    color:#71839A;
+    line-height:1.4;
+}
+
+/* ============================================================
+   BLOQUE INFERIOR: SOCIOS + TABLA
+============================================================ */
+.aportes-bottom-title {
+    font-size:17px;
+    font-weight:900;
+    color:#17345E;
+}
+.aportes-bottom-sub {
+    font-size:9px;
+    color:#8A98AA;
+    margin-top:4px;
+    margin-bottom:10px;
+}
+.aportes-socio-card {
+    border:1px solid #E1E8EF;
+    border-radius:13px;
+    background:#FFFFFF;
+    padding:12px;
+    box-sizing:border-box;
+    min-height:500px;
+    overflow:hidden;
+}
+.aportes-socio-card.diego { border-top:3px solid #FF5A73; }
+.aportes-socio-card.william { border-top:3px solid #5DA7F4; }
+.aportes-socio-card.andres { border-top:3px solid #43C995; }
+
+.aportes-socio-head {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:8px;
+}
+.aportes-avatar {
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:15px;
+    font-weight:900;
+}
+.aportes-avatar.diego { background:#FFE9EE; color:#FF5A73; }
+.aportes-avatar.william { background:#EAF2FF; color:#5DA7F4; }
+.aportes-avatar.andres { background:#E8F8F1; color:#43C995; }
+
+.aportes-socio-name {
+    font-size:12px;
+    font-weight:900;
+    color:#17345E;
+}
+.aportes-socio-line {
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    margin-top:6px;
+    font-size:8.5px;
+}
+.aportes-socio-line span:first-child { color:#71839A; }
+.aportes-socio-line span:last-child { color:#17345E; font-weight:850; }
+
+.aportes-socio-total {
+    margin-top:9px;
+    background:linear-gradient(135deg,#F8FAFC 0%,#F2F6FA 100%);
+    border:1px solid #E7EDF3;
+    border-radius:9px;
+    padding:8px 9px;
+}
+.aportes-socio-total-label {
+    font-size:8px;
+    color:#71839A;
+}
+.aportes-socio-total-value {
+    font-size:18px;
+    line-height:1;
+    margin-top:4px;
+    font-weight:900;
+    color:#17345E;
+}
+.aportes-socio-ratio {
+    font-size:9px;
+    color:#009B70;
+    font-weight:850;
+    margin-top:4px;
+}
+
+.aportes-mini-asset-title {
+    font-size:8.5px;
+    font-weight:850;
+    color:#50637B;
+    margin-top:9px;
+    margin-bottom:6px;
+}
+.aportes-mini-asset {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:6px;
+    padding:6px 7px;
+    margin-top:4px;
+    border-radius:7px;
+    background:#F8FAFC;
+    border:1px solid #EDF1F5;
+}
+.aportes-mini-asset-name {
+    font-size:7.5px;
+    color:#61738C;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.aportes-mini-asset-value {
+    font-size:8px;
+    font-weight:850;
+    color:#17345E;
+    white-space:nowrap;
+}
+.aportes-additional {
+    color:#7C55B9;
+}
+
+/* ============================================================
+   TABLA DE ACTIVOS
+============================================================ */
+.aportes-table-card {
+    background:#FFFFFF;
+    border:1px solid #E1E8EF;
+    border-radius:13px;
+    padding:13px 14px 11px;
+    box-sizing:border-box;
+    min-height:500px;
+    overflow:hidden;
+}
+.aportes-table-scroll {
+    overflow-x:auto;
+    max-width:100%;
+}
+.aportes-table2 {
+    width:100%;
+    border-collapse:collapse;
+    font-size:8.5px;
+    color:#50637B;
+    margin-top:10px;
+}
+.aportes-table2 th {
+    background:#F4F7FA;
+    color:#71839A;
+    font-size:7.5px;
+    font-weight:800;
+    text-transform:uppercase;
+    padding:7px 7px;
+    border-bottom:1px solid #DCE5EE;
+    text-align:right;
+    white-space:nowrap;
+}
+.aportes-table2 th:first-child,
+.aportes-table2 th:nth-child(2),
+.aportes-table2 td:first-child,
+.aportes-table2 td:nth-child(2) {
+    text-align:left;
+}
+.aportes-table2 td {
+    padding:7px;
+    border-bottom:1px solid #EDF1F5;
+    text-align:right;
+    white-space:nowrap;
+}
+.aportes-table2 td:first-child {
+    font-weight:850;
+    color:#17345E;
+}
+.aportes-table2 td:nth-child(2) {
+    color:#71839A;
+}
 .aportes-table2 tr:last-child td { border-bottom:none; }
-.aportes-total2 td { background:#F8FAFC; font-weight:900; color:#17345E !important; }
-.aportes-socio-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
-.aportes-latest { margin-top:10px; width:100%; border-collapse:collapse; font-size:8px; }
-.aportes-latest th { text-align:left; color:#71839A; font-size:7px; text-transform:uppercase; padding:6px 5px; border-bottom:1px solid #DCE5EE; }
-.aportes-latest td { padding:7px 5px; border-bottom:1px solid #EDF1F5; color:#52657C; white-space:nowrap; }
-.aportes-latest td:last-child { text-align:right; font-weight:900; color:#17345E; }
-@media (max-width: 1050px) { .aportes-kpi-grid5{grid-template-columns:repeat(3,1fr)} }
-@media (max-width: 700px) { .aportes-kpi-grid5{grid-template-columns:1fr 1fr} .aportes-hero{display:block} .aportes-period{margin-top:10px} }
+.aportes-total2 td {
+    background:#F8FAFC;
+    font-weight:900;
+    color:#17345E !important;
+}
+.aportes-table-highlight {
+    color:#17345E;
+    font-weight:850;
+}
+.aportes-table-muted {
+    color:#A0ACBA;
+}
+.aportes-note2 {
+    margin-top:9px;
+    padding:9px 10px;
+    background:#F8FAFC;
+    border:1px solid #E5EBF1;
+    border-radius:9px;
+    font-size:8px;
+    color:#71839A;
+    line-height:1.45;
+}
+.aportes-note2 b { color:#17345E; }
+
+@media (max-width:1250px) {
+    .aportes-kpi-grid6 { grid-template-columns:repeat(3,1fr); }
+}
+@media (max-width:900px) {
+    .aportes-kpi-grid6 { grid-template-columns:repeat(2,1fr); }
+    .aportes-hero { display:block; }
+    .aportes-period { margin-top:10px; width:max-content; }
+}
+@media (max-width:650px) {
+    .aportes-kpi-grid6 { grid-template-columns:1fr; }
+}
 </style>
-""", unsafe_allow_html=True)
+""",
+        unsafe_allow_html=True
+    )
 
     if aportes_base.empty:
-        st.markdown("""
+        st.markdown(
+            """
 <div class="aportes-chart-card">
-    <div class="aportes-card-title2">💰 Aportes y capital familiar</div>
+    <div class="aportes-card-title2">💰 Aportes y patrimonio familiar</div>
     <div class="aportes-card-sub2">No se encontraron registros en Aportes_Socios.</div>
 </div>
-""", unsafe_allow_html=True)
+""",
+            unsafe_allow_html=True
+        )
+    elif vista_patrimonio.empty:
+        st.markdown(
+            """
+<div class="aportes-chart-card">
+    <div class="aportes-card-title2">💰 Aportes y patrimonio familiar</div>
+    <div class="aportes-card-sub2">Los aportes están disponibles, pero la vista Estudio_Mercado_Inmobiliario_Prorrateado no devolvió registros.</div>
+</div>
+""",
+            unsafe_allow_html=True
+        )
     else:
         aportes_base = aportes_base.copy()
-        aportes_base["Fecha"] = pd.to_datetime(aportes_base["Fecha"], errors="coerce")
-        aportes_base["Valor"] = pd.to_numeric(aportes_base["Valor"], errors="coerce").fillna(0)
+        aportes_base["Fecha"] = pd.to_datetime(
+            aportes_base["Fecha"],
+            errors="coerce"
+        )
+        aportes_base["Valor"] = pd.to_numeric(
+            aportes_base["Valor"],
+            errors="coerce"
+        ).fillna(0)
         aportes_base = aportes_base.dropna(subset=["Fecha"])
 
-        total_aportes = float(aportes_base["Valor"].sum())
+        # --------------------------------------------------------
+        # NORMALIZAR VISTA PATRIMONIAL
+        # --------------------------------------------------------
+        vista_patrimonio = vista_patrimonio.copy()
+        vista_patrimonio["ID_Activo"] = (
+            vista_patrimonio["ID_Activo"]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+        )
+        vista_patrimonio["Nombre_Entidad"] = (
+            vista_patrimonio["Nombre_Entidad"]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+        )
+        vista_patrimonio["Nombre_Socio"] = (
+            vista_patrimonio["Nombre_Socio"]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+        )
+
+        # Valor medio de mercado estimado atribuible al socio.
+        vista_patrimonio["Valor_Mercado_Socio"] = (
+            (
+                vista_patrimonio["Venta_Min_M_Prorrateada"]
+                +
+                vista_patrimonio["Venta_Max_M_Prorrateada"]
+            )
+            / 2
+        ).fillna(0)
+
+        # La renta media queda disponible para futuras capas del dashboard.
+        vista_patrimonio["Renta_Amoblada_Media_Socio"] = (
+            (
+                vista_patrimonio["Renta_Amoblada_Min_M_Prorrateada"]
+                +
+                vista_patrimonio["Renta_Amoblada_Max_M_Prorrateada"]
+            )
+            / 2
+        ).fillna(0)
+
+        # --------------------------------------------------------
+        # REGLA PATRIMONIAL
+        # ENT-0003 = Torre Ventto:
+        # se mide como patrimonio adicional, NO como activo financiado
+        # con los aportes familiares.
+        # --------------------------------------------------------
+        es_ventto = vista_patrimonio["ID_Activo"].eq("ENT-0003")
+
+        activos_con_aportes = (
+            vista_patrimonio[~es_ventto]
+            .copy()
+        )
+
+        activos_adicionales = (
+            vista_patrimonio[es_ventto]
+            .copy()
+        )
+
+        total_aportes = float(
+            aportes_base["Valor"].sum()
+        )
+
         socios = (
-            aportes_base.groupby("Nombre_Socio", as_index=False)
+            aportes_base
+            .groupby(
+                "Nombre_Socio",
+                as_index=False
+            )
             .agg(
                 Aportes=("Valor", "sum"),
                 Movimientos=("ID_Aporte", "nunique"),
                 Primer_Aporte=("Fecha", "min"),
                 Ultimo_Aporte=("Fecha", "max")
             )
-            .sort_values("Aportes", ascending=False)
+            .sort_values(
+                "Aportes",
+                ascending=False
+            )
             .reset_index(drop=True)
         )
-        socios["Participacion"] = socios["Aportes"] / total_aportes * 100 if total_aportes else 0
 
-        ultima_fecha = aportes_base["Fecha"].max()
-        ultima_fecha_txt = ultima_fecha.strftime("%b %Y") if pd.notna(ultima_fecha) else "-"
-        promedio_socio = total_aportes / len(socios) if len(socios) else 0
-        mayor_row = socios.iloc[0] if not socios.empty else None
-
-        palette = ["#FF5A73", "#5DA7F4", "#43C995", "#9B63E8", "#F4B54A", "#7C8EA6"]
-        socio_colors = {row["Nombre_Socio"]: palette[i % len(palette)] for i, (_, row) in enumerate(socios.iterrows())}
-
-        periodo_inicio = aportes_base["Fecha"].min().strftime("%Y / %m / %d")
-        periodo_fin = aportes_base["Fecha"].max().strftime("%Y / %m / %d")
-        st.markdown(f"""
-<div class="aportes-dashboard">
-  <div class="aportes-hero">
-    <div>
-      <div class="aportes-hero-title">💰 Aportes y capital familiar</div>
-      <div class="aportes-hero-sub">Capital realmente aportado por cada socio · punto de partida para comparar aportes contra patrimonio</div>
-    </div>
-    <div class="aportes-period">
-      <div class="aportes-period-label">📅 Período</div>
-      <div class="aportes-period-value">{periodo_inicio}  –  {periodo_fin}</div>
-    </div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
-        kpis = [
-            ("💵", "Capital Total Aportado", dinero_corto(total_aportes), ""),
-            ("👥", "Número de Socios", f"{len(socios)}", ""),
-            ("↗", "Aporte Promedio por Socio", dinero_corto(promedio_socio), ""),
-            ("▥", "Mayor Aporte", escape_html(str(mayor_row["Nombre_Socio"])) if mayor_row is not None else "-", dinero_corto(float(mayor_row["Aportes"])) if mayor_row is not None else "$0"),
-            ("📅", "Último Aporte", ultima_fecha_txt, dinero_corto(float(aportes_base.sort_values("Fecha").iloc[-1]["Valor"])) if not aportes_base.empty else "$0")
-        ]
-        kpi_html = '<div class="aportes-kpi-grid5">'
-        for icon, label, value, sub in kpis:
-            extra = f'<div class="aportes-kpi5-sub">{sub}</div>' if sub else ''
-            kpi_html += f'<div class="aportes-kpi5"><div class="aportes-kpi5-icon">{icon}</div><div><div class="aportes-kpi5-label">{label}</div><div class="aportes-kpi5-value">{value}</div>{extra}</div></div>'
-        kpi_html += '</div>'
-        st.markdown(kpi_html, unsafe_allow_html=True)
-
-        mensual = (
-            aportes_base.assign(
-                Mes=aportes_base["Fecha"].dt.to_period("M").dt.to_timestamp()
-            )
-            .groupby(["Mes", "Nombre_Socio"], as_index=False)["Valor"]
-            .sum()
+        socios["Participacion"] = (
+            socios["Aportes"]
+            /
+            total_aportes
+            *
+            100
+            if total_aportes
+            else 0
         )
 
-        # EVOLUCION: barras apiladas por año y acumulativas.
-        # Cada barra representa el capital acumulado hasta ese año.
-        # Cada color representa el capital acumulado de cada socio.
+        # Aportes por socio → usado para cruzar con los activos.
+        aportes_map = dict(
+            zip(
+                socios["Nombre_Socio"],
+                socios["Aportes"]
+            )
+        )
+
+        # --------------------------------------------------------
+        # RESUMEN PATRIMONIAL POR SOCIO
+        # --------------------------------------------------------
+        resumen_socios = socios[
+            [
+                "Nombre_Socio",
+                "Aportes",
+                "Participacion"
+            ]
+        ].copy()
+
+        activos_socio = (
+            activos_con_aportes
+            .groupby(
+                "Nombre_Socio",
+                as_index=False
+            )["Valor_Mercado_Socio"]
+            .sum()
+            .rename(
+                columns={
+                    "Valor_Mercado_Socio":
+                        "Activos_Con_Aportes"
+                }
+            )
+        )
+
+        adicionales_socio = (
+            activos_adicionales
+            .groupby(
+                "Nombre_Socio",
+                as_index=False
+            )["Valor_Mercado_Socio"]
+            .sum()
+            .rename(
+                columns={
+                    "Valor_Mercado_Socio":
+                        "Activos_Adicionales"
+                }
+            )
+        )
+
+        resumen_socios = resumen_socios.merge(
+            activos_socio,
+            on="Nombre_Socio",
+            how="left"
+        )
+        resumen_socios = resumen_socios.merge(
+            adicionales_socio,
+            on="Nombre_Socio",
+            how="left"
+        )
+
+        resumen_socios[
+            [
+                "Activos_Con_Aportes",
+                "Activos_Adicionales"
+            ]
+        ] = resumen_socios[
+            [
+                "Activos_Con_Aportes",
+                "Activos_Adicionales"
+            ]
+        ].fillna(0)
+
+        resumen_socios["Patrimonio_Estimado"] = (
+            resumen_socios["Activos_Con_Aportes"]
+            +
+            resumen_socios["Activos_Adicionales"]
+        )
+
+        resumen_socios["Patrimonio_vs_Aportes"] = (
+            (
+                resumen_socios["Patrimonio_Estimado"]
+                /
+                resumen_socios["Aportes"]
+            )
+            - 1
+        ) * 100
+        resumen_socios["Patrimonio_vs_Aportes"] = (
+            resumen_socios["Patrimonio_vs_Aportes"]
+            .replace([float("inf"), -float("inf")], pd.NA)
+        )
+
+        # --------------------------------------------------------
+        # TOTALES PATRIMONIALES
+        # --------------------------------------------------------
+        valor_activos_con_aportes_total = float(
+            activos_con_aportes["Valor_Mercado_Socio"].sum()
+        )
+        valor_activos_adicionales_total = float(
+            activos_adicionales["Valor_Mercado_Socio"].sum()
+        )
+        patrimonio_total_estimado = (
+            valor_activos_con_aportes_total
+            +
+            valor_activos_adicionales_total
+        )
+
+        patrimonio_vs_aportes_total = (
+            (
+                patrimonio_total_estimado
+                /
+                total_aportes
+            )
+            - 1
+        ) * 100 if total_aportes else 0
+
+        # --------------------------------------------------------
+        # PERÍODO
+        # --------------------------------------------------------
+        periodo_inicio = (
+            aportes_base["Fecha"].min().strftime("%Y / %m / %d")
+            if not aportes_base.empty
+            else "-"
+        )
+        periodo_fin = (
+            aportes_base["Fecha"].max().strftime("%Y / %m / %d")
+            if not aportes_base.empty
+            else "-"
+        )
+        ultima_fecha = aportes_base["Fecha"].max()
+        ultima_fecha_txt = (
+            ultima_fecha.strftime("%b %Y")
+            if pd.notna(ultima_fecha)
+            else "-"
+        )
+
+        # --------------------------------------------------------
+        # COLORES
+        # --------------------------------------------------------
+        palette = [
+            "#FF5A73",
+            "#5DA7F4",
+            "#43C995",
+            "#9B63E8",
+            "#F4B54A",
+            "#7C8EA6",
+        ]
+        socio_colors = {
+            row["Nombre_Socio"]:
+                palette[i % len(palette)]
+            for i, (_, row) in enumerate(
+                socios.iterrows()
+            )
+        }
+
+        # --------------------------------------------------------
+        # HERO
+        # --------------------------------------------------------
+        st.markdown(
+            f"""
+<div class="aportes-dashboard">
+    <div class="aportes-hero">
+        <div>
+            <div class="aportes-hero-title">
+                💰 Aportes y patrimonio familiar
+            </div>
+            <div class="aportes-hero-sub">
+                Cómo se ha usado el capital aportado y cuál es el patrimonio estimado de cada socio
+            </div>
+        </div>
+        <div class="aportes-period">
+            <div class="aportes-period-label">📅 PERÍODO</div>
+            <div class="aportes-period-value">
+                {periodo_inicio}  –  {periodo_fin}
+            </div>
+        </div>
+    </div>
+</div>
+""",
+            unsafe_allow_html=True
+        )
+
+        # --------------------------------------------------------
+        # KPIs
+        # --------------------------------------------------------
+        kpi_items = [
+            (
+                "💰",
+                "Capital Total Aportado",
+                dinero_corto(total_aportes),
+                "Capital registrado"
+            ),
+            (
+                "👥",
+                "Número de Socios",
+                f"{len(socios)}",
+                "Socios con aportes"
+            ),
+            (
+                "↗",
+                "Activos vinculados a aportes",
+                dinero_corto(valor_activos_con_aportes_total),
+                "Valor de mercado estimado"
+            ),
+            (
+                "🔗",
+                "Activos adicionales",
+                dinero_corto(valor_activos_adicionales_total),
+                "Incluye Torre Ventto"
+            ),
+            (
+                "🏢",
+                "Patrimonio estimado",
+                dinero_corto(patrimonio_total_estimado),
+                "Valor de mercado atribuible"
+            ),
+            (
+                "📈",
+                "Patrimonio vs. aportes",
+                f"{patrimonio_vs_aportes_total:+.1f}%",
+                "No es valorización contable"
+            ),
+        ]
+
+        kpi_html = '<div class="aportes-kpi-grid6">'
+        for icon, label, value, sub in kpi_items:
+            kpi_html += f"""
+<div class="aportes-kpi6">
+    <div class="aportes-kpi6-icon">{icon}</div>
+    <div>
+        <div class="aportes-kpi6-label">{escape_html(label)}</div>
+        <div class="aportes-kpi6-value">{escape_html(value)}</div>
+        <div class="aportes-kpi6-sub">{escape_html(sub)}</div>
+    </div>
+</div>
+"""
+        kpi_html += "</div>"
+        st.markdown(
+            kpi_html,
+            unsafe_allow_html=True
+        )
+
+        # --------------------------------------------------------
+        # EVOLUCIÓN ACUMULADA DE APORTES
+        # --------------------------------------------------------
         aportes_anuales = (
-            aportes_base.assign(
+            aportes_base
+            .assign(
                 Anio=aportes_base["Fecha"].dt.year
             )
-            .groupby(["Anio", "Nombre_Socio"], as_index=False)["Valor"]
+            .groupby(
+                [
+                    "Anio",
+                    "Nombre_Socio"
+                ],
+                as_index=False
+            )["Valor"]
             .sum()
         )
 
         anios = (
-            pd.Index(sorted(aportes_anuales["Anio"].dropna().astype(int).unique()))
+            pd.Index(
+                sorted(
+                    aportes_anuales["Anio"]
+                    .dropna()
+                    .astype(int)
+                    .unique()
+                )
+            )
             if not aportes_anuales.empty
             else pd.Index([])
         )
 
-        socios_nombres = list(socios["Nombre_Socio"])
-        fig_evol = go.Figure()
+        socios_nombres = list(
+            socios["Nombre_Socio"]
+        )
 
         anual_pivot = (
-            aportes_anuales.pivot_table(
+            aportes_anuales
+            .pivot_table(
                 index="Anio",
                 columns="Nombre_Socio",
                 values="Valor",
                 aggfunc="sum",
                 fill_value=0,
             )
-            .reindex(anios, fill_value=0)
+            .reindex(
+                anios,
+                fill_value=0
+            )
         )
 
         for socio in socios_nombres:
             if socio not in anual_pivot.columns:
                 anual_pivot[socio] = 0
 
-        anual_pivot = anual_pivot[socios_nombres]
+        anual_pivot = anual_pivot[
+            socios_nombres
+        ]
         acumulado = anual_pivot.cumsum()
-        totales_acumulados = acumulado.sum(axis=1)
+
+        totales_acumulados = acumulado.sum(
+            axis=1
+        )
+
+        fig_evol = go.Figure()
 
         for socio in socios_nombres:
             valores = acumulado[socio].values
             porcentajes = [
-                (v / total * 100) if total else 0
-                for v, total in zip(valores, totales_acumulados.values)
+                (v / total * 100)
+                if total
+                else 0
+                for v, total in zip(
+                    valores,
+                    totales_acumulados.values
+                )
             ]
 
             fig_evol.add_trace(
@@ -3993,12 +4794,17 @@ if st.session_state.vista_airbnb == "Aportes":
                     marker_color=socio_colors[socio],
                     customdata=porcentajes,
                     text=[
-                        f"{pct:.0f}%" if pct >= 12 else ""
+                        f"{pct:.0f}%"
+                        if pct >= 12
+                        else ""
                         for pct in porcentajes
                     ],
                     textposition="inside",
                     insidetextanchor="middle",
-                    textfont=dict(size=9, color="#FFFFFF"),
+                    textfont=dict(
+                        size=8,
+                        color="#FFFFFF"
+                    ),
                     hovertemplate=(
                         f"<b>{escape_html(socio)}</b><br>"
                         "%{x}<br>"
@@ -4011,20 +4817,21 @@ if st.session_state.vista_airbnb == "Aportes":
 
         fig_evol.update_layout(
             barmode="stack",
-            height=320,
-            margin=dict(l=0, r=0, t=8, b=62),
+            height=292,
+            margin=dict(
+                l=0,
+                r=0,
+                t=4,
+                b=42
+            ),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="Arial", size=9, color="#6F8097"),
-            legend=dict(
-                orientation="h",
-                y=-0.18,
-                x=0.5,
-                xanchor="center",
-                yanchor="top",
-                font=dict(size=8),
-                bgcolor="rgba(255,255,255,0)",
+            font=dict(
+                family="Arial",
+                size=9,
+                color="#6F8097"
             ),
+            showlegend=False,
             bargap=0.25,
             hovermode="x unified",
             xaxis=dict(
@@ -4047,144 +4854,677 @@ if st.session_state.vista_airbnb == "Aportes":
             ),
         )
 
-        # Las dos tarjetas superiores tienen exactamente la misma columna/ancho.
-        left_right = st.columns([1, 1], gap="small")
+        legend_html = ""
+        for socio in socios_nombres:
+            legend_html += (
+                f'<div class="aportes-legend-item">'
+                f'<span class="aportes-legend-dot" '
+                f'style="background:{socio_colors[socio]};"></span>'
+                f'{escape_html(socio)}'
+                f'</div>'
+            )
 
-        with left_right[0]:
-            with st.container(height=430, border=True):
-                st.markdown(
-                    """
-                    <div class="aportes-card-heading">
-                      <div>
-                        <div class="aportes-card-title2">
-                          📊 Evolución acumulada por año
-                        </div>
-                        <div class="aportes-card-sub2">
-                          Cada barra muestra el capital acumulado hasta ese año y cada color corresponde a un socio
-                        </div>
-                      </div>
-                      <div>
-                        <span class="aportes-mini-label">Vista</span>
-                        <span class="aportes-mini-select">Acumulado anual</span>
-                      </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
+        # --------------------------------------------------------
+        # PATRIMONIO POR SOCIO
+        # --------------------------------------------------------
+        max_patrimonio = float(
+            resumen_socios["Patrimonio_Estimado"].max()
+        ) if not resumen_socios.empty else 0
+
+        patrimonio_rows = ""
+        for _, row in resumen_socios.iterrows():
+            color = socio_colors.get(
+                row["Nombre_Socio"],
+                "#7C8EA6"
+            )
+            pct = (
+                float(row["Patrimonio_Estimado"])
+                /
+                max_patrimonio
+                * 100
+                if max_patrimonio
+                else 0
+            )
+            patrimonio_rows += f"""
+<div class="aportes-patrimonio-row">
+    <div class="aportes-patrimonio-name">
+        {escape_html(row["Nombre_Socio"])}
+    </div>
+    <div class="aportes-patrimonio-value">
+        {dinero_corto(row["Patrimonio_Estimado"])}
+    </div>
+</div>
+<div class="aportes-patrimonio-track">
+    <div class="aportes-patrimonio-fill"
+         style="width:{pct:.1f}%;background:{color};"></div>
+</div>
+<div class="aportes-patrimonio-pct">
+    {float(row["Participacion"]):.1f}% de los aportes ·
+    {float(row["Patrimonio_vs_Aportes"]):+.1f}% vs aportes
+</div>
+"""
+
+        top_cols = st.columns(
+            [1.40, 0.80, 0.85],
+            gap="small"
+        )
+
+        with top_cols[0]:
+            st.markdown(
+                f"""
+<div class="aportes-chart-card">
+    <div class="aportes-card-heading">
+        <div>
+            <div class="aportes-card-title2">
+                📊 Evolución del capital aportado
+            </div>
+            <div class="aportes-card-sub2">
+                Cada barra muestra el capital acumulado hasta ese año
+            </div>
+        </div>
+        <div>
+            <span class="aportes-mini-label">Vista</span>
+            <span class="aportes-mini-select">Acumulado anual</span>
+        </div>
+    </div>
+    <div class="aportes-legend">
+        {legend_html}
+    </div>
+""",
+                unsafe_allow_html=True
+            )
+            st.plotly_chart(
+                fig_evol,
+                use_container_width=True,
+                config={"displayModeBar": False},
+                key="fig_aportes_evol_nuevo",
+            )
+            st.markdown(
+                "</div>",
+                unsafe_allow_html=True
+            )
+
+        with top_cols[1]:
+            fig_donut_aportes = go.Figure(
+                go.Pie(
+                    labels=socios["Nombre_Socio"],
+                    values=socios["Aportes"],
+                    hole=0.60,
+                    marker=dict(
+                        colors=[
+                            socio_colors[n]
+                            for n in socios["Nombre_Socio"]
+                        ],
+                        line=dict(
+                            color="#FFFFFF",
+                            width=2
+                        ),
+                    ),
+                    textinfo="percent",
+                    textfont=dict(size=9),
+                    hovertemplate=(
+                        "%{label}<br>"
+                        "$%{value:,.0f}<br>"
+                        "%{percent}<extra></extra>"
+                    ),
                 )
-                st.plotly_chart(
-                    fig_evol,
-                    use_container_width=True,
-                    config={"displayModeBar": False},
-                    key="fig_aportes_evol",
+            )
+            fig_donut_aportes.update_layout(
+                height=235,
+                margin=dict(
+                    l=0,
+                    r=0,
+                    t=4,
+                    b=0
+                ),
+                showlegend=False,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+            )
+            fig_donut_aportes.add_annotation(
+                text=(
+                    f"<b>{dinero_corto(total_aportes)}</b>"
+                    "<br><span style='font-size:9px'>Aportes</span>"
+                ),
+                x=0.5,
+                y=0.5,
+                showarrow=False,
+                font=dict(
+                    size=12,
+                    color="#17345E"
+                ),
+            )
+
+            st.markdown(
+                """
+<div class="aportes-chart-card">
+    <div class="aportes-card-title2">
+        👥 Aportes por socio
+    </div>
+    <div class="aportes-card-sub2">
+        Participación del capital total aportado
+    </div>
+""",
+                unsafe_allow_html=True
+            )
+            st.plotly_chart(
+                fig_donut_aportes,
+                use_container_width=True,
+                config={"displayModeBar": False},
+                key="fig_aportes_donut_nuevo",
+            )
+            st.markdown(
+                """
+    <div class="aportes-visual-note">
+        El gráfico representa exclusivamente el capital
+        registrado en <b>Aportes_Socios</b>.
+    </div>
+</div>
+""",
+                unsafe_allow_html=True
+            )
+
+        with top_cols[2]:
+            st.markdown(
+                f"""
+<div class="aportes-patrimonio-card">
+    <div class="aportes-card-title2">
+        🏢 Patrimonio estimado por socio
+    </div>
+    <div class="aportes-card-sub2">
+        Valor de mercado atribuible según la vista prorrateada
+    </div>
+    {patrimonio_rows}
+    <div class="aportes-visual-note">
+        <b>Patrimonio estimado:</b>
+        valor medio de mercado atribuible según los rangos de venta.
+        No representa todavía valorización contra costo histórico.
+    </div>
+</div>
+""",
+                unsafe_allow_html=True
+            )
+
+        # --------------------------------------------------------
+        # BLOQUE INFERIOR
+        # --------------------------------------------------------
+        st.markdown(
+            """
+<div style="margin-top:14px;">
+    <div class="aportes-bottom-title">
+        🧭 Resumen patrimonial por socio
+    </div>
+    <div class="aportes-bottom-sub">
+        Aportes registrados · activos asociados · activos adicionales · patrimonio estimado
+    </div>
+</div>
+""",
+            unsafe_allow_html=True
+        )
+
+        bottom_cols = st.columns(
+            [1.60, 1.00],
+            gap="small"
+        )
+
+        # --------------------------------------------------------
+        # TARJETAS DE SOCIOS
+        # --------------------------------------------------------
+        with bottom_cols[0]:
+            socio_cards_cols = st.columns(
+                3,
+                gap="small"
+            )
+
+            for idx, (_, socio_row) in enumerate(
+                resumen_socios.iterrows()
+            ):
+                nombre = socio_row["Nombre_Socio"]
+
+                clase = "diego"
+                if "William" in nombre:
+                    clase = "william"
+                elif "Andres" in nombre or "Andrés" in nombre:
+                    clase = "andres"
+
+                avatar = (
+                    "D"
+                    if "Diego" in nombre
+                    else "W"
+                    if "William" in nombre
+                    else "A"
                 )
 
-        with left_right[1]:
-            with st.container(height=430, border=True):
-                st.markdown(
-                    """
-                    <div class="aportes-card-heading">
-                      <div>
-                        <div class="aportes-card-title2">👥 Aportes por socio</div>
-                        <div class="aportes-card-sub2">
-                          Participación en el capital total aportado
-                        </div>
-                      </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-                bar_html = ""
-                for _, row in socios.iterrows():
-                    color = socio_colors[row["Nombre_Socio"]]
-                    pct = float(row["Participacion"])
-                    bar_html += (
-                        f'<div style="margin-top:8px;">'
-                        f'<div style="display:flex;justify-content:space-between;'
-                        f'align-items:center;font-size:8px;font-weight:800;color:#50637B;">'
-                        f'<span>{escape_html(row["Nombre_Socio"])}</span>'
-                        f'<span style="color:#17345E;font-size:9px;">'
-                        f'{dinero_corto(float(row["Aportes"]))}</span></div>'
-                        f'<div style="height:8px;background:#EEF2F6;border-radius:7px;'
-                        f'margin-top:4px;overflow:hidden;">'
-                        f'<div style="height:100%;width:{pct:.1f}%;background:{color};'
-                        f'border-radius:7px;"></div></div>'
-                        f'<div style="text-align:right;font-size:7.5px;color:#71839A;'
-                        f'margin-top:1px;">{pct:.1f}%</div></div>'
+                activos_socio_df = (
+                    activos_con_aportes[
+                        activos_con_aportes["Nombre_Socio"]
+                        == nombre
+                    ]
+                    .sort_values(
+                        "Valor_Mercado_Socio",
+                        ascending=False
                     )
+                    .head(4)
+                )
 
-                st.markdown(bar_html, unsafe_allow_html=True)
+                adicionales_socio_df = (
+                    activos_adicionales[
+                        activos_adicionales["Nombre_Socio"]
+                        == nombre
+                    ]
+                    .sort_values(
+                        "Valor_Mercado_Socio",
+                        ascending=False
+                    )
+                    .head(2)
+                )
 
-                fig_donut = go.Figure(
+                # Distribución para el donut del socio:
+                # Finca raíz asociada a aportes + Ventto adicional.
+                valores_pie = [
+                    float(socio_row["Activos_Con_Aportes"]),
+                    float(socio_row["Activos_Adicionales"]),
+                ]
+
+                labels_pie = [
+                    "Activos con aportes",
+                    "Activos adicionales"
+                ]
+
+                colors_pie = [
+                    "#FF5A73",
+                    "#43C995"
+                ]
+
+                fig_socio = go.Figure(
                     go.Pie(
-                        labels=socios["Nombre_Socio"],
-                        values=socios["Aportes"],
-                        hole=0.57,
+                        labels=labels_pie,
+                        values=valores_pie,
+                        hole=0.62,
                         marker=dict(
-                            colors=[socio_colors[n] for n in socios["Nombre_Socio"]],
-                            line=dict(color="#FFFFFF", width=2),
+                            colors=colors_pie,
+                            line=dict(
+                                color="#FFFFFF",
+                                width=2
+                            )
                         ),
                         textinfo="percent",
-                        textfont=dict(size=9),
+                        textfont=dict(size=8),
                         hovertemplate=(
-                            "%{label}<br>$%{value:,.0f}"
-                            "<br>%{percent}<extra></extra>"
+                            "%{label}<br>"
+                            "$%{value:,.0f}<br>"
+                            "%{percent}<extra></extra>"
                         ),
                     )
                 )
-                fig_donut.update_layout(
-                    height=195,
-                    margin=dict(l=0, r=0, t=0, b=0),
+                fig_socio.update_layout(
+                    height=175,
+                    margin=dict(
+                        l=0,
+                        r=0,
+                        t=0,
+                        b=0
+                    ),
                     showlegend=False,
                     paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
                 )
-                fig_donut.add_annotation(
+                fig_socio.add_annotation(
                     text=(
-                        f"<b>{dinero_corto(total_aportes)}</b>"
-                        "<br><span style='font-size:9px'>Total</span>"
+                        f"<b>{dinero_corto(socio_row['Patrimonio_Estimado'])}</b>"
+                        "<br><span style='font-size:8px'>Patrimonio</span>"
                     ),
-                    x=0.5, y=0.5, showarrow=False,
-                    font=dict(size=12, color="#17345E"),
+                    x=0.5,
+                    y=0.5,
+                    showarrow=False,
+                    font=dict(
+                        size=10,
+                        color="#17345E"
+                    ),
                 )
-                st.plotly_chart(
-                    fig_donut,
-                    use_container_width=True,
-                    config={"displayModeBar": False},
-                    key="fig_aportes_donut",
+
+                card_html = f"""
+<div class="aportes-socio-card {clase}">
+    <div class="aportes-socio-head">
+        <div class="aportes-avatar {clase}">
+            {avatar}
+        </div>
+        <div class="aportes-socio-name">
+            {escape_html(nombre)}
+        </div>
+    </div>
+
+    <div class="aportes-socio-line">
+        <span>Aportes</span>
+        <span>{dinero_corto(socio_row["Aportes"])}</span>
+    </div>
+    <div class="aportes-socio-line">
+        <span>Activos con aportes</span>
+        <span>{dinero_corto(socio_row["Activos_Con_Aportes"])}</span>
+    </div>
+    <div class="aportes-socio-line">
+        <span>Activos adicionales (Ventto)</span>
+        <span>{dinero_corto(socio_row["Activos_Adicionales"])}</span>
+    </div>
+
+    <div class="aportes-socio-total">
+        <div class="aportes-socio-total-label">
+            Patrimonio total estimado
+        </div>
+        <div class="aportes-socio-total-value">
+            {dinero_corto(socio_row["Patrimonio_Estimado"])}
+        </div>
+        <div class="aportes-socio-ratio">
+            {float(socio_row["Patrimonio_vs_Aportes"]):+.1f}% vs. aportes
+        </div>
+    </div>
+"""
+                if not activos_socio_df.empty:
+                    card_html += """
+<div class="aportes-mini-asset-title">
+    Principales activos asociados
+</div>
+"""
+                    for _, asset in activos_socio_df.iterrows():
+                        card_html += f"""
+<div class="aportes-mini-asset">
+    <div class="aportes-mini-asset-name">
+        {escape_html(asset["Nombre_Entidad"])}
+    </div>
+    <div class="aportes-mini-asset-value">
+        {dinero_corto(asset["Valor_Mercado_Socio"])}
+    </div>
+</div>
+"""
+
+                if not adicionales_socio_df.empty:
+                    card_html += """
+<div class="aportes-mini-asset-title">
+    Activos adicionales
+</div>
+"""
+                    for _, asset in adicionales_socio_df.iterrows():
+                        card_html += f"""
+<div class="aportes-mini-asset">
+    <div class="aportes-mini-asset-name aportes-additional">
+        {escape_html(asset["Nombre_Entidad"])} · Ventto
+    </div>
+    <div class="aportes-mini-asset-value">
+        {dinero_corto(asset["Valor_Mercado_Socio"])}
+    </div>
+</div>
+"""
+
+                card_html += "</div>"
+
+                with socio_cards_cols[idx]:
+                    st.markdown(
+                        card_html,
+                        unsafe_allow_html=True
+                    )
+                    st.plotly_chart(
+                        fig_socio,
+                        use_container_width=True,
+                        config={"displayModeBar": False},
+                        key=f"fig_patrimonio_socio_{idx}",
+                    )
+
+        # --------------------------------------------------------
+        # TABLA DE ACTIVOS
+        # --------------------------------------------------------
+        with bottom_cols[1]:
+
+            # Totales por activo: suma del valor atribuible por socio.
+            tabla_activos = (
+                activos_con_aportes
+                .groupby(
+                    [
+                        "ID_Activo",
+                        "Nombre_Entidad",
+                        "Ciudad"
+                    ],
+                    as_index=False
+                )["Valor_Mercado_Socio"]
+                .sum()
+                .rename(
+                    columns={
+                        "Valor_Mercado_Socio":
+                            "Valor_Mercado_Total"
+                    }
+                )
+            )
+
+            # Matriz por socio.
+            matriz = (
+                activos_con_aportes
+                .pivot_table(
+                    index=[
+                        "ID_Activo",
+                        "Nombre_Entidad",
+                        "Ciudad"
+                    ],
+                    columns="Nombre_Socio",
+                    values="Valor_Mercado_Socio",
+                    aggfunc="sum",
+                    fill_value=0
+                )
+                .reset_index()
+            )
+
+            socios_orden = [
+                "Diego Camacho",
+                "William Camacho",
+                "Andres Camacho",
+                "Andrés Camacho",
+            ]
+
+            socio_cols_reales = []
+            for nombre in socios_orden:
+                if nombre in matriz.columns:
+                    socio_cols_reales.append(nombre)
+
+            for nombre in socios["Nombre_Socio"].tolist():
+                if nombre in matriz.columns and nombre not in socio_cols_reales:
+                    socio_cols_reales.append(nombre)
+
+            matriz = matriz.merge(
+                tabla_activos,
+                on=[
+                    "ID_Activo",
+                    "Nombre_Entidad",
+                    "Ciudad"
+                ],
+                how="left"
+            )
+
+            # Orden por mayor valor de mercado estimado.
+            matriz = (
+                matriz
+                .sort_values(
+                    "Valor_Mercado_Total",
+                    ascending=False
+                )
+                .reset_index(drop=True)
+            )
+
+            # ------------
+            # Encabezado
+            # ------------
+            st.markdown(
+                """
+<div class="aportes-table-card">
+    <div class="aportes-card-title2">
+        🎯 Aportes → activos asociados
+    </div>
+    <div class="aportes-card-sub2">
+        Valor de mercado estimado atribuible a cada socio según la vista prorrateada
+    </div>
+    <div class="aportes-table-scroll">
+""",
+                unsafe_allow_html=True
+            )
+
+            table_html = """
+<table class="aportes-table2">
+<thead>
+<tr>
+    <th>Activo</th>
+    <th>Ciudad</th>
+    <th>Mercado est.</th>
+"""
+
+            for nombre in socio_cols_reales:
+                nombre_corto = (
+                    "Diego"
+                    if "Diego" in nombre
+                    else "William"
+                    if "William" in nombre
+                    else "Andrés"
+                )
+                table_html += (
+                    f"<th>{escape_html(nombre_corto)}</th>"
                 )
 
+            table_html += """
+</tr>
+</thead>
+<tbody>
+"""
 
-        bottom = st.columns([1.45, 1.15, .75], gap="small")
-        with bottom[0]:
-            rows = ''
-            for _, row in socios.iterrows():
-                color = socio_colors[row["Nombre_Socio"]]
-                ultimo = row["Ultimo_Aporte"].strftime("%b %Y") if pd.notna(row["Ultimo_Aporte"]) else "-"
-                rows += f'<tr><td><span class="aportes-socio-dot" style="background:{color};"></span>{escape_html(row["Nombre_Socio"])}</td><td>{dinero_corto(float(row["Aportes"]))}</td><td>{float(row["Participacion"]):.1f}%</td><td>{int(row["Movimientos"])}</td><td>{ultimo}</td></tr>'
-            rows += f'<tr class="aportes-total2"><td>Total</td><td>{dinero_corto(total_aportes)}</td><td>100.0%</td><td>{len(aportes_base)}</td><td>{ultima_fecha_txt}</td></tr>'
-            html = f'<div class="aportes-table-card"><div class="aportes-card-title2">📋 Detalle de aportes</div><div class="aportes-card-sub2">Acumulado histórico por socio, con participación y trazabilidad de movimientos</div><table class="aportes-table2"><thead><tr><th>Socio</th><th>Aporte Total</th><th>Participación</th><th># Aportes</th><th>Último Aporte</th></tr></thead><tbody>{rows}</tbody></table></div>'
-            st.markdown(html, unsafe_allow_html=True)
+            for _, row in matriz.iterrows():
+                table_html += f"""
+<tr>
+    <td>{escape_html(row["Nombre_Entidad"])}</td>
+    <td>{escape_html(row["Ciudad"])}</td>
+    <td>
+        <span class="aportes-table-highlight">
+            {dinero_corto(row["Valor_Mercado_Total"])}
+        </span>
+    </td>
+"""
+                for nombre in socio_cols_reales:
+                    valor = float(
+                        row.get(nombre, 0) or 0
+                    )
+                    table_html += f"""
+    <td>
+        {"-" if valor == 0 else dinero_corto(valor)}
+    </td>
+"""
 
-        with bottom[1]:
-            mensual_total = aportes_base.assign(Mes=aportes_base["Fecha"].dt.to_period("M").dt.to_timestamp()).groupby("Mes", as_index=False)["Valor"].sum()
-            fig_mensual = go.Figure(go.Bar(x=mensual_total["Mes"], y=mensual_total["Valor"] / 1_000_000, marker_color="#FF5A73", customdata=mensual_total["Valor"], hovertemplate="%{x|%Y-%m}<br>$%{customdata:,.0f}<extra></extra>"))
-            fig_mensual.update_layout(height=205, margin=dict(l=0,r=0,t=8,b=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font=dict(size=8,color="#71839A"), xaxis=dict(showgrid=True,gridcolor="#EEF2F6",tickformat="%Y-%m",tickangle=-45,zeroline=False), yaxis=dict(showgrid=True,gridcolor="#EEF2F6",tickprefix="$",ticksuffix="M",tickformat=",.0f",zeroline=False), showlegend=False)
-            st.markdown('<div class="aportes-table-card"><div class="aportes-card-title2">📊 Aportes mensuales (total)</div><div class="aportes-card-sub2">Monto total aportado por mes (todos los socios)</div>', unsafe_allow_html=True)
-            st.plotly_chart(fig_mensual, use_container_width=True, config={"displayModeBar":False}, key="fig_aportes_mensual")
-            st.markdown('</div>', unsafe_allow_html=True)
+                table_html += "</tr>"
 
-        with bottom[2]:
-            recientes = aportes_base.sort_values(["Fecha","ID_Aporte"], ascending=[False,False]).head(6)
-            latest_rows = ''
-            for _, row in recientes.iterrows():
-                color = socio_colors.get(row["Nombre_Socio"], "#7C8EA6")
-                latest_rows += f'<tr><td>{row["Fecha"].strftime("%Y-%m-%d")}</td><td><span class="aportes-socio-dot" style="background:{color};"></span>{escape_html(row["Nombre_Socio"])}</td><td>{dinero_corto(float(row["Valor"]))}</td></tr>'
-            html_latest = f'<div class="aportes-table-card"><div class="aportes-card-title2">🕘 Últimos aportes</div><div class="aportes-card-sub2">Movimientos más recientes de todos los socios</div><table class="aportes-latest"><thead><tr><th>Fecha</th><th>Socio</th><th>Monto</th></tr></thead><tbody>{latest_rows}</tbody></table></div>'
-            st.markdown(html_latest, unsafe_allow_html=True)
+            # Totales.
+            table_html += """
+<tr class="aportes-total2">
+    <td>TOTAL</td>
+    <td>-</td>
+"""
 
+            total_mercado = (
+                matriz["Valor_Mercado_Total"].sum()
+                if not matriz.empty
+                else 0
+            )
+
+            table_html += (
+                f"<td>{dinero_corto(total_mercado)}</td>"
+            )
+
+            for nombre in socio_cols_reales:
+                valor_total_socio = (
+                    matriz[nombre].sum()
+                    if nombre in matriz.columns
+                    else 0
+                )
+                table_html += (
+                    f"<td>{dinero_corto(valor_total_socio)}</td>"
+                )
+
+            table_html += """
+</tr>
+</tbody>
+</table>
+"""
+
+            # Nota Ventto.
+            nota_ventto = (
+                "Torre Ventto se excluye de esta tabla porque "
+                "Andrés y William la compraron de contado. "
+                "Sí se mide en el patrimonio individual como "
+                "<b>activo adicional</b>, pero no se compara "
+                "contra los aportes."
+            )
+
+            st.markdown(
+                table_html
+                +
+                """
+    </div>
+    <div class="aportes-note2">
+        """
+                + nota_ventto
+                + """
+    </div>
+</div>
+""",
+                unsafe_allow_html=True
+            )
+
+            # ----------------------------------------------------
+            # Mini bloque Ventto
+            # ----------------------------------------------------
+            if not activos_adicionales.empty:
+                ventto_rows = ""
+                for _, row in (
+                    activos_adicionales
+                    .sort_values(
+                        [
+                            "Nombre_Entidad",
+                            "Nombre_Socio"
+                        ]
+                    )
+                    .iterrows()
+                ):
+                    ventto_rows += f"""
+<tr>
+    <td>{escape_html(row["Nombre_Socio"])}</td>
+    <td>{escape_html(row["Nombre_Entidad"])}</td>
+    <td>{float(row["Participaci__n"])*100:.1f}%</td>
+    <td>{dinero_corto(row["Valor_Mercado_Socio"])}</td>
+</tr>
+"""
+
+                st.markdown(
+                    f"""
+<div class="aportes-table-card"
+     style="min-height:0;margin-top:10px;">
+    <div class="aportes-card-title2">
+        🔗 Activos adicionales de los socios
+    </div>
+    <div class="aportes-card-sub2">
+        Patrimonio medido aparte de los aportes
+    </div>
+    <table class="aportes-table2">
+        <thead>
+            <tr>
+                <th>Socio</th>
+                <th>Activo</th>
+                <th>Part.</th>
+                <th>Valor socio</th>
+            </tr>
+        </thead>
+        <tbody>
+            {ventto_rows}
+        </tbody>
+    </table>
+</div>
+""",
+                    unsafe_allow_html=True
+                )
 
 # ============================================================
-# VISTA PROPIEDADES
+
 # ============================================================
 
 if st.session_state.vista_airbnb == "Propiedades":
