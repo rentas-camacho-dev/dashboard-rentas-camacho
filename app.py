@@ -3993,7 +3993,7 @@ if st.session_state.vista_airbnb == "Aportes":
                     marker_color=socio_colors[socio],
                     customdata=porcentajes,
                     text=[
-                        f"{pct:.0f}%" if pct >= 8 else ""
+                        f"{pct:.0f}%" if pct >= 12 else ""
                         for pct in porcentajes
                     ],
                     textposition="inside",
@@ -4011,17 +4011,19 @@ if st.session_state.vista_airbnb == "Aportes":
 
         fig_evol.update_layout(
             barmode="stack",
-            height=300,
-            margin=dict(l=0, r=0, t=8, b=4),
+            height=320,
+            margin=dict(l=0, r=0, t=8, b=62),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             font=dict(family="Arial", size=9, color="#6F8097"),
             legend=dict(
                 orientation="h",
-                y=-0.03,
+                y=-0.18,
                 x=0.5,
                 xanchor="center",
+                yanchor="top",
                 font=dict(size=8),
+                bgcolor="rgba(255,255,255,0)",
             ),
             bargap=0.25,
             hovermode="x unified",
@@ -4049,7 +4051,7 @@ if st.session_state.vista_airbnb == "Aportes":
         left_right = st.columns([1, 1], gap="small")
 
         with left_right[0]:
-            with st.container(border=True):
+            with st.container(height=430, border=True):
                 st.markdown(
                     """
                     <div class="aportes-card-heading">
@@ -4077,7 +4079,7 @@ if st.session_state.vista_airbnb == "Aportes":
                 )
 
         with left_right[1]:
-            with st.container(border=True):
+            with st.container(height=430, border=True):
                 st.markdown(
                     """
                     <div class="aportes-card-heading">
@@ -4131,7 +4133,7 @@ if st.session_state.vista_airbnb == "Aportes":
                     )
                 )
                 fig_donut.update_layout(
-                    height=185,
+                    height=195,
                     margin=dict(l=0, r=0, t=0, b=0),
                     showlegend=False,
                     paper_bgcolor="rgba(0,0,0,0)",
