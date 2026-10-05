@@ -3819,27 +3819,65 @@ def tarjeta_portafolio():
 
 if st.session_state.vista_airbnb == "Aportes":
 
-    st.markdown(
-        """
-<div class="section-title">💰 Aportes y capital familiar</div>
-<div class="section-subtitle">Capital realmente aportado por cada socio · punto de partida para comparar aportes contra patrimonio</div>
-""",
-        unsafe_allow_html=True
-    )
-
     aportes_base = aportes_socios.copy()
 
+    st.markdown("""
+<style>
+.aportes-dashboard { margin-top: 2px; }
+.aportes-hero { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px; }
+.aportes-hero-title { font-size:26px; line-height:1.05; font-weight:900; color:#17345E; letter-spacing:-.4px; }
+.aportes-hero-sub { font-size:11px; color:#8190A5; margin-top:7px; }
+.aportes-period { background:#FFFFFF; border:1px solid #DCE5EE; border-radius:10px; padding:9px 12px; min-width:185px; box-shadow:0 1px 2px rgba(23,52,94,.03); }
+.aportes-period-label { font-size:8px; font-weight:800; color:#738299; text-transform:uppercase; }
+.aportes-period-value { font-size:11px; font-weight:800; color:#17345E; margin-top:5px; }
+.aportes-kpi-grid5 { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:10px 0 14px; }
+.aportes-kpi5 { background:#FFFFFF; border:1px solid #E3E9F0; border-radius:12px; padding:13px 14px; min-height:84px; box-sizing:border-box; display:flex; align-items:center; gap:11px; box-shadow:0 1px 2px rgba(23,52,94,.025); }
+.aportes-kpi5-icon { width:40px; height:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:20px; flex:0 0 40px; }
+.aportes-kpi5:nth-child(1) .aportes-kpi5-icon { background:#FFE9EE; }
+.aportes-kpi5:nth-child(2) .aportes-kpi5-icon { background:#FFE9EE; }
+.aportes-kpi5:nth-child(3) .aportes-kpi5-icon { background:#E8F8F1; }
+.aportes-kpi5:nth-child(4) .aportes-kpi5-icon { background:#F1EAFE; }
+.aportes-kpi5:nth-child(5) .aportes-kpi5-icon { background:#FFF0E5; }
+.aportes-kpi5-label { font-size:8px; color:#7E8DA3; font-weight:700; }
+.aportes-kpi5-value { font-size:20px; line-height:1.05; color:#17345E; font-weight:900; margin-top:5px; white-space:nowrap; }
+.aportes-kpi5-sub { font-size:8px; color:#8795A8; margin-top:4px; }
+.aportes-chart-card { background:#FFFFFF; border:1px solid #E1E8EF; border-radius:13px; padding:12px 14px 8px; box-sizing:border-box; min-height:355px; }
+.aportes-card-heading { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:3px; }
+.aportes-card-title2 { font-size:13px; font-weight:900; color:#17345E; }
+.aportes-card-sub2 { font-size:9px; color:#8A98AA; margin-top:4px; }
+.aportes-mini-label { font-size:8px; font-weight:800; color:#71839A; margin-right:7px; }
+.aportes-mini-select { display:inline-block; border:1px solid #DCE5EE; border-radius:7px; padding:6px 10px; font-size:9px; color:#40536C; background:#FFFFFF; }
+.aportes-table-card { background:#FFFFFF; border:1px solid #E1E8EF; border-radius:13px; padding:12px 14px; min-height:240px; box-sizing:border-box; }
+.aportes-table2 { width:100%; border-collapse:collapse; font-size:8.5px; color:#50637B; margin-top:10px; }
+.aportes-table2 th { background:#F4F7FA; color:#71839A; font-size:7.5px; font-weight:800; text-transform:uppercase; padding:7px 8px; border-bottom:1px solid #DCE5EE; text-align:right; white-space:nowrap; }
+.aportes-table2 th:first-child,.aportes-table2 td:first-child { text-align:left; }
+.aportes-table2 td { padding:8px; border-bottom:1px solid #EDF1F5; text-align:right; white-space:nowrap; }
+.aportes-table2 td:first-child { font-weight:800; color:#17345E; }
+.aportes-table2 tr:last-child td { border-bottom:none; }
+.aportes-total2 td { background:#F8FAFC; font-weight:900; color:#17345E !important; }
+.aportes-socio-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+.aportes-latest { margin-top:10px; width:100%; border-collapse:collapse; font-size:8px; }
+.aportes-latest th { text-align:left; color:#71839A; font-size:7px; text-transform:uppercase; padding:6px 5px; border-bottom:1px solid #DCE5EE; }
+.aportes-latest td { padding:7px 5px; border-bottom:1px solid #EDF1F5; color:#52657C; white-space:nowrap; }
+.aportes-latest td:last-child { text-align:right; font-weight:900; color:#17345E; }
+@media (max-width: 1050px) { .aportes-kpi-grid5{grid-template-columns:repeat(3,1fr)} }
+@media (max-width: 700px) { .aportes-kpi-grid5{grid-template-columns:1fr 1fr} .aportes-hero{display:block} .aportes-period{margin-top:10px} }
+</style>
+""", unsafe_allow_html=True)
+
     if aportes_base.empty:
-        st.markdown(
-            """
-<div class="aportes-panel">
-    <div class="aportes-title">💰 Aportes y capital familiar</div>
-    <div class="aportes-note"><b>Sin datos:</b> no se encontraron registros en Aportes_Socios.</div>
+        st.markdown("""
+<div class="aportes-chart-card">
+    <div class="aportes-card-title2">💰 Aportes y capital familiar</div>
+    <div class="aportes-card-sub2">No se encontraron registros en Aportes_Socios.</div>
 </div>
-""",
-            unsafe_allow_html=True
-        )
+""", unsafe_allow_html=True)
     else:
+        aportes_base = aportes_base.copy()
+        aportes_base["Fecha"] = pd.to_datetime(aportes_base["Fecha"], errors="coerce")
+        aportes_base["Valor"] = pd.to_numeric(aportes_base["Valor"], errors="coerce").fillna(0)
+        aportes_base = aportes_base.dropna(subset=["Fecha"])
+
         total_aportes = float(aportes_base["Valor"].sum())
         socios = (
             aportes_base.groupby("Nombre_Socio", as_index=False)
@@ -3852,108 +3890,130 @@ if st.session_state.vista_airbnb == "Aportes":
             .sort_values("Aportes", ascending=False)
             .reset_index(drop=True)
         )
-
-        socios["Participacion"] = (
-            socios["Aportes"] / total_aportes * 100
-            if total_aportes else 0
-        )
+        socios["Participacion"] = socios["Aportes"] / total_aportes * 100 if total_aportes else 0
 
         ultima_fecha = aportes_base["Fecha"].max()
-        ultima_fecha_txt = ultima_fecha.strftime("%d/%m/%Y") if pd.notna(ultima_fecha) else "-"
-        promedio_aporte = total_aportes / len(aportes_base) if len(aportes_base) else 0
+        ultima_fecha_txt = ultima_fecha.strftime("%b %Y") if pd.notna(ultima_fecha) else "-"
+        promedio_socio = total_aportes / len(socios) if len(socios) else 0
+        mayor_row = socios.iloc[0] if not socios.empty else None
 
-        kpi_items = [
-            ("CAPITAL APORTADO", dinero_corto(total_aportes), "Total registrado en Aportes_Socios"),
-            ("SOCIOS", f"{len(socios)}", "Socios con aportes registrados"),
-            ("ÚLTIMO APORTE", ultima_fecha_txt, f"{len(aportes_base):,} movimientos registrados"),
-            ("APORTE PROMEDIO", dinero_corto(promedio_aporte), "Promedio por movimiento")
-        ]
+        palette = ["#FF5A73", "#5DA7F4", "#43C995", "#9B63E8", "#F4B54A", "#7C8EA6"]
+        socio_colors = {row["Nombre_Socio"]: palette[i % len(palette)] for i, (_, row) in enumerate(socios.iterrows())}
 
-        kpi_html = '<div class="aportes-kpi-grid">'
-        for label, value, sub in kpi_items:
-            kpi_html += f"""
-<div class="aportes-kpi">
-    <div class="aportes-kpi-label">{label}</div>
-    <div class="aportes-kpi-value">{escape_html(value)}</div>
-    <div class="aportes-kpi-sub">{escape_html(sub)}</div>
+        periodo_inicio = aportes_base["Fecha"].min().strftime("%Y / %m / %d")
+        periodo_fin = aportes_base["Fecha"].max().strftime("%Y / %m / %d")
+        st.markdown(f"""
+<div class="aportes-dashboard">
+  <div class="aportes-hero">
+    <div>
+      <div class="aportes-hero-title">💰 Aportes y capital familiar</div>
+      <div class="aportes-hero-sub">Capital realmente aportado por cada socio · punto de partida para comparar aportes contra patrimonio</div>
+    </div>
+    <div class="aportes-period">
+      <div class="aportes-period-label">📅 Período</div>
+      <div class="aportes-period-value">{periodo_inicio}  –  {periodo_fin}</div>
+    </div>
+  </div>
 </div>
-"""
+""", unsafe_allow_html=True)
+
+        kpis = [
+            ("💵", "Capital Total Aportado", dinero_corto(total_aportes), ""),
+            ("👥", "Número de Socios", f"{len(socios)}", ""),
+            ("↗", "Aporte Promedio por Socio", dinero_corto(promedio_socio), ""),
+            ("▥", "Mayor Aporte", escape_html(str(mayor_row["Nombre_Socio"])) if mayor_row is not None else "-", dinero_corto(float(mayor_row["Aportes"])) if mayor_row is not None else "$0"),
+            ("📅", "Último Aporte", ultima_fecha_txt, dinero_corto(float(aportes_base.sort_values("Fecha").iloc[-1]["Valor"])) if not aportes_base.empty else "$0")
+        ]
+        kpi_html = '<div class="aportes-kpi-grid5">'
+        for icon, label, value, sub in kpis:
+            extra = f'<div class="aportes-kpi5-sub">{sub}</div>' if sub else ''
+            kpi_html += f'<div class="aportes-kpi5"><div class="aportes-kpi5-icon">{icon}</div><div><div class="aportes-kpi5-label">{label}</div><div class="aportes-kpi5-value">{value}</div>{extra}</div></div>'
         kpi_html += '</div>'
         st.markdown(kpi_html, unsafe_allow_html=True)
 
-        max_aporte = float(socios["Aportes"].max()) if not socios.empty else 0
-        barras_html = """
-<div class="aportes-card">
-    <div class="aportes-card-title">Capital aportado por socio</div>
-    <div class="aportes-card-subtitle">Participación sobre el capital familiar registrado</div>
-"""
+        mensual = (
+            aportes_base.assign(Mes=aportes_base["Fecha"].dt.to_period("M").dt.to_timestamp())
+            .groupby(["Mes", "Nombre_Socio"], as_index=False)["Valor"].sum()
+        )
+        meses = pd.date_range(mensual["Mes"].min(), mensual["Mes"].max(), freq="MS") if not mensual.empty else pd.DatetimeIndex([])
+        socios_nombres = list(socios["Nombre_Socio"])
+        fig_evol = go.Figure()
+        for socio in socios_nombres:
+            serie = mensual[mensual["Nombre_Socio"] == socio].set_index("Mes")["Valor"].reindex(meses, fill_value=0).cumsum() / 1_000_000
+            fig_evol.add_trace(go.Scatter(
+                x=meses, y=serie.values, name=socio, mode="lines+markers",
+                line=dict(color=socio_colors[socio], width=2.2), marker=dict(size=4, color=socio_colors[socio]),
+                hovertemplate=f"{escape_html(socio)}<br>%{{x|%b %Y}}<br>%{{y:$,.0f}}<extra></extra>"
+            ))
+        fig_evol.update_layout(
+            height=270, margin=dict(l=0,r=0,t=8,b=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(family="Arial", size=9, color="#6F8097"), hovermode="x unified",
+            legend=dict(orientation="h", y=-0.02, x=0.5, xanchor="center", font=dict(size=8)),
+            xaxis=dict(showgrid=True, gridcolor="#EEF2F6", zeroline=False, tickformat="%Y", fixedrange=True),
+            yaxis=dict(showgrid=True, gridcolor="#EEF2F6", zeroline=False, tickprefix="$", ticksuffix="M", tickformat=",.0f", fixedrange=True)
+        )
 
-        for _, socio_row in socios.iterrows():
-            porcentaje_barra = float(socio_row["Aportes"]) / max_aporte * 100 if max_aporte else 0
-            barras_html += f"""
-    <div class="aportes-row">
-        <div class="aportes-row-name">{escape_html(socio_row["Nombre_Socio"])}</div>
-        <div class="aportes-bar-bg"><div class="aportes-bar-fill" style="width:{porcentaje_barra:.1f}%;"></div></div>
-        <div class="aportes-row-value">{dinero_corto(socio_row["Aportes"])} · {float(socio_row["Participacion"]):.1f}%</div>
-    </div>
-"""
-        barras_html += '</div>'
-        barras_html = "\n".join(line.lstrip() for line in barras_html.splitlines())
+        left_right = st.columns([1.62, 1.0], gap="small")
+        with left_right[0]:
+            st.markdown("""
+<div class="aportes-chart-card">
+  <div class="aportes-card-heading">
+    <div><div class="aportes-card-title2">📈 Evolución de aportes acumulados</div><div class="aportes-card-sub2">Crecimiento del capital aportado por cada socio en el tiempo</div></div>
+    <div><span class="aportes-mini-label">Vista</span><span class="aportes-mini-select">Acumulado　⌄</span></div>
+  </div>
+""", unsafe_allow_html=True)
+            st.plotly_chart(fig_evol, use_container_width=True, config={"displayModeBar":False}, key="fig_aportes_evol")
+            st.markdown('</div>', unsafe_allow_html=True)
 
-        lectura_html = """
-<div class="aportes-card">
-    <div class="aportes-card-title">🧭 Lectura financiera</div>
-    <div class="aportes-card-subtitle">La base para medir qué tan lejos está el patrimonio del capital realmente puesto</div>
-    <div class="aportes-note" style="margin-top:4px;"><b>Primera capa:</b> aquí medimos únicamente el capital efectivamente registrado como aporte de cada socio.</div>
-    <div class="aportes-note"><b>Siguiente capa:</b> cruzaremos estos aportes con los activos por propietario para calcular patrimonio actual y, finalmente, <b>patrimonio / aportes</b>.</div>
-</div>
-"""
+        with left_right[1]:
+            st.markdown("""
+<div class="aportes-chart-card">
+  <div class="aportes-card-title2">👥 Aportes por socio</div>
+  <div class="aportes-card-sub2">Participación en el capital total aportado</div>
+""", unsafe_allow_html=True)
+            bar_html = ''
+            for _, row in socios.iterrows():
+                color = socio_colors[row["Nombre_Socio"]]
+                pct = float(row["Participacion"])
+                bar_html += f'<div style="margin-top:12px;"><div style="display:flex;justify-content:space-between;align-items:center;font-size:8px;font-weight:800;color:#50637B;"><span>{escape_html(row["Nombre_Socio"])}</span><span style="color:#17345E;font-size:9px;">{dinero_corto(float(row["Aportes"]))}</span></div><div style="height:8px;background:#EEF2F6;border-radius:7px;margin-top:5px;overflow:hidden;"><div style="height:100%;width:{pct:.1f}%;background:{color};border-radius:7px;"></div></div><div style="text-align:right;font-size:7.5px;color:#71839A;margin-top:2px;">{pct:.1f}%</div></div>'
+            st.markdown(bar_html, unsafe_allow_html=True)
+            fig_donut = go.Figure(go.Pie(
+                labels=socios["Nombre_Socio"], values=socios["Aportes"], hole=.57,
+                marker=dict(colors=[socio_colors[n] for n in socios["Nombre_Socio"]], line=dict(color="#FFFFFF", width=2)),
+                textinfo="percent", textfont=dict(size=9), hovertemplate="%{label}<br>$%{value:,.0f}<br>%{percent}<extra></extra>"
+            ))
+            fig_donut.update_layout(height=205, margin=dict(l=0,r=0,t=0,b=0), showlegend=False, paper_bgcolor="rgba(0,0,0,0)")
+            fig_donut.add_annotation(text=f"<b>{dinero_corto(total_aportes)}</b><br><span style='font-size:9px'>Total</span>", x=.5, y=.5, showarrow=False, font=dict(size=12,color="#17345E"))
+            st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar":False}, key="fig_aportes_donut")
+            st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="aportes-body-grid">' + barras_html + lectura_html + '</div>', unsafe_allow_html=True)
+        bottom = st.columns([1.45, 1.15, .75], gap="small")
+        with bottom[0]:
+            rows = ''
+            for _, row in socios.iterrows():
+                color = socio_colors[row["Nombre_Socio"]]
+                ultimo = row["Ultimo_Aporte"].strftime("%b %Y") if pd.notna(row["Ultimo_Aporte"]) else "-"
+                rows += f'<tr><td><span class="aportes-socio-dot" style="background:{color};"></span>{escape_html(row["Nombre_Socio"])}</td><td>{dinero_corto(float(row["Aportes"]))}</td><td>{float(row["Participacion"]):.1f}%</td><td>{int(row["Movimientos"])}</td><td>{ultimo}</td></tr>'
+            rows += f'<tr class="aportes-total2"><td>Total</td><td>{dinero_corto(total_aportes)}</td><td>100.0%</td><td>{len(aportes_base)}</td><td>{ultima_fecha_txt}</td></tr>'
+            html = f'<div class="aportes-table-card"><div class="aportes-card-title2">📋 Detalle de aportes</div><div class="aportes-card-sub2">Acumulado histórico por socio, con participación y trazabilidad de movimientos</div><table class="aportes-table2"><thead><tr><th>Socio</th><th>Aporte Total</th><th>Participación</th><th># Aportes</th><th>Último Aporte</th></tr></thead><tbody>{rows}</tbody></table></div>'
+            st.markdown(html, unsafe_allow_html=True)
 
-        tabla_aportes_html = """
-<div class="aportes-panel">
-    <div class="aportes-title">📋 Detalle de aportes</div>
-    <div class="aportes-subtitle">Acumulado histórico por socio, con participación y trazabilidad de movimientos</div>
-    <table class="aportes-table">
-        <thead><tr>
-            <th>Socio</th><th>Aportes acumulados</th><th>Participación</th><th>Movimientos</th><th>Primer aporte</th><th>Último aporte</th>
-        </tr></thead>
-        <tbody>
-"""
+        with bottom[1]:
+            mensual_total = aportes_base.assign(Mes=aportes_base["Fecha"].dt.to_period("M").dt.to_timestamp()).groupby("Mes", as_index=False)["Valor"].sum()
+            fig_mensual = go.Figure(go.Bar(x=mensual_total["Mes"], y=mensual_total["Valor"] / 1_000_000, marker_color="#FF5A73", customdata=mensual_total["Valor"], hovertemplate="%{x|%Y-%m}<br>$%{customdata:,.0f}<extra></extra>"))
+            fig_mensual.update_layout(height=205, margin=dict(l=0,r=0,t=8,b=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font=dict(size=8,color="#71839A"), xaxis=dict(showgrid=True,gridcolor="#EEF2F6",tickformat="%Y-%m",tickangle=-45,zeroline=False), yaxis=dict(showgrid=True,gridcolor="#EEF2F6",tickprefix="$",ticksuffix="M",tickformat=",.0f",zeroline=False), showlegend=False)
+            st.markdown('<div class="aportes-table-card"><div class="aportes-card-title2">📊 Aportes mensuales (total)</div><div class="aportes-card-sub2">Monto total aportado por mes (todos los socios)</div>', unsafe_allow_html=True)
+            st.plotly_chart(fig_mensual, use_container_width=True, config={"displayModeBar":False}, key="fig_aportes_mensual")
+            st.markdown('</div>', unsafe_allow_html=True)
 
-        for _, socio_row in socios.iterrows():
-            primer = socio_row["Primer_Aporte"]
-            ultimo = socio_row["Ultimo_Aporte"]
-            primer_txt = primer.strftime("%b %Y") if pd.notna(primer) else "-"
-            ultimo_txt = ultimo.strftime("%b %Y") if pd.notna(ultimo) else "-"
-            tabla_aportes_html += f"""
-            <tr>
-                <td>{escape_html(socio_row["Nombre_Socio"])}</td>
-                <td><span class="aportes-positive">{dinero_corto(socio_row["Aportes"])}</span></td>
-                <td>{float(socio_row["Participacion"]):.1f}%</td>
-                <td>{int(socio_row["Movimientos"])}</td>
-                <td>{primer_txt}</td>
-                <td>{ultimo_txt}</td>
-            </tr>
-"""
-
-        tabla_aportes_html += f"""
-            <tr class="aportes-total-row">
-                <td>TOTAL FAMILIA</td>
-                <td>{dinero_corto(total_aportes)}</td>
-                <td>100.0%</td>
-                <td>{len(aportes_base)}</td>
-                <td colspan="2">Capital aportado registrado</td>
-            </tr>
-        </tbody>
-    </table>
-    <div class="aportes-note"><b>Importante:</b> “Aportes acumulados” es el cash registrado como aporte de socios. No equivale todavía al patrimonio actual: para esa comparación debemos sumar los activos de cada propietario y descontar las obligaciones correspondientes.</div>
-</div>
-"""
-
-        tabla_aportes_html = "\n".join(line.lstrip() for line in tabla_aportes_html.splitlines())
-        st.markdown(tabla_aportes_html, unsafe_allow_html=True)
+        with bottom[2]:
+            recientes = aportes_base.sort_values(["Fecha","ID_Aporte"], ascending=[False,False]).head(6)
+            latest_rows = ''
+            for _, row in recientes.iterrows():
+                color = socio_colors.get(row["Nombre_Socio"], "#7C8EA6")
+                latest_rows += f'<tr><td>{row["Fecha"].strftime("%Y-%m-%d")}</td><td><span class="aportes-socio-dot" style="background:{color};"></span>{escape_html(row["Nombre_Socio"])}</td><td>{dinero_corto(float(row["Valor"]))}</td></tr>'
+            html_latest = f'<div class="aportes-table-card"><div class="aportes-card-title2">🕘 Últimos aportes</div><div class="aportes-card-sub2">Movimientos más recientes de todos los socios</div><table class="aportes-latest"><thead><tr><th>Fecha</th><th>Socio</th><th>Monto</th></tr></thead><tbody>{latest_rows}</tbody></table></div>'
+            st.markdown(html_latest, unsafe_allow_html=True)
 
 
 # ============================================================
