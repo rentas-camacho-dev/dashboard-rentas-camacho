@@ -4718,7 +4718,7 @@ if st.session_state.vista_airbnb == "Aportes":
             ),
             (
                 "↗",
-                "Activos asociados",
+                "Finca Raíz",
                 dinero_corto(valor_activos_asociados_total),
                 "Valor de mercado estimado"
             ),
@@ -5100,7 +5100,7 @@ if st.session_state.vista_airbnb == "Aportes":
 <div style="margin-top:14px;">
     <div class="aportes-bottom-title">🧭 Resumen patrimonial por socio</div>
     <div class="aportes-bottom-sub">
-        Aportes registrados · activos asociados · activos adicionales · patrimonio mínimo estimado
+        Aportes registrados · Finca Raíz · activos adicionales · patrimonio mínimo estimado
     </div>
 </div>
 """
@@ -5126,43 +5126,124 @@ if st.session_state.vista_airbnb == "Aportes":
                 else "A"
             )
 
-            activos_socio_df = (
+            # ========================================================
+            # COMPOSICIÓN DE ACTIVOS - PRIMERA CAPA: FINCA RAÍZ
+            # ========================================================
+            # La vista prorrateada contiene los predios valorizados.
+            # Torre Ventto se mantiene aparte como activo adicional.
+            #
+            # Para que el gráfico se parezca a la referencia visual,
+            # cada segmento representa un predio y la leyenda muestra:
+            # nombre + participación + valor.
+            activos_finca_socio = (
                 activos_asociados[
                     activos_asociados["Nombre_Socio"] == nombre
                 ]
                 .sort_values("Valor_Mercado_Socio", ascending=False)
-                .head(4)
+                .copy()
             )
 
-            adicionales_socio_df = (
-                activos_adicionales[
-                    activos_adicionales["Nombre_Socio"] == nombre
+            # Mostramos los 8 predios principales y, si existen más,
+            # consolidamos el resto como "Otros Finca Raíz".
+            max_predios_detalle = 8
+
+            if len(activos_finca_socio) > max_predios_detalle:
+                top_predios = (
+                    activos_finca_socio
+                    .head(max_predios_detalle - 1)
+                    .copy()
+                )
+                valor_otros = float(
+                    activos_finca_socio
+                    .iloc[max_predios_detalle - 1:]["Valor_Mercado_Socio"]
+                    .sum()
+                )
+
+                if valor_otros > 0:
+                    otros_row = pd.DataFrame([{
+                        "Nombre_Entidad": "Otros Finca Raíz",
+                        "Valor_Mercado_Socio": valor_otros
+                    }])
+                    activos_finca_grafico = pd.concat(
+                        [top_predios, otros_row],
+                        ignore_index=True
+                    )
+                else:
+                    activos_finca_grafico = top_predios
+            else:
+                activos_finca_grafico = activos_finca_socio.copy()
+
+            total_finca_socio = float(
+                activos_finca_socio["Valor_Mercado_Socio"].sum()
+            )
+
+            valores_pie = (
+                activos_finca_grafico["Valor_Mercado_Socio"]
+                .astype(float)
+                .tolist()
+            )
+
+            nombres_pie = (
+                activos_finca_grafico["Nombre_Entidad"]
+                .astype(str)
+                .tolist()
+            )
+
+            porcentajes_pie = [
+                (valor / total_finca_socio * 100)
+                if total_finca_socio else 0
+                for valor in valores_pie
+            ]
+
+            # Tonos coherentes por socio, como en la referencia visual.
+            if clase == "diego":
+                colores_base = [
+                    "#FF4F68", "#FF647A", "#FF7890", "#FF8DA2",
+                    "#FFA2B4", "#FFB7C4", "#FFCBD4", "#FFDFE6"
                 ]
-                .sort_values("Valor_Mercado_Socio", ascending=False)
-                .head(2)
-            )
+            elif clase == "william":
+                colores_base = [
+                    "#3B8FE8", "#4D9BEA", "#61A8ED", "#74B4EF",
+                    "#8AC0F1", "#9DCBF3", "#B0D6F5", "#C4E0F7"
+                ]
+            else:
+                colores_base = [
+                    "#1FB47B", "#31C188", "#43C995", "#55D2A2",
+                    "#69D9AF", "#80E1BC", "#97E8C9", "#AEEFD6"
+                ]
 
-            valores_pie = [
-                float(socio_row["Activos_Asociados"]),
-                float(socio_row["Activos_Adicionales"]),
+            colores_pie = [
+                colores_base[i % len(colores_base)]
+                for i in range(len(valores_pie))
             ]
-            labels_pie = [
-                "Activos asociados",
-                "Activos adicionales",
+
+            etiquetas_leyenda = [
+                (
+                    f"{nombre_predio} · "
+                    f"{porcentaje:.0f}% · "
+                    f"{dinero_corto(valor)}"
+                )
+                for nombre_predio, porcentaje, valor
+                in zip(
+                    nombres_pie,
+                    porcentajes_pie,
+                    valores_pie
+                )
             ]
-            colors_pie = ["#FF5A73", "#43C995"]
 
             fig_socio = go.Figure(
                 go.Pie(
-                    labels=labels_pie,
+                    labels=etiquetas_leyenda,
                     values=valores_pie,
                     hole=0.62,
                     marker=dict(
-                        colors=colors_pie,
+                        colors=colores_pie,
                         line=dict(color="#FFFFFF", width=2),
                     ),
                     textinfo="percent",
                     textfont=dict(size=8),
+                    sort=False,
+                    direction="clockwise",
                     hovertemplate=(
                         "%{label}<br>"
                         "$%{value:,.0f}<br>"
@@ -5170,22 +5251,42 @@ if st.session_state.vista_airbnb == "Aportes":
                     ),
                 )
             )
+
             fig_socio.update_layout(
-                height=185,
+                height=285,
                 margin=dict(l=0, r=0, t=0, b=0),
-                showlegend=False,
+                showlegend=True,
+                legend=dict(
+                    orientation="v",
+                    x=0.58,
+                    xanchor="left",
+                    y=0.5,
+                    yanchor="middle",
+                    font=dict(
+                        size=8,
+                        color="#50637B"
+                    ),
+                    bgcolor="rgba(255,255,255,0)",
+                    borderwidth=0,
+                    itemclick=False,
+                    itemdoubleclick=False,
+                ),
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
             )
+
             fig_socio.add_annotation(
                 text=(
-                    f"<b>{dinero_corto(socio_row['Patrimonio_Estimado'])}</b>"
-                    "<br><span style='font-size:8px'>Patrimonio</span>"
+                    f"<b>{dinero_corto(total_finca_socio)}</b>"
+                    "<br><span style='font-size:8px'>Finca Raíz</span>"
                 ),
-                x=0.5,
+                x=0.27,
                 y=0.5,
                 showarrow=False,
-                font=dict(size=10, color="#17345E"),
+                font=dict(
+                    size=10,
+                    color="#17345E"
+                ),
             )
 
             card_html = f"""
@@ -5200,7 +5301,7 @@ if st.session_state.vista_airbnb == "Aportes":
         <span>{dinero_corto(socio_row['Aportes'])}</span>
     </div>
     <div class="aportes-socio-line">
-        <span>Activos asociados</span>
+        <span>Finca Raíz</span>
         <span>{dinero_corto(socio_row['Activos_Asociados'])}</span>
     </div>
     <div class="aportes-socio-line">
@@ -5218,35 +5319,35 @@ if st.session_state.vista_airbnb == "Aportes":
         </div>
     </div>
 
-    <div class="aportes-mini-asset-title">Principales activos asociados</div>
+    <div class="aportes-mini-asset-title">🏠 Composición por Finca Raíz</div>
+    <div class="aportes-card-sub2" style="margin:2px 0 5px;">
+        Peso de cada predio dentro del patrimonio inmobiliario del socio
+    </div>
 """
 
-            if not activos_socio_df.empty:
-                for _, asset in activos_socio_df.iterrows():
-                    card_html += f"""
-<div class="aportes-mini-asset">
-    <div class="aportes-mini-asset-name">
-        {escape_html(asset['Nombre_Entidad'])}
-    </div>
-    <div class="aportes-mini-asset-value">
-        {dinero_corto(asset['Valor_Mercado_Socio'])}
-    </div>
-</div>
-"""
-            else:
-                card_html += """
-<div class="aportes-mini-asset">
-    <div class="aportes-mini-asset-name">Sin activos asociados</div>
-    <div class="aportes-mini-asset-value">-</div>
-</div>
-"""
+            card_html += "</div>"
 
-            if not adicionales_socio_df.empty:
-                card_html += """
+            with socio_cards_cols[idx]:
+                with st.container(height=700, border=True):
+                    render_aportes_html(card_html)
+                    st.plotly_chart(
+                        fig_socio,
+                        use_container_width=True,
+                        config={"displayModeBar": False},
+                        key=f"fig_patrimonio_socio_nuevo_{idx}",
+                    )
+
+                    # ====================================================
+                    # SEGUNDA CAPA FUTURA: ACTIVOS ADICIONALES
+                    # Hoy se muestra principalmente Torre Ventto.
+                    # Más adelante aquí podemos incorporar Comercio.
+                    # ====================================================
+                    adicionales_html = """
 <div class="aportes-mini-asset-title">Activos adicionales</div>
 """
-                for _, asset in adicionales_socio_df.iterrows():
-                    card_html += f"""
+                    if not adicionales_socio_df.empty:
+                        for _, asset in adicionales_socio_df.iterrows():
+                            adicionales_html += f"""
 <div class="aportes-mini-asset">
     <div class="aportes-mini-asset-name aportes-additional">
         {escape_html(asset['Nombre_Entidad'])} · Ventto
@@ -5256,23 +5357,16 @@ if st.session_state.vista_airbnb == "Aportes":
     </div>
 </div>
 """
-            else:
-                # Reserva visual para que los tres donuts queden a la misma altura.
-                card_html += """
-<div style="height:37px;"></div>
+                    else:
+                        adicionales_html += """
+<div class="aportes-mini-asset">
+    <div class="aportes-mini-asset-name">
+        Sin activos adicionales
+    </div>
+    <div class="aportes-mini-asset-value">-</div>
+</div>
 """
-
-            card_html += "</div>"
-
-            with socio_cards_cols[idx]:
-                with st.container(height=640, border=True):
-                    render_aportes_html(card_html)
-                    st.plotly_chart(
-                        fig_socio,
-                        use_container_width=True,
-                        config={"displayModeBar": False},
-                        key=f"fig_patrimonio_socio_nuevo_{idx}",
-                    )
+                    render_aportes_html(adicionales_html)
 
         # ========================================================
         # TABLA COMPLETA A TODO EL ANCHO
