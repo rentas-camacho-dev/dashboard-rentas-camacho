@@ -3932,60 +3932,215 @@ if st.session_state.vista_airbnb == "Aportes":
         st.markdown(kpi_html, unsafe_allow_html=True)
 
         mensual = (
-            aportes_base.assign(Mes=aportes_base["Fecha"].dt.to_period("M").dt.to_timestamp())
-            .groupby(["Mes", "Nombre_Socio"], as_index=False)["Valor"].sum()
+            aportes_base.assign(
+                Mes=aportes_base["Fecha"].dt.to_period("M").dt.to_timestamp()
+            )
+            .groupby(["Mes", "Nombre_Socio"], as_index=False)["Valor"]
+            .sum()
         )
-        meses = pd.date_range(mensual["Mes"].min(), mensual["Mes"].max(), freq="MS") if not mensual.empty else pd.DatetimeIndex([])
+
+        # EVOLUCION: barras apiladas por mes y socio.
+        # Cada barra representa el aporte del mes y cada color
+        # muestra la participacion del socio dentro de ese mes.
+        meses = (
+            pd.date_range(
+                mensual["Mes"].min(),
+                mensual["Mes"].max(),
+                freq="MS"
+            )
+            if not mensual.empty
+            else pd.DatetimeIndex([])
+        )
+
         socios_nombres = list(socios["Nombre_Socio"])
         fig_evol = go.Figure()
+
+        mensual_pivot = (
+            mensual.pivot_table(
+                index="Mes",
+                columns="Nombre_Socio",
+                values="Valor",
+                aggfunc="sum",
+                fill_value=0,
+            )
+            .reindex(meses, fill_value=0)
+        )
+
         for socio in socios_nombres:
-            serie = mensual[mensual["Nombre_Socio"] == socio].set_index("Mes")["Valor"].reindex(meses, fill_value=0).cumsum() / 1_000_000
-            fig_evol.add_trace(go.Scatter(
-                x=meses, y=serie.values, name=socio, mode="lines+markers",
-                line=dict(color=socio_colors[socio], width=2.2), marker=dict(size=4, color=socio_colors[socio]),
-                hovertemplate=f"{escape_html(socio)}<br>%{{x|%b %Y}}<br>%{{y:$,.0f}}<extra></extra>"
-            ))
+            if socio not in mensual_pivot.columns:
+                mensual_pivot[socio] = 0
+
+        mensual_pivot = mensual_pivot[socios_nombres]
+        totales_mes = mensual_pivot.sum(axis=1)
+
+        for socio in socios_nombres:
+            valores = mensual_pivot[socio].values
+            porcentajes = [
+                (v / total * 100) if total else 0
+                for v, total in zip(valores, totales_mes.values)
+            ]
+
+            fig_evol.add_trace(
+                go.Bar(
+                    x=meses,
+                    y=valores / 1_000_000,
+                    name=socio,
+                    marker_color=socio_colors[socio],
+                    customdata=valores,
+                    text=[
+                        f"{pct:.0f}%" if pct >= 12 else ""
+                        for pct in porcentajes
+                    ],
+                    textposition="inside",
+                    insidetextanchor="middle",
+                    textfont=dict(size=8, color="#FFFFFF"),
+                    hovertemplate=(
+                        f"<b>{escape_html(socio)}</b><br>"
+                        "%{x|%b %Y}<br>"
+                        "$%{customdata:,.0f}<extra></extra>"
+                    ),
+                )
+            )
+
         fig_evol.update_layout(
-            height=270, margin=dict(l=0,r=0,t=8,b=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="Arial", size=9, color="#6F8097"), hovermode="x unified",
-            legend=dict(orientation="h", y=-0.02, x=0.5, xanchor="center", font=dict(size=8)),
-            xaxis=dict(showgrid=True, gridcolor="#EEF2F6", zeroline=False, tickformat="%Y", fixedrange=True),
-            yaxis=dict(showgrid=True, gridcolor="#EEF2F6", zeroline=False, tickprefix="$", ticksuffix="M", tickformat=",.0f", fixedrange=True)
+            barmode="stack",
+            height=300,
+            margin=dict(l=0, r=0, t=8, b=4),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(family="Arial", size=9, color="#6F8097"),
+            legend=dict(
+                orientation="h",
+                y=-0.03,
+                x=0.5,
+                xanchor="center",
+                font=dict(size=8),
+            ),
+            bargap=0.18,
+            hovermode="x unified",
+            xaxis=dict(
+                showgrid=True,
+                gridcolor="#EEF2F6",
+                zeroline=False,
+                tickformat="%Y",
+                fixedrange=True,
+            ),
+            yaxis=dict(
+                showgrid=True,
+                gridcolor="#EEF2F6",
+                zeroline=False,
+                tickprefix="$",
+                ticksuffix="M",
+                tickformat=",.0f",
+                fixedrange=True,
+            ),
         )
 
         left_right = st.columns([1.62, 1.0], gap="small")
+
         with left_right[0]:
-            st.markdown("""
-<div class="aportes-chart-card">
-  <div class="aportes-card-heading">
-    <div><div class="aportes-card-title2">📈 Evolución de aportes acumulados</div><div class="aportes-card-sub2">Crecimiento del capital aportado por cada socio en el tiempo</div></div>
-    <div><span class="aportes-mini-label">Vista</span><span class="aportes-mini-select">Acumulado　⌄</span></div>
-  </div>
-""", unsafe_allow_html=True)
-            st.plotly_chart(fig_evol, use_container_width=True, config={"displayModeBar":False}, key="fig_aportes_evol")
-            st.markdown('</div>', unsafe_allow_html=True)
+            with st.container(border=True):
+                st.markdown(
+                    """
+                    <div class="aportes-card-heading">
+                      <div>
+                        <div class="aportes-card-title2">
+                          📊 Evolución de aportes mensuales
+                        </div>
+                        <div class="aportes-card-sub2">
+                          Cada barra representa el aporte del mes y cada color muestra la participación de cada socio
+                        </div>
+                      </div>
+                      <div>
+                        <span class="aportes-mini-label">Vista</span>
+                        <span class="aportes-mini-select">Participación mensual</span>
+                      </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.plotly_chart(
+                    fig_evol,
+                    use_container_width=True,
+                    config={"displayModeBar": False},
+                    key="fig_aportes_evol",
+                )
 
         with left_right[1]:
-            st.markdown("""
-<div class="aportes-chart-card">
-  <div class="aportes-card-title2">👥 Aportes por socio</div>
-  <div class="aportes-card-sub2">Participación en el capital total aportado</div>
-""", unsafe_allow_html=True)
-            bar_html = ''
-            for _, row in socios.iterrows():
-                color = socio_colors[row["Nombre_Socio"]]
-                pct = float(row["Participacion"])
-                bar_html += f'<div style="margin-top:12px;"><div style="display:flex;justify-content:space-between;align-items:center;font-size:8px;font-weight:800;color:#50637B;"><span>{escape_html(row["Nombre_Socio"])}</span><span style="color:#17345E;font-size:9px;">{dinero_corto(float(row["Aportes"]))}</span></div><div style="height:8px;background:#EEF2F6;border-radius:7px;margin-top:5px;overflow:hidden;"><div style="height:100%;width:{pct:.1f}%;background:{color};border-radius:7px;"></div></div><div style="text-align:right;font-size:7.5px;color:#71839A;margin-top:2px;">{pct:.1f}%</div></div>'
-            st.markdown(bar_html, unsafe_allow_html=True)
-            fig_donut = go.Figure(go.Pie(
-                labels=socios["Nombre_Socio"], values=socios["Aportes"], hole=.57,
-                marker=dict(colors=[socio_colors[n] for n in socios["Nombre_Socio"]], line=dict(color="#FFFFFF", width=2)),
-                textinfo="percent", textfont=dict(size=9), hovertemplate="%{label}<br>$%{value:,.0f}<br>%{percent}<extra></extra>"
-            ))
-            fig_donut.update_layout(height=205, margin=dict(l=0,r=0,t=0,b=0), showlegend=False, paper_bgcolor="rgba(0,0,0,0)")
-            fig_donut.add_annotation(text=f"<b>{dinero_corto(total_aportes)}</b><br><span style='font-size:9px'>Total</span>", x=.5, y=.5, showarrow=False, font=dict(size=12,color="#17345E"))
-            st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar":False}, key="fig_aportes_donut")
-            st.markdown('</div>', unsafe_allow_html=True)
+            with st.container(border=True):
+                st.markdown(
+                    """
+                    <div class="aportes-card-heading">
+                      <div>
+                        <div class="aportes-card-title2">👥 Aportes por socio</div>
+                        <div class="aportes-card-sub2">
+                          Participación en el capital total aportado
+                        </div>
+                      </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                bar_html = ""
+                for _, row in socios.iterrows():
+                    color = socio_colors[row["Nombre_Socio"]]
+                    pct = float(row["Participacion"])
+                    bar_html += (
+                        f'<div style="margin-top:12px;">'
+                        f'<div style="display:flex;justify-content:space-between;'
+                        f'align-items:center;font-size:8px;font-weight:800;color:#50637B;">'
+                        f'<span>{escape_html(row["Nombre_Socio"])}</span>'
+                        f'<span style="color:#17345E;font-size:9px;">'
+                        f'{dinero_corto(float(row["Aportes"]))}</span></div>'
+                        f'<div style="height:8px;background:#EEF2F6;border-radius:7px;'
+                        f'margin-top:5px;overflow:hidden;">'
+                        f'<div style="height:100%;width:{pct:.1f}%;background:{color};'
+                        f'border-radius:7px;"></div></div>'
+                        f'<div style="text-align:right;font-size:7.5px;color:#71839A;'
+                        f'margin-top:2px;">{pct:.1f}%</div></div>'
+                    )
+
+                st.markdown(bar_html, unsafe_allow_html=True)
+
+                fig_donut = go.Figure(
+                    go.Pie(
+                        labels=socios["Nombre_Socio"],
+                        values=socios["Aportes"],
+                        hole=0.57,
+                        marker=dict(
+                            colors=[socio_colors[n] for n in socios["Nombre_Socio"]],
+                            line=dict(color="#FFFFFF", width=2),
+                        ),
+                        textinfo="percent",
+                        textfont=dict(size=9),
+                        hovertemplate=(
+                            "%{label}<br>$%{value:,.0f}"
+                            "<br>%{percent}<extra></extra>"
+                        ),
+                    )
+                )
+                fig_donut.update_layout(
+                    height=205,
+                    margin=dict(l=0, r=0, t=0, b=0),
+                    showlegend=False,
+                    paper_bgcolor="rgba(0,0,0,0)",
+                )
+                fig_donut.add_annotation(
+                    text=(
+                        f"<b>{dinero_corto(total_aportes)}</b>"
+                        "<br><span style='font-size:9px'>Total</span>"
+                    ),
+                    x=0.5, y=0.5, showarrow=False,
+                    font=dict(size=12, color="#17345E"),
+                )
+                st.plotly_chart(
+                    fig_donut,
+                    use_container_width=True,
+                    config={"displayModeBar": False},
+                    key="fig_aportes_donut",
+                )
+
 
         bottom = st.columns([1.45, 1.15, .75], gap="small")
         with bottom[0]:
