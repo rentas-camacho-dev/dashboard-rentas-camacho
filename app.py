@@ -3820,6 +3820,13 @@ def tarjeta_portafolio():
 
 if st.session_state.vista_airbnb == "Aportes":
 
+    def render_aportes_html(html, unsafe_allow_html=True):
+        """Renderiza HTML de Aportes sin que la indentación Python lo convierta en bloque de código."""
+        st.markdown(
+            textwrap.dedent(str(html)).strip(),
+            unsafe_allow_html=True
+        )
+
     @st.cache_data(ttl=900)
     def cargar_estudio_mercado_prorrateado():
         """
@@ -3905,7 +3912,7 @@ if st.session_state.vista_airbnb == "Aportes":
     aportes_base = aportes_socios.copy()
     vista_patrimonio = cargar_estudio_mercado_prorrateado()
 
-    st.markdown(
+    render_aportes_html(
         """
 <style>
 .aportes-dashboard { margin-top:2px; }
@@ -4016,7 +4023,7 @@ if st.session_state.vista_airbnb == "Aportes":
     border-radius:13px;
     padding:12px 14px 8px;
     box-sizing:border-box;
-    min-height:340px;
+    min-height:0;
     overflow:hidden;
 }
 .aportes-card-heading {
@@ -4146,8 +4153,8 @@ if st.session_state.vista_airbnb == "Aportes":
     background:#FFFFFF;
     padding:12px;
     box-sizing:border-box;
-    min-height:500px;
-    overflow:hidden;
+    min-height:0;
+    overflow:visible;
 }
 .aportes-socio-card.diego { border-top:3px solid #FF5A73; }
 .aportes-socio-card.william { border-top:3px solid #5DA7F4; }
@@ -4343,7 +4350,7 @@ if st.session_state.vista_airbnb == "Aportes":
     )
 
     if aportes_base.empty:
-        st.markdown(
+        render_aportes_html(
             """
 <div class="aportes-chart-card">
     <div class="aportes-card-title2">💰 Aportes y patrimonio familiar</div>
@@ -4353,7 +4360,7 @@ if st.session_state.vista_airbnb == "Aportes":
             unsafe_allow_html=True
         )
     elif vista_patrimonio.empty:
-        st.markdown(
+        render_aportes_html(
             """
 <div class="aportes-chart-card">
     <div class="aportes-card-title2">💰 Aportes y patrimonio familiar</div>
@@ -4425,7 +4432,7 @@ if st.session_state.vista_airbnb == "Aportes":
         # --------------------------------------------------------
         es_ventto = vista_patrimonio["ID_Activo"].eq("ENT-0003")
 
-        activos_con_aportes = (
+        activos_asociados = (
             vista_patrimonio[~es_ventto]
             .copy()
         )
@@ -4488,7 +4495,7 @@ if st.session_state.vista_airbnb == "Aportes":
         ].copy()
 
         activos_socio = (
-            activos_con_aportes
+            activos_asociados
             .groupby(
                 "Nombre_Socio",
                 as_index=False
@@ -4497,7 +4504,7 @@ if st.session_state.vista_airbnb == "Aportes":
             .rename(
                 columns={
                     "Valor_Mercado_Socio":
-                        "Activos_Con_Aportes"
+                        "Activos_Asociados"
                 }
             )
         )
@@ -4530,18 +4537,18 @@ if st.session_state.vista_airbnb == "Aportes":
 
         resumen_socios[
             [
-                "Activos_Con_Aportes",
+                "Activos_Asociados",
                 "Activos_Adicionales"
             ]
         ] = resumen_socios[
             [
-                "Activos_Con_Aportes",
+                "Activos_Asociados",
                 "Activos_Adicionales"
             ]
         ].fillna(0)
 
         resumen_socios["Patrimonio_Estimado"] = (
-            resumen_socios["Activos_Con_Aportes"]
+            resumen_socios["Activos_Asociados"]
             +
             resumen_socios["Activos_Adicionales"]
         )
@@ -4562,14 +4569,14 @@ if st.session_state.vista_airbnb == "Aportes":
         # --------------------------------------------------------
         # TOTALES PATRIMONIALES
         # --------------------------------------------------------
-        valor_activos_con_aportes_total = float(
-            activos_con_aportes["Valor_Mercado_Socio"].sum()
+        valor_activos_asociados_total = float(
+            activos_asociados["Valor_Mercado_Socio"].sum()
         )
         valor_activos_adicionales_total = float(
             activos_adicionales["Valor_Mercado_Socio"].sum()
         )
         patrimonio_total_estimado = (
-            valor_activos_con_aportes_total
+            valor_activos_asociados_total
             +
             valor_activos_adicionales_total
         )
@@ -4625,7 +4632,7 @@ if st.session_state.vista_airbnb == "Aportes":
         # --------------------------------------------------------
         # HERO
         # --------------------------------------------------------
-        st.markdown(
+        render_aportes_html(
             f"""
 <div class="aportes-dashboard">
     <div class="aportes-hero">
@@ -4667,8 +4674,8 @@ if st.session_state.vista_airbnb == "Aportes":
             ),
             (
                 "↗",
-                "Activos vinculados a aportes",
-                dinero_corto(valor_activos_con_aportes_total),
+                "Activos asociados",
+                dinero_corto(valor_activos_asociados_total),
                 "Valor de mercado estimado"
             ),
             (
@@ -4704,7 +4711,7 @@ if st.session_state.vista_airbnb == "Aportes":
 </div>
 """
         kpi_html += "</div>"
-        st.markdown(
+        render_aportes_html(
             kpi_html,
             unsafe_allow_html=True
         )
@@ -4910,39 +4917,34 @@ if st.session_state.vista_airbnb == "Aportes":
         )
 
         with top_cols[0]:
-            st.markdown(
-                f"""
-<div class="aportes-chart-card">
-    <div class="aportes-card-heading">
-        <div>
-            <div class="aportes-card-title2">
-                📊 Evolución del capital aportado
-            </div>
-            <div class="aportes-card-sub2">
-                Cada barra muestra el capital acumulado hasta ese año
-            </div>
+            with st.container(border=True):
+                render_aportes_html(
+                    f"""
+<div class="aportes-card-heading">
+    <div>
+        <div class="aportes-card-title2">
+            📊 Evolución del capital aportado
         </div>
-        <div>
-            <span class="aportes-mini-label">Vista</span>
-            <span class="aportes-mini-select">Acumulado anual</span>
+        <div class="aportes-card-sub2">
+            Cada barra muestra el capital acumulado hasta ese año
         </div>
     </div>
-    <div class="aportes-legend">
-        {legend_html}
+    <div>
+        <span class="aportes-mini-label">Vista</span>
+        <span class="aportes-mini-select">Acumulado anual</span>
     </div>
-""",
-                unsafe_allow_html=True
-            )
-            st.plotly_chart(
-                fig_evol,
-                use_container_width=True,
-                config={"displayModeBar": False},
-                key="fig_aportes_evol_nuevo",
-            )
-            st.markdown(
-                "</div>",
-                unsafe_allow_html=True
-            )
+</div>
+<div class="aportes-legend">
+    {legend_html}
+</div>
+"""
+                )
+                st.plotly_chart(
+                    fig_evol,
+                    use_container_width=True,
+                    config={"displayModeBar": False},
+                    key="fig_aportes_evol_nuevo",
+                )
 
         with top_cols[1]:
             fig_donut_aportes = go.Figure(
@@ -4995,7 +4997,7 @@ if st.session_state.vista_airbnb == "Aportes":
                 ),
             )
 
-            st.markdown(
+            render_aportes_html(
                 """
 <div class="aportes-chart-card">
     <div class="aportes-card-title2">
@@ -5013,7 +5015,7 @@ if st.session_state.vista_airbnb == "Aportes":
                 config={"displayModeBar": False},
                 key="fig_aportes_donut_nuevo",
             )
-            st.markdown(
+            render_aportes_html(
                 """
     <div class="aportes-visual-note">
         El gráfico representa exclusivamente el capital
@@ -5025,7 +5027,7 @@ if st.session_state.vista_airbnb == "Aportes":
             )
 
         with top_cols[2]:
-            st.markdown(
+            render_aportes_html(
                 f"""
 <div class="aportes-patrimonio-card">
     <div class="aportes-card-title2">
@@ -5037,8 +5039,8 @@ if st.session_state.vista_airbnb == "Aportes":
     {patrimonio_rows}
     <div class="aportes-visual-note">
         <b>Patrimonio estimado:</b>
-        valor medio de mercado atribuible según los rangos de venta.
-        No representa todavía valorización contra costo histórico.
+        valor medio de mercado atribuible según la vista prorrateada.
+        Es una medición patrimonial actual; todavía no demuestra qué aporte financió históricamente cada activo.
     </div>
 </div>
 """,
@@ -5048,7 +5050,7 @@ if st.session_state.vista_airbnb == "Aportes":
         # --------------------------------------------------------
         # BLOQUE INFERIOR
         # --------------------------------------------------------
-        st.markdown(
+        render_aportes_html(
             """
 <div style="margin-top:14px;">
     <div class="aportes-bottom-title">
@@ -5096,8 +5098,8 @@ if st.session_state.vista_airbnb == "Aportes":
                 )
 
                 activos_socio_df = (
-                    activos_con_aportes[
-                        activos_con_aportes["Nombre_Socio"]
+                    activos_asociados[
+                        activos_asociados["Nombre_Socio"]
                         == nombre
                     ]
                     .sort_values(
@@ -5122,12 +5124,12 @@ if st.session_state.vista_airbnb == "Aportes":
                 # Distribución para el donut del socio:
                 # Finca raíz asociada a aportes + Ventto adicional.
                 valores_pie = [
-                    float(socio_row["Activos_Con_Aportes"]),
+                    float(socio_row["Activos_Asociados"]),
                     float(socio_row["Activos_Adicionales"]),
                 ]
 
                 labels_pie = [
-                    "Activos con aportes",
+                    "Activos asociados",
                     "Activos adicionales"
                 ]
 
@@ -5199,8 +5201,8 @@ if st.session_state.vista_airbnb == "Aportes":
         <span>{dinero_corto(socio_row["Aportes"])}</span>
     </div>
     <div class="aportes-socio-line">
-        <span>Activos con aportes</span>
-        <span>{dinero_corto(socio_row["Activos_Con_Aportes"])}</span>
+        <span>Activos asociados</span>
+        <span>{dinero_corto(socio_row["Activos_Asociados"])}</span>
     </div>
     <div class="aportes-socio-line">
         <span>Activos adicionales (Ventto)</span>
@@ -5258,16 +5260,14 @@ if st.session_state.vista_airbnb == "Aportes":
                 card_html += "</div>"
 
                 with socio_cards_cols[idx]:
-                    st.markdown(
-                        card_html,
-                        unsafe_allow_html=True
-                    )
-                    st.plotly_chart(
-                        fig_socio,
-                        use_container_width=True,
-                        config={"displayModeBar": False},
-                        key=f"fig_patrimonio_socio_{idx}",
-                    )
+                    with st.container(border=True):
+                        render_aportes_html(card_html)
+                        st.plotly_chart(
+                            fig_socio,
+                            use_container_width=True,
+                            config={"displayModeBar": False},
+                            key=f"fig_patrimonio_socio_{idx}",
+                        )
 
         # --------------------------------------------------------
         # TABLA DE ACTIVOS
@@ -5276,7 +5276,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
             # Totales por activo: suma del valor atribuible por socio.
             tabla_activos = (
-                activos_con_aportes
+                activos_asociados
                 .groupby(
                     [
                         "ID_Activo",
@@ -5296,7 +5296,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
             # Matriz por socio.
             matriz = (
-                activos_con_aportes
+                activos_asociados
                 .pivot_table(
                     index=[
                         "ID_Activo",
@@ -5350,7 +5350,7 @@ if st.session_state.vista_airbnb == "Aportes":
             # ------------
             # Encabezado
             # ------------
-            st.markdown(
+            render_aportes_html(
                 """
 <div class="aportes-table-card">
     <div class="aportes-card-title2">
@@ -5456,7 +5456,7 @@ if st.session_state.vista_airbnb == "Aportes":
                 "contra los aportes."
             )
 
-            st.markdown(
+            render_aportes_html(
                 table_html
                 +
                 """
@@ -5495,7 +5495,7 @@ if st.session_state.vista_airbnb == "Aportes":
 </tr>
 """
 
-                st.markdown(
+                render_aportes_html(
                     f"""
 <div class="aportes-table-card"
      style="min-height:0;margin-top:10px;">
