@@ -3939,65 +3939,72 @@ if st.session_state.vista_airbnb == "Aportes":
             .sum()
         )
 
-        # EVOLUCION: barras apiladas por mes y socio.
-        # Cada barra representa el aporte del mes y cada color
-        # muestra la participacion del socio dentro de ese mes.
-        meses = (
-            pd.date_range(
-                mensual["Mes"].min(),
-                mensual["Mes"].max(),
-                freq="MS"
+        # EVOLUCION: barras apiladas por año y acumulativas.
+        # Cada barra representa el capital acumulado hasta ese año.
+        # Cada color representa el capital acumulado de cada socio.
+        aportes_anuales = (
+            aportes_base.assign(
+                Anio=aportes_base["Fecha"].dt.year
             )
-            if not mensual.empty
-            else pd.DatetimeIndex([])
+            .groupby(["Anio", "Nombre_Socio"], as_index=False)["Valor"]
+            .sum()
+        )
+
+        anios = (
+            pd.Index(sorted(aportes_anuales["Anio"].dropna().astype(int).unique()))
+            if not aportes_anuales.empty
+            else pd.Index([])
         )
 
         socios_nombres = list(socios["Nombre_Socio"])
         fig_evol = go.Figure()
 
-        mensual_pivot = (
-            mensual.pivot_table(
-                index="Mes",
+        anual_pivot = (
+            aportes_anuales.pivot_table(
+                index="Anio",
                 columns="Nombre_Socio",
                 values="Valor",
                 aggfunc="sum",
                 fill_value=0,
             )
-            .reindex(meses, fill_value=0)
+            .reindex(anios, fill_value=0)
         )
 
         for socio in socios_nombres:
-            if socio not in mensual_pivot.columns:
-                mensual_pivot[socio] = 0
+            if socio not in anual_pivot.columns:
+                anual_pivot[socio] = 0
 
-        mensual_pivot = mensual_pivot[socios_nombres]
-        totales_mes = mensual_pivot.sum(axis=1)
+        anual_pivot = anual_pivot[socios_nombres]
+        acumulado = anual_pivot.cumsum()
+        totales_acumulados = acumulado.sum(axis=1)
 
         for socio in socios_nombres:
-            valores = mensual_pivot[socio].values
+            valores = acumulado[socio].values
             porcentajes = [
                 (v / total * 100) if total else 0
-                for v, total in zip(valores, totales_mes.values)
+                for v, total in zip(valores, totales_acumulados.values)
             ]
 
             fig_evol.add_trace(
                 go.Bar(
-                    x=meses,
+                    x=anios,
                     y=valores / 1_000_000,
                     name=socio,
                     marker_color=socio_colors[socio],
-                    customdata=valores,
+                    customdata=porcentajes,
                     text=[
-                        f"{pct:.0f}%" if pct >= 12 else ""
+                        f"{pct:.0f}%" if pct >= 8 else ""
                         for pct in porcentajes
                     ],
                     textposition="inside",
                     insidetextanchor="middle",
-                    textfont=dict(size=8, color="#FFFFFF"),
+                    textfont=dict(size=9, color="#FFFFFF"),
                     hovertemplate=(
                         f"<b>{escape_html(socio)}</b><br>"
-                        "%{x|%b %Y}<br>"
-                        "$%{customdata:,.0f}<extra></extra>"
+                        "%{x}<br>"
+                        "Capital acumulado: $%{y:,.1f}M<br>"
+                        "Participación acumulada: %{customdata:.1f}%"
+                        "<extra></extra>"
                     ),
                 )
             )
@@ -4016,14 +4023,15 @@ if st.session_state.vista_airbnb == "Aportes":
                 xanchor="center",
                 font=dict(size=8),
             ),
-            bargap=0.18,
+            bargap=0.25,
             hovermode="x unified",
             xaxis=dict(
                 showgrid=True,
                 gridcolor="#EEF2F6",
                 zeroline=False,
-                tickformat="%Y",
+                dtick=1,
                 fixedrange=True,
+                title=None,
             ),
             yaxis=dict(
                 showgrid=True,
@@ -4033,10 +4041,12 @@ if st.session_state.vista_airbnb == "Aportes":
                 ticksuffix="M",
                 tickformat=",.0f",
                 fixedrange=True,
+                title=None,
             ),
         )
 
-        left_right = st.columns([1.62, 1.0], gap="small")
+        # Las dos tarjetas superiores tienen exactamente la misma columna/ancho.
+        left_right = st.columns([1, 1], gap="small")
 
         with left_right[0]:
             with st.container(border=True):
@@ -4045,15 +4055,15 @@ if st.session_state.vista_airbnb == "Aportes":
                     <div class="aportes-card-heading">
                       <div>
                         <div class="aportes-card-title2">
-                          📊 Evolución de aportes mensuales
+                          📊 Evolución acumulada por año
                         </div>
                         <div class="aportes-card-sub2">
-                          Cada barra representa el aporte del mes y cada color muestra la participación de cada socio
+                          Cada barra muestra el capital acumulado hasta ese año y cada color corresponde a un socio
                         </div>
                       </div>
                       <div>
                         <span class="aportes-mini-label">Vista</span>
-                        <span class="aportes-mini-select">Participación mensual</span>
+                        <span class="aportes-mini-select">Acumulado anual</span>
                       </div>
                     </div>
                     """,
@@ -4087,18 +4097,18 @@ if st.session_state.vista_airbnb == "Aportes":
                     color = socio_colors[row["Nombre_Socio"]]
                     pct = float(row["Participacion"])
                     bar_html += (
-                        f'<div style="margin-top:12px;">'
+                        f'<div style="margin-top:8px;">'
                         f'<div style="display:flex;justify-content:space-between;'
                         f'align-items:center;font-size:8px;font-weight:800;color:#50637B;">'
                         f'<span>{escape_html(row["Nombre_Socio"])}</span>'
                         f'<span style="color:#17345E;font-size:9px;">'
                         f'{dinero_corto(float(row["Aportes"]))}</span></div>'
                         f'<div style="height:8px;background:#EEF2F6;border-radius:7px;'
-                        f'margin-top:5px;overflow:hidden;">'
+                        f'margin-top:4px;overflow:hidden;">'
                         f'<div style="height:100%;width:{pct:.1f}%;background:{color};'
                         f'border-radius:7px;"></div></div>'
                         f'<div style="text-align:right;font-size:7.5px;color:#71839A;'
-                        f'margin-top:2px;">{pct:.1f}%</div></div>'
+                        f'margin-top:1px;">{pct:.1f}%</div></div>'
                     )
 
                 st.markdown(bar_html, unsafe_allow_html=True)
@@ -4121,7 +4131,7 @@ if st.session_state.vista_airbnb == "Aportes":
                     )
                 )
                 fig_donut.update_layout(
-                    height=205,
+                    height=185,
                     margin=dict(l=0, r=0, t=0, b=0),
                     showlegend=False,
                     paper_bgcolor="rgba(0,0,0,0)",
