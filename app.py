@@ -3821,16 +3821,19 @@ def tarjeta_portafolio():
 if st.session_state.vista_airbnb == "Aportes":
 
     def render_aportes_html(html, unsafe_allow_html=True):
-        """Renderiza bloques HTML autocontenidos sin indentación Markdown."""
+        """Renderiza HTML sin que Streamlit lo interprete como código."""
         limpio = "\n".join(
             linea.strip()
             for linea in str(html).splitlines()
             if linea.strip()
         )
-        st.markdown(
-            limpio,
-            unsafe_allow_html=unsafe_allow_html
-        )
+        if hasattr(st, "html"):
+            st.html(limpio)
+        else:
+            st.markdown(
+                limpio,
+                unsafe_allow_html=unsafe_allow_html
+            )
 
     @st.cache_data(ttl=900)
     def cargar_estudio_mercado_prorrateado():
@@ -4337,6 +4340,45 @@ if st.session_state.vista_airbnb == "Aportes":
     line-height:1.45;
 }
 .aportes-note2 b { color:#17345E; }
+/* ============================================================
+   AJUSTE FINAL - TARJETAS IGUALES + TABLA A TODO EL ANCHO
+============================================================ */
+.aportes-socio-card {
+    border:none !important;
+    border-radius:0 !important;
+    padding:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+}
+.aportes-socio-card.diego,
+.aportes-socio-card.william,
+.aportes-socio-card.andres {
+    border-top:none !important;
+}
+.aportes-table-card {
+    min-height:0 !important;
+    width:100%;
+}
+.aportes-table-wide {
+    table-layout:fixed;
+}
+.aportes-table-wide th,
+.aportes-table-wide td {
+    padding:9px 10px;
+}
+.aportes-table-wide th:first-child,
+.aportes-table-wide td:first-child {
+    width:24%;
+}
+.aportes-table-wide th:nth-child(2),
+.aportes-table-wide td:nth-child(2) {
+    width:13%;
+}
+.aportes-table-wide th:nth-child(3),
+.aportes-table-wide td:nth-child(3) {
+    width:20%;
+}
+
 
 @media (max-width:1250px) {
     .aportes-kpi-grid6 { grid-template-columns:repeat(3,1fr); }
@@ -5051,483 +5093,306 @@ if st.session_state.vista_airbnb == "Aportes":
 
         # --------------------------------------------------------
         # BLOQUE INFERIOR
+        # 3 tarjetas iguales + tabla a todo lo ancho debajo.
         # --------------------------------------------------------
         render_aportes_html(
             """
 <div style="margin-top:14px;">
-    <div class="aportes-bottom-title">
-        🧭 Resumen patrimonial por socio
-    </div>
+    <div class="aportes-bottom-title">🧭 Resumen patrimonial por socio</div>
     <div class="aportes-bottom-sub">
-        Aportes registrados · activos asociados · activos adicionales · patrimonio estimado
+        Aportes registrados · activos asociados · activos adicionales · patrimonio mínimo estimado
     </div>
 </div>
-""",
-            unsafe_allow_html=True
+"""
         )
 
-        bottom_cols = st.columns(
-            [1.60, 1.00],
-            gap="small"
-        )
+        # ========================================================
+        # TRES TARJETAS PATRIMONIALES IGUALES
+        # ========================================================
+        socio_cards_cols = st.columns(3, gap="small")
 
-        # --------------------------------------------------------
-        # TARJETAS DE SOCIOS
-        # --------------------------------------------------------
-        with bottom_cols[0]:
-            socio_cards_cols = st.columns(
-                3,
-                gap="small"
+        for idx, (_, socio_row) in enumerate(resumen_socios.iterrows()):
+            nombre = socio_row["Nombre_Socio"]
+
+            clase = "diego"
+            if "William" in nombre:
+                clase = "william"
+            elif "Andres" in nombre or "Andrés" in nombre:
+                clase = "andres"
+
+            avatar = (
+                "D" if "Diego" in nombre
+                else "W" if "William" in nombre
+                else "A"
             )
 
-            for idx, (_, socio_row) in enumerate(
-                resumen_socios.iterrows()
-            ):
-                nombre = socio_row["Nombre_Socio"]
-
-                clase = "diego"
-                if "William" in nombre:
-                    clase = "william"
-                elif "Andres" in nombre or "Andrés" in nombre:
-                    clase = "andres"
-
-                avatar = (
-                    "D"
-                    if "Diego" in nombre
-                    else "W"
-                    if "William" in nombre
-                    else "A"
-                )
-
-                activos_socio_df = (
-                    activos_asociados[
-                        activos_asociados["Nombre_Socio"]
-                        == nombre
-                    ]
-                    .sort_values(
-                        "Valor_Mercado_Socio",
-                        ascending=False
-                    )
-                    .head(4)
-                )
-
-                adicionales_socio_df = (
-                    activos_adicionales[
-                        activos_adicionales["Nombre_Socio"]
-                        == nombre
-                    ]
-                    .sort_values(
-                        "Valor_Mercado_Socio",
-                        ascending=False
-                    )
-                    .head(2)
-                )
-
-                # Distribución para el donut del socio:
-                # Finca raíz asociada a aportes + Ventto adicional.
-                valores_pie = [
-                    float(socio_row["Activos_Asociados"]),
-                    float(socio_row["Activos_Adicionales"]),
+            activos_socio_df = (
+                activos_asociados[
+                    activos_asociados["Nombre_Socio"] == nombre
                 ]
+                .sort_values("Valor_Mercado_Socio", ascending=False)
+                .head(4)
+            )
 
-                labels_pie = [
-                    "Activos asociados",
-                    "Activos adicionales"
+            adicionales_socio_df = (
+                activos_adicionales[
+                    activos_adicionales["Nombre_Socio"] == nombre
                 ]
+                .sort_values("Valor_Mercado_Socio", ascending=False)
+                .head(2)
+            )
 
-                colors_pie = [
-                    "#FF5A73",
-                    "#43C995"
-                ]
+            valores_pie = [
+                float(socio_row["Activos_Asociados"]),
+                float(socio_row["Activos_Adicionales"]),
+            ]
+            labels_pie = [
+                "Activos asociados",
+                "Activos adicionales",
+            ]
+            colors_pie = ["#FF5A73", "#43C995"]
 
-                fig_socio = go.Figure(
-                    go.Pie(
-                        labels=labels_pie,
-                        values=valores_pie,
-                        hole=0.62,
-                        marker=dict(
-                            colors=colors_pie,
-                            line=dict(
-                                color="#FFFFFF",
-                                width=2
-                            )
-                        ),
-                        textinfo="percent",
-                        textfont=dict(size=8),
-                        hovertemplate=(
-                            "%{label}<br>"
-                            "$%{value:,.0f}<br>"
-                            "%{percent}<extra></extra>"
-                        ),
-                    )
-                )
-                fig_socio.update_layout(
-                    height=175,
-                    margin=dict(
-                        l=0,
-                        r=0,
-                        t=0,
-                        b=0
+            fig_socio = go.Figure(
+                go.Pie(
+                    labels=labels_pie,
+                    values=valores_pie,
+                    hole=0.62,
+                    marker=dict(
+                        colors=colors_pie,
+                        line=dict(color="#FFFFFF", width=2),
                     ),
-                    showlegend=False,
-                    paper_bgcolor="rgba(0,0,0,0)",
-                    plot_bgcolor="rgba(0,0,0,0)",
-                )
-                fig_socio.add_annotation(
-                    text=(
-                        f"<b>{dinero_corto(socio_row['Patrimonio_Estimado'])}</b>"
-                        "<br><span style='font-size:8px'>Patrimonio</span>"
-                    ),
-                    x=0.5,
-                    y=0.5,
-                    showarrow=False,
-                    font=dict(
-                        size=10,
-                        color="#17345E"
+                    textinfo="percent",
+                    textfont=dict(size=8),
+                    hovertemplate=(
+                        "%{label}<br>"
+                        "$%{value:,.0f}<br>"
+                        "%{percent}<extra></extra>"
                     ),
                 )
+            )
+            fig_socio.update_layout(
+                height=185,
+                margin=dict(l=0, r=0, t=0, b=0),
+                showlegend=False,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+            )
+            fig_socio.add_annotation(
+                text=(
+                    f"<b>{dinero_corto(socio_row['Patrimonio_Estimado'])}</b>"
+                    "<br><span style='font-size:8px'>Patrimonio</span>"
+                ),
+                x=0.5,
+                y=0.5,
+                showarrow=False,
+                font=dict(size=10, color="#17345E"),
+            )
 
-                card_html = f"""
+            card_html = f"""
 <div class="aportes-socio-card {clase}">
     <div class="aportes-socio-head">
-        <div class="aportes-avatar {clase}">
-            {avatar}
-        </div>
-        <div class="aportes-socio-name">
-            {escape_html(nombre)}
-        </div>
+        <div class="aportes-avatar {clase}">{avatar}</div>
+        <div class="aportes-socio-name">{escape_html(nombre)}</div>
     </div>
 
     <div class="aportes-socio-line">
         <span>Aportes</span>
-        <span>{dinero_corto(socio_row["Aportes"])}</span>
+        <span>{dinero_corto(socio_row['Aportes'])}</span>
     </div>
     <div class="aportes-socio-line">
         <span>Activos asociados</span>
-        <span>{dinero_corto(socio_row["Activos_Asociados"])}</span>
+        <span>{dinero_corto(socio_row['Activos_Asociados'])}</span>
     </div>
     <div class="aportes-socio-line">
         <span>Activos adicionales (Ventto)</span>
-        <span>{dinero_corto(socio_row["Activos_Adicionales"])}</span>
+        <span>{dinero_corto(socio_row['Activos_Adicionales'])}</span>
     </div>
 
     <div class="aportes-socio-total">
-        <div class="aportes-socio-total-label">
-            Patrimonio total estimado
-        </div>
+        <div class="aportes-socio-total-label">Patrimonio mínimo estimado</div>
         <div class="aportes-socio-total-value">
-            {dinero_corto(socio_row["Patrimonio_Estimado"])}
+            {dinero_corto(socio_row['Patrimonio_Estimado'])}
         </div>
         <div class="aportes-socio-ratio">
-            {float(socio_row["Patrimonio_vs_Aportes"]):+.1f}% vs. aportes
+            {float(socio_row['Patrimonio_vs_Aportes']):+.1f}% vs. aportes
         </div>
     </div>
+
+    <div class="aportes-mini-asset-title">Principales activos asociados</div>
 """
-                if not activos_socio_df.empty:
-                    card_html += """
-<div class="aportes-mini-asset-title">
-    Principales activos asociados
-</div>
-"""
-                    for _, asset in activos_socio_df.iterrows():
-                        card_html += f"""
+
+            if not activos_socio_df.empty:
+                for _, asset in activos_socio_df.iterrows():
+                    card_html += f"""
 <div class="aportes-mini-asset">
     <div class="aportes-mini-asset-name">
-        {escape_html(asset["Nombre_Entidad"])}
+        {escape_html(asset['Nombre_Entidad'])}
     </div>
     <div class="aportes-mini-asset-value">
-        {dinero_corto(asset["Valor_Mercado_Socio"])}
+        {dinero_corto(asset['Valor_Mercado_Socio'])}
     </div>
+</div>
+"""
+            else:
+                card_html += """
+<div class="aportes-mini-asset">
+    <div class="aportes-mini-asset-name">Sin activos asociados</div>
+    <div class="aportes-mini-asset-value">-</div>
 </div>
 """
 
-                if not adicionales_socio_df.empty:
-                    card_html += """
-<div class="aportes-mini-asset-title">
-    Activos adicionales
-</div>
+            if not adicionales_socio_df.empty:
+                card_html += """
+<div class="aportes-mini-asset-title">Activos adicionales</div>
 """
-                    for _, asset in adicionales_socio_df.iterrows():
-                        card_html += f"""
+                for _, asset in adicionales_socio_df.iterrows():
+                    card_html += f"""
 <div class="aportes-mini-asset">
     <div class="aportes-mini-asset-name aportes-additional">
-        {escape_html(asset["Nombre_Entidad"])} · Ventto
+        {escape_html(asset['Nombre_Entidad'])} · Ventto
     </div>
     <div class="aportes-mini-asset-value">
-        {dinero_corto(asset["Valor_Mercado_Socio"])}
+        {dinero_corto(asset['Valor_Mercado_Socio'])}
     </div>
 </div>
 """
+            else:
+                # Reserva visual para que los tres donuts queden a la misma altura.
+                card_html += """
+<div style="height:37px;"></div>
+"""
 
-                card_html += "</div>"
+            card_html += "</div>"
 
-                with socio_cards_cols[idx]:
-                    with st.container(border=True):
-                        render_aportes_html(card_html)
-                        st.plotly_chart(
-                            fig_socio,
-                            use_container_width=True,
-                            config={"displayModeBar": False},
-                            key=f"fig_patrimonio_socio_{idx}",
-                        )
+            with socio_cards_cols[idx]:
+                with st.container(height=640, border=True):
+                    render_aportes_html(card_html)
+                    st.plotly_chart(
+                        fig_socio,
+                        use_container_width=True,
+                        config={"displayModeBar": False},
+                        key=f"fig_patrimonio_socio_nuevo_{idx}",
+                    )
 
-        # --------------------------------------------------------
-        # TABLA DE ACTIVOS
-        # --------------------------------------------------------
-        with bottom_cols[1]:
+        # ========================================================
+        # TABLA COMPLETA A TODO EL ANCHO
+        # ========================================================
+        render_aportes_html(
+            """
+<div style="margin-top:14px;">
+    <div class="aportes-table-card">
+        <div class="aportes-card-title2">🎯 Aportes → activos asociados</div>
+        <div class="aportes-card-sub2">
+            Venta mínima atribuible a cada socio según la vista prorrateada de BigQuery · Torre Ventto no participa en esta tabla
+        </div>
+"""
+        )
 
-            # Totales por activo: suma del valor atribuible por socio.
-            tabla_activos = (
-                activos_asociados
-                .groupby(
-                    [
-                        "ID_Activo",
-                        "Nombre_Entidad",
-                        "Ciudad"
-                    ],
-                    as_index=False
-                )["Valor_Mercado_Socio"]
-                .sum()
-                .rename(
-                    columns={
-                        "Valor_Mercado_Socio":
-                            "Valor_Mercado_Total"
-                    }
-                )
+        tabla_activos = (
+            activos_asociados
+            .groupby(
+                ["ID_Activo", "Nombre_Entidad", "Ciudad"],
+                as_index=False
+            )["Valor_Mercado_Socio"]
+            .sum()
+            .rename(columns={"Valor_Mercado_Socio": "Valor_Mercado_Total"})
+        )
+
+        matriz = (
+            activos_asociados
+            .pivot_table(
+                index=["ID_Activo", "Nombre_Entidad", "Ciudad"],
+                columns="Nombre_Socio",
+                values="Valor_Mercado_Socio",
+                aggfunc="sum",
+                fill_value=0,
             )
+            .reset_index()
+        )
 
-            # Matriz por socio.
-            matriz = (
-                activos_asociados
-                .pivot_table(
-                    index=[
-                        "ID_Activo",
-                        "Nombre_Entidad",
-                        "Ciudad"
-                    ],
-                    columns="Nombre_Socio",
-                    values="Valor_Mercado_Socio",
-                    aggfunc="sum",
-                    fill_value=0
-                )
-                .reset_index()
-            )
+        socios_preferidos = [
+            "Diego Camacho",
+            "William Camacho",
+            "Andres Camacho",
+            "Andrés Camacho",
+        ]
+        socio_cols_reales = [
+            n for n in socios_preferidos if n in matriz.columns
+        ]
+        for n in socios["Nombre_Socio"].tolist():
+            if n in matriz.columns and n not in socio_cols_reales:
+                socio_cols_reales.append(n)
 
-            socios_orden = [
-                "Diego Camacho",
-                "William Camacho",
-                "Andres Camacho",
-                "Andrés Camacho",
-            ]
+        matriz = matriz.merge(
+            tabla_activos,
+            on=["ID_Activo", "Nombre_Entidad", "Ciudad"],
+            how="left",
+        )
+        matriz = (
+            matriz
+            .sort_values("Valor_Mercado_Total", ascending=False)
+            .reset_index(drop=True)
+        )
 
-            socio_cols_reales = []
-            for nombre in socios_orden:
-                if nombre in matriz.columns:
-                    socio_cols_reales.append(nombre)
-
-            for nombre in socios["Nombre_Socio"].tolist():
-                if nombre in matriz.columns and nombre not in socio_cols_reales:
-                    socio_cols_reales.append(nombre)
-
-            matriz = matriz.merge(
-                tabla_activos,
-                on=[
-                    "ID_Activo",
-                    "Nombre_Entidad",
-                    "Ciudad"
-                ],
-                how="left"
-            )
-
-            # Orden por mayor valor de mercado estimado.
-            matriz = (
-                matriz
-                .sort_values(
-                    "Valor_Mercado_Total",
-                    ascending=False
-                )
-                .reset_index(drop=True)
-            )
-
-            # ------------
-            # Encabezado
-            # ------------
-            render_aportes_html(
-                """
-<div class="aportes-table-card">
-    <div class="aportes-card-title2">
-        🎯 Aportes → activos asociados
-    </div>
-    <div class="aportes-card-sub2">
-        Venta mínima atribuible a cada socio según la vista prorrateada de BigQuery
-    </div>
-    <div class="aportes-table-scroll">
-""",
-                unsafe_allow_html=True
-            )
-
-            table_html = """
-<table class="aportes-table2">
+        table_html = """
+<table class="aportes-table2 aportes-table-wide">
 <thead>
 <tr>
     <th>Activo</th>
     <th>Ciudad</th>
-    <th>Venta mínima</th>
+    <th>Venta mínima atribuida al grupo</th>
 """
 
-            for nombre in socio_cols_reales:
-                nombre_corto = (
-                    "Diego"
-                    if "Diego" in nombre
-                    else "William"
-                    if "William" in nombre
-                    else "Andrés"
-                )
-                table_html += (
-                    f"<th>{escape_html(nombre_corto)}</th>"
-                )
+        for nombre in socio_cols_reales:
+            nombre_corto = (
+                "Diego" if "Diego" in nombre
+                else "William" if "William" in nombre
+                else "Andrés"
+            )
+            table_html += f"<th>{escape_html(nombre_corto)}</th>"
 
-            table_html += """
+        table_html += """
 </tr>
 </thead>
 <tbody>
 """
 
-            for _, row in matriz.iterrows():
-                table_html += f"""
+        for _, row in matriz.iterrows():
+            table_html += f"""
 <tr>
-    <td>{escape_html(row["Nombre_Entidad"])}</td>
-    <td>{escape_html(row["Ciudad"])}</td>
-    <td>
-        <span class="aportes-table-highlight">
-            {dinero_corto(row["Valor_Mercado_Total"])}
-        </span>
-    </td>
+    <td>{escape_html(row['Nombre_Entidad'])}</td>
+    <td>{escape_html(row['Ciudad'])}</td>
+    <td><span class="aportes-table-highlight">{dinero_corto(row['Valor_Mercado_Total'])}</span></td>
 """
-                for nombre in socio_cols_reales:
-                    valor = float(
-                        row.get(nombre, 0) or 0
-                    )
-                    table_html += f"""
-    <td>
-        {"-" if valor == 0 else dinero_corto(valor)}
-    </td>
-"""
+            for nombre in socio_cols_reales:
+                valor = float(row.get(nombre, 0) or 0)
+                table_html += f"<td>{'-' if valor == 0 else dinero_corto(valor)}</td>"
+            table_html += "</tr>"
 
-                table_html += "</tr>"
-
-            # Totales.
-            table_html += """
+        total_mercado = float(matriz["Valor_Mercado_Total"].sum()) if not matriz.empty else 0
+        table_html += f"""
 <tr class="aportes-total2">
     <td>TOTAL</td>
     <td>-</td>
+    <td>{dinero_corto(total_mercado)}</td>
 """
+        for nombre in socio_cols_reales:
+            valor_total_socio = float(matriz[nombre].sum()) if nombre in matriz.columns else 0
+            table_html += f"<td>{dinero_corto(valor_total_socio)}</td>"
 
-            total_mercado = (
-                matriz["Valor_Mercado_Total"].sum()
-                if not matriz.empty
-                else 0
-            )
-
-            table_html += (
-                f"<td>{dinero_corto(total_mercado)}</td>"
-            )
-
-            for nombre in socio_cols_reales:
-                valor_total_socio = (
-                    matriz[nombre].sum()
-                    if nombre in matriz.columns
-                    else 0
-                )
-                table_html += (
-                    f"<td>{dinero_corto(valor_total_socio)}</td>"
-                )
-
-            table_html += """
+        table_html += """
 </tr>
 </tbody>
 </table>
+<div class="aportes-note2">
+    <b>Ventto:</b> se excluye de esta tabla porque Andrés y William la compraron de contado y no se financió con los aportes familiares. Sí aparece dentro del patrimonio individual como activo adicional.
+</div>
+</div>
+</div>
 """
 
-            # Nota Ventto.
-            nota_ventto = (
-                "Torre Ventto se excluye de esta tabla porque "
-                "Andrés y William la compraron de contado. "
-                "Sí se mide en el patrimonio individual como "
-                "<b>activo adicional</b>, pero no se compara "
-                "contra los aportes."
-            )
+        render_aportes_html(table_html)
 
-            render_aportes_html(
-                table_html
-                +
-                """
-    </div>
-    <div class="aportes-note2">
-        """
-                + nota_ventto
-                + """
-    </div>
-</div>
-""",
-                unsafe_allow_html=True
-            )
-
-            # ----------------------------------------------------
-            # Mini bloque Ventto
-            # ----------------------------------------------------
-            if not activos_adicionales.empty:
-                ventto_rows = ""
-                for _, row in (
-                    activos_adicionales
-                    .sort_values(
-                        [
-                            "Nombre_Entidad",
-                            "Nombre_Socio"
-                        ]
-                    )
-                    .iterrows()
-                ):
-                    ventto_rows += f"""
-<tr>
-    <td>{escape_html(row["Nombre_Socio"])}</td>
-    <td>{escape_html(row["Nombre_Entidad"])}</td>
-    <td>{float(row["Participaci__n"])*100:.1f}%</td>
-    <td>{dinero_corto(row["Valor_Mercado_Socio"])}</td>
-</tr>
-"""
-
-                render_aportes_html(
-                    f"""
-<div class="aportes-table-card"
-     style="min-height:0;margin-top:10px;">
-    <div class="aportes-card-title2">
-        🔗 Activos adicionales de los socios
-    </div>
-    <div class="aportes-card-sub2">
-        Patrimonio medido aparte de los aportes
-    </div>
-    <table class="aportes-table2">
-        <thead>
-            <tr>
-                <th>Socio</th>
-                <th>Activo</th>
-                <th>Part.</th>
-                <th>Valor socio</th>
-            </tr>
-        </thead>
-        <tbody>
-            {ventto_rows}
-        </tbody>
-    </table>
-</div>
-""",
-                    unsafe_allow_html=True
-                )
-
-# ============================================================
-
-# ============================================================
 
 if st.session_state.vista_airbnb == "Propiedades":
 
