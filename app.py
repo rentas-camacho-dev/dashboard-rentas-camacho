@@ -3246,11 +3246,11 @@ with top1:
             <div>
 
                 <div class="brand-mini-title">
-                    Airbnb <span>Financial Hub</span>
+                    {'Aportes y patrimonio familiar' if st.session_state.vista_airbnb == "Aportes" else 'Airbnb <span>Financial Hub</span>'}
                 </div>
 
                 <div class="brand-mini-sub">
-                    Rentabilidad financiera · Solo Airbnb
+                    {'Capital familiar · Predios · Patrimonio' if st.session_state.vista_airbnb == "Aportes" else 'Rentabilidad financiera · Solo Airbnb'}
                 </div>
 
             </div>
@@ -4676,29 +4676,8 @@ if st.session_state.vista_airbnb == "Aportes":
         # --------------------------------------------------------
         # HERO
         # --------------------------------------------------------
-        render_aportes_html(
-            f"""
-<div class="aportes-dashboard">
-    <div class="aportes-hero">
-        <div>
-            <div class="aportes-hero-title">
-                💰 Aportes y patrimonio familiar
-            </div>
-            <div class="aportes-hero-sub">
-                Cómo se ha usado el capital aportado y cuál es el patrimonio estimado de cada socio
-            </div>
-        </div>
-        <div class="aportes-period">
-            <div class="aportes-period-label">📅 PERÍODO</div>
-            <div class="aportes-period-value">
-                {periodo_inicio}  –  {periodo_fin}
-            </div>
-        </div>
-    </div>
-</div>
-""",
-            unsafe_allow_html=True
-        )
+        # El título de esta vista vive en la barra superior.
+        # Se elimina el bloque HERO para aprovechar mejor el espacio.
 
         # --------------------------------------------------------
         # KPIs
