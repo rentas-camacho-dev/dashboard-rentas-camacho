@@ -333,7 +333,7 @@ div.stButton > button:hover {
 
 /* ============================================================
    TARJETAS DEL PORTAFOLIO / PROPIEDADES
-   Diseño compacto - contenido ajustado a 165px
+   Diseño compacto — contenido ajustado a 165px
 ============================================================ */
 
 .properties-grid {
@@ -985,7 +985,7 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {{
 }}
 
 /* ============================================================
-   ICONOS PERSONALIZADOS - SIN RECUADRO BLANCO
+   ICONOS PERSONALIZADOS — SIN RECUADRO BLANCO
    ============================================================ */
 
 .st-key-nav_portafolio button,
@@ -1159,7 +1159,7 @@ st.markdown("""
 }
 .radar-signal b { color:#17345E; }
 /* ============================================================
-   RADAR EJECUTIVO - DECISIÓN DEL PORTAFOLIO
+   RADAR EJECUTIVO — DECISIÓN DEL PORTAFOLIO
 ============================================================ */
 .radar-decision-panel { background:#FFFFFF; border:1px solid #DCE5EE; border-radius:14px; padding:16px 18px 12px; margin-top:12px; overflow-x:auto; }
 .radar-decision-title { font-size:18px; font-weight:850; color:#17345E; }
@@ -1268,7 +1268,7 @@ def cargar_datos_financieros():
 
 
 # ============================================================
-# APORTES DE SOCIOS - CAPITAL REAL APORTADO
+# APORTES DE SOCIOS — CAPITAL REAL APORTADO
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -1375,7 +1375,7 @@ def cargar_inversiones():
 # ============================================================
 # ============================================================
 # ============================================================
-# ESTUDIO DE MERCADO INMOBILIARIO - BIGQUERY
+# ESTUDIO DE MERCADO INMOBILIARIO — BIGQUERY
 # ============================================================
 
 @st.cache_data(ttl=900)
@@ -1439,7 +1439,7 @@ def cargar_estudio_mercado_inmobiliario():
 
 def rango_millones(minimo, maximo):
     if pd.isna(minimo) and pd.isna(maximo):
-        return "-"
+        return "—"
     if pd.isna(maximo):
         return f"${float(minimo)/1_000_000:.1f}M"
     if pd.isna(minimo):
@@ -1485,7 +1485,7 @@ def generar_decision_estrategica_radar(
         else pd.NA
     )
 
-    venta = str(row.get("Facilidad_Venta", "-") or "-").strip()
+    venta = str(row.get("Facilidad_Venta", "—") or "—").strip()
 
     proyeccion_val = pd.to_numeric(
         row.get("Proyeccion_Zona_5A"),
@@ -1505,7 +1505,7 @@ def generar_decision_estrategica_radar(
     )
 
     # --------------------------------------------------------
-    # TEMPUS 49 - uso familiar cambia la lectura financiera
+    # TEMPUS 49 — uso familiar cambia la lectura financiera
     # --------------------------------------------------------
     if id_activo == "ENT-0004":
         return (
@@ -3619,6 +3619,9 @@ resumen = (
 # DATOS DE INVERSIÓN
 # ============================================================
 
+# Cargar aportes de socios antes de construir la vista Aportes
+aportes_socios = cargar_aportes_socios()
+
 inversiones = cargar_inversiones()
 
 # ============================================================
@@ -3653,12 +3656,12 @@ def tarjeta_propiedad(row):
     noches = row.get("Noches_Reservadas", None)
 
     if pd.isna(ocup):
-        ocup_text = "-"
-        detalle = "-"
+        ocup_text = "—"
+        detalle = "—"
     else:
         ocup_text = f"{float(ocup):.1f}%"
         if pd.isna(reservas) or pd.isna(noches):
-            detalle = "-"
+            detalle = "—"
         else:
             detalle = f"{int(reservas)} R · {int(noches)} N"
 
@@ -3811,7 +3814,7 @@ def tarjeta_portafolio():
 """
 
 # ============================================================
-# VISTA APORTES - CAPITAL FAMILIAR
+# VISTA APORTES — CAPITAL FAMILIAR
 # ============================================================
 
 if st.session_state.vista_airbnb == "Aportes":
@@ -3856,7 +3859,7 @@ if st.session_state.vista_airbnb == "Aportes":
         )
 
         ultima_fecha = aportes_base["Fecha"].max()
-        ultima_fecha_txt = ultima_fecha.strftime("%d/%m/%Y") if pd.notna(ultima_fecha) else "-"
+        ultima_fecha_txt = ultima_fecha.strftime("%d/%m/%Y") if pd.notna(ultima_fecha) else "—"
         promedio_aporte = total_aportes / len(aportes_base) if len(aportes_base) else 0
 
         kpi_items = [
@@ -3921,8 +3924,8 @@ if st.session_state.vista_airbnb == "Aportes":
         for _, socio_row in socios.iterrows():
             primer = socio_row["Primer_Aporte"]
             ultimo = socio_row["Ultimo_Aporte"]
-            primer_txt = primer.strftime("%b %Y") if pd.notna(primer) else "-"
-            ultimo_txt = ultimo.strftime("%b %Y") if pd.notna(ultimo) else "-"
+            primer_txt = primer.strftime("%b %Y") if pd.notna(primer) else "—"
+            ultimo_txt = ultimo.strftime("%b %Y") if pd.notna(ultimo) else "—"
             tabla_aportes_html += f"""
             <tr>
                 <td>{escape_html(socio_row["Nombre_Socio"])}</td>
@@ -4171,7 +4174,7 @@ if st.session_state.vista_airbnb == "Propiedades":
     )
 
     # ========================================================
-    # PROMEDIO MENSUAL DEL AÑO DEL FILTRO - YTD
+    # PROMEDIO MENSUAL DEL AÑO DEL FILTRO — YTD
     # ========================================================
     # Se conservan DOS indicadores:
     #
@@ -4803,12 +4806,12 @@ if st.session_state.vista_airbnb == "Propiedades":
 
     def valor_tabla(valor):
         if pd.isna(valor):
-            return "-"
+            return "—"
         return dinero_corto(valor)
 
     def porcentaje_tabla(valor, puntos=False):
         if pd.isna(valor):
-            return '<span class="investment-muted">-</span>'
+            return '<span class="investment-muted">—</span>'
         clase = (
             "investment-flow-negative"
             if float(valor) < 0
@@ -4865,7 +4868,7 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
         flujo = row["Flujo_Historico"]
 
         if pd.isna(flujo):
-            flujo_html = '<span class="investment-muted">-</span>'
+            flujo_html = '<span class="investment-muted">—</span>'
         else:
             clase = (
                 "investment-flow-negative"
@@ -4946,7 +4949,7 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
     )
 
 # ============================================================
-# VISTA ANÁLISIS - RADAR INMOBILIARIO
+# VISTA ANÁLISIS — RADAR INMOBILIARIO
 # ============================================================
 
 elif st.session_state.vista_airbnb == "Análisis":
@@ -4966,7 +4969,7 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
 
     # ============================================================
     # ============================================================
-    # RADAR EJECUTIVO - DECISIÓN DEL PORTAFOLIO
+    # RADAR EJECUTIVO — DECISIÓN DEL PORTAFOLIO
     # ============================================================
 
     estudio = cargar_estudio_mercado_inmobiliario()
@@ -5023,13 +5026,13 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
                 row["Renta_Amoblada_Max_M"]
             )
             proyeccion = (
-                "-"
+                "—"
                 if pd.isna(row["Proyeccion_Zona_5A"])
                 else f"{float(row['Proyeccion_Zona_5A']):.1f}/10"
             )
             venta_label = str(
-                row.get("Facilidad_Venta", "-")
-                or "-"
+                row.get("Facilidad_Venta", "—")
+                or "—"
             )
 
             # Resolver el color de venta localmente para evitar
@@ -5057,12 +5060,12 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
             comparable_txt = (
                 dinero_corto(comparable)
                 if pd.notna(comparable)
-                else "-"
+                else "—"
             )
 
             html_decision += f"""
 <tr>
-    <td>{escape_html(row.get("Nombre_Entidad", "-"))}</td>
+    <td>{escape_html(row.get("Nombre_Entidad", "—"))}</td>
     <td><span class="radar-decision-value">{valor_estimado}</span></td>
     <td><span class="radar-decision-value">{renta_amoblada}</span></td>
     <td><span class="radar-decision-value">{comparable_txt}</span></td>
