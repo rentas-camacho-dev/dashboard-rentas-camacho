@@ -3821,10 +3821,15 @@ def tarjeta_portafolio():
 if st.session_state.vista_airbnb == "Aportes":
 
     def render_aportes_html(html, unsafe_allow_html=True):
-        """Renderiza HTML de Aportes sin que la indentación Python lo convierta en bloque de código."""
+        """Renderiza bloques HTML autocontenidos sin indentación Markdown."""
+        limpio = "\n".join(
+            linea.strip()
+            for linea in str(html).splitlines()
+            if linea.strip()
+        )
         st.markdown(
-            textwrap.dedent(str(html)).strip(),
-            unsafe_allow_html=True
+            limpio,
+            unsafe_allow_html=unsafe_allow_html
         )
 
     @st.cache_data(ttl=900)
@@ -4404,15 +4409,12 @@ if st.session_state.vista_airbnb == "Aportes":
             .str.strip()
         )
 
-        # Valor medio de mercado estimado atribuible al socio.
+        # Patrimonio estimado = VALOR MÍNIMO de venta atribuible al socio.
+        # La vista de BigQuery ya viene prorrateada por participación.
         vista_patrimonio["Valor_Mercado_Socio"] = (
-            (
-                vista_patrimonio["Venta_Min_M_Prorrateada"]
-                +
-                vista_patrimonio["Venta_Max_M_Prorrateada"]
-            )
-            / 2
-        ).fillna(0)
+            vista_patrimonio["Venta_Min_M_Prorrateada"]
+            .fillna(0)
+        )
 
         # La renta media queda disponible para futuras capas del dashboard.
         vista_patrimonio["Renta_Amoblada_Media_Socio"] = (
@@ -5034,13 +5036,13 @@ if st.session_state.vista_airbnb == "Aportes":
         🏢 Patrimonio estimado por socio
     </div>
     <div class="aportes-card-sub2">
-        Valor de mercado atribuible según la vista prorrateada
+        Venta mínima atribuible según la vista prorrateada
     </div>
     {patrimonio_rows}
     <div class="aportes-visual-note">
         <b>Patrimonio estimado:</b>
-        valor medio de mercado atribuible según la vista prorrateada.
-        Es una medición patrimonial actual; todavía no demuestra qué aporte financió históricamente cada activo.
+        valor mínimo de mercado atribuible según la vista prorrateada.
+        Se utiliza exclusivamente Venta_Min_M_Prorrateada. Es una medición patrimonial actual y no demuestra qué aporte financió históricamente cada activo.
     </div>
 </div>
 """,
@@ -5357,7 +5359,7 @@ if st.session_state.vista_airbnb == "Aportes":
         🎯 Aportes → activos asociados
     </div>
     <div class="aportes-card-sub2">
-        Valor de mercado estimado atribuible a cada socio según la vista prorrateada
+        Venta mínima atribuible a cada socio según la vista prorrateada de BigQuery
     </div>
     <div class="aportes-table-scroll">
 """,
@@ -5370,7 +5372,7 @@ if st.session_state.vista_airbnb == "Aportes":
 <tr>
     <th>Activo</th>
     <th>Ciudad</th>
-    <th>Mercado est.</th>
+    <th>Venta mínima</th>
 """
 
             for nombre in socio_cols_reales:
