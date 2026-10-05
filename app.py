@@ -10,23 +10,27 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 from datetime import date
 
-# ============================================================
-# CONFIGURACIÓN
-# ============================================================
+============================================================
+
+CONFIGURACIÓN
+
+============================================================
 
 st.set_page_config(
-    page_title="Airbnb Financial Hub",
-    page_icon="🏢",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+page_title="Airbnb Financial Hub",
+page_icon="🏢",
+layout="wide",
+initial_sidebar_state="collapsed"
 )
 
+============================================================
 
-# ============================================================
-# ESTILOS
-# ============================================================
+ESTILOS
+
+============================================================
 
 st.markdown("""
+
 <style>
 
 /* ============================================================
@@ -838,6 +842,38 @@ div.stButton > button:hover {
 }
 
 /* ============================================================
+   VISTA APORTES / CAPITAL FAMILIAR
+============================================================ */
+.aportes-panel { background:#FFFFFF; border:1px solid #DCE5EE; border-radius:14px; padding:16px 18px 14px; margin-top:12px; overflow:hidden; }
+.aportes-title { font-size:18px; font-weight:850; color:#17345E; }
+.aportes-subtitle { font-size:9px; color:#8A98AA; margin-top:4px; margin-bottom:12px; }
+.aportes-kpi-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; margin-top:12px; }
+.aportes-kpi { background:#F8FAFC; border:1px solid #E4EAF0; border-radius:12px; padding:11px 12px; min-height:78px; box-sizing:border-box; }
+.aportes-kpi-label { font-size:8px; font-weight:800; color:#8290A4; text-transform:uppercase; }
+.aportes-kpi-value { font-size:22px; font-weight:850; color:#17345E; margin-top:7px; line-height:1; }
+.aportes-kpi-sub { font-size:8px; color:#8A98AA; margin-top:6px; }
+.aportes-body-grid { display:grid; grid-template-columns:1.35fr .85fr; gap:12px; margin-top:12px; }
+.aportes-card { background:#FFFFFF; border:1px solid #E1E8EF; border-radius:12px; padding:12px 14px; box-sizing:border-box; }
+.aportes-card-title { font-size:11px; font-weight:850; color:#17345E; }
+.aportes-card-subtitle { font-size:8px; color:#8A98AA; margin-top:3px; margin-bottom:9px; }
+.aportes-row { display:grid; grid-template-columns:105px 1fr 78px; gap:8px; align-items:center; margin-top:10px; }
+.aportes-row-name { font-size:9px; font-weight:750; color:#50637B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.aportes-bar-bg { height:8px; background:#EEF2F6; border-radius:8px; overflow:hidden; }
+.aportes-bar-fill { height:100%; background:linear-gradient(90deg,#7964DD 0%,#B37DE8 100%); border-radius:8px; }
+.aportes-row-value { text-align:right; font-size:9px; font-weight:800; color:#17345E; }
+.aportes-table { width:100%; border-collapse:separate; border-spacing:0; font-size:9px; color:#50637B; }
+.aportes-table th { background:#F4F7FA; color:#71839A; font-size:7.5px; font-weight:800; text-transform:uppercase; padding:8px 9px; border-bottom:1px solid #DCE5EE; text-align:right; white-space:nowrap; }
+.aportes-table th:first-child { text-align:left; }
+.aportes-table td { padding:9px; border-bottom:1px solid #EDF1F5; text-align:right; white-space:nowrap; }
+.aportes-table tr:last-child td { border-bottom:none; }
+.aportes-table td:first-child { text-align:left; font-weight:800; color:#17345E; }
+.aportes-total-row td { background:#F8FAFC; font-weight:850; border-top:1px solid #DCE5EE; }
+.aportes-positive { color:#009B70; font-weight:800; }
+.aportes-note { margin-top:10px; padding:9px 11px; background:#F8FAFC; border:1px solid #E5EBF1; border-radius:10px; font-size:8px; color:#71839A; line-height:1.45; }
+.aportes-note b { color:#17345E; }
+@media (max-width: 900px) { .aportes-kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .aportes-body-grid { grid-template-columns:1fr; } }
+
+/* ============================================================
    RESPONSIVE
 ============================================================ */
 
@@ -887,42 +923,47 @@ div[data-testid="stHorizontalBlock"]:has(.st-key-nav_portafolio) {
 }
 
 </style>
+
 """, unsafe_allow_html=True)
 
+============================================================
 
-# ============================================================
-# CONEXIÓN BIGQUERY
-# ============================================================
+CONEXIÓN BIGQUERY
+
+============================================================
 
 credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"],
-    scopes=[
-        "https://www.googleapis.com/auth/cloud-platform",
-        "https://www.googleapis.com/auth/drive.readonly"
-    ]
+st.secrets["gcp_service_account"],
+scopes=[
+"https://www.googleapis.com/auth/cloud-platform",
+"https://www.googleapis.com/auth/drive.readonly"
+]
 )
 
 client = bigquery.Client(
-    credentials=credentials,
-    project="rentascamacho"
+credentials=credentials,
+project="rentascamacho"
 )
 
 with open(
-    "assets/logo_rentas_camacho.png",
-    "rb"
+"assets/logo_rentas_camacho.png",
+"rb"
 ) as f:
-    logo_b64 = base64.b64encode(
-        f.read()
-    ).decode()
+logo_b64 = base64.b64encode(
+f.read()
+).decode()
 
-logo_data = f"data:image/png;base64,{logo_b64}"
-# ============================================================
-# ICONOS DEL MENÚ SUPERIOR
-# ============================================================
+logo_data = f"data/png;base64,{logo_b64}"
+
+============================================================
+
+ICONOS DEL MENÚ SUPERIOR
+
+============================================================
 
 def cargar_svg_base64(nombre):
-    with open(f"assets/{nombre}", "rb") as f:
-        return base64.b64encode(f.read()).decode()
+with open(f"assets/{nombre}", "rb") as f:
+return base64.b64encode(f.read()).decode()
 
 icon_portafolio = cargar_svg_base64("icon_portafolio.svg")
 icon_propiedades = cargar_svg_base64("icon_propiedades.svg")
@@ -931,12 +972,15 @@ icon_financiero = cargar_svg_base64("icon_financiero.svg")
 icon_analisis = cargar_svg_base64("icon_analisis.svg")
 icon_reportes = cargar_svg_base64("icon_reportes.svg")
 
-# ============================================================
-# ICONOS PERSONALIZADOS DEL MENÚ
-# ============================================================
+============================================================
+
+ICONOS PERSONALIZADOS DEL MENÚ
+
+============================================================
 
 st.markdown(
-    f"""
+f"""
+
 <style>
 
 /* ============================================================
@@ -1030,15 +1074,19 @@ div[data-testid="column"] {{
 }}
 
 </style>
+
 """,
-    unsafe_allow_html=True
+unsafe_allow_html=True
 )
 
-# ============================================================
-# ESTILOS — RADAR INMOBILIARIO
-# ============================================================
+============================================================
+
+ESTILOS — RADAR INMOBILIARIO
+
+============================================================
 
 st.markdown("""
+
 <style>
 .radar-panel {
     background:#FFFFFF;
@@ -1155,1924 +1203,2009 @@ st.markdown("""
 .radar-decision-sell { background:#FFF0E8; color:#C65A16; }
 .radar-decision-review { background:#FFF3D9; color:#B57900; }
 </style>
+
 """, unsafe_allow_html=True)
 
-# ============================================================
-# FORMATO DINERO
-# ============================================================
+============================================================
+
+FORMATO DINERO
+
+============================================================
 
 def dinero_corto(valor):
 
-    if pd.isna(valor):
-        valor = 0
+if pd.isna(valor):
+    valor = 0
 
-    valor = float(valor)
+valor = float(valor)
 
-    if abs(valor) >= 1_000_000:
-        return f"${valor / 1_000_000:.1f}M"
+if abs(valor) >= 1_000_000:
+    return f"${valor / 1_000_000:.1f}M"
 
-    if abs(valor) >= 1_000:
-        return f"${valor / 1_000:.0f}k"
+if abs(valor) >= 1_000:
+    return f"${valor / 1_000:.0f}k"
 
-    return f"${valor:,.0f}".replace(",", ".")
+return f"${valor:,.0f}".replace(",", ".")
 
+============================================================
 
-# ============================================================
-# DATOS FINANCIEROS
-# ============================================================
+DATOS FINANCIEROS
+
+============================================================
 
 @st.cache_data(ttl=300)
 def cargar_datos_financieros():
 
-    query = """
-    SELECT
-        Fecha,
-        Nombre_Propiedad,
-        Ciudad,
-        Nombre_Socio,
-        Nombre_Tipo,
-        Nombre_Subcategoria,
-        Detalle,
-        Nombre_Cuenta,
-        Ingreso,
-        Gasto
-    FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
-    WHERE LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
-    """
+query = """
+SELECT
+    Fecha,
+    Nombre_Propiedad,
+    Ciudad,
+    Nombre_Socio,
+    Nombre_Tipo,
+    Nombre_Subcategoria,
+    Detalle,
+    Nombre_Cuenta,
+    Ingreso,
+    Gasto
+FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
+WHERE LOWER(TRIM(Nombre_Tipo)) = 'airbnb'
+"""
 
-    df = client.query(query).to_dataframe()
+df = client.query(query).to_dataframe()
 
-    df["Fecha"] = pd.to_datetime(
-        df["Fecha"],
-        errors="coerce"
+df["Fecha"] = pd.to_datetime(
+    df["Fecha"],
+    errors="coerce"
+)
+
+df["Ingreso"] = pd.to_numeric(
+    df["Ingreso"],
+    errors="coerce"
+).fillna(0)
+
+df["Gasto"] = pd.to_numeric(
+    df["Gasto"],
+    errors="coerce"
+).fillna(0)
+
+for col in [
+    "Nombre_Propiedad",
+    "Ciudad",
+    "Nombre_Socio",
+    "Nombre_Subcategoria",
+    "Detalle",
+    "Nombre_Cuenta"
+]:
+
+    df[col] = (
+        df[col]
+        .fillna("Sin información")
+        .astype(str)
     )
 
-    df["Ingreso"] = pd.to_numeric(
-        df["Ingreso"],
-        errors="coerce"
-    ).fillna(0)
+return df
 
-    df["Gasto"] = pd.to_numeric(
-        df["Gasto"],
-        errors="coerce"
-    ).fillna(0)
+============================================================
 
-    for col in [
-        "Nombre_Propiedad",
-        "Ciudad",
-        "Nombre_Socio",
-        "Nombre_Subcategoria",
-        "Detalle",
-        "Nombre_Cuenta"
-    ]:
+APORTES DE SOCIOS — CAPITAL REAL APORTADO
 
-        df[col] = (
-            df[col]
-            .fillna("Sin información")
-            .astype(str)
-        )
+============================================================
 
-    return df
+@st.cache_data(ttl=300)
+def cargar_aportes_socios():
+query = (
+"SELECT ID_Aporte, DATE(Fecha) AS Fecha, Socio, Nombre_Socio, "
+"Categoria, Nombre_Categoria, Subcategoria, Nombre_Subcategoria, "
+"Detalle, Valor, Cuenta, Nombre_Cuenta, Observaciones "
+"FROM rentascamacho.rentas_cortas.Aportes_Socios "
+"WHERE Valor IS NOT NULL ORDER BY Fecha, Nombre_Socio"
+)
 
+aportes = client.query(query).to_dataframe()
 
-# ============================================================
-# INVERSIONES POR PROPIEDAD
-# ============================================================
+if aportes.empty:
+    return pd.DataFrame(columns=[
+        "ID_Aporte", "Fecha", "Socio", "Nombre_Socio",
+        "Categoria", "Nombre_Categoria", "Subcategoria",
+        "Nombre_Subcategoria", "Detalle", "Valor",
+        "Cuenta", "Nombre_Cuenta", "Observaciones"
+    ])
+
+aportes["Fecha"] = pd.to_datetime(aportes["Fecha"], errors="coerce")
+aportes["Valor"] = pd.to_numeric(aportes["Valor"], errors="coerce").fillna(0)
+
+for col in [
+    "Nombre_Socio", "Nombre_Categoria", "Nombre_Subcategoria",
+    "Detalle", "Nombre_Cuenta", "Observaciones"
+]:
+    aportes[col] = aportes[col].fillna("Sin información").astype(str).str.strip()
+
+return aportes
+
+============================================================
+
+INVERSIONES POR PROPIEDAD
+
+============================================================
 
 @st.cache_data(ttl=300)
 def cargar_inversiones():
 
-    query = """
-    SELECT
-        Activo_Proyecto,
-        ANY_VALUE(Ciudad) AS Ciudad,
-        SUM(Valor_Prorrateado_Calculado) AS Inversion
-    FROM `rentascamacho.rentas_cortas.Vista_Inversiones_Prorrateadas`
-    WHERE Activo_Proyecto IN (
-        'Torre Acqua',
-        'Torre Evoca',
-        'Torre Ventto',
-        'Lotus',
-        'Santa Marina',
-        'Base Loft',
-        'Tempus 49',
-        'Iwani'
-    )
-    GROUP BY Activo_Proyecto
-    """
+query = """
+SELECT
+    Activo_Proyecto,
+    ANY_VALUE(Ciudad) AS Ciudad,
+    SUM(Valor_Prorrateado_Calculado) AS Inversion
+FROM `rentascamacho.rentas_cortas.Vista_Inversiones_Prorrateadas`
+WHERE Activo_Proyecto IN (
+    'Torre Acqua',
+    'Torre Evoca',
+    'Torre Ventto',
+    'Lotus',
+    'Santa Marina',
+    'Base Loft',
+    'Tempus 49',
+    'Iwani'
+)
+GROUP BY Activo_Proyecto
+"""
 
-    inversiones = client.query(query).to_dataframe()
+inversiones = client.query(query).to_dataframe()
 
-    inversiones["Inversion"] = pd.to_numeric(
-        inversiones["Inversion"],
-        errors="coerce"
-    ).fillna(0)
+inversiones["Inversion"] = pd.to_numeric(
+    inversiones["Inversion"],
+    errors="coerce"
+).fillna(0)
 
-    # ========================================================
-    # INVERSIÓN TOTAL DEL ACTIVO
-    # ========================================================
-    # La inversión utilizada para el análisis corresponde al
-    # valor total del activo: apartamento + amoblamiento +
-    # equipamiento + demás inversión registrada.
-    #
-    # Excepciones definidas para el portafolio:
-    # - Torre Acqua: inversión registrada + crédito
-    # - Torre Evoca: inversión registrada (contado)
-    # - Torre Ventto: valor total informado externamente
-    # - Lotus: valor total del activo informado
-    # - Santa Marina: inversión registrada + créditos
-    # - Base Loft: inversión registrada ya incluye el crédito
-    # - Tempus 49: inversión registrada + crédito
-    # - Iwani: se mantiene la inversión registrada
+# ========================================================
+# INVERSIÓN TOTAL DEL ACTIVO
+# ========================================================
+# La inversión utilizada para el análisis corresponde al
+# valor total del activo: apartamento + amoblamiento +
+# equipamiento + demás inversión registrada.
+#
+# Excepciones definidas para el portafolio:
+# - Torre Acqua: inversión registrada + crédito
+# - Torre Evoca: inversión registrada (contado)
+# - Torre Ventto: valor total informado externamente
+# - Lotus: valor total del activo informado
+# - Santa Marina: inversión registrada + créditos
+# - Base Loft: inversión registrada ya incluye el crédito
+# - Tempus 49: inversión registrada + crédito
+# - Iwani: se mantiene la inversión registrada
 
-    inversiones_totales = {
-        "Torre Acqua": 174662034,
-        "Torre Evoca": 172456719,
-        "Torre Ventto": 190000000,
-        "Lotus": 349775542,
-        "Santa Marina": 181281438,
-        "Base Loft": 166613251,
-        "Tempus 49": 183969093,
-    }
+inversiones_totales = {
+    "Torre Acqua": 174662034,
+    "Torre Evoca": 172456719,
+    "Torre Ventto": 190000000,
+    "Lotus": 349775542,
+    "Santa Marina": 181281438,
+    "Base Loft": 166613251,
+    "Tempus 49": 183969093,
+}
 
-    for propiedad, valor in inversiones_totales.items():
-        inversiones.loc[
-            inversiones["Activo_Proyecto"] == propiedad,
-            "Inversion"
-        ] = valor
+for propiedad, valor in inversiones_totales.items():
+    inversiones.loc[
+        inversiones["Activo_Proyecto"] == propiedad,
+        "Inversion"
+    ] = valor
 
-    return inversiones
+return inversiones
 
+============================================================
 
-# ============================================================
-# ============================================================
-# ============================================================
-# ESTUDIO DE MERCADO INMOBILIARIO — BIGQUERY
-# ============================================================
+============================================================
+
+============================================================
+
+ESTUDIO DE MERCADO INMOBILIARIO — BIGQUERY
+
+============================================================
 
 @st.cache_data(ttl=900)
 def cargar_estudio_mercado_inmobiliario():
-    query = """
-    SELECT
-        ID_Activo, Nombre_Entidad, Ciudad, Conjunto_Proyecto, Direccion,
-        Venta_Min_M, Venta_Max_M,
-        Renta_Amoblada_Min_M, Renta_Amoblada_Max_M,
-        Renta_Sin_Amoblar_Min_M, Renta_Sin_Amoblar_Max_M,
-        Facilidad_Venta, Facilidad_Arriendo,
-        Proyeccion_Zona_5A, Rol_Portafolio
-    FROM `rentascamacho.rentas_cortas.Estudio_Mercado_Inmobiliario`
-    ORDER BY ID_Activo
-    """
-    estudio = client.query(query).to_dataframe()
+query = """
+SELECT
+ID_Activo, Nombre_Entidad, Ciudad, Conjunto_Proyecto, Direccion,
+Venta_Min_M, Venta_Max_M,
+Renta_Amoblada_Min_M, Renta_Amoblada_Max_M,
+Renta_Sin_Amoblar_Min_M, Renta_Sin_Amoblar_Max_M,
+Facilidad_Venta, Facilidad_Arriendo,
+Proyeccion_Zona_5A, Rol_Portafolio
+FROM rentascamacho.rentas_cortas.Estudio_Mercado_Inmobiliario
+ORDER BY ID_Activo
+"""
+estudio = client.query(query).to_dataframe()
 
-    # ============================================================
-    # ELIMINAR FILAS VACÍAS DEL ESTUDIO DE MERCADO
-    # ============================================================
-    estudio["ID_Activo"] = (
-        estudio["ID_Activo"]
-        .fillna("")
-        .astype(str)
-        .str.strip()
-    )
+# ============================================================
+# ELIMINAR FILAS VACÍAS DEL ESTUDIO DE MERCADO
+# ============================================================
+estudio["ID_Activo"] = (
+    estudio["ID_Activo"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+)
 
-    estudio = estudio[
-        estudio["ID_Activo"] != ""
-    ].copy()
+estudio = estudio[
+    estudio["ID_Activo"] != ""
+].copy()
 
-    numeric_cols = [
-        "Venta_Min_M", "Venta_Max_M",
-        "Renta_Amoblada_Min_M", "Renta_Amoblada_Max_M",
-        "Renta_Sin_Amoblar_Min_M", "Renta_Sin_Amoblar_Max_M",
-        "Proyeccion_Zona_5A"
-    ]
+numeric_cols = [
+    "Venta_Min_M", "Venta_Max_M",
+    "Renta_Amoblada_Min_M", "Renta_Amoblada_Max_M",
+    "Renta_Sin_Amoblar_Min_M", "Renta_Sin_Amoblar_Max_M",
+    "Proyeccion_Zona_5A"
+]
 
-    # La hoja de Google Sheets usa coma decimal en la proyección
-    # (ej. 7,8 y 7,5). BigQuery la puede entregar como STRING.
-    # Convertimos coma decimal a punto antes de pasar a número.
-    estudio["Proyeccion_Zona_5A"] = (
-        estudio["Proyeccion_Zona_5A"]
-        .fillna("")
-        .astype(str)
-        .str.strip()
-        .str.replace(",", ".", regex=False)
-    )
+# La hoja de Google Sheets usa coma decimal en la proyección
+# (ej. 7,8 y 7,5). BigQuery la puede entregar como STRING.
+# Convertimos coma decimal a punto antes de pasar a número.
+estudio["Proyeccion_Zona_5A"] = (
+    estudio["Proyeccion_Zona_5A"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+    .str.replace(",", ".", regex=False)
+)
 
-    for col in numeric_cols:
-        estudio[col] = pd.to_numeric(estudio[col], errors="coerce")
-    text_cols = [
-        "ID_Activo", "Nombre_Entidad", "Ciudad", "Conjunto_Proyecto",
-        "Direccion", "Facilidad_Venta", "Facilidad_Arriendo",
-        "Rol_Portafolio"
-    ]
-    for col in text_cols:
-        estudio[col] = estudio[col].fillna("").astype(str)
-    return estudio
-
+for col in numeric_cols:
+    estudio[col] = pd.to_numeric(estudio[col], errors="coerce")
+text_cols = [
+    "ID_Activo", "Nombre_Entidad", "Ciudad", "Conjunto_Proyecto",
+    "Direccion", "Facilidad_Venta", "Facilidad_Arriendo",
+    "Rol_Portafolio"
+]
+for col in text_cols:
+    estudio[col] = estudio[col].fillna("").astype(str)
+return estudio
 
 def rango_millones(minimo, maximo):
-    if pd.isna(minimo) and pd.isna(maximo):
-        return "—"
-    if pd.isna(maximo):
-        return f"${float(minimo)/1_000_000:.1f}M"
-    if pd.isna(minimo):
-        return f"${float(maximo)/1_000_000:.1f}M"
-    return f"${float(minimo)/1_000_000:.1f}–{float(maximo)/1_000_000:.1f}M"
-
+if pd.isna(minimo) and pd.isna(maximo):
+return "—"
+if pd.isna(maximo):
+return f"${float(minimo)/1_000_000:.1f}M"
+if pd.isna(minimo):
+return f"${float(maximo)/1_000_000:.1f}M"
+return f"${float(minimo)/1_000_000:.1f}–{float(maximo)/1_000_000:.1f}M"
 
 def generar_decision_estrategica_radar(
-    row,
-    comparable
+row,
+comparable
 ):
-    """Genera un estatus breve + lectura estratégica del Radar.
+"""Genera un estatus breve + lectura estratégica del Radar.
 
-    El estatus se deriva de los números visibles del Radar:
-    renta amoblada, Airbnb comparable, proyección de zona y liquidez.
-    Tempus 49 conserva una excepción explícita por uso familiar.
-    No utiliza Rol_Portafolio para redactar la explicación.
-    """
+El estatus se deriva de los números visibles del Radar:
+renta amoblada, Airbnb comparable, proyección de zona y liquidez.
+Tempus 49 conserva una excepción explícita por uso familiar.
+No utiliza Rol_Portafolio para redactar la explicación.
+"""
 
-    id_activo = str(row.get("ID_Activo", ""))
+id_activo = str(row.get("ID_Activo", ""))
 
-    valor = rango_millones(
-        row.get("Venta_Min_M"),
-        row.get("Venta_Max_M")
-    )
+valor = rango_millones(
+    row.get("Venta_Min_M"),
+    row.get("Venta_Max_M")
+)
 
-    renta = rango_millones(
-        row.get("Renta_Amoblada_Min_M"),
-        row.get("Renta_Amoblada_Max_M")
-    )
+renta = rango_millones(
+    row.get("Renta_Amoblada_Min_M"),
+    row.get("Renta_Amoblada_Max_M")
+)
 
-    renta_min = pd.to_numeric(
-        row.get("Renta_Amoblada_Min_M"),
-        errors="coerce"
-    )
-    renta_max = pd.to_numeric(
-        row.get("Renta_Amoblada_Max_M"),
-        errors="coerce"
-    )
-    renta_media = (
-        (float(renta_min) + float(renta_max)) / 2
-        if pd.notna(renta_min) and pd.notna(renta_max)
-        else pd.NA
-    )
+renta_min = pd.to_numeric(
+    row.get("Renta_Amoblada_Min_M"),
+    errors="coerce"
+)
+renta_max = pd.to_numeric(
+    row.get("Renta_Amoblada_Max_M"),
+    errors="coerce"
+)
+renta_media = (
+    (float(renta_min) + float(renta_max)) / 2
+    if pd.notna(renta_min) and pd.notna(renta_max)
+    else pd.NA
+)
 
-    venta = str(row.get("Facilidad_Venta", "—") or "—").strip()
+venta = str(row.get("Facilidad_Venta", "—") or "—").strip()
 
-    proyeccion_val = pd.to_numeric(
-        row.get("Proyeccion_Zona_5A"),
-        errors="coerce"
-    )
-    proyeccion = (
-        f"{float(proyeccion_val):.1f}/10"
-        if pd.notna(proyeccion_val)
-        else "sin dato"
-    )
+proyeccion_val = pd.to_numeric(
+    row.get("Proyeccion_Zona_5A"),
+    errors="coerce"
+)
+proyeccion = (
+    f"{float(proyeccion_val):.1f}/10"
+    if pd.notna(proyeccion_val)
+    else "sin dato"
+)
 
-    comparable_val = pd.to_numeric(comparable, errors="coerce")
-    comparable_txt = (
-        dinero_corto(comparable_val)
-        if pd.notna(comparable_val)
-        else "sin dato"
-    )
+comparable_val = pd.to_numeric(comparable, errors="coerce")
+comparable_txt = (
+    dinero_corto(comparable_val)
+    if pd.notna(comparable_val)
+    else "sin dato"
+)
 
-    # --------------------------------------------------------
-    # TEMPUS 49 — uso familiar cambia la lectura financiera
-    # --------------------------------------------------------
-    if id_activo == "ENT-0004":
-        return (
-            "Uso familiar",
-            "El ingreso Airbnb no es representativo por el uso familiar; el activo conserva valor y la decisión depende de la necesidad de vivienda."
-        )
-
-    # --------------------------------------------------------
-    # AIRBNB COMPETITIVO
-    # Cuando el Airbnb comparable supera o se acerca a la renta
-    # amoblada media, el modelo actual sigue siendo competitivo.
-    # --------------------------------------------------------
-    if pd.notna(comparable_val) and pd.notna(renta_media):
-        diferencia = float(comparable_val) - float(renta_media)
-
-        if diferencia >= -100_000:
-            return (
-                "Airbnb competitivo",
-                f"Airbnb comparable {comparable_txt} frente a renta amoblada {renta}; el modelo actual sigue siendo competitivo."
-            )
-
-    # --------------------------------------------------------
-    # POTENCIAL DE VALORIZACIÓN
-    # Una proyección alta puede dominar la decisión aunque exista
-    # una alternativa de renta mejor; la tesis principal pasa a ser
-    # la valorización futura del activo.
-    # --------------------------------------------------------
-    if pd.notna(proyeccion_val) and float(proyeccion_val) >= 8.5:
-        return (
-            "Potencial de valorización",
-            f"Proyección de zona {proyeccion}, valor {valor} y renta amoblada {renta}; el atractivo principal está en la evolución esperada de la zona."
-        )
-
-    # --------------------------------------------------------
-    # PROBAR RENTA TRADICIONAL
-    # Hay una brecha relevante a favor de la renta amoblada y la
-    # proyección no domina la tesis del activo.
-    # --------------------------------------------------------
-    if pd.notna(comparable_val) and pd.notna(renta_media):
-        brecha = float(renta_media) - float(comparable_val)
-
-        if brecha >= 250_000:
-            return (
-                "Probar renta tradicional",
-                f"Renta amoblada {renta} supera el Airbnb comparable de {comparable_txt}; conviene probar el modelo antes de vender."
-            )
-
-    # --------------------------------------------------------
-    # EQUILIBRIO / AIRBNB COMPETITIVO POR AUSENCIA DE BRECHA
-    # --------------------------------------------------------
+# --------------------------------------------------------
+# TEMPUS 49 — uso familiar cambia la lectura financiera
+# --------------------------------------------------------
+if id_activo == "ENT-0004":
     return (
-        "Airbnb competitivo",
-        f"Valor {valor}, renta amoblada {renta}, proyección {proyeccion} y Airbnb comparable {comparable_txt}; no aparece una alternativa claramente superior."
+        "Uso familiar",
+        "El ingreso Airbnb no es representativo por el uso familiar; el activo conserva valor y la decisión depende de la necesidad de vivienda."
     )
 
+# --------------------------------------------------------
+# AIRBNB COMPETITIVO
+# Cuando el Airbnb comparable supera o se acerca a la renta
+# amoblada media, el modelo actual sigue siendo competitivo.
+# --------------------------------------------------------
+if pd.notna(comparable_val) and pd.notna(renta_media):
+    diferencia = float(comparable_val) - float(renta_media)
+
+    if diferencia >= -100_000:
+        return (
+            "Airbnb competitivo",
+            f"Airbnb comparable {comparable_txt} frente a renta amoblada {renta}; el modelo actual sigue siendo competitivo."
+        )
+
+# --------------------------------------------------------
+# POTENCIAL DE VALORIZACIÓN
+# Una proyección alta puede dominar la decisión aunque exista
+# una alternativa de renta mejor; la tesis principal pasa a ser
+# la valorización futura del activo.
+# --------------------------------------------------------
+if pd.notna(proyeccion_val) and float(proyeccion_val) >= 8.5:
+    return (
+        "Potencial de valorización",
+        f"Proyección de zona {proyeccion}, valor {valor} y renta amoblada {renta}; el atractivo principal está en la evolución esperada de la zona."
+    )
+
+# --------------------------------------------------------
+# PROBAR RENTA TRADICIONAL
+# Hay una brecha relevante a favor de la renta amoblada y la
+# proyección no domina la tesis del activo.
+# --------------------------------------------------------
+if pd.notna(comparable_val) and pd.notna(renta_media):
+    brecha = float(renta_media) - float(comparable_val)
+
+    if brecha >= 250_000:
+        return (
+            "Probar renta tradicional",
+            f"Renta amoblada {renta} supera el Airbnb comparable de {comparable_txt}; conviene probar el modelo antes de vender."
+        )
+
+# --------------------------------------------------------
+# EQUILIBRIO / AIRBNB COMPETITIVO POR AUSENCIA DE BRECHA
+# --------------------------------------------------------
+return (
+    "Airbnb competitivo",
+    f"Valor {valor}, renta amoblada {renta}, proyección {proyeccion} y Airbnb comparable {comparable_txt}; no aparece una alternativa claramente superior."
+)
 
 def clase_decision(decision):
-    d = str(decision or "").upper()
-    if "AIRBNB COMPETITIVO" in d:
-        return "radar-status-green"
-    if "POTENCIAL DE VALORIZACIÓN" in d:
-        return "radar-status-green"
-    if "PROBAR RENTA TRADICIONAL" in d:
-        return "radar-status-yellow"
-    if "USO FAMILIAR" in d:
-        return "radar-status-blue"
-    return "radar-status-neutral"
-
+d = str(decision or "").upper()
+if "AIRBNB COMPETITIVO" in d:
+return "radar-status-green"
+if "POTENCIAL DE VALORIZACIÓN" in d:
+return "radar-status-green"
+if "PROBAR RENTA TRADICIONAL" in d:
+return "radar-status-yellow"
+if "USO FAMILIAR" in d:
+return "radar-status-blue"
+return "radar-status-neutral"
 
 def clase_venta(facilidad):
-    f = str(facilidad or "").upper()
-    if "BUENA" in f:
-        return "radar-decision-good"
-    if "MEDIA" in f:
-        return "radar-decision-medium"
-    if "BAJA" in f:
-        return "radar-decision-low"
-    return "radar-decision-neutral"
-
+f = str(facilidad or "").upper()
+if "BUENA" in f:
+return "radar-decision-good"
+if "MEDIA" in f:
+return "radar-decision-medium"
+if "BAJA" in f:
+return "radar-decision-low"
+return "radar-decision-neutral"
 
 def escape_html(valor):
-    return (
-        str(valor)
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-        .replace("'", "&#39;")
-    )
-
+return (
+str(valor)
+.replace("&", "&")
+.replace("<", "<")
+.replace(">", ">")
+.replace('"', """)
+.replace("'", "'")
+)
 
 def calcular_airbnb_comparable_radar(
-    df_base,
-    fecha_fin_radar
+df_base,
+fecha_fin_radar
 ):
-    """
-    Calcula el ingreso Airbnb comparable mensual YTD para el Radar.
+"""
+Calcula el ingreso Airbnb comparable mensual YTD para el Radar.
 
-    Ingreso:
-        acumulado del año / meses completos transcurridos.
+Ingreso:
+    acumulado del año / meses completos transcurridos.
 
-    Gastos:
-        primero suma de registros prorrateados del mismo mes;
-        luego promedio únicamente de los meses con información.
+Gastos:
+    primero suma de registros prorrateados del mismo mes;
+    luego promedio únicamente de los meses con información.
 
-    Si una categoría no tiene información:
-        se toma como 0.
+Si una categoría no tiene información:
+    se toma como 0.
 
-    No se descuentan:
-        administración, inmobiliaria ni comisiones.
-    """
+No se descuentan:
+    administración, inmobiliaria ni comisiones.
+"""
 
-    fecha_fin_ts = pd.Timestamp(
-        fecha_fin_radar
-    )
+fecha_fin_ts = pd.Timestamp(
+    fecha_fin_radar
+)
 
-    anio = int(
-        fecha_fin_ts.year
-    )
+anio = int(
+    fecha_fin_ts.year
+)
 
-    if anio == int(hoy.year):
+if anio == int(hoy.year):
 
-        ultimo_mes_cerrado = (
-            pd.Timestamp(
-                hoy.year,
-                hoy.month,
-                1
-            )
-            - pd.offsets.MonthEnd(1)
+    ultimo_mes_cerrado = (
+        pd.Timestamp(
+            hoy.year,
+            hoy.month,
+            1
         )
-
-        fecha_corte = min(
-            fecha_fin_ts,
-            ultimo_mes_cerrado
-        )
-
-        meses = max(
-            1,
-            int(fecha_corte.month)
-        )
-
-    else:
-
-        fecha_corte = pd.Timestamp(
-            anio,
-            12,
-            31
-        )
-
-        meses = 12
-
-    anual = df_base[
-        (df_base["Fecha"].dt.year == anio)
-        &
-        (df_base["Fecha"] <= fecha_corte)
-    ].copy()
-
-    if anual.empty:
-
-        return pd.DataFrame(
-            columns=[
-                "Nombre_Propiedad",
-                "Ingreso_Mensual_Radar",
-                "Airbnb_Comparable_Mensual"
-            ]
-        )
-
-    for col in [
-        "Nombre_Subcategoria",
-        "Detalle",
-        "Nombre_Cuenta"
-    ]:
-
-        if col not in anual.columns:
-            anual[col] = ""
-
-        anual[col] = (
-            anual[col]
-            .fillna("")
-            .astype(str)
-            .str.strip()
-        )
-
-    anual["_Texto_Gasto_Radar"] = (
-        anual["Nombre_Subcategoria"]
-        + " "
-        + anual["Detalle"]
-        + " "
-        + anual["Nombre_Cuenta"]
-    ).str.lower()
-
-    # ========================================================
-    # INGRESO BRUTO
-    # ========================================================
-    ingresos = (
-        anual
-        .groupby(
-            "Nombre_Propiedad",
-            as_index=False
-        )["Ingreso"]
-        .sum()
-        .rename(
-            columns={
-                "Ingreso":
-                    "Ingreso_Anual_Radar"
-            }
-        )
+        - pd.offsets.MonthEnd(1)
     )
 
-    # Misma distribución especial de Acqua + Tempus 49.
-    mask_acqua_tempus = ingresos[
-        "Nombre_Propiedad"
-    ].isin(
-        [
-            "Torre Acqua",
-            "Tempus 49"
-        ]
+    fecha_corte = min(
+        fecha_fin_ts,
+        ultimo_mes_cerrado
     )
 
-    ingreso_combinado = (
-        ingresos.loc[
-            mask_acqua_tempus,
-            "Ingreso_Anual_Radar"
-        ]
-        .sum()
+    meses = max(
+        1,
+        int(fecha_corte.month)
     )
 
-    if ingreso_combinado > 0:
+else:
 
-        ingresos.loc[
-            ingresos["Nombre_Propiedad"]
-            == "Torre Acqua",
-            "Ingreso_Anual_Radar"
-        ] = (
-            ingreso_combinado
-            * 0.703221459479914
-        )
-
-        ingresos.loc[
-            ingresos["Nombre_Propiedad"]
-            == "Tempus 49",
-            "Ingreso_Anual_Radar"
-        ] = (
-            ingreso_combinado
-            * 0.296778540520086
-        )
-
-    ingresos[
-        "Ingreso_Mensual_Radar"
-    ] = (
-        ingresos["Ingreso_Anual_Radar"]
-        / meses
+    fecha_corte = pd.Timestamp(
+        anio,
+        12,
+        31
     )
 
-    # ========================================================
-    # CLASIFICACIÓN DE GASTOS
-    # ========================================================
-    no_comparable = (
-        anual["_Texto_Gasto_Radar"]
-        .str.contains(
-            r"\badministraci[oó]n\b|\binmobiliaria\b|\bcomisi[oó]n\b",
-            regex=True,
-            na=False
-        )
-    )
+    meses = 12
 
-    validos = (
-        (anual["Gasto"] > 0)
-        &
-        (~no_comparable)
-    )
+anual = df_base[
+    (df_base["Fecha"].dt.year == anio)
+    &
+    (df_base["Fecha"] <= fecha_corte)
+].copy()
 
-    categoria = pd.Series(
-        "",
-        index=anual.index,
-        dtype="object"
-    )
+if anual.empty:
 
-    mask_aseo = (
-        validos
-        &
-        anual["_Texto_Gasto_Radar"].str.contains(
-            r"\baseo\b|\blimpieza\b|\bcleaning\b",
-            regex=True,
-            na=False
-        )
-    )
-
-    categoria.loc[
-        mask_aseo
-    ] = "ASEO"
-
-    mask_internet = (
-        validos
-        &
-        (categoria == "")
-        &
-        anual["_Texto_Gasto_Radar"].str.contains(
-            r"\binternet\b|\bwifi\b|\bwi[\s-]?fi\b",
-            regex=True,
-            na=False
-        )
-    )
-
-    categoria.loc[
-        mask_internet
-    ] = "INTERNET"
-
-    mask_servicios = (
-        validos
-        &
-        (categoria == "")
-        &
-        anual["_Texto_Gasto_Radar"].str.contains(
-            (
-                r"\bservicios?\s+p[úu]blicos?\b"
-                r"|\benerg[ií]a\b"
-                r"|\bagua\b"
-                r"|\bacueducto\b"
-                r"|\belectricidad\b"
-                r"|\bluz\b"
-                r"|\bgas\b"
-            ),
-            regex=True,
-            na=False
-        )
-    )
-
-    categoria.loc[
-        mask_servicios
-    ] = "SERVICIOS"
-
-    anual["_Categoria_Radar"] = categoria
-
-    gastos = anual[
-        anual["_Categoria_Radar"] != ""
-    ].copy()
-
-    # Si no hay gastos comparables, comparable = ingreso bruto.
-    if gastos.empty:
-
-        resultado = ingresos[
-            [
-                "Nombre_Propiedad",
-                "Ingreso_Mensual_Radar"
-            ]
-        ].copy()
-
-        resultado[
-            "Airbnb_Comparable_Mensual"
-        ] = resultado[
-            "Ingreso_Mensual_Radar"
-        ]
-
-        return resultado
-
-    # ========================================================
-    # CONSOLIDAR PRORRATEOS POR MES
-    # ========================================================
-    gastos["_Mes_Radar"] = (
-        gastos["Fecha"]
-        .dt.to_period("M")
-        .astype(str)
-    )
-
-    gastos_mensuales = (
-        gastos
-        .groupby(
-            [
-                "Nombre_Propiedad",
-                "_Categoria_Radar",
-                "_Mes_Radar"
-            ],
-            as_index=False
-        )["Gasto"]
-        .sum()
-    )
-
-    # Promedio de los meses que sí tienen información.
-    gastos_promedio = (
-        gastos_mensuales
-        .groupby(
-            [
-                "Nombre_Propiedad",
-                "_Categoria_Radar"
-            ],
-            as_index=False
-        )["Gasto"]
-        .mean()
-        .pivot(
-            index="Nombre_Propiedad",
-            columns="_Categoria_Radar",
-            values="Gasto"
-        )
-        .reset_index()
-    )
-
-    for col in [
-        "ASEO",
-        "INTERNET",
-        "SERVICIOS"
-    ]:
-
-        if col not in gastos_promedio.columns:
-            gastos_promedio[col] = 0
-
-    gastos_promedio = (
-        gastos_promedio
-        .rename(
-            columns={
-                "ASEO":
-                    "Aseo_Radar",
-                "INTERNET":
-                    "Internet_Radar",
-                "SERVICIOS":
-                    "Servicios_Radar"
-            }
-        )
-    )
-
-    resultado = (
-        ingresos[
-            [
-                "Nombre_Propiedad",
-                "Ingreso_Mensual_Radar"
-            ]
-        ]
-        .merge(
-            gastos_promedio[
-                [
-                    "Nombre_Propiedad",
-                    "Aseo_Radar",
-                    "Internet_Radar",
-                    "Servicios_Radar"
-                ]
-            ],
-            on="Nombre_Propiedad",
-            how="left"
-        )
-    )
-
-    for col in [
-        "Aseo_Radar",
-        "Internet_Radar",
-        "Servicios_Radar"
-    ]:
-
-        resultado[col] = (
-            pd.to_numeric(
-                resultado[col],
-                errors="coerce"
-            )
-            .fillna(0)
-        )
-
-    resultado[
-        "Airbnb_Comparable_Mensual"
-    ] = (
-        resultado["Ingreso_Mensual_Radar"]
-        - resultado["Aseo_Radar"]
-        - resultado["Internet_Radar"]
-        - resultado["Servicios_Radar"]
-    )
-
-    return resultado[
-        [
+    return pd.DataFrame(
+        columns=[
             "Nombre_Propiedad",
             "Ingreso_Mensual_Radar",
             "Airbnb_Comparable_Mensual"
         ]
+    )
+
+for col in [
+    "Nombre_Subcategoria",
+    "Detalle",
+    "Nombre_Cuenta"
+]:
+
+    if col not in anual.columns:
+        anual[col] = ""
+
+    anual[col] = (
+        anual[col]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+    )
+
+anual["_Texto_Gasto_Radar"] = (
+    anual["Nombre_Subcategoria"]
+    + " "
+    + anual["Detalle"]
+    + " "
+    + anual["Nombre_Cuenta"]
+).str.lower()
+
+# ========================================================
+# INGRESO BRUTO
+# ========================================================
+ingresos = (
+    anual
+    .groupby(
+        "Nombre_Propiedad",
+        as_index=False
+    )["Ingreso"]
+    .sum()
+    .rename(
+        columns={
+            "Ingreso":
+                "Ingreso_Anual_Radar"
+        }
+    )
+)
+
+# Misma distribución especial de Acqua + Tempus 49.
+mask_acqua_tempus = ingresos[
+    "Nombre_Propiedad"
+].isin(
+    [
+        "Torre Acqua",
+        "Tempus 49"
+    ]
+)
+
+ingreso_combinado = (
+    ingresos.loc[
+        mask_acqua_tempus,
+        "Ingreso_Anual_Radar"
+    ]
+    .sum()
+)
+
+if ingreso_combinado > 0:
+
+    ingresos.loc[
+        ingresos["Nombre_Propiedad"]
+        == "Torre Acqua",
+        "Ingreso_Anual_Radar"
+    ] = (
+        ingreso_combinado
+        * 0.703221459479914
+    )
+
+    ingresos.loc[
+        ingresos["Nombre_Propiedad"]
+        == "Tempus 49",
+        "Ingreso_Anual_Radar"
+    ] = (
+        ingreso_combinado
+        * 0.296778540520086
+    )
+
+ingresos[
+    "Ingreso_Mensual_Radar"
+] = (
+    ingresos["Ingreso_Anual_Radar"]
+    / meses
+)
+
+# ========================================================
+# CLASIFICACIÓN DE GASTOS
+# ========================================================
+no_comparable = (
+    anual["_Texto_Gasto_Radar"]
+    .str.contains(
+        r"\badministraci[oó]n\b|\binmobiliaria\b|\bcomisi[oó]n\b",
+        regex=True,
+        na=False
+    )
+)
+
+validos = (
+    (anual["Gasto"] > 0)
+    &
+    (~no_comparable)
+)
+
+categoria = pd.Series(
+    "",
+    index=anual.index,
+    dtype="object"
+)
+
+mask_aseo = (
+    validos
+    &
+    anual["_Texto_Gasto_Radar"].str.contains(
+        r"\baseo\b|\blimpieza\b|\bcleaning\b",
+        regex=True,
+        na=False
+    )
+)
+
+categoria.loc[
+    mask_aseo
+] = "ASEO"
+
+mask_internet = (
+    validos
+    &
+    (categoria == "")
+    &
+    anual["_Texto_Gasto_Radar"].str.contains(
+        r"\binternet\b|\bwifi\b|\bwi[\s-]?fi\b",
+        regex=True,
+        na=False
+    )
+)
+
+categoria.loc[
+    mask_internet
+] = "INTERNET"
+
+mask_servicios = (
+    validos
+    &
+    (categoria == "")
+    &
+    anual["_Texto_Gasto_Radar"].str.contains(
+        (
+            r"\bservicios?\s+p[úu]blicos?\b"
+            r"|\benerg[ií]a\b"
+            r"|\bagua\b"
+            r"|\bacueducto\b"
+            r"|\belectricidad\b"
+            r"|\bluz\b"
+            r"|\bgas\b"
+        ),
+        regex=True,
+        na=False
+    )
+)
+
+categoria.loc[
+    mask_servicios
+] = "SERVICIOS"
+
+anual["_Categoria_Radar"] = categoria
+
+gastos = anual[
+    anual["_Categoria_Radar"] != ""
+].copy()
+
+# Si no hay gastos comparables, comparable = ingreso bruto.
+if gastos.empty:
+
+    resultado = ingresos[
+        [
+            "Nombre_Propiedad",
+            "Ingreso_Mensual_Radar"
+        ]
+    ].copy()
+
+    resultado[
+        "Airbnb_Comparable_Mensual"
+    ] = resultado[
+        "Ingreso_Mensual_Radar"
     ]
 
-# CAPITAL PROPIO / CASH + CDT HIPOTÉTICO
-# ============================================================
+    return resultado
 
-# REGLA DEL CASH PARA EL CDT
-# ------------------------------------------------------------
-# El capital de comparación contra CDT sale EXCLUSIVAMENTE
-# de la base real de inversiones:
-#
-#   Vista_Inversiones_Prorrateadas
-#   SUM(Valor_Prorrateado_Calculado)
-#
-# NO se utilizan:
-#   - ingresos Airbnb
-#   - flujo histórico
-#   - valor actual del inmueble
-#   - patrimonio
-#   - valorización
-#   - créditos de otras propiedades
-#
-# ÚNICA EXCEPCIÓN:
-# Base Loft tiene el crédito incluido dentro de la inversión
-# registrada en la base, por lo que para obtener el CASH propio
-# se descuenta únicamente su crédito inicial.
-#
-# Para todas las demás propiedades:
-#   Capital propio = inversión registrada en la base
-#
-# Para Base Loft:
-#   Capital propio = inversión registrada - crédito inicial
-#
-# Las fechas originales de cada inversión se conservan para
-# capitalizar el CDT desde la fecha real de cada aporte.
+# ========================================================
+# CONSOLIDAR PRORRATEOS POR MES
+# ========================================================
+gastos["_Mes_Radar"] = (
+    gastos["Fecha"]
+    .dt.to_period("M")
+    .astype(str)
+)
 
-# ============================================================
-# TASAS CDT HISTÓRICAS POR AÑO
-# ============================================================
-# Benchmark hipotético para comparar cada aporte de capital
-# contra un CDT, respetando la tasa correspondiente a cada año.
-#
-# 2020-2025: promedio anual utilizado para el ejercicio.
-# 2026: promedio provisional del año, al ser un año aún abierto.
-#
-# La capitalización se hace año por año y conserva la fecha
-# real de cada aporte de inversión.
-#
+gastos_mensuales = (
+    gastos
+    .groupby(
+        [
+            "Nombre_Propiedad",
+            "_Categoria_Radar",
+            "_Mes_Radar"
+        ],
+        as_index=False
+    )["Gasto"]
+    .sum()
+)
+
+# Promedio de los meses que sí tienen información.
+gastos_promedio = (
+    gastos_mensuales
+    .groupby(
+        [
+            "Nombre_Propiedad",
+            "_Categoria_Radar"
+        ],
+        as_index=False
+    )["Gasto"]
+    .mean()
+    .pivot(
+        index="Nombre_Propiedad",
+        columns="_Categoria_Radar",
+        values="Gasto"
+    )
+    .reset_index()
+)
+
+for col in [
+    "ASEO",
+    "INTERNET",
+    "SERVICIOS"
+]:
+
+    if col not in gastos_promedio.columns:
+        gastos_promedio[col] = 0
+
+gastos_promedio = (
+    gastos_promedio
+    .rename(
+        columns={
+            "ASEO":
+                "Aseo_Radar",
+            "INTERNET":
+                "Internet_Radar",
+            "SERVICIOS":
+                "Servicios_Radar"
+        }
+    )
+)
+
+resultado = (
+    ingresos[
+        [
+            "Nombre_Propiedad",
+            "Ingreso_Mensual_Radar"
+        ]
+    ]
+    .merge(
+        gastos_promedio[
+            [
+                "Nombre_Propiedad",
+                "Aseo_Radar",
+                "Internet_Radar",
+                "Servicios_Radar"
+            ]
+        ],
+        on="Nombre_Propiedad",
+        how="left"
+    )
+)
+
+for col in [
+    "Aseo_Radar",
+    "Internet_Radar",
+    "Servicios_Radar"
+]:
+
+    resultado[col] = (
+        pd.to_numeric(
+            resultado[col],
+            errors="coerce"
+        )
+        .fillna(0)
+    )
+
+resultado[
+    "Airbnb_Comparable_Mensual"
+] = (
+    resultado["Ingreso_Mensual_Radar"]
+    - resultado["Aseo_Radar"]
+    - resultado["Internet_Radar"]
+    - resultado["Servicios_Radar"]
+)
+
+return resultado[
+    [
+        "Nombre_Propiedad",
+        "Ingreso_Mensual_Radar",
+        "Airbnb_Comparable_Mensual"
+    ]
+]
+
+CAPITAL PROPIO / CASH + CDT HIPOTÉTICO
+
+============================================================
+
+REGLA DEL CASH PARA EL CDT
+
+------------------------------------------------------------
+
+El capital de comparación contra CDT sale EXCLUSIVAMENTE
+
+de la base real de inversiones:
+
+
+
+Vista_Inversiones_Prorrateadas
+
+SUM(Valor_Prorrateado_Calculado)
+
+
+
+NO se utilizan:
+
+- ingresos Airbnb
+
+- flujo histórico
+
+- valor actual del inmueble
+
+- patrimonio
+
+- valorización
+
+- créditos de otras propiedades
+
+
+
+ÚNICA EXCEPCIÓN:
+
+Base Loft tiene el crédito incluido dentro de la inversión
+
+registrada en la base, por lo que para obtener el CASH propio
+
+se descuenta únicamente su crédito inicial.
+
+
+
+Para todas las demás propiedades:
+
+Capital propio = inversión registrada en la base
+
+
+
+Para Base Loft:
+
+Capital propio = inversión registrada - crédito inicial
+
+
+
+Las fechas originales de cada inversión se conservan para
+
+capitalizar el CDT desde la fecha real de cada aporte.
+
+============================================================
+
+TASAS CDT HISTÓRICAS POR AÑO
+
+============================================================
+
+Benchmark hipotético para comparar cada aporte de capital
+
+contra un CDT, respetando la tasa correspondiente a cada año.
+
+
+
+2020-2025: promedio anual utilizado para el ejercicio.
+
+2026: promedio provisional del año, al ser un año aún abierto.
+
+
+
+La capitalización se hace año por año y conserva la fecha
+
+real de cada aporte de inversión.
+
+
+
 TASAS_CDT_ANUALES = {
-    2020: 0.0338,
-    2021: 0.0207,
-    2022: 0.0850,
-    2023: 0.1321,
-    2024: 0.1017,
-    2025: 0.0896,
-    2026: 0.1000,
+2020: 0.0338,
+2021: 0.0207,
+2022: 0.0850,
+2023: 0.1321,
+2024: 0.1017,
+2025: 0.0896,
+2026: 0.1000,
 }
 
-
 def valor_cdt_historico(
-    capital_inicial,
-    fecha_inicio,
-    fecha_fin
+capital_inicial,
+fecha_inicio,
+fecha_fin
 ):
-    """
-    Capitaliza un aporte de capital utilizando la tasa anual
-    correspondiente a cada año del período.
+"""
+Capitaliza un aporte de capital utilizando la tasa anual
+correspondiente a cada año del período.
 
-    Se utiliza capitalización efectiva anual prorrateada por
-    fracción de año para los períodos parciales.
-    """
-    if (
-        pd.isna(capital_inicial)
-        or pd.isna(fecha_inicio)
-        or pd.isna(fecha_fin)
-    ):
-        return float(capital_inicial or 0)
+Se utiliza capitalización efectiva anual prorrateada por
+fracción de año para los períodos parciales.
+"""
+if (
+    pd.isna(capital_inicial)
+    or pd.isna(fecha_inicio)
+    or pd.isna(fecha_fin)
+):
+    return float(capital_inicial or 0)
 
-    valor = float(capital_inicial)
+valor = float(capital_inicial)
 
-    inicio = pd.Timestamp(fecha_inicio)
-    fin = pd.Timestamp(fecha_fin)
+inicio = pd.Timestamp(fecha_inicio)
+fin = pd.Timestamp(fecha_fin)
 
-    if fin <= inicio:
-        return valor
-
-    for anio in range(
-        inicio.year,
-        fin.year + 1
-    ):
-        tasa = TASAS_CDT_ANUALES.get(anio)
-
-        if tasa is None:
-            continue
-
-        inicio_anio = max(
-            inicio,
-            pd.Timestamp(anio, 1, 1)
-        )
-
-        fin_anio = min(
-            fin,
-            pd.Timestamp(anio + 1, 1, 1)
-        )
-
-        dias = (
-            fin_anio - inicio_anio
-        ).days
-
-        if dias <= 0:
-            continue
-
-        valor *= (
-            1 + tasa
-        ) ** (
-            dias / 365.25
-        )
-
+if fin <= inicio:
     return valor
 
+for anio in range(
+    inicio.year,
+    fin.year + 1
+):
+    tasa = TASAS_CDT_ANUALES.get(anio)
+
+    if tasa is None:
+        continue
+
+    inicio_anio = max(
+        inicio,
+        pd.Timestamp(anio, 1, 1)
+    )
+
+    fin_anio = min(
+        fin,
+        pd.Timestamp(anio + 1, 1, 1)
+    )
+
+    dias = (
+        fin_anio - inicio_anio
+    ).days
+
+    if dias <= 0:
+        continue
+
+    valor *= (
+        1 + tasa
+    ) ** (
+        dias / 365.25
+    )
+
+return valor
 
 @st.cache_data(ttl=300)
 def cargar_capital_cdt(fecha_hoy):
 
-    # --------------------------------------------------------
-    # 1. INVERSIONES REALES DE LA BASE
-    # --------------------------------------------------------
-    query_inversiones = """
-    SELECT
-        Activo_Proyecto,
-        DATE(Fecha) AS Fecha,
-        SUM(Valor_Prorrateado_Calculado) AS Capital
-    FROM `rentascamacho.rentas_cortas.Vista_Inversiones_Prorrateadas`
-    WHERE Activo_Proyecto IN (
-        'Torre Acqua',
-        'Torre Evoca',
-        'Torre Ventto',
-        'Lotus',
-        'Santa Marina',
-        'Base Loft',
-        'Tempus 49',
-        'Iwani'
+# --------------------------------------------------------
+# 1. INVERSIONES REALES DE LA BASE
+# --------------------------------------------------------
+query_inversiones = """
+SELECT
+    Activo_Proyecto,
+    DATE(Fecha) AS Fecha,
+    SUM(Valor_Prorrateado_Calculado) AS Capital
+FROM `rentascamacho.rentas_cortas.Vista_Inversiones_Prorrateadas`
+WHERE Activo_Proyecto IN (
+    'Torre Acqua',
+    'Torre Evoca',
+    'Torre Ventto',
+    'Lotus',
+    'Santa Marina',
+    'Base Loft',
+    'Tempus 49',
+    'Iwani'
+)
+  AND Fecha IS NOT NULL
+  AND Valor_Prorrateado_Calculado IS NOT NULL
+GROUP BY
+    Activo_Proyecto,
+    DATE(Fecha)
+ORDER BY
+    Activo_Proyecto,
+    Fecha
+"""
+
+capital = client.query(
+    query_inversiones
+).to_dataframe()
+
+if capital.empty:
+    return pd.DataFrame(
+        columns=[
+            "Nombre_Propiedad",
+            "Capital_Registrado",
+            "Capital_Propio",
+            "Valor_CDT_Hoy",
+            "Ganancia_CDT",
+            "CDT_Promedio"
+        ]
     )
-      AND Fecha IS NOT NULL
-      AND Valor_Prorrateado_Calculado IS NOT NULL
-    GROUP BY
-        Activo_Proyecto,
-        DATE(Fecha)
-    ORDER BY
-        Activo_Proyecto,
-        Fecha
-    """
 
-    capital = client.query(
-        query_inversiones
-    ).to_dataframe()
+capital["Fecha"] = pd.to_datetime(
+    capital["Fecha"],
+    errors="coerce"
+)
 
-    if capital.empty:
-        return pd.DataFrame(
-            columns=[
-                "Nombre_Propiedad",
-                "Capital_Registrado",
-                "Capital_Propio",
-                "Valor_CDT_Hoy",
-                "Ganancia_CDT",
-                "CDT_Promedio"
-            ]
-        )
+capital["Capital"] = pd.to_numeric(
+    capital["Capital"],
+    errors="coerce"
+).fillna(0)
 
-    capital["Fecha"] = pd.to_datetime(
-        capital["Fecha"],
+# --------------------------------------------------------
+# 2. ÚNICO CRÉDITO QUE SE DESCUENTA DEL CASH:
+#    BASE LOFT
+# --------------------------------------------------------
+query_credito_base_loft = """
+SELECT
+    SUM(COALESCE(Valor_Inicial, 0)) AS Credito_Base_Loft
+FROM `rentascamacho.rentas_cortas.Creditos_Vista`
+WHERE Propiedad = 'Base Loft'
+"""
+
+credito_base_loft = client.query(
+    query_credito_base_loft
+).to_dataframe()
+
+credito_base_loft = float(
+    pd.to_numeric(
+        credito_base_loft["Credito_Base_Loft"].iloc[0],
         errors="coerce"
     )
+    if not credito_base_loft.empty
+    else 0
+)
 
-    capital["Capital"] = pd.to_numeric(
-        capital["Capital"],
-        errors="coerce"
-    ).fillna(0)
+if pd.isna(credito_base_loft):
+    credito_base_loft = 0.0
 
-    # --------------------------------------------------------
-    # 2. ÚNICO CRÉDITO QUE SE DESCUENTA DEL CASH:
-    #    BASE LOFT
-    # --------------------------------------------------------
-    query_credito_base_loft = """
-    SELECT
-        SUM(COALESCE(Valor_Inicial, 0)) AS Credito_Base_Loft
-    FROM `rentascamacho.rentas_cortas.Creditos_Vista`
-    WHERE Propiedad = 'Base Loft'
-    """
+# --------------------------------------------------------
+# 3. CAPITAL CASH
+# --------------------------------------------------------
+#
+# Por defecto el CASH es exactamente el valor registrado
+# en la base de inversiones.
+#
+# Solo Base Loft recibe el ajuste por su crédito.
+#
+capital_por_propiedad = (
+    capital
+    .groupby("Activo_Proyecto")["Capital"]
+    .transform("sum")
+)
 
-    credito_base_loft = client.query(
-        query_credito_base_loft
-    ).to_dataframe()
+capital["Capital_Propio"] = capital["Capital"]
 
-    credito_base_loft = float(
-        pd.to_numeric(
-            credito_base_loft["Credito_Base_Loft"].iloc[0],
-            errors="coerce"
+mask_base_loft = (
+    capital["Activo_Proyecto"] == "Base Loft"
+) & (
+    capital_por_propiedad > 0
+)
+
+# Como no tenemos la fecha histórica del desembolso del
+# crédito, la deducción se distribuye proporcionalmente
+# entre las inversiones de Base Loft. Esto conserva las
+# fechas originales para la capitalización del CDT.
+if credito_base_loft > 0:
+    factor_base_loft = (
+        (
+            capital_por_propiedad[mask_base_loft]
+            - credito_base_loft
         )
-        if not credito_base_loft.empty
-        else 0
+        / capital_por_propiedad[mask_base_loft]
+    ).clip(
+        lower=0,
+        upper=1
     )
 
-    if pd.isna(credito_base_loft):
-        credito_base_loft = 0.0
-
-    # --------------------------------------------------------
-    # 3. CAPITAL CASH
-    # --------------------------------------------------------
-    #
-    # Por defecto el CASH es exactamente el valor registrado
-    # en la base de inversiones.
-    #
-    # Solo Base Loft recibe el ajuste por su crédito.
-    #
-    capital_por_propiedad = (
-        capital
-        .groupby("Activo_Proyecto")["Capital"]
-        .transform("sum")
-    )
-
-    capital["Capital_Propio"] = capital["Capital"]
-
-    mask_base_loft = (
-        capital["Activo_Proyecto"] == "Base Loft"
-    ) & (
-        capital_por_propiedad > 0
-    )
-
-    # Como no tenemos la fecha histórica del desembolso del
-    # crédito, la deducción se distribuye proporcionalmente
-    # entre las inversiones de Base Loft. Esto conserva las
-    # fechas originales para la capitalización del CDT.
-    if credito_base_loft > 0:
-        factor_base_loft = (
-            (
-                capital_por_propiedad[mask_base_loft]
-                - credito_base_loft
-            )
-            / capital_por_propiedad[mask_base_loft]
-        ).clip(
-            lower=0,
-            upper=1
-        )
-
+    capital.loc[
+        mask_base_loft,
+        "Capital_Propio"
+    ] = (
         capital.loc[
             mask_base_loft,
-            "Capital_Propio"
-        ] = (
-            capital.loc[
-                mask_base_loft,
-                "Capital"
-            ]
-            * factor_base_loft
-        )
-
-    # --------------------------------------------------------
-    # 4. CAPITALIZACIÓN DEL CDT
-    # --------------------------------------------------------
-    fecha_hoy_ts = pd.Timestamp(
-        fecha_hoy
+            "Capital"
+        ]
+        * factor_base_loft
     )
 
-    capital["Valor_CDT"] = capital.apply(
-        lambda row: valor_cdt_historico(
-            row["Capital_Propio"],
-            row["Fecha"],
-            fecha_hoy_ts
+# --------------------------------------------------------
+# 4. CAPITALIZACIÓN DEL CDT
+# --------------------------------------------------------
+fecha_hoy_ts = pd.Timestamp(
+    fecha_hoy
+)
+
+capital["Valor_CDT"] = capital.apply(
+    lambda row: valor_cdt_historico(
+        row["Capital_Propio"],
+        row["Fecha"],
+        fecha_hoy_ts
+    ),
+    axis=1
+)
+
+# --------------------------------------------------------
+# 5. TASA CDT PROMEDIO POR PROPIEDAD
+# --------------------------------------------------------
+# Promedio ponderado por capital y días de exposición.
+# Se calcula sobre los años para los cuales existe una tasa
+# definida en TASAS_CDT_ANUALES.
+fecha_hoy_ts = pd.Timestamp(fecha_hoy)
+capital["Dias_Exposicion"] = (
+    fecha_hoy_ts - capital["Fecha"]
+).dt.days.clip(lower=0)
+
+def tasa_promedio_fila(row):
+    dias = int(row["Dias_Exposicion"])
+    if dias <= 0 or row["Capital_Propio"] <= 0:
+        return 0.0, 0.0
+
+    inicio = pd.Timestamp(row["Fecha"])
+    fin = fecha_hoy_ts
+    suma = 0.0
+    peso = 0.0
+
+    for anio in range(inicio.year, fin.year + 1):
+        tasa = TASAS_CDT_ANUALES.get(anio)
+        if tasa is None:
+            continue
+
+        inicio_anio = max(inicio, pd.Timestamp(anio, 1, 1))
+        fin_anio = min(fin, pd.Timestamp(anio + 1, 1, 1))
+        dias_anio = max(0, (fin_anio - inicio_anio).days)
+
+        if dias_anio > 0:
+            peso_tramo = float(row["Capital_Propio"]) * dias_anio
+            suma += peso_tramo * tasa
+            peso += peso_tramo
+
+    return suma, peso
+
+tasas_tmp = capital.apply(
+    tasa_promedio_fila,
+    axis=1,
+    result_type="expand"
+)
+tasas_tmp.columns = ["Peso_Tasa_CDT", "Peso_Capital_CDT"]
+capital[["Peso_Tasa_CDT", "Peso_Capital_CDT"]] = tasas_tmp
+
+# --------------------------------------------------------
+# 6. RESUMEN POR PROPIEDAD
+# --------------------------------------------------------
+resultado = (
+    capital
+    .groupby(
+        "Activo_Proyecto",
+        as_index=False
+    )
+    .agg(
+        Capital_Registrado=(
+            "Capital",
+            "sum"
         ),
-        axis=1
-    )
-
-    # --------------------------------------------------------
-    # 5. TASA CDT PROMEDIO POR PROPIEDAD
-    # --------------------------------------------------------
-    # Promedio ponderado por capital y días de exposición.
-    # Se calcula sobre los años para los cuales existe una tasa
-    # definida en TASAS_CDT_ANUALES.
-    fecha_hoy_ts = pd.Timestamp(fecha_hoy)
-    capital["Dias_Exposicion"] = (
-        fecha_hoy_ts - capital["Fecha"]
-    ).dt.days.clip(lower=0)
-
-    def tasa_promedio_fila(row):
-        dias = int(row["Dias_Exposicion"])
-        if dias <= 0 or row["Capital_Propio"] <= 0:
-            return 0.0, 0.0
-
-        inicio = pd.Timestamp(row["Fecha"])
-        fin = fecha_hoy_ts
-        suma = 0.0
-        peso = 0.0
-
-        for anio in range(inicio.year, fin.year + 1):
-            tasa = TASAS_CDT_ANUALES.get(anio)
-            if tasa is None:
-                continue
-
-            inicio_anio = max(inicio, pd.Timestamp(anio, 1, 1))
-            fin_anio = min(fin, pd.Timestamp(anio + 1, 1, 1))
-            dias_anio = max(0, (fin_anio - inicio_anio).days)
-
-            if dias_anio > 0:
-                peso_tramo = float(row["Capital_Propio"]) * dias_anio
-                suma += peso_tramo * tasa
-                peso += peso_tramo
-
-        return suma, peso
-
-    tasas_tmp = capital.apply(
-        tasa_promedio_fila,
-        axis=1,
-        result_type="expand"
-    )
-    tasas_tmp.columns = ["Peso_Tasa_CDT", "Peso_Capital_CDT"]
-    capital[["Peso_Tasa_CDT", "Peso_Capital_CDT"]] = tasas_tmp
-
-    # --------------------------------------------------------
-    # 6. RESUMEN POR PROPIEDAD
-    # --------------------------------------------------------
-    resultado = (
-        capital
-        .groupby(
-            "Activo_Proyecto",
-            as_index=False
-        )
-        .agg(
-            Capital_Registrado=(
-                "Capital",
-                "sum"
-            ),
-            Capital_Propio=(
-                "Capital_Propio",
-                "sum"
-            ),
-            Valor_CDT_Hoy=(
-                "Valor_CDT",
-                "sum"
-            ),
-            Peso_Tasa_CDT=(
-                "Peso_Tasa_CDT",
-                "sum"
-            ),
-            Peso_Capital_CDT=(
-                "Peso_Capital_CDT",
-                "sum"
-            )
-        )
-        .rename(
-            columns={
-                "Activo_Proyecto":
-                    "Nombre_Propiedad"
-            }
+        Capital_Propio=(
+            "Capital_Propio",
+            "sum"
+        ),
+        Valor_CDT_Hoy=(
+            "Valor_CDT",
+            "sum"
+        ),
+        Peso_Tasa_CDT=(
+            "Peso_Tasa_CDT",
+            "sum"
+        ),
+        Peso_Capital_CDT=(
+            "Peso_Capital_CDT",
+            "sum"
         )
     )
-
-    resultado["CDT_Promedio"] = (
-        resultado["Peso_Tasa_CDT"]
-        / resultado["Peso_Capital_CDT"]
-        * 100
-    ).replace(
-        [float("inf"), -float("inf")],
-        pd.NA
+    .rename(
+        columns={
+            "Activo_Proyecto":
+                "Nombre_Propiedad"
+        }
     )
+)
 
-    resultado["Ganancia_CDT"] = (
-        resultado["Valor_CDT_Hoy"]
-        - resultado["Capital_Propio"]
-    )
+resultado["CDT_Promedio"] = (
+    resultado["Peso_Tasa_CDT"]
+    / resultado["Peso_Capital_CDT"]
+    * 100
+).replace(
+    [float("inf"), -float("inf")],
+    pd.NA
+)
 
-    return resultado
-# CRÉDITOS, AMORTIZACIÓN Y VALOR ACTUAL DE LOS ACTIVOS
-# ============================================================
+resultado["Ganancia_CDT"] = (
+    resultado["Valor_CDT_Hoy"]
+    - resultado["Capital_Propio"]
+)
 
-# La hoja de Créditos representa la última cuota efectivamente
-# registrada/pagada al cierre de agosto de 2026.
-#
-# Regla futura:
-# - septiembre 2026 permanece pendiente hasta el día 30;
-# - el día 30 de cada mes se agrega una cuota;
-# - febrero utiliza el último día del mes.
-#
-# No se modifica la hoja de Google Sheets: la cuota futura se calcula
-# dinámicamente en la aplicación.
+return resultado
+
+CRÉDITOS, AMORTIZACIÓN Y VALOR ACTUAL DE LOS ACTIVOS
+
+============================================================
+
+La hoja de Créditos representa la última cuota efectivamente
+
+registrada/pagada al cierre de agosto de 2026.
+
+
+
+Regla futura:
+
+- septiembre 2026 permanece pendiente hasta el día 30;
+
+- el día 30 de cada mes se agrega una cuota;
+
+- febrero utiliza el último día del mes.
+
+
+
+No se modifica la hoja de Google Sheets: la cuota futura se calcula
+
+dinámicamente en la aplicación.
 
 FECHA_BASE_CUOTAS = date(2026, 8, 31)
 
-
 def fecha_corte_cuota(fecha):
-    """
-    Día de aplicación de la cuota:
-    día 30 de cada mes; si el mes no tiene 30, último día.
-    """
-    fecha = pd.Timestamp(fecha)
-    ultimo_dia = (
-        fecha + pd.offsets.MonthEnd(0)
-    ).day
+"""
+Día de aplicación de la cuota:
+día 30 de cada mes; si el mes no tiene 30, último día.
+"""
+fecha = pd.Timestamp(fecha)
+ultimo_dia = (
+fecha + pd.offsets.MonthEnd(0)
+).day
 
-    dia = min(30, ultimo_dia)
+dia = min(30, ultimo_dia)
 
-    return date(
-        fecha.year,
-        fecha.month,
-        dia
-    )
-
+return date(
+    fecha.year,
+    fecha.month,
+    dia
+)
 
 def incremento_cuotas_desde_base(fecha):
-    """
-    Calcula cuántas cuotas nuevas se consideran aplicadas
-    desde la base 31-ago-2026.
+"""
+Calcula cuántas cuotas nuevas se consideran aplicadas
+desde la base 31-ago-2026.
 
-    Ejemplo:
-    - 25-sep-2026 -> 0
-    - 30-sep-2026 -> 1
-    - 01-oct-2026 -> 1
-    - 30-oct-2026 -> 2
-    """
-    fecha = pd.Timestamp(fecha)
-    base = pd.Timestamp(FECHA_BASE_CUOTAS)
+Ejemplo:
+- 25-sep-2026 -> 0
+- 30-sep-2026 -> 1
+- 01-oct-2026 -> 1
+- 30-oct-2026 -> 2
+"""
+fecha = pd.Timestamp(fecha)
+base = pd.Timestamp(FECHA_BASE_CUOTAS)
 
-    diferencia_meses = (
-        (fecha.year - base.year) * 12
-        + (fecha.month - base.month)
-    )
+diferencia_meses = (
+    (fecha.year - base.year) * 12
+    + (fecha.month - base.month)
+)
 
-    if diferencia_meses <= 0:
-        return 0
+if diferencia_meses <= 0:
+    return 0
 
-    corte = fecha_corte_cuota(fecha)
+corte = fecha_corte_cuota(fecha)
 
-    if fecha.date() >= corte:
-        return diferencia_meses
+if fecha.date() >= corte:
+    return diferencia_meses
 
-    return max(
-        0,
-        diferencia_meses - 1
-    )
-
+return max(
+    0,
+    diferencia_meses - 1
+)
 
 def calcular_amortizacion(
-    valor_inicial,
-    tasa_interes_ea,
-    cuota_mensual,
-    cuota_hasta
+valor_inicial,
+tasa_interes_ea,
+cuota_mensual,
+cuota_hasta
 ):
-    """
-    Amortización teórica por cuota.
+"""
+Amortización teórica por cuota.
 
-    La tasa efectiva anual se convierte a tasa efectiva mensual.
-    La cuota contractual se toma de la tabla de Créditos.
-    El seguro NO se mezcla con capital/interés.
-    """
-    try:
-        valor_inicial = float(valor_inicial)
-        tasa_interes_ea = float(tasa_interes_ea)
-        cuota_mensual = float(cuota_mensual)
-        cuota_hasta = int(cuota_hasta)
-    except (TypeError, ValueError):
-        return pd.DataFrame()
+La tasa efectiva anual se convierte a tasa efectiva mensual.
+La cuota contractual se toma de la tabla de Créditos.
+El seguro NO se mezcla con capital/interés.
+"""
+try:
+    valor_inicial = float(valor_inicial)
+    tasa_interes_ea = float(tasa_interes_ea)
+    cuota_mensual = float(cuota_mensual)
+    cuota_hasta = int(cuota_hasta)
+except (TypeError, ValueError):
+    return pd.DataFrame()
 
-    if (
-        valor_inicial <= 0
-        or cuota_mensual <= 0
-        or cuota_hasta <= 0
-    ):
-        return pd.DataFrame()
+if (
+    valor_inicial <= 0
+    or cuota_mensual <= 0
+    or cuota_hasta <= 0
+):
+    return pd.DataFrame()
 
-    tasa_mensual = (
-        (1 + tasa_interes_ea) ** (1 / 12)
-        - 1
+tasa_mensual = (
+    (1 + tasa_interes_ea) ** (1 / 12)
+    - 1
+)
+
+saldo = valor_inicial
+registros = []
+
+for numero_cuota in range(
+    1,
+    cuota_hasta + 1
+):
+    saldo_inicial = saldo
+
+    interes = (
+        saldo_inicial
+        * tasa_mensual
     )
 
-    saldo = valor_inicial
-    registros = []
+    capital = min(
+        max(
+            cuota_mensual
+            - interes,
+            0
+        ),
+        saldo_inicial
+    )
 
-    for numero_cuota in range(
-        1,
-        cuota_hasta + 1
-    ):
-        saldo_inicial = saldo
+    saldo = max(
+        0,
+        saldo_inicial - capital
+    )
 
-        interes = (
-            saldo_inicial
-            * tasa_mensual
-        )
+    registros.append(
+        {
+            "Cuota": numero_cuota,
+            "Saldo_Inicial": saldo_inicial,
+            "Interes_Teorico": interes,
+            "Capital_Teorico": capital,
+            "Cuota_Principal_Interes":
+                interes + capital,
+            "Saldo_Final": saldo
+        }
+    )
 
-        capital = min(
-            max(
-                cuota_mensual
-                - interes,
-                0
-            ),
-            saldo_inicial
-        )
+    if saldo <= 0:
+        break
 
-        saldo = max(
-            0,
-            saldo_inicial - capital
-        )
-
-        registros.append(
-            {
-                "Cuota": numero_cuota,
-                "Saldo_Inicial": saldo_inicial,
-                "Interes_Teorico": interes,
-                "Capital_Teorico": capital,
-                "Cuota_Principal_Interes":
-                    interes + capital,
-                "Saldo_Final": saldo
-            }
-        )
-
-        if saldo <= 0:
-            break
-
-    return pd.DataFrame(registros)
-
+return pd.DataFrame(registros)
 
 @st.cache_data(ttl=300)
 def cargar_creditos(fecha_calculo):
-    query = """
-    SELECT
-        ID_Credito,
-        ID_Propiedad,
-        Propiedad,
-        Banco,
-        Valor_Inicial,
-        Saldo_Actual,
-        Cuota_Mensual,
-        Cuota,
-        Tasa_Interes,
-        Plazo_Meses,
-        Cuota_Seguros,
-        Valor_Actual,
-        Equipamiento,
-        Valor_Total_Actual,
-        Patrimonio_Actual,
-        Costo_Mensual_Total
-    FROM `rentascamacho.rentas_cortas.Creditos_Vista`
-    WHERE Propiedad IS NOT NULL
-    """
+query = """
+SELECT
+ID_Credito,
+ID_Propiedad,
+Propiedad,
+Banco,
+Valor_Inicial,
+Saldo_Actual,
+Cuota_Mensual,
+Cuota,
+Tasa_Interes,
+Plazo_Meses,
+Cuota_Seguros,
+Valor_Actual,
+Equipamiento,
+Valor_Total_Actual,
+Patrimonio_Actual,
+Costo_Mensual_Total
+FROM rentascamacho.rentas_cortas.Creditos_Vista
+WHERE Propiedad IS NOT NULL
+"""
 
-    detalle = client.query(
-        query
-    ).to_dataframe()
+detalle = client.query(
+    query
+).to_dataframe()
 
-    columnas_numericas = [
-        "Valor_Inicial",
-        "Saldo_Actual",
-        "Cuota_Mensual",
-        "Cuota",
-        "Tasa_Interes",
-        "Plazo_Meses",
-        "Cuota_Seguros",
-        "Valor_Actual",
-        "Equipamiento",
-        "Valor_Total_Actual",
-        "Patrimonio_Actual",
-        "Costo_Mensual_Total"
-    ]
+columnas_numericas = [
+    "Valor_Inicial",
+    "Saldo_Actual",
+    "Cuota_Mensual",
+    "Cuota",
+    "Tasa_Interes",
+    "Plazo_Meses",
+    "Cuota_Seguros",
+    "Valor_Actual",
+    "Equipamiento",
+    "Valor_Total_Actual",
+    "Patrimonio_Actual",
+    "Costo_Mensual_Total"
+]
 
-    for col in columnas_numericas:
-        detalle[col] = pd.to_numeric(
-            detalle[col],
-            errors="coerce"
+for col in columnas_numericas:
+    detalle[col] = pd.to_numeric(
+        detalle[col],
+        errors="coerce"
+    )
+
+incremento = incremento_cuotas_desde_base(
+    fecha_calculo
+)
+
+detalle["Cuota_Base"] = (
+    detalle["Cuota"]
+    .fillna(0)
+    .astype(int)
+)
+
+detalle["Cuota_Actual"] = (
+    detalle["Cuota_Base"]
+    + incremento
+)
+
+detalle["Saldo_Teorico_Actual"] = 0.0
+detalle["Interes_Cuota_Actual"] = 0.0
+detalle["Capital_Cuota_Actual"] = 0.0
+
+for idx, row in detalle.iterrows():
+    amortizacion = calcular_amortizacion(
+        row["Valor_Inicial"],
+        row["Tasa_Interes"],
+        row["Cuota_Mensual"],
+        row["Cuota_Actual"]
+    )
+
+    if amortizacion.empty:
+        continue
+
+    ultima = amortizacion.iloc[-1]
+
+    detalle.loc[
+        idx,
+        "Saldo_Teorico_Actual"
+    ] = ultima["Saldo_Final"]
+
+    detalle.loc[
+        idx,
+        "Interes_Cuota_Actual"
+    ] = ultima["Interes_Teorico"]
+
+    detalle.loc[
+        idx,
+        "Capital_Cuota_Actual"
+    ] = ultima["Capital_Teorico"]
+
+# Si el saldo real está diligenciado, se utiliza.
+# Si está vacío, se utiliza el saldo teórico de amortización.
+detalle["Saldo_Usado"] = (
+    detalle["Saldo_Actual"]
+    .where(
+        detalle["Saldo_Actual"].notna(),
+        detalle["Saldo_Teorico_Actual"]
+    )
+    .fillna(0)
+)
+
+# Consolidación por propiedad para valoración/patrimonio.
+# La amortización sigue siendo individual por crédito.
+creditos_propiedad = (
+    detalle
+    .groupby(
+        "Propiedad",
+        as_index=False
+    )
+    .agg(
+        Saldo_Actual=(
+            "Saldo_Actual",
+            "sum"
+        ),
+        Saldo_Teorico_Actual=(
+            "Saldo_Teorico_Actual",
+            "sum"
+        ),
+        Saldo_Usado=(
+            "Saldo_Usado",
+            "sum"
+        ),
+        Cuota_Mensual=(
+            "Cuota_Mensual",
+            "sum"
+        ),
+        Cuota_Seguros=(
+            "Cuota_Seguros",
+            "sum"
+        ),
+        Valor_Actual=(
+            "Valor_Actual",
+            "max"
+        ),
+        Equipamiento=(
+            "Equipamiento",
+            "max"
+        ),
+        Valor_Total_Actual=(
+            "Valor_Total_Actual",
+            "max"
+        ),
+        Costo_Mensual_Total=(
+            "Costo_Mensual_Total",
+            "sum"
+        ),
+        Cuota_Actual=(
+            "Cuota_Actual",
+            "max"
+        )
+    )
+)
+
+creditos_propiedad["Patrimonio_Actual"] = (
+    creditos_propiedad[
+        "Valor_Total_Actual"
+    ].fillna(0)
+    -
+    creditos_propiedad[
+        "Saldo_Usado"
+    ].fillna(0)
+)
+
+return detalle, creditos_propiedad
+
+@st.cache_data(ttl=300)
+def cargar_pagos_hipotecarios():
+"""
+Pagos reales registrados en Movimientos_Operativos_Reparto.
+
+SUB-0032 = Crédito Hipotecario.
+Se agrupan por propiedad y mes para obtener el pago real
+efectivamente registrado, independientemente de la cuenta
+desde la cual se realizó el pago.
+"""
+query = """
+SELECT
+    DATE(Fecha) AS Fecha,
+    Nombre_Propiedad AS Propiedad,
+    SUM(Gasto) AS Pago_Real
+FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
+WHERE TRIM(Subcategoria) = 'SUB-0032'
+  AND LOWER(TRIM(Nombre_Subcategoria))
+        = 'crédito hipotecario'
+  AND LOWER(TRIM(Detalle))
+        = 'crédito'
+  AND Gasto IS NOT NULL
+  AND Gasto > 0
+GROUP BY
+    Fecha,
+    Propiedad
+ORDER BY
+    Propiedad,
+    Fecha
+"""
+
+pagos = client.query(
+    query
+).to_dataframe()
+
+if pagos.empty:
+    return pagos
+
+pagos["Fecha"] = pd.to_datetime(
+    pagos["Fecha"],
+    errors="coerce"
+)
+
+pagos["Pago_Real"] = pd.to_numeric(
+    pagos["Pago_Real"],
+    errors="coerce"
+).fillna(0)
+
+pagos["Mes"] = (
+    pagos["Fecha"]
+    .dt.to_period("M")
+    .dt.to_timestamp()
+)
+
+pagos_mensuales = (
+    pagos
+    .groupby(
+        [
+            "Propiedad",
+            "Mes"
+        ],
+        as_index=False
+    )["Pago_Real"]
+    .sum()
+    .sort_values(
+        [
+            "Propiedad",
+            "Mes"
+        ]
+    )
+    .reset_index(drop=True)
+)
+
+return pagos_mensuales
+
+def calcular_amortizacion_historica(
+creditos_detalle,
+pagos_hipotecarios
+):
+"""
+Cruza pagos reales históricos con amortización teórica.
+
+Regla:
+- el último pago histórico se alinea con Cuota_Actual;
+- los pagos anteriores ocupan las cuotas anteriores;
+- el pago real se utiliza como monto efectivamente pagado;
+- el interés se calcula teóricamente;
+- el capital estimado es:
+      pago real - interés teórico - seguro
+  sin permitir capital negativo.
+
+Para propiedades con más de un crédito, el pago real mensual
+se distribuye proporcionalmente al costo contractual de cada
+crédito (cuota + seguro).
+"""
+columnas_salida = [
+    "Propiedad",
+    "Pagos_Hipotecarios_Reales",
+    "Interes_Historico_Estimado",
+    "Seguro_Historico_Estimado",
+    "Capital_Historico_Estimado",
+    "Cuotas_Conciliadas"
+]
+
+if (
+    creditos_detalle.empty
+    or pagos_hipotecarios.empty
+):
+    return pd.DataFrame(
+        columns=columnas_salida
+    )
+
+resultados = []
+
+for propiedad, grupo_creditos in (
+    creditos_detalle
+    .groupby("Propiedad")
+):
+    pagos_propiedad = (
+        pagos_hipotecarios[
+            pagos_hipotecarios[
+                "Propiedad"
+            ] == propiedad
+        ]
+        .sort_values("Mes")
+        .reset_index(drop=True)
+    )
+
+    if pagos_propiedad.empty:
+        continue
+
+    grupo_creditos = (
+        grupo_creditos
+        .copy()
+        .reset_index(drop=True)
+    )
+
+    # Base contractual para repartir pagos entre
+    # créditos de una misma propiedad.
+    grupo_creditos["Base_Reparto"] = (
+        grupo_creditos[
+            "Cuota_Mensual"
+        ].fillna(0)
+        +
+        grupo_creditos[
+            "Cuota_Seguros"
+        ].fillna(0)
+    )
+
+    base_total = (
+        grupo_creditos[
+            "Base_Reparto"
+        ].sum()
+    )
+
+    for _, credito in grupo_creditos.iterrows():
+        cuota_actual = int(
+            credito["Cuota_Actual"]
         )
 
-    incremento = incremento_cuotas_desde_base(
-        fecha_calculo
-    )
+        n_pagos = len(
+            pagos_propiedad
+        )
 
-    detalle["Cuota_Base"] = (
-        detalle["Cuota"]
-        .fillna(0)
-        .astype(int)
-    )
+        if n_pagos <= 0:
+            continue
 
-    detalle["Cuota_Actual"] = (
-        detalle["Cuota_Base"]
-        + incremento
-    )
+        # Los pagos reales conocidos se alinean hacia
+        # atrás desde la cuota vigente.
+        cuota_inicial = max(
+            1,
+            cuota_actual
+            - n_pagos
+            + 1
+        )
 
-    detalle["Saldo_Teorico_Actual"] = 0.0
-    detalle["Interes_Cuota_Actual"] = 0.0
-    detalle["Capital_Cuota_Actual"] = 0.0
-
-    for idx, row in detalle.iterrows():
         amortizacion = calcular_amortizacion(
-            row["Valor_Inicial"],
-            row["Tasa_Interes"],
-            row["Cuota_Mensual"],
-            row["Cuota_Actual"]
+            credito["Valor_Inicial"],
+            credito["Tasa_Interes"],
+            credito["Cuota_Mensual"],
+            cuota_actual
         )
 
         if amortizacion.empty:
             continue
 
-        ultima = amortizacion.iloc[-1]
-
-        detalle.loc[
-            idx,
-            "Saldo_Teorico_Actual"
-        ] = ultima["Saldo_Final"]
-
-        detalle.loc[
-            idx,
-            "Interes_Cuota_Actual"
-        ] = ultima["Interes_Teorico"]
-
-        detalle.loc[
-            idx,
-            "Capital_Cuota_Actual"
-        ] = ultima["Capital_Teorico"]
-
-    # Si el saldo real está diligenciado, se utiliza.
-    # Si está vacío, se utiliza el saldo teórico de amortización.
-    detalle["Saldo_Usado"] = (
-        detalle["Saldo_Actual"]
-        .where(
-            detalle["Saldo_Actual"].notna(),
-            detalle["Saldo_Teorico_Actual"]
+        amortizacion = (
+            amortizacion
+            .set_index("Cuota")
         )
-        .fillna(0)
-    )
 
-    # Consolidación por propiedad para valoración/patrimonio.
-    # La amortización sigue siendo individual por crédito.
-    creditos_propiedad = (
-        detalle
-        .groupby(
-            "Propiedad",
-            as_index=False
-        )
-        .agg(
-            Saldo_Actual=(
-                "Saldo_Actual",
-                "sum"
-            ),
-            Saldo_Teorico_Actual=(
-                "Saldo_Teorico_Actual",
-                "sum"
-            ),
-            Saldo_Usado=(
-                "Saldo_Usado",
-                "sum"
-            ),
-            Cuota_Mensual=(
-                "Cuota_Mensual",
-                "sum"
-            ),
-            Cuota_Seguros=(
-                "Cuota_Seguros",
-                "sum"
-            ),
-            Valor_Actual=(
-                "Valor_Actual",
-                "max"
-            ),
-            Equipamiento=(
-                "Equipamiento",
-                "max"
-            ),
-            Valor_Total_Actual=(
-                "Valor_Total_Actual",
-                "max"
-            ),
-            Costo_Mensual_Total=(
-                "Costo_Mensual_Total",
-                "sum"
-            ),
-            Cuota_Actual=(
-                "Cuota_Actual",
-                "max"
+        if base_total > 0:
+            proporcion = (
+                credito["Base_Reparto"]
+                / base_total
             )
-        )
-    )
-
-    creditos_propiedad["Patrimonio_Actual"] = (
-        creditos_propiedad[
-            "Valor_Total_Actual"
-        ].fillna(0)
-        -
-        creditos_propiedad[
-            "Saldo_Usado"
-        ].fillna(0)
-    )
-
-    return detalle, creditos_propiedad
-
-
-@st.cache_data(ttl=300)
-def cargar_pagos_hipotecarios():
-    """
-    Pagos reales registrados en Movimientos_Operativos_Reparto.
-
-    SUB-0032 = Crédito Hipotecario.
-    Se agrupan por propiedad y mes para obtener el pago real
-    efectivamente registrado, independientemente de la cuenta
-    desde la cual se realizó el pago.
-    """
-    query = """
-    SELECT
-        DATE(Fecha) AS Fecha,
-        Nombre_Propiedad AS Propiedad,
-        SUM(Gasto) AS Pago_Real
-    FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
-    WHERE TRIM(Subcategoria) = 'SUB-0032'
-      AND LOWER(TRIM(Nombre_Subcategoria))
-            = 'crédito hipotecario'
-      AND LOWER(TRIM(Detalle))
-            = 'crédito'
-      AND Gasto IS NOT NULL
-      AND Gasto > 0
-    GROUP BY
-        Fecha,
-        Propiedad
-    ORDER BY
-        Propiedad,
-        Fecha
-    """
-
-    pagos = client.query(
-        query
-    ).to_dataframe()
-
-    if pagos.empty:
-        return pagos
-
-    pagos["Fecha"] = pd.to_datetime(
-        pagos["Fecha"],
-        errors="coerce"
-    )
-
-    pagos["Pago_Real"] = pd.to_numeric(
-        pagos["Pago_Real"],
-        errors="coerce"
-    ).fillna(0)
-
-    pagos["Mes"] = (
-        pagos["Fecha"]
-        .dt.to_period("M")
-        .dt.to_timestamp()
-    )
-
-    pagos_mensuales = (
-        pagos
-        .groupby(
-            [
-                "Propiedad",
-                "Mes"
-            ],
-            as_index=False
-        )["Pago_Real"]
-        .sum()
-        .sort_values(
-            [
-                "Propiedad",
-                "Mes"
-            ]
-        )
-        .reset_index(drop=True)
-    )
-
-    return pagos_mensuales
-
-
-def calcular_amortizacion_historica(
-    creditos_detalle,
-    pagos_hipotecarios
-):
-    """
-    Cruza pagos reales históricos con amortización teórica.
-
-    Regla:
-    - el último pago histórico se alinea con Cuota_Actual;
-    - los pagos anteriores ocupan las cuotas anteriores;
-    - el pago real se utiliza como monto efectivamente pagado;
-    - el interés se calcula teóricamente;
-    - el capital estimado es:
-          pago real - interés teórico - seguro
-      sin permitir capital negativo.
-
-    Para propiedades con más de un crédito, el pago real mensual
-    se distribuye proporcionalmente al costo contractual de cada
-    crédito (cuota + seguro).
-    """
-    columnas_salida = [
-        "Propiedad",
-        "Pagos_Hipotecarios_Reales",
-        "Interes_Historico_Estimado",
-        "Seguro_Historico_Estimado",
-        "Capital_Historico_Estimado",
-        "Cuotas_Conciliadas"
-    ]
-
-    if (
-        creditos_detalle.empty
-        or pagos_hipotecarios.empty
-    ):
-        return pd.DataFrame(
-            columns=columnas_salida
-        )
-
-    resultados = []
-
-    for propiedad, grupo_creditos in (
-        creditos_detalle
-        .groupby("Propiedad")
-    ):
-        pagos_propiedad = (
-            pagos_hipotecarios[
-                pagos_hipotecarios[
-                    "Propiedad"
-                ] == propiedad
-            ]
-            .sort_values("Mes")
-            .reset_index(drop=True)
-        )
-
-        if pagos_propiedad.empty:
-            continue
-
-        grupo_creditos = (
-            grupo_creditos
-            .copy()
-            .reset_index(drop=True)
-        )
-
-        # Base contractual para repartir pagos entre
-        # créditos de una misma propiedad.
-        grupo_creditos["Base_Reparto"] = (
-            grupo_creditos[
-                "Cuota_Mensual"
-            ].fillna(0)
-            +
-            grupo_creditos[
-                "Cuota_Seguros"
-            ].fillna(0)
-        )
-
-        base_total = (
-            grupo_creditos[
-                "Base_Reparto"
-            ].sum()
-        )
-
-        for _, credito in grupo_creditos.iterrows():
-            cuota_actual = int(
-                credito["Cuota_Actual"]
+        else:
+            proporcion = (
+                1
+                / len(grupo_creditos)
             )
 
-            n_pagos = len(
-                pagos_propiedad
+        for posicion, pago in (
+            pagos_propiedad
+            .iterrows()
+        ):
+            numero_cuota = (
+                cuota_inicial
+                + posicion
             )
 
-            if n_pagos <= 0:
+            if numero_cuota not in amortizacion.index:
                 continue
 
-            # Los pagos reales conocidos se alinean hacia
-            # atrás desde la cuota vigente.
-            cuota_inicial = max(
-                1,
-                cuota_actual
-                - n_pagos
-                + 1
-            )
-
-            amortizacion = calcular_amortizacion(
-                credito["Valor_Inicial"],
-                credito["Tasa_Interes"],
-                credito["Cuota_Mensual"],
-                cuota_actual
-            )
-
-            if amortizacion.empty:
-                continue
-
-            amortizacion = (
+            fila_amort = (
                 amortizacion
-                .set_index("Cuota")
+                .loc[numero_cuota]
             )
 
-            if base_total > 0:
-                proporcion = (
-                    credito["Base_Reparto"]
-                    / base_total
-                )
-            else:
-                proporcion = (
-                    1
-                    / len(grupo_creditos)
-                )
+            pago_credito = (
+                pago["Pago_Real"]
+                * proporcion
+            )
 
-            for posicion, pago in (
-                pagos_propiedad
-                .iterrows()
-            ):
-                numero_cuota = (
-                    cuota_inicial
-                    + posicion
+            interes = max(
+                0,
+                float(
+                    fila_amort[
+                        "Interes_Teorico"
+                    ]
                 )
+            )
 
-                if numero_cuota not in amortizacion.index:
-                    continue
-
-                fila_amort = (
-                    amortizacion
-                    .loc[numero_cuota]
+            seguro = max(
+                0,
+                float(
+                    credito[
+                        "Cuota_Seguros"
+                    ]
                 )
+            )
 
-                pago_credito = (
-                    pago["Pago_Real"]
-                    * proporcion
-                )
+            capital = max(
+                0,
+                pago_credito
+                - interes
+                - seguro
+            )
 
-                interes = max(
-                    0,
-                    float(
-                        fila_amort[
-                            "Interes_Teorico"
-                        ]
-                    )
-                )
-
-                seguro = max(
-                    0,
-                    float(
-                        credito[
-                            "Cuota_Seguros"
-                        ]
-                    )
-                )
-
-                capital = max(
-                    0,
-                    pago_credito
-                    - interes
-                    - seguro
-                )
-
-                resultados.append(
-                    {
-                        "Propiedad": propiedad,
-                        "Pago_Real": pago_credito,
-                        "Interes": min(
-                            interes,
+            resultados.append(
+                {
+                    "Propiedad": propiedad,
+                    "Pago_Real": pago_credito,
+                    "Interes": min(
+                        interes,
+                        pago_credito
+                    ),
+                    "Seguro": min(
+                        seguro,
+                        max(
+                            0,
                             pago_credito
-                        ),
-                        "Seguro": min(
-                            seguro,
-                            max(
-                                0,
+                            - min(
+                                interes,
                                 pago_credito
-                                - min(
-                                    interes,
-                                    pago_credito
-                                )
                             )
-                        ),
-                        "Capital": capital,
-                        "Cuota": numero_cuota
-                    }
-                )
-
-    if not resultados:
-        return pd.DataFrame(
-            columns=columnas_salida
-        )
-
-    detalle_amort = pd.DataFrame(
-        resultados
-    )
-
-    resumen = (
-        detalle_amort
-        .groupby(
-            "Propiedad",
-            as_index=False
-        )
-        .agg(
-            Pagos_Hipotecarios_Reales=(
-                "Pago_Real",
-                "sum"
-            ),
-            Interes_Historico_Estimado=(
-                "Interes",
-                "sum"
-            ),
-            Seguro_Historico_Estimado=(
-                "Seguro",
-                "sum"
-            ),
-            Capital_Historico_Estimado=(
-                "Capital",
-                "sum"
-            ),
-            Cuotas_Conciliadas=(
-                "Cuota",
-                "nunique"
+                        )
+                    ),
+                    "Capital": capital,
+                    "Cuota": numero_cuota
+                }
             )
-        )
+
+if not resultados:
+    return pd.DataFrame(
+        columns=columnas_salida
     )
 
-    return resumen
+detalle_amort = pd.DataFrame(
+    resultados
+)
 
+resumen = (
+    detalle_amort
+    .groupby(
+        "Propiedad",
+        as_index=False
+    )
+    .agg(
+        Pagos_Hipotecarios_Reales=(
+            "Pago_Real",
+            "sum"
+        ),
+        Interes_Historico_Estimado=(
+            "Interes",
+            "sum"
+        ),
+        Seguro_Historico_Estimado=(
+            "Seguro",
+            "sum"
+        ),
+        Capital_Historico_Estimado=(
+            "Capital",
+            "sum"
+        ),
+        Cuotas_Conciliadas=(
+            "Cuota",
+            "nunique"
+        )
+    )
+)
 
-# ============================================================
-# RESERVAS AIRBNB / OCUPACIÓN
-# ============================================================
+return resumen
+
+============================================================
+
+RESERVAS AIRBNB / OCUPACIÓN
+
+============================================================
 
 @st.cache_data(ttl=300)
 def cargar_reservas(
-    fecha_inicio,
-    fecha_fin
+fecha_inicio,
+fecha_fin
 ):
 
-    query = """
-    WITH mapa AS (
-
-        SELECT
-            LOWER(TRIM(Anuncio)) AS anuncio_key,
-            Nombre AS Nombre_Propiedad,
-            Ciudad
-
-        FROM `rentascamacho.rentas_cortas.Participaciones`
-
-        WHERE
-            Anuncio IS NOT NULL
-            AND TRIM(Anuncio) <> ''
-
-        QUALIFY ROW_NUMBER() OVER (
-            PARTITION BY LOWER(TRIM(Anuncio))
-            ORDER BY ID_Activo
-        ) = 1
-    ),
-
-    reservas_base AS (
-
-        SELECT
-            C__digo_de_confirmaci__n AS Codigo_Reserva,
-            LOWER(TRIM(Anuncio)) AS anuncio_key,
-            DATE(Fecha_de_inicio) AS Fecha_Inicio,
-            DATE(Fecha_de_finalizaci__n) AS Fecha_Fin
-
-        FROM `rentascamacho.rentas_cortas.Airbnb_Prorrateado`
-
-        WHERE
-            LOWER(TRIM(Tipo)) = 'reservación'
-            AND C__digo_de_confirmaci__n IS NOT NULL
-            AND Anuncio IS NOT NULL
-            AND Fecha_de_inicio IS NOT NULL
-            AND Fecha_de_finalizaci__n IS NOT NULL
-
-        QUALIFY ROW_NUMBER() OVER (
-            PARTITION BY C__digo_de_confirmaci__n
-            ORDER BY Fecha_de_inicio
-        ) = 1
-    ),
-
-    reservas AS (
-
-        SELECT
-            r.Codigo_Reserva,
-            m.Nombre_Propiedad,
-            m.Ciudad,
-            r.Fecha_Inicio,
-            r.Fecha_Fin
-
-        FROM reservas_base r
-
-        INNER JOIN mapa m
-            ON r.anuncio_key = m.anuncio_key
-    ),
-
-    calculo AS (
-
-        SELECT
-            Codigo_Reserva,
-            Nombre_Propiedad,
-            Ciudad,
-
-            GREATEST(
-                Fecha_Inicio,
-                @fecha_inicio
-            ) AS Inicio_Overlap,
-
-            LEAST(
-                Fecha_Fin,
-                DATE_ADD(
-                    @fecha_fin,
-                    INTERVAL 1 DAY
-                )
-            ) AS Fin_Overlap
-
-        FROM reservas
-
-        WHERE
-            Fecha_Inicio <
-                DATE_ADD(
-                    @fecha_fin,
-                    INTERVAL 1 DAY
-                )
-
-            AND Fecha_Fin >
-                @fecha_inicio
-    )
+query = """
+WITH mapa AS (
 
     SELECT
+        LOWER(TRIM(Anuncio)) AS anuncio_key,
+        Nombre AS Nombre_Propiedad,
+        Ciudad
+
+    FROM `rentascamacho.rentas_cortas.Participaciones`
+
+    WHERE
+        Anuncio IS NOT NULL
+        AND TRIM(Anuncio) <> ''
+
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY LOWER(TRIM(Anuncio))
+        ORDER BY ID_Activo
+    ) = 1
+),
+
+reservas_base AS (
+
+    SELECT
+        C__digo_de_confirmaci__n AS Codigo_Reserva,
+        LOWER(TRIM(Anuncio)) AS anuncio_key,
+        DATE(Fecha_de_inicio) AS Fecha_Inicio,
+        DATE(Fecha_de_finalizaci__n) AS Fecha_Fin
+
+    FROM `rentascamacho.rentas_cortas.Airbnb_Prorrateado`
+
+    WHERE
+        LOWER(TRIM(Tipo)) = 'reservación'
+        AND C__digo_de_confirmaci__n IS NOT NULL
+        AND Anuncio IS NOT NULL
+        AND Fecha_de_inicio IS NOT NULL
+        AND Fecha_de_finalizaci__n IS NOT NULL
+
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY C__digo_de_confirmaci__n
+        ORDER BY Fecha_de_inicio
+    ) = 1
+),
+
+reservas AS (
+
+    SELECT
+        r.Codigo_Reserva,
+        m.Nombre_Propiedad,
+        m.Ciudad,
+        r.Fecha_Inicio,
+        r.Fecha_Fin
+
+    FROM reservas_base r
+
+    INNER JOIN mapa m
+        ON r.anuncio_key = m.anuncio_key
+),
+
+calculo AS (
+
+    SELECT
+        Codigo_Reserva,
         Nombre_Propiedad,
         Ciudad,
 
-        COUNT(DISTINCT Codigo_Reserva)
-            AS Reservas,
+        GREATEST(
+            Fecha_Inicio,
+            @fecha_inicio
+        ) AS Inicio_Overlap,
 
-        SUM(
-            GREATEST(
-                DATE_DIFF(
-                    Fin_Overlap,
-                    Inicio_Overlap,
-                    DAY
-                ),
-                0
-            )
-        ) AS Noches_Reservadas,
-
-        DATE_DIFF(
+        LEAST(
+            Fecha_Fin,
             DATE_ADD(
                 @fecha_fin,
                 INTERVAL 1 DAY
-            ),
-            @fecha_inicio,
-            DAY
-        ) AS Noches_Disponibles
-
-    FROM calculo
-
-    GROUP BY
-        Nombre_Propiedad,
-        Ciudad
-    """
-
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[
-            bigquery.ScalarQueryParameter(
-                "fecha_inicio",
-                "DATE",
-                fecha_inicio
-            ),
-            bigquery.ScalarQueryParameter(
-                "fecha_fin",
-                "DATE",
-                fecha_fin
             )
-        ]
-    )
+        ) AS Fin_Overlap
 
-    return client.query(
-        query,
-        job_config=job_config
-    ).to_dataframe()
+    FROM reservas
 
+    WHERE
+        Fecha_Inicio <
+            DATE_ADD(
+                @fecha_fin,
+                INTERVAL 1 DAY
+            )
 
-# ============================================================
-# CARGAR DATOS
-# ============================================================
+        AND Fecha_Fin >
+            @fecha_inicio
+)
+
+SELECT
+    Nombre_Propiedad,
+    Ciudad,
+
+    COUNT(DISTINCT Codigo_Reserva)
+        AS Reservas,
+
+    SUM(
+        GREATEST(
+            DATE_DIFF(
+                Fin_Overlap,
+                Inicio_Overlap,
+                DAY
+            ),
+            0
+        )
+    ) AS Noches_Reservadas,
+
+    DATE_DIFF(
+        DATE_ADD(
+            @fecha_fin,
+            INTERVAL 1 DAY
+        ),
+        @fecha_inicio,
+        DAY
+    ) AS Noches_Disponibles
+
+FROM calculo
+
+GROUP BY
+    Nombre_Propiedad,
+    Ciudad
+"""
+
+job_config = bigquery.QueryJobConfig(
+    query_parameters=[
+        bigquery.ScalarQueryParameter(
+            "fecha_inicio",
+            "DATE",
+            fecha_inicio
+        ),
+        bigquery.ScalarQueryParameter(
+            "fecha_fin",
+            "DATE",
+            fecha_fin
+        )
+    ]
+)
+
+return client.query(
+    query,
+    job_config=job_config
+).to_dataframe()
+
+============================================================
+
+CARGAR DATOS
+
+============================================================
 
 df = cargar_datos_financieros()
 
@@ -3081,32 +3214,33 @@ hoy = date.today()
 capital_cdt = cargar_capital_cdt(hoy)
 
 inicio_mes = date(
-    hoy.year,
-    hoy.month,
-    1
+hoy.year,
+hoy.month,
+1
 )
 
 inicio_anio = pd.Timestamp(
-    hoy.year,
-    1,
-    1
+hoy.year,
+1,
+1
 )
 
 fin_hoy = (
-    pd.Timestamp(hoy)
-    +
-    pd.Timedelta(days=1)
+pd.Timestamp(hoy)
++
+pd.Timedelta(days=1)
 )
 
+============================================================
 
-# ============================================================
-# YTD
-# ============================================================
+YTD
+
+============================================================
 
 df_ytd = df[
-    (df["Fecha"] >= inicio_anio)
-    &
-    (df["Fecha"] < fin_hoy)
+(df["Fecha"] >= inicio_anio)
+&
+(df["Fecha"] < fin_hoy)
 ].copy()
 
 ingresos_ytd = df_ytd["Ingreso"].sum()
@@ -3114,1511 +3248,1695 @@ ingresos_ytd = df_ytd["Ingreso"].sum()
 gastos_ytd = df_ytd["Gasto"].sum()
 
 flujo_ytd = (
-    ingresos_ytd -
-    gastos_ytd
+ingresos_ytd -
+gastos_ytd
 )
 
 rentabilidad_ytd = (
-    flujo_ytd /
-    ingresos_ytd *
-    100
-    if ingresos_ytd
-    else 0
+flujo_ytd /
+ingresos_ytd *
+100
+if ingresos_ytd
+else 0
 )
 
-# ============================================================
-# MENÚ SUPERIOR
-# MARCA + NAVEGACIÓN + FILTROS
-# ============================================================
+============================================================
+
+MENÚ SUPERIOR
+
+MARCA + NAVEGACIÓN + FILTROS
+
+============================================================
 
 if "vista_airbnb" not in st.session_state:
 
-    st.session_state.vista_airbnb = "Portafolio"
+st.session_state.vista_airbnb = "Aportes"
 
 top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = st.columns(
-    [
-        1.90,
-        0.68,
-        0.68,
-        0.68,
-        0.68,
-        0.68,
-        0.68,
-        0.90,
-        0.90,
-        1.10
-    ],
-    gap="small"
+[
+1.90,
+0.68,
+0.68,
+0.68,
+0.68,
+0.68,
+0.68,
+0.90,
+0.90,
+1.10
+],
+gap="small"
 )
 
-# ============================================================
-# MARCA
-# ============================================================
+============================================================
+
+MARCA
+
+============================================================
 
 with top1:
 
-    st.html(
-        f"""
-        <div class="brand-mini">
+st.html(
+    f"""
+    <div class="brand-mini">
 
-            <div class="logo-mini">
+        <div class="logo-mini">
 
-                <img
-                    src="{logo_data}"
-                    alt="Rentas Camacho"
-                    style="
-                        width:42px;
-                        height:42px;
-                        object-fit:contain;
-                    "
-                >
+            <img
+                src="{logo_data}"
+                alt="Rentas Camacho"
+                style="
+                    width:42px;
+                    height:42px;
+                    object-fit:contain;
+                "
+            >
 
+        </div>
+
+        <div>
+
+            <div class="brand-mini-title">
+                Airbnb <span>Financial Hub</span>
             </div>
 
-            <div>
-
-                <div class="brand-mini-title">
-                    Airbnb <span>Financial Hub</span>
-                </div>
-
-                <div class="brand-mini-sub">
-                    Rentabilidad financiera · Solo Airbnb
-                </div>
-
+            <div class="brand-mini-sub">
+                Rentabilidad financiera · Solo Airbnb
             </div>
 
         </div>
-        """
-    )
 
-# ============================================================
-# PORTAFOLIO
-# ============================================================
+    </div>
+    """
+)
+
+============================================================
+
+APORTES
+
+============================================================
 
 with top2:
 
-    if st.button(
-        "",
-        key="nav_portafolio",
-        use_container_width=True,
-        help="Portafolio"
-    ):
+if st.button(
+    "",
+    key="nav_portafolio",
+    use_container_width=True,
+    help="Aportes"
+):
 
-        st.session_state.vista_airbnb = "Portafolio"
-        st.rerun()
+    st.session_state.vista_airbnb = "Aportes"
+    st.rerun()
 
+============================================================
 
-# ============================================================
-# PROPIEDADES
-# ============================================================
+PROPIEDADES
+
+============================================================
 
 with top3:
 
-    if st.button(
-        "",
-        key="nav_propiedades",
-        use_container_width=True,
-        help="Propiedades"
-    ):
+if st.button(
+    "",
+    key="nav_propiedades",
+    use_container_width=True,
+    help="Propiedades"
+):
 
-        st.session_state.vista_airbnb = "Propiedades"
-        st.rerun()
+    st.session_state.vista_airbnb = "Propiedades"
+    st.rerun()
 
+============================================================
 
-# ============================================================
-# OCUPACIÓN
-# ============================================================
+OCUPACIÓN
+
+============================================================
 
 with top4:
 
-    if st.button(
-        "",
-        key="nav_ocupacion",
-        use_container_width=True,
-        help="Ocupación"
-    ):
+if st.button(
+    "",
+    key="nav_ocupacion",
+    use_container_width=True,
+    help="Ocupación"
+):
 
-        st.session_state.vista_airbnb = "Ocupación"
-        st.rerun()
+    st.session_state.vista_airbnb = "Ocupación"
+    st.rerun()
 
+============================================================
 
-# ============================================================
-# FINANCIERO
-# ============================================================
+FINANCIERO
+
+============================================================
 
 with top5:
 
-    if st.button(
-        "",
-        key="nav_financiero",
-        use_container_width=True,
-        help="Financiero"
-    ):
+if st.button(
+    "",
+    key="nav_financiero",
+    use_container_width=True,
+    help="Financiero"
+):
 
-        st.session_state.vista_airbnb = "Financiero"
-        st.rerun()
+    st.session_state.vista_airbnb = "Financiero"
+    st.rerun()
 
+============================================================
 
-# ============================================================
-# ANÁLISIS
-# ============================================================
+ANÁLISIS
+
+============================================================
 
 with top6:
 
-    if st.button(
-        "",
-        key="nav_analisis",
-        use_container_width=True,
-        help="Análisis"
-    ):
+if st.button(
+    "",
+    key="nav_analisis",
+    use_container_width=True,
+    help="Análisis"
+):
 
-        st.session_state.vista_airbnb = "Análisis"
-        st.rerun()
+    st.session_state.vista_airbnb = "Análisis"
+    st.rerun()
 
+============================================================
 
-# ============================================================
-# REPORTES
-# ============================================================
+REPORTES
+
+============================================================
 
 with top7:
 
-    if st.button(
-        "",
-        key="nav_reportes",
-        use_container_width=True,
-        help="Reportes"
-    ):
+if st.button(
+    "",
+    key="nav_reportes",
+    use_container_width=True,
+    help="Reportes"
+):
 
-        st.session_state.vista_airbnb = "Reportes"
-        st.rerun()
+    st.session_state.vista_airbnb = "Reportes"
+    st.rerun()
 
+============================================================
 
-# ============================================================
-# FILTRO CIUDAD
-# ============================================================
+FILTRO CIUDAD
+
+============================================================
 
 with top8:
 
-    st.markdown(
-        '<div class="filter-label">📍 Ciudad</div>',
-        unsafe_allow_html=True
-    )
+st.markdown(
+    '<div class="filter-label">📍 Ciudad</div>',
+    unsafe_allow_html=True
+)
 
-    ciudad = st.selectbox(
-        "Ciudad",
-        ["Todas"]
-        +
-        sorted(
-            df["Ciudad"]
-            .dropna()
-            .unique()
-            .tolist()
-        ),
-        label_visibility="collapsed"
-    )
+ciudad = st.selectbox(
+    "Ciudad",
+    ["Todas"]
+    +
+    sorted(
+        df["Ciudad"]
+        .dropna()
+        .unique()
+        .tolist()
+    ),
+    label_visibility="collapsed"
+)
 
+============================================================
 
-# ============================================================
-# FILTRO PROPIEDAD
-# ============================================================
+FILTRO PROPIEDAD
+
+============================================================
 
 with top9:
 
-    st.markdown(
-        '<div class="filter-label">🏢 Propiedad</div>',
-        unsafe_allow_html=True
-    )
+st.markdown(
+    '<div class="filter-label">🏢 Propiedad</div>',
+    unsafe_allow_html=True
+)
 
-    propiedad = st.selectbox(
-        "Propiedad",
-        ["Todas"]
-        +
-        sorted(
-            df["Nombre_Propiedad"]
-            .dropna()
-            .unique()
-            .tolist()
-        ),
-        label_visibility="collapsed"
-    )
+propiedad = st.selectbox(
+    "Propiedad",
+    ["Todas"]
+    +
+    sorted(
+        df["Nombre_Propiedad"]
+        .dropna()
+        .unique()
+        .tolist()
+    ),
+    label_visibility="collapsed"
+)
 
+============================================================
 
-# ============================================================
-# FILTRO PERÍODO
-# ============================================================
+FILTRO PERÍODO
+
+============================================================
 
 with top10:
 
-    st.markdown(
-        '<div class="filter-label">📅 Período</div>',
-        unsafe_allow_html=True
-    )
+st.markdown(
+    '<div class="filter-label">📅 Período</div>',
+    unsafe_allow_html=True
+)
 
-    periodo = st.date_input(
-        "Período",
-        value=(
-            inicio_mes,
-            hoy
-        ),
-        label_visibility="collapsed"
-    )
+periodo = st.date_input(
+    "Período",
+    value=(
+        inicio_mes,
+        hoy
+    ),
+    label_visibility="collapsed"
+)
 
-# ============================================================
-# FECHAS SELECCIONADAS
-# ============================================================
+============================================================
+
+FECHAS SELECCIONADAS
+
+============================================================
 
 if (
-    isinstance(
-        periodo,
-        (tuple, list)
-    )
-    and
-    len(periodo) == 2
+isinstance(
+periodo,
+(tuple, list)
+)
+and
+len(periodo) == 2
 ):
 
-    fecha_inicio = periodo[0]
-    fecha_fin = periodo[1]
+fecha_inicio = periodo[0]
+fecha_fin = periodo[1]
 
 else:
 
-    fecha_inicio = inicio_mes
-    fecha_fin = hoy
+fecha_inicio = inicio_mes
+fecha_fin = hoy
 
+============================================================
 
-# ============================================================
-# FILTRAR DATOS
-# ============================================================
+FILTRAR DATOS
+
+============================================================
 
 df_f = df[
-    (df["Fecha"].dt.date >= fecha_inicio)
-    &
-    (df["Fecha"].dt.date <= fecha_fin)
+(df["Fecha"].dt.date >= fecha_inicio)
+&
+(df["Fecha"].dt.date <= fecha_fin)
 ].copy()
 
 if ciudad != "Todas":
 
-    df_f = df_f[
-        df_f["Ciudad"] == ciudad
-    ]
+df_f = df_f[
+    df_f["Ciudad"] == ciudad
+]
 
 if propiedad != "Todas":
 
-    df_f = df_f[
-        df_f["Nombre_Propiedad"] == propiedad
-    ]
+df_f = df_f[
+    df_f["Nombre_Propiedad"] == propiedad
+]
 
+============================================================
 
-# ============================================================
-# TOTALES
-# ============================================================
+TOTALES
+
+============================================================
 
 ingresos = df_f["Ingreso"].sum()
 
 gastos = df_f["Gasto"].sum()
 
 flujo = (
-    ingresos -
-    gastos
+ingresos -
+gastos
 )
 
 rentabilidad = (
-    flujo /
-    ingresos *
-    100
-    if ingresos
-    else 0
+flujo /
+ingresos *
+100
+if ingresos
+else 0
 )
 
+============================================================
 
-# ============================================================
-# RESUMEN POR PROPIEDAD
-# ============================================================
+RESUMEN POR PROPIEDAD
+
+============================================================
 
 resumen = (
-    df_f
-    .groupby(
-        [
-            "Nombre_Propiedad",
-            "Ciudad"
-        ],
-        as_index=False
-    )
-    .agg(
-        Ingresos=(
-            "Ingreso",
-            "sum"
-        ),
-        Gastos=(
-            "Gasto",
-            "sum"
-        )
-    )
+df_f
+.groupby(
+[
+"Nombre_Propiedad",
+"Ciudad"
+],
+as_index=False
+)
+.agg(
+Ingresos=(
+"Ingreso",
+"sum"
+),
+Gastos=(
+"Gasto",
+"sum"
+)
+)
 )
 
 resumen["Flujo"] = (
-    resumen["Ingresos"]
-    -
-    resumen["Gastos"]
+resumen["Ingresos"]
+-
+resumen["Gastos"]
 )
 
 resumen["Rentabilidad"] = (
-    resumen["Flujo"]
-    /
-    resumen["Ingresos"]
-    *
-    100
+resumen["Flujo"]
+/
+resumen["Ingresos"]
+*
+100
 ).fillna(0)
 
+============================================================
 
-# ============================================================
-# OCUPACIÓN
-# ============================================================
+OCUPACIÓN
+
+============================================================
 
 try:
 
-    df_ocupacion = cargar_reservas(
-        fecha_inicio,
-        fecha_fin
-    )
+df_ocupacion = cargar_reservas(
+    fecha_inicio,
+    fecha_fin
+)
 
 except Exception:
 
-    df_ocupacion = pd.DataFrame()
-
+df_ocupacion = pd.DataFrame()
 
 if not df_ocupacion.empty:
 
-    df_ocupacion["Ocupacion"] = (
-        df_ocupacion["Noches_Reservadas"]
-        /
-        df_ocupacion["Noches_Disponibles"]
-        *
-        100
-    )
+df_ocupacion["Ocupacion"] = (
+    df_ocupacion["Noches_Reservadas"]
+    /
+    df_ocupacion["Noches_Disponibles"]
+    *
+    100
+)
 
 else:
 
-    df_ocupacion = pd.DataFrame(
-        columns=[
-            "Nombre_Propiedad",
-            "Ciudad",
-            "Reservas",
-            "Noches_Reservadas",
-            "Noches_Disponibles",
-            "Ocupacion"
-        ]
-    )
-
-
-resumen = resumen.merge(
-    df_ocupacion,
-    on=[
+df_ocupacion = pd.DataFrame(
+    columns=[
         "Nombre_Propiedad",
-        "Ciudad"
-    ],
-    how="left"
+        "Ciudad",
+        "Reservas",
+        "Noches_Reservadas",
+        "Noches_Disponibles",
+        "Ocupacion"
+    ]
 )
 
-# Orden visual por equipos:
-# 1. Bogotá → 2. Costa → 3. Medellín → 4. Ibagué
+resumen = resumen.merge(
+df_ocupacion,
+on=[
+"Nombre_Propiedad",
+"Ciudad"
+],
+how="left"
+)
+
+Orden visual por equipos:
+
+1. Bogotá → 2. Costa → 3. Medellín → 4. Ibagué
+
 orden_ciudad = {
-    "Bogotá": 1,
-    "Santa Marta": 2,
-    "Cartagena": 2,
-    "Medellín": 3,
-    "Ibagué": 4
+"Bogotá": 1,
+"Santa Marta": 2,
+"Cartagena": 2,
+"Medellín": 3,
+"Ibagué": 4
 }
 
 resumen["OrdenEquipo"] = (
-    resumen["Ciudad"]
-    .map(orden_ciudad)
-    .fillna(99)
+resumen["Ciudad"]
+.map(orden_ciudad)
+.fillna(99)
 )
 
 resumen = (
-    resumen
-    .sort_values(
-        ["OrdenEquipo", "Nombre_Propiedad"],
-        ascending=[True, True]
-    )
-    .drop(columns=["OrdenEquipo"])
-    .reset_index(drop=True)
+resumen
+.sort_values(
+["OrdenEquipo", "Nombre_Propiedad"],
+ascending=[True, True]
+)
+.drop(columns=["OrdenEquipo"])
+.reset_index(drop=True)
 )
 
 
 
-# ============================================================
-# DATOS DE INVERSIÓN
-# ============================================================
+============================================================
+
+DATOS DE INVERSIÓN
+
+============================================================
 
 inversiones = cargar_inversiones()
 
-# ============================================================
-# DATOS DE CRÉDITOS / VALOR ACTUAL
-# ============================================================
+============================================================
+
+DATOS DE CRÉDITOS / VALOR ACTUAL
+
+============================================================
 
 creditos_detalle, creditos = cargar_creditos(hoy)
 
 pagos_hipotecarios = cargar_pagos_hipotecarios()
 
 amortizacion_historica = (
-    calcular_amortizacion_historica(
-        creditos_detalle,
-        pagos_hipotecarios
-    )
+calcular_amortizacion_historica(
+creditos_detalle,
+pagos_hipotecarios
+)
 )
 
+============================================================
 
-# ============================================================
-# TARJETA PROPIEDAD
-# ============================================================
+TARJETA PROPIEDAD
+
+============================================================
 
 def tarjeta_propiedad(row):
 
-    rent = float(row["Rentabilidad"])
-    good = rent >= 35
+rent = float(row["Rentabilidad"])
+good = rent >= 35
 
-    progress = min(max(abs(rent) if rent < 0 else rent, 0), 100)
+progress = min(max(abs(rent) if rent < 0 else rent, 0), 100)
 
-    ocup = row.get("Ocupacion", None)
-    reservas = row.get("Reservas", None)
-    noches = row.get("Noches_Reservadas", None)
+ocup = row.get("Ocupacion", None)
+reservas = row.get("Reservas", None)
+noches = row.get("Noches_Reservadas", None)
 
-    if pd.isna(ocup):
-        ocup_text = "—"
+if pd.isna(ocup):
+    ocup_text = "—"
+    detalle = "—"
+else:
+    ocup_text = f"{float(ocup):.1f}%"
+    if pd.isna(reservas) or pd.isna(noches):
         detalle = "—"
     else:
-        ocup_text = f"{float(ocup):.1f}%"
-        if pd.isna(reservas) or pd.isna(noches):
-            detalle = "—"
-        else:
-            detalle = f"{int(reservas)} R · {int(noches)} N"
+        detalle = f"{int(reservas)} R · {int(noches)} N"
 
-    ciudad = str(row["Ciudad"]).strip().lower()
+ciudad = str(row["Ciudad"]).strip().lower()
 
-    if ciudad == "bogotá":
-        equipo = "team-bogota"
-    elif ciudad in ["santa marta", "cartagena"]:
-        equipo = "team-costa"
-    elif ciudad == "medellín":
-        equipo = "team-medellin"
-    elif ciudad == "ibagué":
-        equipo = "team-ibague"
-    else:
-        equipo = "team-bogota"
+if ciudad == "bogotá":
+    equipo = "team-bogota"
+elif ciudad in ["santa marta", "cartagena"]:
+    equipo = "team-costa"
+elif ciudad == "medellín":
+    equipo = "team-medellin"
+elif ciudad == "ibagué":
+    equipo = "team-ibague"
+else:
+    equipo = "team-bogota"
 
-    return f"""
+return f"""
+
 <div class="property-card {equipo}">
 
-    <div class="property-header">
-        <div>
-            <div class="property-name">
-                {row["Nombre_Propiedad"]}
-            </div>
-            <div class="property-city">
-                {row["Ciudad"]}
+<div class="property-header">
+    <div>
+        <div class="property-name">
+            {row["Nombre_Propiedad"]}
+        </div>
+        <div class="property-city">
+            {row["Ciudad"]}
+        </div>
+    </div>
+</div>
+
+<div class="property-income-main">
+    {dinero_corto(row["Ingresos"])}
+</div>
+
+<div class="metrics-grid">
+
+    <div class="metric-box">
+        <div class="metric-content">
+            <div class="metric-label">Gastos</div>
+            <div class="metric-value metric-expense">
+                {dinero_corto(row["Gastos"])}
             </div>
         </div>
     </div>
 
-    <div class="property-income-main">
-        {dinero_corto(row["Ingresos"])}
+    <div class="metric-box">
+        <div class="metric-content">
+            <div class="metric-label">Flujo</div>
+            <div class="metric-value metric-flow">
+                {dinero_corto(row["Flujo"])}
+            </div>
+        </div>
     </div>
 
-    <div class="metrics-grid">
+</div>
 
-        <div class="metric-box">
-            <div class="metric-content">
-                <div class="metric-label">Gastos</div>
-                <div class="metric-value metric-expense">
-                    {dinero_corto(row["Gastos"])}
-                </div>
+<div class="property-bottom">
+
+    <div class="property-bottom-block">
+        <div class="profit-label">Rentabilidad</div>
+        <div class="profit-number {'good' if good else 'bad'}">
+            {rent:.1f}%
+        </div>
+        <div class="progress">
+            <div
+                class="progress-fill {'bad' if not good else ''}"
+                style="width:{progress:.1f}%;">
             </div>
         </div>
-
-        <div class="metric-box">
-            <div class="metric-content">
-                <div class="metric-label">Flujo</div>
-                <div class="metric-value metric-flow">
-                    {dinero_corto(row["Flujo"])}
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <div class="property-bottom">
-
-        <div class="property-bottom-block">
-            <div class="profit-label">Rentabilidad</div>
-            <div class="profit-number {'good' if good else 'bad'}">
-                {rent:.1f}%
-            </div>
-            <div class="progress">
-                <div
-                    class="progress-fill {'bad' if not good else ''}"
-                    style="width:{progress:.1f}%;">
-                </div>
-            </div>
+    <div class="property-bottom-block occupancy">
+        <div class="occupancy-label">Ocup. %</div>
+        <div class="occupancy-value">
+            {ocup_text}
         </div>
-
-        <div class="property-bottom-block occupancy">
-            <div class="occupancy-label">Ocup. %</div>
-            <div class="occupancy-value">
-                {ocup_text}
-            </div>
-            <div class="occupancy-detail">
-                {detalle}
-            </div>
+        <div class="occupancy-detail">
+            {detalle}
         </div>
-
     </div>
+
+</div>
 
 </div>
 """
 
-# ============================================================
-# TARJETA PORTAFOLIO
-# ============================================================
+============================================================
+
+TARJETA PORTAFOLIO
+
+============================================================
 
 def tarjeta_portafolio():
 
-    progreso_rentabilidad = min(
-        max((rentabilidad / 35) * 100, 0),
-        100
-    )
+progreso_rentabilidad = min(
+    max((rentabilidad / 35) * 100, 0),
+    100
+)
 
-    return f"""
+return f"""
+
 <div class="portfolio-card">
 
-    <div class="portfolio-title">Portafolio</div>
+<div class="portfolio-title">Portafolio</div>
 
-    <div class="portfolio-main">
-        {dinero_corto(ingresos)}
+<div class="portfolio-main">
+    {dinero_corto(ingresos)}
+</div>
+
+<div class="portfolio-metrics">
+
+    <div class="portfolio-metric">
+        <div class="portfolio-mini-label">Gastos</div>
+        <div class="portfolio-mini-value">
+            {dinero_corto(gastos)}
+        </div>
     </div>
 
-    <div class="portfolio-metrics">
-
-        <div class="portfolio-metric">
-            <div class="portfolio-mini-label">Gastos</div>
-            <div class="portfolio-mini-value">
-                {dinero_corto(gastos)}
-            </div>
+    <div class="portfolio-metric">
+        <div class="portfolio-mini-label">Flujo</div>
+        <div class="portfolio-mini-value">
+            {dinero_corto(flujo)}
         </div>
-
-        <div class="portfolio-metric">
-            <div class="portfolio-mini-label">Flujo</div>
-            <div class="portfolio-mini-value">
-                {dinero_corto(flujo)}
-            </div>
-        </div>
-
     </div>
 
-    <div class="portfolio-profit-row">
+</div>
 
-        <div class="portfolio-profit-block">
-            <div class="portfolio-profit-label">Rentabilidad</div>
-            <div class="portfolio-profit-value portfolio-profit">
-                {rentabilidad:.1f}%
-            </div>
-            <div class="portfolio-progress">
-                <div
-                    class="portfolio-progress-fill"
-                    style="width:{progreso_rentabilidad:.1f}%;">
-                </div>
+<div class="portfolio-profit-row">
+
+    <div class="portfolio-profit-block">
+        <div class="portfolio-profit-label">Rentabilidad</div>
+        <div class="portfolio-profit-value portfolio-profit">
+            {rentabilidad:.1f}%
+        </div>
+        <div class="portfolio-progress">
+            <div
+                class="portfolio-progress-fill"
+                style="width:{progreso_rentabilidad:.1f}%;">
             </div>
         </div>
-
-        <div class="portfolio-profit-block target">
-            <div class="portfolio-profit-label">Objetivo</div>
-            <div class="portfolio-profit-value portfolio-target">
-                35%
-            </div>
-        </div>
-
     </div>
+
+    <div class="portfolio-profit-block target">
+        <div class="portfolio-profit-label">Objetivo</div>
+        <div class="portfolio-profit-value portfolio-target">
+            35%
+        </div>
+    </div>
+
+</div>
 
 </div>
 """
 
-# ============================================================
-# VISTA PROPIEDADES
-# ============================================================
+============================================================
 
-if st.session_state.vista_airbnb == "Propiedades":
+VISTA APORTES — CAPITAL FAMILIAR
 
-    # ========================================================
-    # TARJETAS
-    # ========================================================
+============================================================
 
-    cards_html = '<div class="properties-grid">'
+if st.session_state.vista_airbnb == "Aportes":
 
-    cards_html += tarjeta_portafolio()
+st.markdown(
+    """
 
-    for _, row in resumen.iterrows():
-
-        cards_html += tarjeta_propiedad(row)
-
-    cards_html += "</div>"
-
-    cards_html = "\n".join(
-        linea.strip()
-        for linea in cards_html.splitlines()
-    )
-
-    st.markdown(
-        cards_html,
+<div class="section-title">💰 Aportes y capital familiar</div>
+<div class="section-subtitle">Capital realmente aportado por cada socio · punto de partida para comparar aportes contra patrimonio</div>
+""",
         unsafe_allow_html=True
     )
 
-    # ========================================================
-    # TABLA DE ANÁLISIS DE INVERSIÓN
-    # ========================================================
+aportes_base = aportes_socios.copy()
 
-    tabla = inversiones.rename(
-        columns={
-            "Activo_Proyecto": "Nombre_Propiedad"
-        }
-    ).copy()
+if aportes_base.empty:
+    st.markdown(
+        """
 
-    # Estado del activo
-    tabla["Estado"] = tabla["Nombre_Propiedad"].apply(
-        lambda x: "En desarrollo"
-        if str(x).strip().lower() == "iwani"
-        else "Operando"
-    )
-
-    # Filtros actuales
-    if propiedad != "Todas":
-        tabla = tabla[
-            tabla["Nombre_Propiedad"] == propiedad
-        ]
-
-    if ciudad != "Todas":
-        tabla = tabla[
-            tabla["Ciudad"] == ciudad
-        ]
-
-    # ========================================================
-    # HISTÓRICO FINANCIERO DESDE EL INICIO DE OPERACIÓN
-    # ========================================================
-    # La primera fecha registrada en los movimientos Airbnb
-    # se toma como inicio de operación de cada propiedad.
-    historico = (
-        df
-        .groupby("Nombre_Propiedad", as_index=False)
-        .agg(
-            Fecha_Inicio=("Fecha", "min"),
-            Ingresos_Historicos=("Ingreso", "sum"),
-            Gastos_Historicos=("Gasto", "sum")
+<div class="aportes-panel">
+    <div class="aportes-title">💰 Aportes y capital familiar</div>
+    <div class="aportes-note"><b>Sin datos:</b> no se encontraron registros en Aportes_Socios.</div>
+</div>
+""",
+            unsafe_allow_html=True
         )
+    else:
+        total_aportes = float(aportes_base["Valor"].sum())
+        socios = (
+            aportes_base.groupby("Nombre_Socio", as_index=False)
+            .agg(
+                Aportes=("Valor", "sum"),
+                Movimientos=("ID_Aporte", "nunique"),
+                Primer_Aporte=("Fecha", "min"),
+                Ultimo_Aporte=("Fecha", "max")
+            )
+            .sort_values("Aportes", ascending=False)
+            .reset_index(drop=True)
+        )
+
+    socios["Participacion"] = (
+        socios["Aportes"] / total_aportes * 100
+        if total_aportes else 0
     )
 
-    # ========================================================
-    # CORRECCIÓN DE INGRESOS: TORRE ACQUA + TEMPUS 49
-    # ========================================================
-    # Los movimientos contables tienen el ingreso combinado de
-    # ambas propiedades distribuido de forma incorrecta.
-    # Airbnb_Prorrateado establece la proporción real:
-    #   Torre Acqua = 70.322145948%
-    #   Tempus 49   = 29.677854052%
-    #
-    # Se conserva exactamente el ingreso histórico combinado
-    # y solamente se redistribuye entre las dos propiedades.
+    ultima_fecha = aportes_base["Fecha"].max()
+    ultima_fecha_txt = ultima_fecha.strftime("%d/%m/%Y") if pd.notna(ultima_fecha) else "—"
+    promedio_aporte = total_aportes / len(aportes_base) if len(aportes_base) else 0
 
-    propiedades_corregidas = [
+    kpi_items = [
+        ("CAPITAL APORTADO", dinero_corto(total_aportes), "Total registrado en Aportes_Socios"),
+        ("SOCIOS", f"{len(socios)}", "Socios con aportes registrados"),
+        ("ÚLTIMO APORTE", ultima_fecha_txt, f"{len(aportes_base):,} movimientos registrados"),
+        ("APORTE PROMEDIO", dinero_corto(promedio_aporte), "Promedio por movimiento")
+    ]
+
+    kpi_html = '<div class="aportes-kpi-grid">'
+    for label, value, sub in kpi_items:
+        kpi_html += f"""
+
+<div class="aportes-kpi">
+    <div class="aportes-kpi-label">{label}</div>
+    <div class="aportes-kpi-value">{escape_html(value)}</div>
+    <div class="aportes-kpi-sub">{escape_html(sub)}</div>
+</div>
+"""
+        kpi_html += '</div>'
+        st.markdown(kpi_html, unsafe_allow_html=True)
+
+    max_aporte = float(socios["Aportes"].max()) if not socios.empty else 0
+    barras_html = """
+
+<div class="aportes-card">
+    <div class="aportes-card-title">Capital aportado por socio</div>
+    <div class="aportes-card-subtitle">Participación sobre el capital familiar registrado</div>
+"""
+
+    for _, socio_row in socios.iterrows():
+        porcentaje_barra = float(socio_row["Aportes"]) / max_aporte * 100 if max_aporte else 0
+        barras_html += f"""
+<div class="aportes-row">
+    <div class="aportes-row-name">{escape_html(socio_row["Nombre_Socio"])}</div>
+    <div class="aportes-bar-bg"><div class="aportes-bar-fill" style="width:{porcentaje_barra:.1f}%;"></div></div>
+    <div class="aportes-row-value">{dinero_corto(socio_row["Aportes"])} · {float(socio_row["Participacion"]):.1f}%</div>
+</div>
+
+"""
+barras_html += '</div>'
+
+    lectura_html = """
+
+<div class="aportes-card">
+    <div class="aportes-card-title">🧭 Lectura financiera</div>
+    <div class="aportes-card-subtitle">La base para medir qué tan lejos está el patrimonio del capital realmente puesto</div>
+    <div class="aportes-note" style="margin-top:4px;"><b>Primera capa:</b> aquí medimos únicamente el capital efectivamente registrado como aporte de cada socio.</div>
+    <div class="aportes-note"><b>Siguiente capa:</b> cruzaremos estos aportes con los activos por propietario para calcular patrimonio actual y, finalmente, <b>patrimonio / aportes</b>.</div>
+</div>
+"""
+
+    st.markdown('<div class="aportes-body-grid">' + barras_html + lectura_html + '</div>', unsafe_allow_html=True)
+
+    tabla_aportes_html = """
+
+<div class="aportes-panel">
+    <div class="aportes-title">📋 Detalle de aportes</div>
+    <div class="aportes-subtitle">Acumulado histórico por socio, con participación y trazabilidad de movimientos</div>
+    <table class="aportes-table">
+        <thead><tr>
+            <th>Socio</th><th>Aportes acumulados</th><th>Participación</th><th>Movimientos</th><th>Primer aporte</th><th>Último aporte</th>
+        </tr></thead>
+        <tbody>
+"""
+
+    for _, socio_row in socios.iterrows():
+        primer = socio_row["Primer_Aporte"]
+        ultimo = socio_row["Ultimo_Aporte"]
+        primer_txt = primer.strftime("%b %Y") if pd.notna(primer) else "—"
+        ultimo_txt = ultimo.strftime("%b %Y") if pd.notna(ultimo) else "—"
+        tabla_aportes_html += f"""
+        <tr>
+            <td>{escape_html(socio_row["Nombre_Socio"])}</td>
+            <td><span class="aportes-positive">{dinero_corto(socio_row["Aportes"])}</span></td>
+            <td>{float(socio_row["Participacion"]):.1f}%</td>
+            <td>{int(socio_row["Movimientos"])}</td>
+            <td>{primer_txt}</td>
+            <td>{ultimo_txt}</td>
+        </tr>
+
+"""
+
+    tabla_aportes_html += f"""
+        <tr class="aportes-total-row">
+            <td>TOTAL FAMILIA</td>
+            <td>{dinero_corto(total_aportes)}</td>
+            <td>100.0%</td>
+            <td>{len(aportes_base)}</td>
+            <td colspan="2">Capital aportado registrado</td>
+        </tr>
+    </tbody>
+</table>
+<div class="aportes-note"><b>Importante:</b> “Aportes acumulados” es el cash registrado como aporte de socios. No equivale todavía al patrimonio actual: para esa comparación debemos sumar los activos de cada propietario y descontar las obligaciones correspondientes.</div>
+
+</div>
+"""
+
+    st.markdown(tabla_aportes_html, unsafe_allow_html=True)
+
+============================================================
+
+VISTA PROPIEDADES
+
+============================================================
+
+if st.session_state.vista_airbnb == "Propiedades":
+
+# ========================================================
+# TARJETAS
+# ========================================================
+
+cards_html = '<div class="properties-grid">'
+
+cards_html += tarjeta_portafolio()
+
+for _, row in resumen.iterrows():
+
+    cards_html += tarjeta_propiedad(row)
+
+cards_html += "</div>"
+
+cards_html = "\n".join(
+    linea.strip()
+    for linea in cards_html.splitlines()
+)
+
+st.markdown(
+    cards_html,
+    unsafe_allow_html=True
+)
+
+# ========================================================
+# TABLA DE ANÁLISIS DE INVERSIÓN
+# ========================================================
+
+tabla = inversiones.rename(
+    columns={
+        "Activo_Proyecto": "Nombre_Propiedad"
+    }
+).copy()
+
+# Estado del activo
+tabla["Estado"] = tabla["Nombre_Propiedad"].apply(
+    lambda x: "En desarrollo"
+    if str(x).strip().lower() == "iwani"
+    else "Operando"
+)
+
+# Filtros actuales
+if propiedad != "Todas":
+    tabla = tabla[
+        tabla["Nombre_Propiedad"] == propiedad
+    ]
+
+if ciudad != "Todas":
+    tabla = tabla[
+        tabla["Ciudad"] == ciudad
+    ]
+
+# ========================================================
+# HISTÓRICO FINANCIERO DESDE EL INICIO DE OPERACIÓN
+# ========================================================
+# La primera fecha registrada en los movimientos Airbnb
+# se toma como inicio de operación de cada propiedad.
+historico = (
+    df
+    .groupby("Nombre_Propiedad", as_index=False)
+    .agg(
+        Fecha_Inicio=("Fecha", "min"),
+        Ingresos_Historicos=("Ingreso", "sum"),
+        Gastos_Historicos=("Gasto", "sum")
+    )
+)
+
+# ========================================================
+# CORRECCIÓN DE INGRESOS: TORRE ACQUA + TEMPUS 49
+# ========================================================
+# Los movimientos contables tienen el ingreso combinado de
+# ambas propiedades distribuido de forma incorrecta.
+# Airbnb_Prorrateado establece la proporción real:
+#   Torre Acqua = 70.322145948%
+#   Tempus 49   = 29.677854052%
+#
+# Se conserva exactamente el ingreso histórico combinado
+# y solamente se redistribuye entre las dos propiedades.
+
+propiedades_corregidas = [
+    "Torre Acqua",
+    "Tempus 49"
+]
+
+ingreso_combinado = historico.loc[
+    historico["Nombre_Propiedad"].isin(
+        propiedades_corregidas
+    ),
+    "Ingresos_Historicos"
+].sum()
+
+proporcion_acqua = 0.703221459479914
+proporcion_tempus = 0.296778540520086
+
+historico.loc[
+    historico["Nombre_Propiedad"] == "Torre Acqua",
+    "Ingresos_Historicos"
+] = (
+    ingreso_combinado
+    * proporcion_acqua
+)
+
+historico.loc[
+    historico["Nombre_Propiedad"] == "Tempus 49",
+    "Ingresos_Historicos"
+] = (
+    ingreso_combinado
+    * proporcion_tempus
+)
+
+# ========================================================
+# AMORTIZACIÓN HISTÓRICA
+# ========================================================
+# Los pagos hipotecarios reales permanecen intactos.
+# Solamente se separa el capital estimado para que no
+# permanezca como gasto económico.
+historico = historico.merge(
+    amortizacion_historica[
+        [
+            "Propiedad",
+            "Pagos_Hipotecarios_Reales",
+            "Interes_Historico_Estimado",
+            "Seguro_Historico_Estimado",
+            "Capital_Historico_Estimado",
+            "Cuotas_Conciliadas"
+        ]
+    ],
+    left_on="Nombre_Propiedad",
+    right_on="Propiedad",
+    how="left"
+).drop(
+    columns=["Propiedad"],
+    errors="ignore"
+)
+
+for col in [
+    "Pagos_Hipotecarios_Reales",
+    "Interes_Historico_Estimado",
+    "Seguro_Historico_Estimado",
+    "Capital_Historico_Estimado",
+    "Cuotas_Conciliadas"
+]:
+    historico[col] = (
+        historico[col]
+        .fillna(0)
+    )
+
+# Capital hipotecario no es gasto económico:
+# reduce deuda y aumenta patrimonio.
+historico["Gastos_Historicos_Ajustados"] = (
+    historico["Gastos_Historicos"]
+    - historico["Capital_Historico_Estimado"]
+).clip(lower=0)
+
+historico["Flujo_Historico"] = (
+    historico["Ingresos_Historicos"]
+    - historico["Gastos_Historicos_Ajustados"]
+)
+
+hoy_ts = pd.Timestamp(hoy)
+historico["Meses_Operados"] = (
+    (hoy_ts - historico["Fecha_Inicio"]).dt.days
+    / 30.4375
+).clip(lower=1)
+
+historico["Ingreso_Mensual_Promedio"] = (
+    historico["Ingresos_Historicos"]
+    / historico["Meses_Operados"]
+)
+
+historico["Flujo_Mensual_Promedio"] = (
+    historico["Flujo_Historico"]
+    / historico["Meses_Operados"]
+)
+
+historico["Flujo_Anualizado"] = (
+    historico["Flujo_Mensual_Promedio"] * 12
+)
+
+historico = historico.merge(
+    inversiones[["Activo_Proyecto", "Inversion"]],
+    left_on="Nombre_Propiedad",
+    right_on="Activo_Proyecto",
+    how="left"
+).drop(columns=["Activo_Proyecto"])
+
+historico["ROI_Acumulado"] = (
+    historico["Flujo_Historico"]
+    / historico["Inversion"]
+    * 100
+).replace(
+    [float("inf"), -float("inf")],
+    pd.NA
+)
+
+historico["Yield_Anualizado"] = (
+    historico["Flujo_Anualizado"]
+    / historico["Inversion"]
+    * 100
+).replace(
+    [float("inf"), -float("inf")],
+    pd.NA
+)
+
+tabla = tabla.drop(
+    columns=[
+        "Ingresos", "Gastos", "Flujo", "Rentabilidad",
+        "Ocupacion", "Reservas", "Noches_Reservadas"
+    ],
+    errors="ignore"
+)
+
+# ========================================================
+# PROMEDIO MENSUAL DEL AÑO DEL FILTRO — YTD
+# ========================================================
+# Se conservan DOS indicadores:
+#
+# 1. Ingreso prom./mes
+#    Ingreso bruto promedio del año.
+#
+# 2. Airbnb comparable / mes
+#    Ingreso bruto promedio
+#    - aseos
+#    - internet
+#    - servicios públicos
+#
+# NO se descuenta administración/inmobiliaria porque ese costo
+# también puede existir en el modelo de renta tradicional.
+#
+# Para el año actual se usan los meses completos cerrados.
+# Ejemplo: octubre 2026 -> enero-septiembre / 9.
+#
+# Para años cerrados -> enero-diciembre / 12.
+
+anio_promedio = int(pd.Timestamp(fecha_fin).year)
+
+if anio_promedio == int(hoy.year):
+
+    fecha_fin_ts = pd.Timestamp(fecha_fin)
+
+    # Último mes completo disponible al día de hoy.
+    ultimo_mes_cerrado_hoy = (
+        pd.Timestamp(hoy.year, hoy.month, 1)
+        - pd.offsets.MonthEnd(1)
+    )
+
+    # El filtro nunca puede usar meses futuros ni un mes
+    # corriente parcialmente cerrado.
+    fecha_corte_promedio = min(
+        fecha_fin_ts,
+        ultimo_mes_cerrado_hoy
+    )
+
+    if fecha_corte_promedio.year != anio_promedio:
+        fecha_corte_promedio = pd.Timestamp(
+            anio_promedio,
+            1,
+            31
+        )
+        meses_promedio_anual = 1
+    else:
+        meses_promedio_anual = int(
+            fecha_corte_promedio.month
+        )
+
+else:
+
+    # Para un año cerrado se conserva el promedio anual completo.
+    meses_promedio_anual = 12
+    fecha_corte_promedio = pd.Timestamp(
+        anio_promedio,
+        12,
+        31
+    )
+
+df_anual_promedio = df[
+    (df["Fecha"].dt.year == anio_promedio)
+    & (
+        df["Fecha"]
+        <= fecha_corte_promedio
+    )
+].copy()
+
+# --------------------------------------------------------
+# PREPARAR CAMPOS PARA CLASIFICAR LOS GASTOS
+# --------------------------------------------------------
+# Se revisan Subcategoría + Detalle + Cuenta para no perder
+# proveedores o conceptos que no contengan literalmente
+# la palabra "internet".
+for col in [
+    "Nombre_Subcategoria",
+    "Detalle",
+    "Nombre_Cuenta"
+]:
+    if col not in df_anual_promedio.columns:
+        df_anual_promedio[col] = ""
+
+    df_anual_promedio[col] = (
+        df_anual_promedio[col]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+    )
+
+df_anual_promedio["_Texto_Gasto"] = (
+    df_anual_promedio["Nombre_Subcategoria"]
+    + " "
+    + df_anual_promedio["Detalle"]
+    + " "
+    + df_anual_promedio["Nombre_Cuenta"]
+).str.lower()
+
+# --------------------------------------------------------
+# 1. INGRESO BRUTO ANUAL POR PROPIEDAD
+# --------------------------------------------------------
+promedio_anual = (
+    df_anual_promedio
+    .groupby(
+        "Nombre_Propiedad",
+        as_index=False
+    )["Ingreso"]
+    .sum()
+    .rename(
+        columns={
+            "Ingreso":
+                "Ingreso_Anual_YTD"
+        }
+    )
+)
+
+# --------------------------------------------------------
+# 2. CLASIFICACIÓN EXCLUSIVA DE GASTOS COMPARABLES
+# --------------------------------------------------------
+# Cada registro entra a UNA SOLA categoría.
+# Administración/inmobiliaria/comisiones NO se descuentan.
+
+mascara_no_comparable = (
+    df_anual_promedio["_Texto_Gasto"].str.contains(
+        r"\badministraci[oó]n\b|\binmobiliaria\b|\bcomisi[oó]n\b",
+        regex=True,
+        na=False
+    )
+)
+
+gastos_validos = (
+    (df_anual_promedio["Gasto"] > 0)
+    &
+    (~mascara_no_comparable)
+)
+
+categoria_gasto = pd.Series(
+    "",
+    index=df_anual_promedio.index,
+    dtype="object"
+)
+
+# Aseo / limpieza
+mascara_aseo = (
+    gastos_validos
+    &
+    df_anual_promedio["_Texto_Gasto"].str.contains(
+        r"\baseo\b|\blimpieza\b|\bcleaning\b",
+        regex=True,
+        na=False
+    )
+)
+categoria_gasto.loc[mascara_aseo] = "ASEO"
+
+# Internet / Wi-Fi
+mascara_internet = (
+    gastos_validos
+    &
+    (categoria_gasto == "")
+    &
+    df_anual_promedio["_Texto_Gasto"].str.contains(
+        r"\binternet\b|\bwifi\b|\bwi[\s-]?fi\b",
+        regex=True,
+        na=False
+    )
+)
+categoria_gasto.loc[mascara_internet] = "INTERNET"
+
+# Servicios públicos
+mascara_servicios = (
+    gastos_validos
+    &
+    (categoria_gasto == "")
+    &
+    df_anual_promedio["_Texto_Gasto"].str.contains(
+        (
+            r"\bservicios?\s+p[úu]blicos?\b"
+            r"|\benerg[ií]a\b"
+            r"|\bagua\b"
+            r"|\bacueducto\b"
+            r"|\belectricidad\b"
+            r"|\bluz\b"
+            r"|\bgas\b"
+        ),
+        regex=True,
+        na=False
+    )
+)
+categoria_gasto.loc[mascara_servicios] = "SERVICIOS"
+
+# ESTA COLUMNA ERA LA QUE FALTABA EN LA VERSIÓN ANTERIOR.
+# El KeyError de tu captura venía exactamente de intentar
+# usar "_Categoria_Comparable" antes de crearla.
+df_anual_promedio["_Categoria_Comparable"] = categoria_gasto
+
+# --------------------------------------------------------
+# 3. GASTOS COMPARABLES ANUALES
+# --------------------------------------------------------
+gastos_comparables = (
+    df_anual_promedio[
+        df_anual_promedio["_Categoria_Comparable"] != ""
+    ]
+    .groupby(
+        [
+            "Nombre_Propiedad",
+            "_Categoria_Comparable"
+        ],
+        as_index=False
+    )["Gasto"]
+    .sum()
+    .pivot(
+        index="Nombre_Propiedad",
+        columns="_Categoria_Comparable",
+        values="Gasto"
+    )
+    .reset_index()
+)
+
+for columna in [
+    "ASEO",
+    "INTERNET",
+    "SERVICIOS"
+]:
+    if columna not in gastos_comparables.columns:
+        gastos_comparables[columna] = 0
+
+gastos_comparables = gastos_comparables.rename(
+    columns={
+        "ASEO": "Aseo_Anual_YTD",
+        "INTERNET": "Internet_Anual_YTD",
+        "SERVICIOS": "Servicios_Anual_YTD"
+    }
+)
+
+# --------------------------------------------------------
+# 4. ACQUA + TEMPUS 49
+# --------------------------------------------------------
+mask_acqua_tempus = promedio_anual[
+    "Nombre_Propiedad"
+].isin(
+    [
         "Torre Acqua",
         "Tempus 49"
     ]
+)
 
-    ingreso_combinado = historico.loc[
-        historico["Nombre_Propiedad"].isin(
-            propiedades_corregidas
-        ),
-        "Ingresos_Historicos"
+ingreso_combinado_anual = (
+    promedio_anual.loc[
+        mask_acqua_tempus,
+        "Ingreso_Anual_YTD"
     ].sum()
+)
 
-    proporcion_acqua = 0.703221459479914
-    proporcion_tempus = 0.296778540520086
+proporcion_acqua = 0.703221459479914
+proporcion_tempus = 0.296778540520086
 
-    historico.loc[
-        historico["Nombre_Propiedad"] == "Torre Acqua",
-        "Ingresos_Historicos"
-    ] = (
-        ingreso_combinado
-        * proporcion_acqua
-    )
+promedio_anual.loc[
+    promedio_anual["Nombre_Propiedad"] == "Torre Acqua",
+    "Ingreso_Anual_YTD"
+] = ingreso_combinado_anual * proporcion_acqua
 
-    historico.loc[
-        historico["Nombre_Propiedad"] == "Tempus 49",
-        "Ingresos_Historicos"
-    ] = (
-        ingreso_combinado
-        * proporcion_tempus
-    )
+promedio_anual.loc[
+    promedio_anual["Nombre_Propiedad"] == "Tempus 49",
+    "Ingreso_Anual_YTD"
+] = ingreso_combinado_anual * proporcion_tempus
 
-    # ========================================================
-    # AMORTIZACIÓN HISTÓRICA
-    # ========================================================
-    # Los pagos hipotecarios reales permanecen intactos.
-    # Solamente se separa el capital estimado para que no
-    # permanezca como gasto económico.
-    historico = historico.merge(
-        amortizacion_historica[
-            [
-                "Propiedad",
-                "Pagos_Hipotecarios_Reales",
-                "Interes_Historico_Estimado",
-                "Seguro_Historico_Estimado",
-                "Capital_Historico_Estimado",
-                "Cuotas_Conciliadas"
-            ]
-        ],
-        left_on="Nombre_Propiedad",
-        right_on="Propiedad",
-        how="left"
-    ).drop(
-        columns=["Propiedad"],
-        errors="ignore"
-    )
+# --------------------------------------------------------
+# 5. PROMEDIO BRUTO MENSUAL
+# --------------------------------------------------------
+promedio_anual["Ingreso_Mensual_Medio_Anual"] = (
+    promedio_anual["Ingreso_Anual_YTD"]
+    / meses_promedio_anual
+)
 
-    for col in [
-        "Pagos_Hipotecarios_Reales",
-        "Interes_Historico_Estimado",
-        "Seguro_Historico_Estimado",
-        "Capital_Historico_Estimado",
-        "Cuotas_Conciliadas"
-    ]:
-        historico[col] = (
-            historico[col]
-            .fillna(0)
-        )
+# --------------------------------------------------------
+# 6. CONSOLIDAR PRORRATEOS POR MES
+# --------------------------------------------------------
+# Los movimientos están prorrateados por socio.
+# Por eso un mismo mes puede tener 3 registros de $42k.
+#
+# El valor real de ese mes es:
+#   $42k + $42k + $42k = $126k
+#
+# Primero tomamos únicamente los gastos que fueron
+# clasificados como comparables.
+df_gastos_clasificados = (
+    df_anual_promedio[
+        df_anual_promedio["_Categoria_Comparable"] != ""
+    ]
+    .copy()
+)
 
-    # Capital hipotecario no es gasto económico:
-    # reduce deuda y aumenta patrimonio.
-    historico["Gastos_Historicos_Ajustados"] = (
-        historico["Gastos_Historicos"]
-        - historico["Capital_Historico_Estimado"]
-    ).clip(lower=0)
+# Luego sumamos TODOS los registros de la misma categoría
+# dentro de cada mes. Los prorrateos del socio se consolidan
+# antes de calcular el promedio.
+df_gastos_clasificados["_Mes_Gasto"] = (
+    df_gastos_clasificados["Fecha"]
+    .dt.to_period("M")
+    .astype(str)
+)
 
-    historico["Flujo_Historico"] = (
-        historico["Ingresos_Historicos"]
-        - historico["Gastos_Historicos_Ajustados"]
-    )
-
-    hoy_ts = pd.Timestamp(hoy)
-    historico["Meses_Operados"] = (
-        (hoy_ts - historico["Fecha_Inicio"]).dt.days
-        / 30.4375
-    ).clip(lower=1)
-
-    historico["Ingreso_Mensual_Promedio"] = (
-        historico["Ingresos_Historicos"]
-        / historico["Meses_Operados"]
-    )
-
-    historico["Flujo_Mensual_Promedio"] = (
-        historico["Flujo_Historico"]
-        / historico["Meses_Operados"]
-    )
-
-    historico["Flujo_Anualizado"] = (
-        historico["Flujo_Mensual_Promedio"] * 12
-    )
-
-    historico = historico.merge(
-        inversiones[["Activo_Proyecto", "Inversion"]],
-        left_on="Nombre_Propiedad",
-        right_on="Activo_Proyecto",
-        how="left"
-    ).drop(columns=["Activo_Proyecto"])
-
-    historico["ROI_Acumulado"] = (
-        historico["Flujo_Historico"]
-        / historico["Inversion"]
-        * 100
-    ).replace(
-        [float("inf"), -float("inf")],
-        pd.NA
-    )
-
-    historico["Yield_Anualizado"] = (
-        historico["Flujo_Anualizado"]
-        / historico["Inversion"]
-        * 100
-    ).replace(
-        [float("inf"), -float("inf")],
-        pd.NA
-    )
-
-    tabla = tabla.drop(
-        columns=[
-            "Ingresos", "Gastos", "Flujo", "Rentabilidad",
-            "Ocupacion", "Reservas", "Noches_Reservadas"
-        ],
-        errors="ignore"
-    )
-
-    # ========================================================
-    # PROMEDIO MENSUAL DEL AÑO DEL FILTRO — YTD
-    # ========================================================
-    # Se conservan DOS indicadores:
-    #
-    # 1. Ingreso prom./mes
-    #    Ingreso bruto promedio del año.
-    #
-    # 2. Airbnb comparable / mes
-    #    Ingreso bruto promedio
-    #    - aseos
-    #    - internet
-    #    - servicios públicos
-    #
-    # NO se descuenta administración/inmobiliaria porque ese costo
-    # también puede existir en el modelo de renta tradicional.
-    #
-    # Para el año actual se usan los meses completos cerrados.
-    # Ejemplo: octubre 2026 -> enero-septiembre / 9.
-    #
-    # Para años cerrados -> enero-diciembre / 12.
-
-    anio_promedio = int(pd.Timestamp(fecha_fin).year)
-
-    if anio_promedio == int(hoy.year):
-
-        fecha_fin_ts = pd.Timestamp(fecha_fin)
-
-        # Último mes completo disponible al día de hoy.
-        ultimo_mes_cerrado_hoy = (
-            pd.Timestamp(hoy.year, hoy.month, 1)
-            - pd.offsets.MonthEnd(1)
-        )
-
-        # El filtro nunca puede usar meses futuros ni un mes
-        # corriente parcialmente cerrado.
-        fecha_corte_promedio = min(
-            fecha_fin_ts,
-            ultimo_mes_cerrado_hoy
-        )
-
-        if fecha_corte_promedio.year != anio_promedio:
-            fecha_corte_promedio = pd.Timestamp(
-                anio_promedio,
-                1,
-                31
-            )
-            meses_promedio_anual = 1
-        else:
-            meses_promedio_anual = int(
-                fecha_corte_promedio.month
-            )
-
-    else:
-
-        # Para un año cerrado se conserva el promedio anual completo.
-        meses_promedio_anual = 12
-        fecha_corte_promedio = pd.Timestamp(
-            anio_promedio,
-            12,
-            31
-        )
-
-    df_anual_promedio = df[
-        (df["Fecha"].dt.year == anio_promedio)
-        & (
-            df["Fecha"]
-            <= fecha_corte_promedio
-        )
-    ].copy()
-
-    # --------------------------------------------------------
-    # PREPARAR CAMPOS PARA CLASIFICAR LOS GASTOS
-    # --------------------------------------------------------
-    # Se revisan Subcategoría + Detalle + Cuenta para no perder
-    # proveedores o conceptos que no contengan literalmente
-    # la palabra "internet".
-    for col in [
-        "Nombre_Subcategoria",
-        "Detalle",
-        "Nombre_Cuenta"
-    ]:
-        if col not in df_anual_promedio.columns:
-            df_anual_promedio[col] = ""
-
-        df_anual_promedio[col] = (
-            df_anual_promedio[col]
-            .fillna("")
-            .astype(str)
-            .str.strip()
-        )
-
-    df_anual_promedio["_Texto_Gasto"] = (
-        df_anual_promedio["Nombre_Subcategoria"]
-        + " "
-        + df_anual_promedio["Detalle"]
-        + " "
-        + df_anual_promedio["Nombre_Cuenta"]
-    ).str.lower()
-
-    # --------------------------------------------------------
-    # 1. INGRESO BRUTO ANUAL POR PROPIEDAD
-    # --------------------------------------------------------
-    promedio_anual = (
-        df_anual_promedio
-        .groupby(
-            "Nombre_Propiedad",
-            as_index=False
-        )["Ingreso"]
-        .sum()
-        .rename(
-            columns={
-                "Ingreso":
-                    "Ingreso_Anual_YTD"
-            }
-        )
-    )
-
-    # --------------------------------------------------------
-    # 2. CLASIFICACIÓN EXCLUSIVA DE GASTOS COMPARABLES
-    # --------------------------------------------------------
-    # Cada registro entra a UNA SOLA categoría.
-    # Administración/inmobiliaria/comisiones NO se descuentan.
-
-    mascara_no_comparable = (
-        df_anual_promedio["_Texto_Gasto"].str.contains(
-            r"\badministraci[oó]n\b|\binmobiliaria\b|\bcomisi[oó]n\b",
-            regex=True,
-            na=False
-        )
-    )
-
-    gastos_validos = (
-        (df_anual_promedio["Gasto"] > 0)
-        &
-        (~mascara_no_comparable)
-    )
-
-    categoria_gasto = pd.Series(
-        "",
-        index=df_anual_promedio.index,
-        dtype="object"
-    )
-
-    # Aseo / limpieza
-    mascara_aseo = (
-        gastos_validos
-        &
-        df_anual_promedio["_Texto_Gasto"].str.contains(
-            r"\baseo\b|\blimpieza\b|\bcleaning\b",
-            regex=True,
-            na=False
-        )
-    )
-    categoria_gasto.loc[mascara_aseo] = "ASEO"
-
-    # Internet / Wi-Fi
-    mascara_internet = (
-        gastos_validos
-        &
-        (categoria_gasto == "")
-        &
-        df_anual_promedio["_Texto_Gasto"].str.contains(
-            r"\binternet\b|\bwifi\b|\bwi[\s-]?fi\b",
-            regex=True,
-            na=False
-        )
-    )
-    categoria_gasto.loc[mascara_internet] = "INTERNET"
-
-    # Servicios públicos
-    mascara_servicios = (
-        gastos_validos
-        &
-        (categoria_gasto == "")
-        &
-        df_anual_promedio["_Texto_Gasto"].str.contains(
-            (
-                r"\bservicios?\s+p[úu]blicos?\b"
-                r"|\benerg[ií]a\b"
-                r"|\bagua\b"
-                r"|\bacueducto\b"
-                r"|\belectricidad\b"
-                r"|\bluz\b"
-                r"|\bgas\b"
-            ),
-            regex=True,
-            na=False
-        )
-    )
-    categoria_gasto.loc[mascara_servicios] = "SERVICIOS"
-
-    # ESTA COLUMNA ERA LA QUE FALTABA EN LA VERSIÓN ANTERIOR.
-    # El KeyError de tu captura venía exactamente de intentar
-    # usar "_Categoria_Comparable" antes de crearla.
-    df_anual_promedio["_Categoria_Comparable"] = categoria_gasto
-
-    # --------------------------------------------------------
-    # 3. GASTOS COMPARABLES ANUALES
-    # --------------------------------------------------------
-    gastos_comparables = (
-        df_anual_promedio[
-            df_anual_promedio["_Categoria_Comparable"] != ""
-        ]
-        .groupby(
-            [
-                "Nombre_Propiedad",
-                "_Categoria_Comparable"
-            ],
-            as_index=False
-        )["Gasto"]
-        .sum()
-        .pivot(
-            index="Nombre_Propiedad",
-            columns="_Categoria_Comparable",
-            values="Gasto"
-        )
-        .reset_index()
-    )
-
-    for columna in [
-        "ASEO",
-        "INTERNET",
-        "SERVICIOS"
-    ]:
-        if columna not in gastos_comparables.columns:
-            gastos_comparables[columna] = 0
-
-    gastos_comparables = gastos_comparables.rename(
-        columns={
-            "ASEO": "Aseo_Anual_YTD",
-            "INTERNET": "Internet_Anual_YTD",
-            "SERVICIOS": "Servicios_Anual_YTD"
-        }
-    )
-
-    # --------------------------------------------------------
-    # 4. ACQUA + TEMPUS 49
-    # --------------------------------------------------------
-    mask_acqua_tempus = promedio_anual[
-        "Nombre_Propiedad"
-    ].isin(
+gastos_mensuales = (
+    df_gastos_clasificados
+    .groupby(
         [
-            "Torre Acqua",
-            "Tempus 49"
-        ]
-    )
-
-    ingreso_combinado_anual = (
-        promedio_anual.loc[
-            mask_acqua_tempus,
-            "Ingreso_Anual_YTD"
-        ].sum()
-    )
-
-    proporcion_acqua = 0.703221459479914
-    proporcion_tempus = 0.296778540520086
-
-    promedio_anual.loc[
-        promedio_anual["Nombre_Propiedad"] == "Torre Acqua",
-        "Ingreso_Anual_YTD"
-    ] = ingreso_combinado_anual * proporcion_acqua
-
-    promedio_anual.loc[
-        promedio_anual["Nombre_Propiedad"] == "Tempus 49",
-        "Ingreso_Anual_YTD"
-    ] = ingreso_combinado_anual * proporcion_tempus
-
-    # --------------------------------------------------------
-    # 5. PROMEDIO BRUTO MENSUAL
-    # --------------------------------------------------------
-    promedio_anual["Ingreso_Mensual_Medio_Anual"] = (
-        promedio_anual["Ingreso_Anual_YTD"]
-        / meses_promedio_anual
-    )
-
-    # --------------------------------------------------------
-    # 6. CONSOLIDAR PRORRATEOS POR MES
-    # --------------------------------------------------------
-    # Los movimientos están prorrateados por socio.
-    # Por eso un mismo mes puede tener 3 registros de $42k.
-    #
-    # El valor real de ese mes es:
-    #   $42k + $42k + $42k = $126k
-    #
-    # Primero tomamos únicamente los gastos que fueron
-    # clasificados como comparables.
-    df_gastos_clasificados = (
-        df_anual_promedio[
-            df_anual_promedio["_Categoria_Comparable"] != ""
-        ]
-        .copy()
-    )
-
-    # Luego sumamos TODOS los registros de la misma categoría
-    # dentro de cada mes. Los prorrateos del socio se consolidan
-    # antes de calcular el promedio.
-    df_gastos_clasificados["_Mes_Gasto"] = (
-        df_gastos_clasificados["Fecha"]
-        .dt.to_period("M")
-        .astype(str)
-    )
-
-    gastos_mensuales = (
-        df_gastos_clasificados
-        .groupby(
-            [
-                "Nombre_Propiedad",
-                "_Categoria_Comparable",
-                "_Mes_Gasto"
-            ],
-            as_index=False
-        )["Gasto"]
-        .sum()
-    )
-
-    # --------------------------------------------------------
-    # 7. PROMEDIO DE LOS MESES CON INFORMACIÓN
-    # --------------------------------------------------------
-    # Después de consolidar el mes, promediamos SOLO los meses
-    # donde existe al menos un registro.
-    #
-    # Ejemplo Acqua Internet:
-    #   Junio  = 41 + 41 + 41 = 123k
-    #   Julio  = 42 + 42 + 42 = 126k
-    #   Agosto = 43 + 43 + 43 = 129k
-    #   Sept.  = 17k
-    #
-    #   Promedio = (123 + 126 + 129 + 17) / 4
-    #            = 98.75k
-    #
-    # Un mes SIN registro no entra como cero y tampoco como dato.
-
-    gastos_promedio_mensual = (
-        gastos_mensuales
-        .groupby(
-            [
-                "Nombre_Propiedad",
-                "_Categoria_Comparable"
-            ],
-            as_index=False
-        )
-        .agg(
-            Promedio_Mensual=("Gasto", "mean"),
-            Meses_Con_Informacion=("_Mes_Gasto", "nunique")
-        )
-    )
-
-    gastos_promedio_mensual = (
-        gastos_promedio_mensual
-        .pivot(
-            index="Nombre_Propiedad",
-            columns="_Categoria_Comparable",
-            values="Promedio_Mensual"
-        )
-        .reset_index()
-    )
-
-    meses_con_info = (
-        gastos_mensuales
-        .groupby(
-            [
-                "Nombre_Propiedad",
-                "_Categoria_Comparable"
-            ],
-            as_index=False
-        )["_Mes_Gasto"]
-        .nunique()
-        .pivot(
-            index="Nombre_Propiedad",
-            columns="_Categoria_Comparable",
-            values="_Mes_Gasto"
-        )
-        .reset_index()
-    )
-
-    for columna in [
-        "ASEO",
-        "INTERNET",
-        "SERVICIOS"
-    ]:
-        if columna not in gastos_promedio_mensual.columns:
-            gastos_promedio_mensual[columna] = pd.NA
-
-        if columna not in meses_con_info.columns:
-            meses_con_info[columna] = 0
-
-    gastos_promedio_mensual = gastos_promedio_mensual.rename(
-        columns={
-            "ASEO": "Aseo_Mensual_Medio_Anual",
-            "INTERNET": "Internet_Mensual_Medio_Anual",
-            "SERVICIOS": "Servicios_Mensual_Medio_Anual"
-        }
-    )
-
-    meses_con_info = meses_con_info.rename(
-        columns={
-            "ASEO": "Aseo_Meses_Con_Informacion",
-            "INTERNET": "Internet_Meses_Con_Informacion",
-            "SERVICIOS": "Servicios_Meses_Con_Informacion"
-        }
-    )
-
-    promedio_anual = promedio_anual.merge(
-        gastos_promedio_mensual[
-            [
-                "Nombre_Propiedad",
-                "Aseo_Mensual_Medio_Anual",
-                "Internet_Mensual_Medio_Anual",
-                "Servicios_Mensual_Medio_Anual"
-            ]
-        ],
-        on="Nombre_Propiedad",
-        how="left"
-    )
-
-    promedio_anual = promedio_anual.merge(
-        meses_con_info[
-            [
-                "Nombre_Propiedad",
-                "Aseo_Meses_Con_Informacion",
-                "Internet_Meses_Con_Informacion",
-                "Servicios_Meses_Con_Informacion"
-            ]
-        ],
-        on="Nombre_Propiedad",
-        how="left"
-    )
-
-    for columna in [
-        "Aseo_Mensual_Medio_Anual",
-        "Internet_Mensual_Medio_Anual",
-        "Servicios_Mensual_Medio_Anual"
-    ]:
-        promedio_anual[columna] = pd.to_numeric(
-            promedio_anual[columna],
-            errors="coerce"
-        )
-
-    for columna in [
-        "Aseo_Meses_Con_Informacion",
-        "Internet_Meses_Con_Informacion",
-        "Servicios_Meses_Con_Informacion"
-    ]:
-        promedio_anual[columna] = pd.to_numeric(
-            promedio_anual[columna],
-            errors="coerce"
-        ).fillna(0).astype(int)
-
-    # --------------------------------------------------------
-    # 8. AIRBNB COMPARABLE
-    # --------------------------------------------------------
-    # Si una propiedad no tiene registros de una categoría,
-    # esa categoría vale 0 para el cálculo.
-    for columna in [
-        "Aseo_Mensual_Medio_Anual",
-        "Internet_Mensual_Medio_Anual",
-        "Servicios_Mensual_Medio_Anual"
-    ]:
-        promedio_anual[columna] = (
-            pd.to_numeric(
-                promedio_anual[columna],
-                errors="coerce"
-            ).fillna(0)
-        )
-
-    promedio_anual["Airbnb_Comparable_Mensual"] = (
-        promedio_anual["Ingreso_Mensual_Medio_Anual"]
-        - promedio_anual["Aseo_Mensual_Medio_Anual"]
-        - promedio_anual["Internet_Mensual_Medio_Anual"]
-        - promedio_anual["Servicios_Mensual_Medio_Anual"]
-    )
-
-    # Limpieza de columnas auxiliares.
-    df_anual_promedio = df_anual_promedio.drop(
-        columns=[
-            "_Texto_Gasto"
-        ],
-        errors="ignore"
-    )
-
-    # Unir el promedio anual/YTD a la tabla principal.
-    # Sin este merge, el HTML no encuentra la columna
-    # `Ingreso_Mensual_Medio_Anual`.
-    tabla = tabla.merge(
-        promedio_anual[
-            [
-                "Nombre_Propiedad",
-                "Ingreso_Anual_YTD",
-                "Ingreso_Mensual_Medio_Anual",
-                "Airbnb_Comparable_Mensual"
-            ]
-        ],
-        on="Nombre_Propiedad",
-        how="left"
-    )
-
-    tabla = tabla.merge(
-        historico[
-            [
-                "Nombre_Propiedad",
-                "Fecha_Inicio",
-                "Ingresos_Historicos",
-                "Gastos_Historicos",
-                "Gastos_Historicos_Ajustados",
-                "Capital_Historico_Estimado",
-                "Interes_Historico_Estimado",
-                "Seguro_Historico_Estimado",
-                "Flujo_Historico",
-                "Meses_Operados",
-                "Ingreso_Mensual_Promedio",
-                "Flujo_Mensual_Promedio",
-                "Flujo_Anualizado",
-                "ROI_Acumulado",
-                "Yield_Anualizado"
-            ]
-        ],
-        on="Nombre_Propiedad",
-        how="left"
-    )
-
-    # ========================================================
-    # VALOR ACTUAL / EQUIPAMIENTO / PATRIMONIO
-    # ========================================================
-    tabla = tabla.merge(
-        creditos[
-            [
-                "Propiedad",
-                "Saldo_Actual",
-                "Saldo_Usado",
-                "Valor_Actual",
-                "Equipamiento",
-                "Valor_Total_Actual",
-                "Patrimonio_Actual",
-                "Costo_Mensual_Total"
-            ]
-        ],
-        left_on="Nombre_Propiedad",
-        right_on="Propiedad",
-        how="left"
-    ).drop(columns=["Propiedad"], errors="ignore")
-
-    # ========================================================
-    # CAPITAL PROPIO / CDT
-    # ========================================================
-    # Se incorpora el capital propio utilizado como base del
-    # benchmark CDT. No se mezcla con la inversión total.
-    tabla = tabla.merge(
-        capital_cdt[[
             "Nombre_Propiedad",
-            "Capital_Propio",
-            "CDT_Promedio"
-        ]],
-        on="Nombre_Propiedad",
-        how="left"
-    )
+            "_Categoria_Comparable",
+            "_Mes_Gasto"
+        ],
+        as_index=False
+    )["Gasto"]
+    .sum()
+)
 
-    # ========================================================
-    # RETORNO ECONÓMICO TOTAL
-    # ========================================================
-    # Combina el flujo histórico generado por Airbnb con el
-    # valor económico actual del activo.
+# --------------------------------------------------------
+# 7. PROMEDIO DE LOS MESES CON INFORMACIÓN
+# --------------------------------------------------------
+# Después de consolidar el mes, promediamos SOLO los meses
+# donde existe al menos un registro.
+#
+# Ejemplo Acqua Internet:
+#   Junio  = 41 + 41 + 41 = 123k
+#   Julio  = 42 + 42 + 42 = 126k
+#   Agosto = 43 + 43 + 43 = 129k
+#   Sept.  = 17k
+#
+#   Promedio = (123 + 126 + 129 + 17) / 4
+#            = 98.75k
+#
+# Un mes SIN registro no entra como cero y tampoco como dato.
 
-    tabla["Valorizacion_Actual"] = (
-        tabla["Valor_Total_Actual"]
-        - tabla["Inversion"]
-    )
-
-    tabla["Ganancia_Economica"] = (
-        tabla["Flujo_Historico"]
-        + tabla["Valorizacion_Actual"]
-    )
-
-    tabla["ROI_Total"] = (
-        tabla["Ganancia_Economica"]
-        / tabla["Inversion"]
-        * 100
-    ).replace([float("inf"), -float("inf")], pd.NA)
-
-    tabla["Retorno_Anualizado_Total"] = (
-        (
-            1 + tabla["ROI_Total"] / 100
-        ) ** (1 / (tabla["Meses_Operados"] / 12))
-        - 1
-    ) * 100
-
-    tabla.loc[
-        tabla["Estado"] == "En desarrollo",
+gastos_promedio_mensual = (
+    gastos_mensuales
+    .groupby(
         [
-            "Valorizacion_Actual",
-            "Ganancia_Economica",
-            "ROI_Total",
-            "Retorno_Anualizado_Total"
-        ]
-    ] = pd.NA
-
-    # Diferencia entre el retorno anualizado del activo y la
-    # tasa promedio histórica de CDT utilizada en el benchmark.
-    # Debe calcularse DESPUÉS de crear Retorno_Anualizado_Total.
-    tabla["Diferencia_vs_CDT"] = (
-        tabla["Retorno_Anualizado_Total"]
-        - tabla["CDT_Promedio"]
+            "Nombre_Propiedad",
+            "_Categoria_Comparable"
+        ],
+        as_index=False
     )
+    .agg(
+        Promedio_Mensual=("Gasto", "mean"),
+        Meses_Con_Informacion=("_Mes_Gasto", "nunique")
+    )
+)
 
-    # ========================================================
-    # ORDEN VISUAL IGUAL AL PORTAFOLIO
-    # ========================================================
-    orden_tabla = {
-        "Torre Acqua": 1,
-        "Torre Evoca": 2,
-        "Torre Ventto": 3,
-        "Lotus": 4,
-        "Santa Marina": 5,
-        "Base Loft": 6,
-        "Tempus 49": 7,
-        "Iwani": 8
+gastos_promedio_mensual = (
+    gastos_promedio_mensual
+    .pivot(
+        index="Nombre_Propiedad",
+        columns="_Categoria_Comparable",
+        values="Promedio_Mensual"
+    )
+    .reset_index()
+)
+
+meses_con_info = (
+    gastos_mensuales
+    .groupby(
+        [
+            "Nombre_Propiedad",
+            "_Categoria_Comparable"
+        ],
+        as_index=False
+    )["_Mes_Gasto"]
+    .nunique()
+    .pivot(
+        index="Nombre_Propiedad",
+        columns="_Categoria_Comparable",
+        values="_Mes_Gasto"
+    )
+    .reset_index()
+)
+
+for columna in [
+    "ASEO",
+    "INTERNET",
+    "SERVICIOS"
+]:
+    if columna not in gastos_promedio_mensual.columns:
+        gastos_promedio_mensual[columna] = pd.NA
+
+    if columna not in meses_con_info.columns:
+        meses_con_info[columna] = 0
+
+gastos_promedio_mensual = gastos_promedio_mensual.rename(
+    columns={
+        "ASEO": "Aseo_Mensual_Medio_Anual",
+        "INTERNET": "Internet_Mensual_Medio_Anual",
+        "SERVICIOS": "Servicios_Mensual_Medio_Anual"
     }
+)
 
-    tabla["Orden"] = (
-        tabla["Nombre_Propiedad"]
-        .map(orden_tabla)
-        .fillna(99)
+meses_con_info = meses_con_info.rename(
+    columns={
+        "ASEO": "Aseo_Meses_Con_Informacion",
+        "INTERNET": "Internet_Meses_Con_Informacion",
+        "SERVICIOS": "Servicios_Meses_Con_Informacion"
+    }
+)
+
+promedio_anual = promedio_anual.merge(
+    gastos_promedio_mensual[
+        [
+            "Nombre_Propiedad",
+            "Aseo_Mensual_Medio_Anual",
+            "Internet_Mensual_Medio_Anual",
+            "Servicios_Mensual_Medio_Anual"
+        ]
+    ],
+    on="Nombre_Propiedad",
+    how="left"
+)
+
+promedio_anual = promedio_anual.merge(
+    meses_con_info[
+        [
+            "Nombre_Propiedad",
+            "Aseo_Meses_Con_Informacion",
+            "Internet_Meses_Con_Informacion",
+            "Servicios_Meses_Con_Informacion"
+        ]
+    ],
+    on="Nombre_Propiedad",
+    how="left"
+)
+
+for columna in [
+    "Aseo_Mensual_Medio_Anual",
+    "Internet_Mensual_Medio_Anual",
+    "Servicios_Mensual_Medio_Anual"
+]:
+    promedio_anual[columna] = pd.to_numeric(
+        promedio_anual[columna],
+        errors="coerce"
     )
 
-    tabla = (
-        tabla
-        .sort_values("Orden")
-        .drop(columns=["Orden"])
-        .reset_index(drop=True)
+for columna in [
+    "Aseo_Meses_Con_Informacion",
+    "Internet_Meses_Con_Informacion",
+    "Servicios_Meses_Con_Informacion"
+]:
+    promedio_anual[columna] = pd.to_numeric(
+        promedio_anual[columna],
+        errors="coerce"
+    ).fillna(0).astype(int)
+
+# --------------------------------------------------------
+# 8. AIRBNB COMPARABLE
+# --------------------------------------------------------
+# Si una propiedad no tiene registros de una categoría,
+# esa categoría vale 0 para el cálculo.
+for columna in [
+    "Aseo_Mensual_Medio_Anual",
+    "Internet_Mensual_Medio_Anual",
+    "Servicios_Mensual_Medio_Anual"
+]:
+    promedio_anual[columna] = (
+        pd.to_numeric(
+            promedio_anual[columna],
+            errors="coerce"
+        ).fillna(0)
     )
 
-    def valor_tabla(valor):
-        if pd.isna(valor):
-            return "—"
-        return dinero_corto(valor)
+promedio_anual["Airbnb_Comparable_Mensual"] = (
+    promedio_anual["Ingreso_Mensual_Medio_Anual"]
+    - promedio_anual["Aseo_Mensual_Medio_Anual"]
+    - promedio_anual["Internet_Mensual_Medio_Anual"]
+    - promedio_anual["Servicios_Mensual_Medio_Anual"]
+)
 
-    def porcentaje_tabla(valor, puntos=False):
-        if pd.isna(valor):
-            return '<span class="investment-muted">—</span>'
-        clase = (
-            "investment-flow-negative"
-            if float(valor) < 0
-            else "investment-flow-positive"
-        )
-        sufijo = " pp" if puntos else "%"
-        return (
-            f'<span class="{clase}">'
-            f'{float(valor):.1f}{sufijo}'
-            f'</span>'
-        )
+# Limpieza de columnas auxiliares.
+df_anual_promedio = df_anual_promedio.drop(
+    columns=[
+        "_Texto_Gasto"
+    ],
+    errors="ignore"
+)
 
-    # ========================================================
-    # TABLA ÚNICA DE ANÁLISIS INMOBILIARIO
-    # ========================================================
-    # Se consolidan en una sola vista los datos que antes estaban
-    # distribuidos entre tres tablas: inversión, retorno económico
-    # y comparación contra CDT.
+# Unir el promedio anual/YTD a la tabla principal.
+# Sin este merge, el HTML no encuentra la columna
+# `Ingreso_Mensual_Medio_Anual`.
+tabla = tabla.merge(
+    promedio_anual[
+        [
+            "Nombre_Propiedad",
+            "Ingreso_Anual_YTD",
+            "Ingreso_Mensual_Medio_Anual",
+            "Airbnb_Comparable_Mensual"
+        ]
+    ],
+    on="Nombre_Propiedad",
+    how="left"
+)
 
-    html_tabla = """
+tabla = tabla.merge(
+    historico[
+        [
+            "Nombre_Propiedad",
+            "Fecha_Inicio",
+            "Ingresos_Historicos",
+            "Gastos_Historicos",
+            "Gastos_Historicos_Ajustados",
+            "Capital_Historico_Estimado",
+            "Interes_Historico_Estimado",
+            "Seguro_Historico_Estimado",
+            "Flujo_Historico",
+            "Meses_Operados",
+            "Ingreso_Mensual_Promedio",
+            "Flujo_Mensual_Promedio",
+            "Flujo_Anualizado",
+            "ROI_Acumulado",
+            "Yield_Anualizado"
+        ]
+    ],
+    on="Nombre_Propiedad",
+    how="left"
+)
+
+# ========================================================
+# VALOR ACTUAL / EQUIPAMIENTO / PATRIMONIO
+# ========================================================
+tabla = tabla.merge(
+    creditos[
+        [
+            "Propiedad",
+            "Saldo_Actual",
+            "Saldo_Usado",
+            "Valor_Actual",
+            "Equipamiento",
+            "Valor_Total_Actual",
+            "Patrimonio_Actual",
+            "Costo_Mensual_Total"
+        ]
+    ],
+    left_on="Nombre_Propiedad",
+    right_on="Propiedad",
+    how="left"
+).drop(columns=["Propiedad"], errors="ignore")
+
+# ========================================================
+# CAPITAL PROPIO / CDT
+# ========================================================
+# Se incorpora el capital propio utilizado como base del
+# benchmark CDT. No se mezcla con la inversión total.
+tabla = tabla.merge(
+    capital_cdt[[
+        "Nombre_Propiedad",
+        "Capital_Propio",
+        "CDT_Promedio"
+    ]],
+    on="Nombre_Propiedad",
+    how="left"
+)
+
+# ========================================================
+# RETORNO ECONÓMICO TOTAL
+# ========================================================
+# Combina el flujo histórico generado por Airbnb con el
+# valor económico actual del activo.
+
+tabla["Valorizacion_Actual"] = (
+    tabla["Valor_Total_Actual"]
+    - tabla["Inversion"]
+)
+
+tabla["Ganancia_Economica"] = (
+    tabla["Flujo_Historico"]
+    + tabla["Valorizacion_Actual"]
+)
+
+tabla["ROI_Total"] = (
+    tabla["Ganancia_Economica"]
+    / tabla["Inversion"]
+    * 100
+).replace([float("inf"), -float("inf")], pd.NA)
+
+tabla["Retorno_Anualizado_Total"] = (
+    (
+        1 + tabla["ROI_Total"] / 100
+    ) ** (1 / (tabla["Meses_Operados"] / 12))
+    - 1
+) * 100
+
+tabla.loc[
+    tabla["Estado"] == "En desarrollo",
+    [
+        "Valorizacion_Actual",
+        "Ganancia_Economica",
+        "ROI_Total",
+        "Retorno_Anualizado_Total"
+    ]
+] = pd.NA
+
+# Diferencia entre el retorno anualizado del activo y la
+# tasa promedio histórica de CDT utilizada en el benchmark.
+# Debe calcularse DESPUÉS de crear Retorno_Anualizado_Total.
+tabla["Diferencia_vs_CDT"] = (
+    tabla["Retorno_Anualizado_Total"]
+    - tabla["CDT_Promedio"]
+)
+
+# ========================================================
+# ORDEN VISUAL IGUAL AL PORTAFOLIO
+# ========================================================
+orden_tabla = {
+    "Torre Acqua": 1,
+    "Torre Evoca": 2,
+    "Torre Ventto": 3,
+    "Lotus": 4,
+    "Santa Marina": 5,
+    "Base Loft": 6,
+    "Tempus 49": 7,
+    "Iwani": 8
+}
+
+tabla["Orden"] = (
+    tabla["Nombre_Propiedad"]
+    .map(orden_tabla)
+    .fillna(99)
+)
+
+tabla = (
+    tabla
+    .sort_values("Orden")
+    .drop(columns=["Orden"])
+    .reset_index(drop=True)
+)
+
+def valor_tabla(valor):
+    if pd.isna(valor):
+        return "—"
+    return dinero_corto(valor)
+
+def porcentaje_tabla(valor, puntos=False):
+    if pd.isna(valor):
+        return '<span class="investment-muted">—</span>'
+    clase = (
+        "investment-flow-negative"
+        if float(valor) < 0
+        else "investment-flow-positive"
+    )
+    sufijo = " pp" if puntos else "%"
+    return (
+        f'<span class="{clase}">'
+        f'{float(valor):.1f}{sufijo}'
+        f'</span>'
+    )
+
+# ========================================================
+# TABLA ÚNICA DE ANÁLISIS INMOBILIARIO
+# ========================================================
+# Se consolidan en una sola vista los datos que antes estaban
+# distribuidos entre tres tablas: inversión, retorno económico
+# y comparación contra CDT.
+
+html_tabla = """
+
 <div class="investment-panel">
 
 <div class="investment-title">
@@ -4650,38 +4968,39 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
 <tbody>
 """
 
-    for _, row in tabla.iterrows():
+for _, row in tabla.iterrows():
 
-        flujo = row["Flujo_Historico"]
+    flujo = row["Flujo_Historico"]
 
-        if pd.isna(flujo):
-            flujo_html = '<span class="investment-muted">—</span>'
-        else:
-            clase = (
-                "investment-flow-negative"
-                if float(flujo) < 0
-                else "investment-flow-positive"
-            )
-            flujo_html = (
-                f'<span class="{clase}">'
-                f'{dinero_corto(flujo)}'
-                f'</span>'
-            )
-
-        retorno_html = porcentaje_tabla(
-            row["Retorno_Anualizado_Total"]
+    if pd.isna(flujo):
+        flujo_html = '<span class="investment-muted">—</span>'
+    else:
+        clase = (
+            "investment-flow-negative"
+            if float(flujo) < 0
+            else "investment-flow-positive"
+        )
+        flujo_html = (
+            f'<span class="{clase}">'
+            f'{dinero_corto(flujo)}'
+            f'</span>'
         )
 
-        cdt_html = porcentaje_tabla(
-            row["CDT_Promedio"]
-        )
+    retorno_html = porcentaje_tabla(
+        row["Retorno_Anualizado_Total"]
+    )
 
-        diferencia_html = porcentaje_tabla(
-            row["Diferencia_vs_CDT"],
-            puntos=True
-        )
+    cdt_html = porcentaje_tabla(
+        row["CDT_Promedio"]
+    )
 
-        html_tabla += f"""
+    diferencia_html = porcentaje_tabla(
+        row["Diferencia_vs_CDT"],
+        puntos=True
+    )
+
+    html_tabla += f"""
+
 <tr>
     <td>{row["Nombre_Propiedad"]}</td>
     <td><span class="investment-money">{valor_tabla(row["Capital_Propio"])}</span></td>
@@ -4699,7 +5018,8 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
 </tr>
 """
 
-    html_tabla += """
+html_tabla += """
+
 </tbody>
 </table>
 
@@ -4720,29 +5040,32 @@ Capital propio · inversión total · valor actual · deuda · patrimonio neto �
 </div>
 """
 
-    html_tabla = "\n".join(
-        linea.strip()
-        for linea in html_tabla.splitlines()
-    ).strip()
+html_tabla = "\n".join(
+    linea.strip()
+    for linea in html_tabla.splitlines()
+).strip()
 
-    # Mostrar nuevamente la tabla completa de análisis.
-    # Conserva todos los indicadores financieros y deja únicamente
-    # las dos columnas de ingresos importantes:
-    #   - Ingreso prom./mes
-    #   - Airbnb comparable / mes
-    st.markdown(
-        html_tabla,
-        unsafe_allow_html=True
-    )
+# Mostrar nuevamente la tabla completa de análisis.
+# Conserva todos los indicadores financieros y deja únicamente
+# las dos columnas de ingresos importantes:
+#   - Ingreso prom./mes
+#   - Airbnb comparable / mes
+st.markdown(
+    html_tabla,
+    unsafe_allow_html=True
+)
 
-# ============================================================
-# VISTA ANÁLISIS — RADAR INMOBILIARIO
-# ============================================================
+============================================================
+
+VISTA ANÁLISIS — RADAR INMOBILIARIO
+
+============================================================
 
 elif st.session_state.vista_airbnb == "Análisis":
 
-    st.markdown(
-        """
+st.markdown(
+    """
+
 <div class="section-title">
 📊 Radar inmobiliario
 </div>
@@ -4754,103 +5077,104 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
         unsafe_allow_html=True
     )
 
-    # ============================================================
-    # ============================================================
-    # RADAR EJECUTIVO — DECISIÓN DEL PORTAFOLIO
-    # ============================================================
+# ============================================================
+# ============================================================
+# RADAR EJECUTIVO — DECISIÓN DEL PORTAFOLIO
+# ============================================================
 
-    estudio = cargar_estudio_mercado_inmobiliario()
+estudio = cargar_estudio_mercado_inmobiliario()
 
-    if not estudio.empty:
-        html_decision = """
-        <div class="radar-decision-panel">
-            <div class="radar-decision-title">🎯 Radar de decisión</div>
-            <div class="radar-decision-subtitle">Resumen ejecutivo: mercado estimado + Airbnb comparable + proyección + liquidez + estatus estratégico.</div>
-            <table class="radar-decision-table">
-                <thead><tr>
-                    <th>Activo</th><th>Valor estimado</th><th>Renta amoblada</th><th>Airbnb comparable / mes</th><th>Proyección</th><th>Venta</th><th>Estatus</th><th>Lectura</th>
-                </tr></thead><tbody>
-        """
-        orden_decision = {
-            "ENT-0001": 1,
-            "ENT-0002": 2,
-            "ENT-0003": 3,
-            "ENT-0004": 4,
-            "ENT-0005": 5,
-            "ENT-0006": 6,
-            "ENT-0007": 7,
-        }
-        estudio["Orden"] = estudio["ID_Activo"].map(orden_decision).fillna(99)
-        estudio = estudio.sort_values(["Orden", "Nombre_Entidad"])
+if not estudio.empty:
+    html_decision = """
+    <div class="radar-decision-panel">
+        <div class="radar-decision-title">🎯 Radar de decisión</div>
+        <div class="radar-decision-subtitle">Resumen ejecutivo: mercado estimado + Airbnb comparable + proyección + liquidez + estatus estratégico.</div>
+        <table class="radar-decision-table">
+            <thead><tr>
+                <th>Activo</th><th>Valor estimado</th><th>Renta amoblada</th><th>Airbnb comparable / mes</th><th>Proyección</th><th>Venta</th><th>Estatus</th><th>Lectura</th>
+            </tr></thead><tbody>
+    """
+    orden_decision = {
+        "ENT-0001": 1,
+        "ENT-0002": 2,
+        "ENT-0003": 3,
+        "ENT-0004": 4,
+        "ENT-0005": 5,
+        "ENT-0006": 6,
+        "ENT-0007": 7,
+    }
+    estudio["Orden"] = estudio["ID_Activo"].map(orden_decision).fillna(99)
+    estudio = estudio.sort_values(["Orden", "Nombre_Entidad"])
 
-        comparable_radar = calcular_airbnb_comparable_radar(
-            df,
-            fecha_fin
+    comparable_radar = calcular_airbnb_comparable_radar(
+        df,
+        fecha_fin
+    )
+
+    estudio = estudio.merge(
+        comparable_radar,
+        left_on="Nombre_Entidad",
+        right_on="Nombre_Propiedad",
+        how="left"
+    )
+
+    for _, row in estudio.iterrows():
+        # La decisión funciona como semáforo estratégico.
+        # Se calcula con los números visibles del Radar y con la
+        # excepción explícita de Tempus por uso familiar.
+        decision_label, lectura_radar = generar_decision_estrategica_radar(
+            row,
+            row.get("Airbnb_Comparable_Mensual", pd.NA)
         )
 
-        estudio = estudio.merge(
-            comparable_radar,
-            left_on="Nombre_Entidad",
-            right_on="Nombre_Propiedad",
-            how="left"
+        valor_estimado = rango_millones(
+            row["Venta_Min_M"],
+            row["Venta_Max_M"]
+        )
+        renta_amoblada = rango_millones(
+            row["Renta_Amoblada_Min_M"],
+            row["Renta_Amoblada_Max_M"]
+        )
+        proyeccion = (
+            "—"
+            if pd.isna(row["Proyeccion_Zona_5A"])
+            else f"{float(row['Proyeccion_Zona_5A']):.1f}/10"
+        )
+        venta_label = str(
+            row.get("Facilidad_Venta", "—")
+            or "—"
         )
 
-        for _, row in estudio.iterrows():
-            # La decisión funciona como semáforo estratégico.
-            # Se calcula con los números visibles del Radar y con la
-            # excepción explícita de Tempus por uso familiar.
-            decision_label, lectura_radar = generar_decision_estrategica_radar(
-                row,
-                row.get("Airbnb_Comparable_Mensual", pd.NA)
-            )
+        # Resolver el color de venta localmente para evitar
+        # dependencias de funciones externas en el bloque Radar.
+        venta_upper = venta_label.upper()
 
-            valor_estimado = rango_millones(
-                row["Venta_Min_M"],
-                row["Venta_Max_M"]
-            )
-            renta_amoblada = rango_millones(
-                row["Renta_Amoblada_Min_M"],
-                row["Renta_Amoblada_Max_M"]
-            )
-            proyeccion = (
-                "—"
-                if pd.isna(row["Proyeccion_Zona_5A"])
-                else f"{float(row['Proyeccion_Zona_5A']):.1f}/10"
-            )
-            venta_label = str(
-                row.get("Facilidad_Venta", "—")
-                or "—"
-            )
+        if "BUENA" in venta_upper:
+            venta_css = "radar-decision-good"
+        elif "MEDIA" in venta_upper:
+            venta_css = "radar-decision-medium"
+        elif "BAJA" in venta_upper:
+            venta_css = "radar-decision-low"
+        else:
+            venta_css = "radar-decision-neutral"
 
-            # Resolver el color de venta localmente para evitar
-            # dependencias de funciones externas en el bloque Radar.
-            venta_upper = venta_label.upper()
+        decision_css = clase_decision(
+            decision_label
+        )
 
-            if "BUENA" in venta_upper:
-                venta_css = "radar-decision-good"
-            elif "MEDIA" in venta_upper:
-                venta_css = "radar-decision-medium"
-            elif "BAJA" in venta_upper:
-                venta_css = "radar-decision-low"
-            else:
-                venta_css = "radar-decision-neutral"
+        comparable = row.get(
+            "Airbnb_Comparable_Mensual",
+            pd.NA
+        )
 
-            decision_css = clase_decision(
-                decision_label
-            )
+        comparable_txt = (
+            dinero_corto(comparable)
+            if pd.notna(comparable)
+            else "—"
+        )
 
-            comparable = row.get(
-                "Airbnb_Comparable_Mensual",
-                pd.NA
-            )
+        html_decision += f"""
 
-            comparable_txt = (
-                dinero_corto(comparable)
-                if pd.notna(comparable)
-                else "—"
-            )
-
-            html_decision += f"""
 <tr>
     <td>{escape_html(row.get("Nombre_Entidad", "—"))}</td>
     <td><span class="radar-decision-value">{valor_estimado}</span></td>
@@ -4863,112 +5187,113 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
 </tr>
 """
 
-        html_decision += """
-                </tbody>
-            </table>
-            <div class="radar-note">
-                <b>Decisión:</b> funciona como semáforo estratégico y se calcula con los números visibles del Radar.
-                La señal económica no se confunde con la decisión patrimonial: Tempus 49, por ejemplo, conserva
-                una señal de revisión económica, pero permanece en <b>MANTENER</b> mientras tenga uso familiar.
-                <b>Airbnb comparable</b> = ingreso bruto promedio YTD menos aseo/limpieza, internet/wifi
-                y servicios públicos identificados; los gastos prorrateados se consolidan primero por mes
-                y luego se promedian solo los meses con información.
-            </div>
+    html_decision += """
+            </tbody>
+        </table>
+        <div class="radar-note">
+            <b>Decisión:</b> funciona como semáforo estratégico y se calcula con los números visibles del Radar.
+            La señal económica no se confunde con la decisión patrimonial: Tempus 49, por ejemplo, conserva
+            una señal de revisión económica, pero permanece en <b>MANTENER</b> mientras tenga uso familiar.
+            <b>Airbnb comparable</b> = ingreso bruto promedio YTD menos aseo/limpieza, internet/wifi
+            y servicios públicos identificados; los gastos prorrateados se consolidan primero por mes
+            y luego se promedian solo los meses con información.
         </div>
+    </div>
+    """
+
+    # IMPORTANTE: quitar toda la indentación antes de enviar
+    # el HTML a Streamlit. De lo contrario, Markdown lo interpreta
+    # como un bloque de código y muestra <tr>, <td>, etc.
+    html_decision = "\n".join(
+        linea.strip()
+        for linea in html_decision.splitlines()
+        if linea.strip()
+    )
+
+    st.markdown(
+        html_decision,
+        unsafe_allow_html=True
+    )
+else:
+    st.markdown(
         """
+        <div class="radar-decision-panel">
+            <div class="radar-decision-title">🎯 Radar de decisión</div>
+            <div class="radar-note">No hay datos disponibles en Estudio_Mercado_Inmobiliario.</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-        # IMPORTANTE: quitar toda la indentación antes de enviar
-        # el HTML a Streamlit. De lo contrario, Markdown lo interpreta
-        # como un bloque de código y muestra <tr>, <td>, etc.
-        html_decision = "\n".join(
-            linea.strip()
-            for linea in html_decision.splitlines()
-            if linea.strip()
+# ============================================================
+# CONCLUSIÓN EJECUTIVA DEL PORTAFOLIO
+# ============================================================
+# Esta conclusión usa únicamente los datos disponibles en
+# Estudio_Mercado_Inmobiliario. No pretende ser una señal automática
+# de venta ni reemplaza una revisión puntual del mercado externo.
+
+if not estudio.empty:
+    estudio_conclusion = estudio.copy()
+    estudio_conclusion["Proyeccion_Num"] = pd.to_numeric(
+        estudio_conclusion["Proyeccion_Zona_5A"],
+        errors="coerce"
+    )
+
+    proyeccion_promedio = estudio_conclusion["Proyeccion_Num"].mean()
+    row_max = estudio_conclusion.loc[
+        estudio_conclusion["Proyeccion_Num"].idxmax()
+    ] if estudio_conclusion["Proyeccion_Num"].notna().any() else None
+
+    candidatos_rotacion = estudio_conclusion[
+        estudio_conclusion["Rol_Portafolio"].str.upper().str.contains(
+            "VENDER|ROTAR", regex=True, na=False
+        )
+    ]
+
+    activos_alta_proyeccion = estudio_conclusion[
+        estudio_conclusion["Proyeccion_Num"] >= 8.5
+    ]
+
+    def nombres(df_tmp):
+        if df_tmp.empty:
+            return "ninguno"
+        return ", ".join(df_tmp["Nombre_Entidad"].astype(str).tolist())
+
+    rotacion_txt = nombres(candidatos_rotacion)
+    alta_proj_txt = nombres(activos_alta_proyeccion)
+
+    lectura_mercado = (
+        f"El estudio sitúa la proyección media del portafolio en "
+        f"{proyeccion_promedio:.1f}/10."
+    )
+
+    if row_max is not None:
+        lectura_mercado += (
+            f" {row_max['Nombre_Entidad']} lidera la proyección de zona con "
+            f"{float(row_max['Proyeccion_Num']):.1f}/10."
         )
 
-        st.markdown(
-            html_decision,
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            """
-            <div class="radar-decision-panel">
-                <div class="radar-decision-title">🎯 Radar de decisión</div>
-                <div class="radar-note">No hay datos disponibles en Estudio_Mercado_Inmobiliario.</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    lectura_rotacion = (
+        f"El principal foco de rotación señalado por el estudio es {rotacion_txt}."
+        if not candidatos_rotacion.empty
+        else "El estudio no identifica actualmente un activo con señal explícita de venta/rotación."
+    )
 
-    # ============================================================
-    # CONCLUSIÓN EJECUTIVA DEL PORTAFOLIO
-    # ============================================================
-    # Esta conclusión usa únicamente los datos disponibles en
-    # Estudio_Mercado_Inmobiliario. No pretende ser una señal automática
-    # de venta ni reemplaza una revisión puntual del mercado externo.
+    lectura_oportunidades = (
+        f"Los activos con proyección de zona igual o superior a 8.5/10 son {alta_proj_txt}, "
+        "por lo que conviene priorizar su conservación y optimización antes de plantear una venta."
+        if not activos_alta_proyeccion.empty
+        else "No hay activos con una proyección de zona de 8.5/10 o superior según el estudio."
+    )
 
-    if not estudio.empty:
-        estudio_conclusion = estudio.copy()
-        estudio_conclusion["Proyeccion_Num"] = pd.to_numeric(
-            estudio_conclusion["Proyeccion_Zona_5A"],
-            errors="coerce"
-        )
+    lectura_final = (
+        "La lectura general favorece conservar los activos con mejor combinación de proyección, renta y liquidez, "
+        "y estudiar una rotación únicamente donde el capital pueda tener un uso más atractivo. "
+        "La decisión final debe contrastarse con deuda, flujo Airbnb, costo de salida y precio realmente negociable."
+    )
 
-        proyeccion_promedio = estudio_conclusion["Proyeccion_Num"].mean()
-        row_max = estudio_conclusion.loc[
-            estudio_conclusion["Proyeccion_Num"].idxmax()
-        ] if estudio_conclusion["Proyeccion_Num"].notna().any() else None
+    html_conclusion = f"""
 
-        candidatos_rotacion = estudio_conclusion[
-            estudio_conclusion["Rol_Portafolio"].str.upper().str.contains(
-                "VENDER|ROTAR", regex=True, na=False
-            )
-        ]
-
-        activos_alta_proyeccion = estudio_conclusion[
-            estudio_conclusion["Proyeccion_Num"] >= 8.5
-        ]
-
-        def nombres(df_tmp):
-            if df_tmp.empty:
-                return "ninguno"
-            return ", ".join(df_tmp["Nombre_Entidad"].astype(str).tolist())
-
-        rotacion_txt = nombres(candidatos_rotacion)
-        alta_proj_txt = nombres(activos_alta_proyeccion)
-
-        lectura_mercado = (
-            f"El estudio sitúa la proyección media del portafolio en "
-            f"{proyeccion_promedio:.1f}/10."
-        )
-
-        if row_max is not None:
-            lectura_mercado += (
-                f" {row_max['Nombre_Entidad']} lidera la proyección de zona con "
-                f"{float(row_max['Proyeccion_Num']):.1f}/10."
-            )
-
-        lectura_rotacion = (
-            f"El principal foco de rotación señalado por el estudio es {rotacion_txt}."
-            if not candidatos_rotacion.empty
-            else "El estudio no identifica actualmente un activo con señal explícita de venta/rotación."
-        )
-
-        lectura_oportunidades = (
-            f"Los activos con proyección de zona igual o superior a 8.5/10 son {alta_proj_txt}, "
-            "por lo que conviene priorizar su conservación y optimización antes de plantear una venta."
-            if not activos_alta_proyeccion.empty
-            else "No hay activos con una proyección de zona de 8.5/10 o superior según el estudio."
-        )
-
-        lectura_final = (
-            "La lectura general favorece conservar los activos con mejor combinación de proyección, renta y liquidez, "
-            "y estudiar una rotación únicamente donde el capital pueda tener un uso más atractivo. "
-            "La decisión final debe contrastarse con deuda, flujo Airbnb, costo de salida y precio realmente negociable."
-        )
-
-        html_conclusion = f"""
 <div class="radar-decision-panel">
     <div class="radar-decision-title">🧠 Conclusión ejecutiva</div>
     <div class="radar-decision-subtitle">Lectura automática construida a partir del estudio de mercado cargado en BigQuery.</div>
@@ -4980,19 +5305,20 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
 </div>
 """
 
-        html_conclusion = "\n".join(
-            linea.strip()
-            for linea in html_conclusion.splitlines()
-            if linea.strip()
-        )
+    html_conclusion = "\n".join(
+        linea.strip()
+        for linea in html_conclusion.splitlines()
+        if linea.strip()
+    )
 
-        st.markdown(
-            html_conclusion,
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            """
+    st.markdown(
+        html_conclusion,
+        unsafe_allow_html=True
+    )
+else:
+    st.markdown(
+        """
+
 <div class="radar-decision-panel">
     <div class="radar-decision-title">🧠 Conclusión ejecutiva</div>
     <div class="radar-note">No hay información suficiente en Estudio_Mercado_Inmobiliario para generar una conclusión.</div>
@@ -5001,14 +5327,17 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
             unsafe_allow_html=True
         )
 
-# ============================================================
-# VISTA FINANCIERO
-# ============================================================
+============================================================
+
+VISTA FINANCIERO
+
+============================================================
 
 elif st.session_state.vista_airbnb == "Financiero":
 
-    st.markdown(
-        """
+st.markdown(
+    """
+
 <div class="section-title">
 💰 Financiero
 </div>
@@ -5020,127 +5349,128 @@ Evolución mensual de ingresos, gastos y flujo durante 2026.
         unsafe_allow_html=True
     )
 
+financiero = df[
+    (df["Fecha"] >= inicio_anio)
+    &
+    (df["Fecha"] < fin_hoy)
+].copy()
 
-    financiero = df[
-        (df["Fecha"] >= inicio_anio)
-        &
-        (df["Fecha"] < fin_hoy)
-    ].copy()
+
+financiero["Mes_Num"] = (
+    financiero["Fecha"].dt.month
+)
+
+financiero["Mes"] = (
+    financiero["Fecha"]
+    .dt.strftime("%b")
+)
 
 
-    financiero["Mes_Num"] = (
-        financiero["Fecha"].dt.month
+mensual_fin = (
+    financiero
+    .groupby(
+        [
+            "Mes_Num",
+            "Mes"
+        ],
+        as_index=False
     )
-
-    financiero["Mes"] = (
-        financiero["Fecha"]
-        .dt.strftime("%b")
-    )
-
-
-    mensual_fin = (
-        financiero
-        .groupby(
-            [
-                "Mes_Num",
-                "Mes"
-            ],
-            as_index=False
-        )
-        .agg(
-            Ingresos=(
-                "Ingreso",
-                "sum"
-            ),
-            Gastos=(
-                "Gasto",
-                "sum"
-            )
-        )
-        .sort_values("Mes_Num")
-    )
-
-
-    mensual_fin["Flujo"] = (
-        mensual_fin["Ingresos"]
-        -
-        mensual_fin["Gastos"]
-    )
-
-
-    fig_fin = go.Figure()
-
-
-    fig_fin.add_trace(
-        go.Bar(
-            x=mensual_fin["Mes"],
-            y=mensual_fin["Ingresos"],
-            name="Ingresos",
-            marker_color="#27B68D"
-        )
-    )
-
-
-    fig_fin.add_trace(
-        go.Bar(
-            x=mensual_fin["Mes"],
-            y=mensual_fin["Gastos"],
-            name="Gastos",
-            marker_color="#EF4338"
-        )
-    )
-
-
-    fig_fin.add_trace(
-        go.Scatter(
-            x=mensual_fin["Mes"],
-            y=mensual_fin["Flujo"],
-            name="Flujo",
-            mode="lines+markers",
-            line=dict(
-                color="#17345E",
-                width=3
-            )
-        )
-    )
-
-
-    fig_fin.update_layout(
-        height=470,
-        barmode="group",
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        margin=dict(
-            l=50,
-            r=30,
-            t=40,
-            b=40
+    .agg(
+        Ingresos=(
+            "Ingreso",
+            "sum"
         ),
-        yaxis=dict(
-            tickprefix="$",
-            tickformat=",.0f",
-            gridcolor="#E9EEF3"
-        ),
-        xaxis=dict(
-            showgrid=False
+        Gastos=(
+            "Gasto",
+            "sum"
         )
     )
+    .sort_values("Mes_Num")
+)
 
 
-    st.plotly_chart(
-        fig_fin,
-        use_container_width=True
+mensual_fin["Flujo"] = (
+    mensual_fin["Ingresos"]
+    -
+    mensual_fin["Gastos"]
+)
+
+
+fig_fin = go.Figure()
+
+
+fig_fin.add_trace(
+    go.Bar(
+        x=mensual_fin["Mes"],
+        y=mensual_fin["Ingresos"],
+        name="Ingresos",
+        marker_color="#27B68D"
     )
+)
 
 
-# ============================================================
-# VISTA OCUPACIÓN
-# ============================================================
+fig_fin.add_trace(
+    go.Bar(
+        x=mensual_fin["Mes"],
+        y=mensual_fin["Gastos"],
+        name="Gastos",
+        marker_color="#EF4338"
+    )
+)
+
+
+fig_fin.add_trace(
+    go.Scatter(
+        x=mensual_fin["Mes"],
+        y=mensual_fin["Flujo"],
+        name="Flujo",
+        mode="lines+markers",
+        line=dict(
+            color="#17345E",
+            width=3
+        )
+    )
+)
+
+
+fig_fin.update_layout(
+    height=470,
+    barmode="group",
+    plot_bgcolor="white",
+    paper_bgcolor="white",
+    margin=dict(
+        l=50,
+        r=30,
+        t=40,
+        b=40
+    ),
+    yaxis=dict(
+        tickprefix="$",
+        tickformat=",.0f",
+        gridcolor="#E9EEF3"
+    ),
+    xaxis=dict(
+        showgrid=False
+    )
+)
+
+
+st.plotly_chart(
+    fig_fin,
+    use_container_width=True
+)
+
+============================================================
+
+VISTA OCUPACIÓN
+
+============================================================
 
 elif st.session_state.vista_airbnb == "Ocupación":
 
-    st.markdown(
-        """
+st.markdown(
+    """
+
 <div class="section-title">
 📊 Ocupación Airbnb
 </div>
@@ -5152,69 +5482,69 @@ Reservas y noches ocupadas durante el período seleccionado.
         unsafe_allow_html=True
     )
 
+try:
 
-    try:
+    ocupacion = cargar_reservas(
+        fecha_inicio,
+        fecha_fin
+    )
 
-        ocupacion = cargar_reservas(
-            fecha_inicio,
-            fecha_fin
-        )
+except Exception:
 
-    except Exception:
-
-        ocupacion = pd.DataFrame()
-
-
-    if ocupacion.empty:
-
-        st.info(
-            "No hay reservas para el período seleccionado."
-        )
-
-    else:
-
-        ocupacion["Ocupacion"] = (
-            ocupacion["Noches_Reservadas"]
-            /
-            ocupacion["Noches_Disponibles"]
-            *
-            100
-        )
+    ocupacion = pd.DataFrame()
 
 
-        total_reservas = (
-            ocupacion["Reservas"].sum()
-        )
+if ocupacion.empty:
 
-        total_noches = (
-            ocupacion["Noches_Reservadas"].sum()
-        )
+    st.info(
+        "No hay reservas para el período seleccionado."
+    )
 
-        total_disponibles = (
-            ocupacion["Noches_Disponibles"].sum()
-        )
+else:
 
-        ocupacion_total = (
-            total_noches
-            /
-            total_disponibles
-            *
-            100
-            if total_disponibles
-            else 0
-        )
+    ocupacion["Ocupacion"] = (
+        ocupacion["Noches_Reservadas"]
+        /
+        ocupacion["Noches_Disponibles"]
+        *
+        100
+    )
 
 
-        a, b, c = st.columns(
-            3,
-            gap="small"
-        )
+    total_reservas = (
+        ocupacion["Reservas"].sum()
+    )
+
+    total_noches = (
+        ocupacion["Noches_Reservadas"].sum()
+    )
+
+    total_disponibles = (
+        ocupacion["Noches_Disponibles"].sum()
+    )
+
+    ocupacion_total = (
+        total_noches
+        /
+        total_disponibles
+        *
+        100
+        if total_disponibles
+        else 0
+    )
 
 
-        with a:
+    a, b, c = st.columns(
+        3,
+        gap="small"
+    )
 
-            st.markdown(
-                f"""
+
+    with a:
+
+        st.markdown(
+            f"""
+
 <div class="kpi-card">
 
 <div class="kpi-label">
@@ -5236,11 +5566,11 @@ Noches ocupadas / disponibles
                 unsafe_allow_html=True
             )
 
+    with b:
 
-        with b:
+        st.markdown(
+            f"""
 
-            st.markdown(
-                f"""
 <div class="kpi-card">
 
 <div class="kpi-label">
@@ -5260,11 +5590,11 @@ Período seleccionado
                 unsafe_allow_html=True
             )
 
+    with c:
 
-        with c:
+        st.markdown(
+            f"""
 
-            st.markdown(
-                f"""
 <div class="kpi-card">
 
 <div class="kpi-label">
@@ -5284,25 +5614,25 @@ De {int(total_disponibles)} disponibles
                 unsafe_allow_html=True
             )
 
+    # ====================================================
+    # TARJETAS DE OCUPACIÓN
+    # ====================================================
 
-        # ====================================================
-        # TARJETAS DE OCUPACIÓN
-        # ====================================================
+    cards_html = '<div class="properties-grid">'
 
-        cards_html = '<div class="properties-grid">'
+    for _, row in ocupacion.iterrows():
 
-        for _, row in ocupacion.iterrows():
+        porcentaje = float(
+            row["Ocupacion"]
+        )
 
-            porcentaje = float(
-                row["Ocupacion"]
-            )
+        progress = min(
+            max(porcentaje, 0),
+            100
+        )
 
-            progress = min(
-                max(porcentaje, 0),
-                100
-            )
+        cards_html += f"""
 
-            cards_html += f"""
 <div class="property-card">
 
 <div class="property-header">
@@ -5407,9 +5737,9 @@ Reservas
 </div>
 """
 
-        cards_html += "</div>"
+    cards_html += "</div>"
 
-        st.markdown(
-            cards_html,
-            unsafe_allow_html=True
-        )
+    st.markdown(
+        cards_html,
+        unsafe_allow_html=True
+    )
