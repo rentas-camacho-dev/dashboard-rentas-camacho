@@ -5143,6 +5143,17 @@ if st.session_state.vista_airbnb == "Aportes":
                 .copy()
             )
 
+            # Activos adicionales del socio. Por ahora solo se muestra
+            # Torre Ventto; más adelante aquí incorporaremos Comercio.
+            adicionales_socio_df = (
+                activos_adicionales[
+                    activos_adicionales["Nombre_Socio"] == nombre
+                ]
+                .sort_values("Valor_Mercado_Socio", ascending=False)
+                .head(2)
+                .copy()
+            )
+
             # Mostramos los 8 predios principales y, si existen más,
             # consolidamos el resto como "Otros Finca Raíz".
             max_predios_detalle = 8
