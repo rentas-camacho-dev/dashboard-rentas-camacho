@@ -3989,142 +3989,47 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 .aportes-socio-panel {
     background:#FFFFFF;
-    border:1px solid #D9E2EB;
-    border-radius:16px;
-    padding:12px 13px 11px;
+    border:1px solid #DCE5EE;
+    border-radius:14px;
+    padding:14px;
     box-sizing:border-box;
-    min-height:610px;
+    min-height:520px;
     overflow:hidden;
-    box-shadow:0 1px 2px rgba(23,52,94,.025);
 }
-.aportes-socio-panel.diego { border-top:4px solid #FF5A73; }
-.aportes-socio-panel.william { border-top:4px solid #5DA7F4; }
-.aportes-socio-panel.andres { border-top:4px solid #43C995; }
-
-.aportes-socio-head {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:8px;
-    margin-bottom:9px;
-    padding:0 2px 4px;
-}
-.aportes-avatar {
-    width:38px;height:38px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    font-size:18px;font-weight:900;flex:0 0 38px;
-}
+.aportes-socio-panel.diego { border-top:3px solid #FF5A73; }
+.aportes-socio-panel.william { border-top:3px solid #5DA7F4; }
+.aportes-socio-panel.andres { border-top:3px solid #43C995; }
+.aportes-socio-head { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px; }
+.aportes-avatar { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900; }
 .aportes-avatar.diego { background:#FFE9EE;color:#FF5A73; }
 .aportes-avatar.william { background:#EAF2FF;color:#5DA7F4; }
 .aportes-avatar.andres { background:#E8F8F1;color:#43C995; }
-
-.aportes-socio-name { font-size:16px;font-weight:900;color:#17345E; }
+.aportes-socio-name { font-size:15px;font-weight:900;color:#17345E; }
 .aportes-header-total { margin-left:auto;text-align:right; }
-.aportes-header-total-label {
-    font-size:7px;font-weight:800;color:#8795A8;
-    text-transform:uppercase;letter-spacing:.3px;
-}
-.aportes-header-total-value {
-    font-size:20px;font-weight:900;color:#17345E;
-    line-height:1;margin-top:4px;
-}
-
-.aportes-main-layout {
-    display:grid;
-    grid-template-columns:.70fr 1.30fr;
-    gap:10px;
-    align-items:start;
-}
-.aportes-aporte-box {
-    border-radius:12px;
-    padding:10px 11px;
-    background:#F8FAFC;
-    border:1px solid #E5EBF1;
-}
+.aportes-header-total-label { font-size:7px;font-weight:800;color:#8795A8;text-transform:uppercase;letter-spacing:.2px; }
+.aportes-header-total-value { font-size:17px;font-weight:900;color:#17345E;line-height:1;margin-top:3px; }
+.aportes-socio-layout { display:grid;grid-template-columns:0.88fr 1.12fr;gap:12px;align-items:start; }
+.aportes-aporte-box { border-radius:10px;padding:10px 11px;background:#F8FAFC;border:1px solid #E5EBF1; }
 .aportes-socio-panel.diego .aportes-aporte-box { background:#FFF5F7;border-color:#FFE0E7; }
 .aportes-socio-panel.william .aportes-aporte-box { background:#F4F8FF;border-color:#DDEAFF; }
 .aportes-socio-panel.andres .aportes-aporte-box { background:#F3FBF7;border-color:#D9F2E6; }
-
-.aportes-box-title { font-size:9px;font-weight:900;color:#17345E;margin-bottom:8px; }
-.aportes-socio-line {
-    display:flex;justify-content:space-between;
-    gap:6px;margin-top:7px;font-size:8px;
-}
+.aportes-box-title { font-size:9px;font-weight:900;color:#17345E;margin-bottom:9px; }
+.aportes-socio-line { display:flex;justify-content:space-between;gap:6px;margin-top:7px;font-size:8.5px; }
 .aportes-socio-line span:first-child { color:#71839A; }
 .aportes-socio-line span:last-child { color:#17345E;font-weight:850; }
-.aportes-socio-total-line {
-    margin-top:9px;padding-top:8px;
-    border-top:1px solid #DFE7EF;
-    display:flex;justify-content:space-between;
-    font-size:8.5px;font-weight:900;color:#17345E;
-}
-
-.aportes-finca-title {
-    font-size:10px;font-weight:900;color:#17345E;margin-bottom:2px;
-}
-.aportes-finca-sub {
-    font-size:7.5px;color:#8795A8;margin-bottom:4px;
-}
-.aportes-finca-list {
-    background:#FFFFFF;border:1px solid #E7EDF3;
-    border-radius:11px;padding:8px 9px;
-}
-.aportes-finca-list-title {
-    font-size:9px;font-weight:900;color:#17345E;margin-bottom:5px;
-}
-.aportes-finca-row {
-    display:grid;
-    grid-template-columns:9px 1fr 31px 54px;
-    gap:5px;align-items:center;
-    padding:4px 0;
-    border-bottom:1px solid #EEF2F6;
-}
-.aportes-finca-row:last-child { border-bottom:none; }
-.aportes-finca-dot { width:8px;height:8px;border-radius:50%; }
-.aportes-finca-name {
-    min-width:0;font-size:7.8px;color:#5F7189;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.aportes-finca-pct { text-align:right;font-size:7.5px;color:#8290A4; }
-.aportes-finca-value {
-    text-align:right;font-size:8px;font-weight:900;
-    color:#17345E;white-space:nowrap;
-}
-
-.aportes-adicionales-box {
-    margin-top:10px;border:1px solid #E2E8EF;
-    border-radius:12px;padding:9px 10px 8px;background:#FFFFFF;
-}
-.aportes-adicionales-head {
-    display:flex;align-items:center;justify-content:space-between;
-    gap:8px;margin-bottom:6px;
-}
-.aportes-adicionales-title { font-size:9px;font-weight:900;color:#17345E; }
-.aportes-adicionales-total { font-size:12px;font-weight:900;color:#7757C8;white-space:nowrap; }
-.aportes-adicionales-sub { font-size:7.5px;color:#8A98AA;margin-bottom:6px; }
-.aportes-mini-asset {
-    display:flex;justify-content:space-between;gap:8px;
-    padding:6px 8px;margin-top:4px;
-    border:1px solid #E7EDF3;border-radius:8px;background:#FAFBFC;
-}
-.aportes-mini-asset-name {
-    font-size:8px;color:#5F7189;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.aportes-mini-asset-value { font-size:8px;font-weight:900;color:#17345E;white-space:nowrap; }
-.aportes-additional { color:#7757C8;font-weight:850; }
-
-.aportes-patrimonio-strip {
-    margin-top:10px;background:#FFF6F8;
-    border:1px solid #FFE0E7;border-radius:12px;
-    padding:9px 10px;
-    display:flex;justify-content:space-between;align-items:flex-end;
-}
-.aportes-socio-panel.william .aportes-patrimonio-strip { background:#F4F8FF;border-color:#DDEAFF; }
-.aportes-socio-panel.andres .aportes-patrimonio-strip { background:#F3FBF7;border-color:#D9F2E6; }
+.aportes-socio-total-line { margin-top:9px;padding-top:8px;border-top:1px solid #DFE7EF;display:flex;justify-content:space-between;font-size:9px;font-weight:900;color:#17345E; }
+.aportes-finca-title { font-size:10px;font-weight:900;color:#17345E;margin-bottom:2px; }
+.aportes-finca-sub { font-size:7.5px;color:#8795A8;margin-bottom:2px; }
+.aportes-donut-wrap { min-height:275px; }
+.aportes-adicionales-title { font-size:9px;font-weight:900;color:#17345E;margin-top:4px;margin-bottom:4px; }
+.aportes-mini-asset { display:flex;justify-content:space-between;gap:8px;padding:6px 8px;margin-top:4px;border:1px solid #E7EDF3;border-radius:8px;background:#FAFBFC; }
+.aportes-mini-asset-name { font-size:8.5px;color:#5F7189;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.aportes-mini-asset-value { font-size:8.5px;font-weight:900;color:#17345E;white-space:nowrap; }
+.aportes-additional { color:#7757C8;font-weight:800; }
+.aportes-patrimonio-strip { margin-top:9px;border-top:1px solid #E6ECF2;padding-top:9px;display:flex;justify-content:space-between;align-items:flex-end; }
 .aportes-patrimonio-label { font-size:9px;font-weight:850;color:#71839A; }
-.aportes-patrimonio-value { font-size:22px;font-weight:900;color:#17345E;line-height:1; }
-.aportes-patrimonio-ratio { font-size:8px;font-weight:900;color:#009B70;margin-top:4px;text-align:right; }
+.aportes-patrimonio-value { font-size:21px;font-weight:900;color:#17345E;line-height:1; }
+.aportes-patrimonio-ratio { font-size:8px;font-weight:850;color:#009B70;margin-top:4px;text-align:right; }
 
 .aportes-otros-panel { background:#FFFFFF;border:1px solid #DCE5EE;border-radius:14px;padding:14px 16px 10px;margin-top:13px;overflow-x:auto; }
 .aportes-card-title2 { font-size:13px;font-weight:900;color:#17345E; }
@@ -4299,9 +4204,215 @@ if st.session_state.vista_airbnb == "Aportes":
 
         # --------------------------------------------------------
         # TRES SOCIOS - TARJETAS PATRIMONIALES
-        # Diseño inspirado en la tarjeta de referencia:
-        # nombre + total aportes + aportes + Finca Raíz + adicionales + patrimonio.
+        # Diseño inspirado en la referencia:
+        # nombre + total aportes
+        # donut grande + detalle de predios
+        # activos adicionales
+        # patrimonio total
         # --------------------------------------------------------
+
+        render_aportes_html("""
+<style>
+.aportes-ref-card {
+    width:100%;
+    box-sizing:border-box;
+}
+.aportes-ref-topline {
+    border-radius:8px 8px 0 0;
+    height:3px;
+    margin:-1px -1px 10px;
+}
+.aportes-ref-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:8px;
+}
+.aportes-ref-name-wrap {
+    display:flex;
+    align-items:center;
+    gap:9px;
+    min-width:0;
+}
+.aportes-ref-name {
+    font-size:16px;
+    font-weight:900;
+    color:#17345E;
+    white-space:nowrap;
+}
+.aportes-ref-total {
+    text-align:right;
+}
+.aportes-ref-total-label {
+    font-size:7px;
+    font-weight:900;
+    color:#8492A5;
+    text-transform:uppercase;
+    letter-spacing:.25px;
+}
+.aportes-ref-total-value {
+    font-size:21px;
+    font-weight:900;
+    color:#17345E;
+    line-height:1.0;
+    margin-top:3px;
+}
+.aportes-ref-subtitle {
+    font-size:7.5px;
+    color:#8A98AA;
+    margin-top:2px;
+}
+.aportes-ref-list {
+    background:#FFFFFF;
+    border:1px solid #E5EBF1;
+    border-radius:10px;
+    padding:8px 9px;
+    box-sizing:border-box;
+}
+.aportes-ref-list-title {
+    font-size:10px;
+    font-weight:900;
+    color:#17345E;
+    margin-bottom:5px;
+}
+.aportes-ref-list-sub {
+    font-size:7.5px;
+    color:#8A98AA;
+    margin-bottom:6px;
+}
+.aportes-ref-row {
+    display:grid;
+    grid-template-columns:11px minmax(0,1fr) 34px 58px;
+    gap:6px;
+    align-items:center;
+    padding:5px 0;
+    border-bottom:1px solid #EDF1F5;
+}
+.aportes-ref-row:last-child {
+    border-bottom:none;
+}
+.aportes-ref-dot {
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    display:block;
+}
+.aportes-ref-asset {
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:8px;
+    color:#61738C;
+}
+.aportes-ref-pct {
+    text-align:right;
+    font-size:7.5px;
+    color:#8492A5;
+}
+.aportes-ref-value {
+    text-align:right;
+    font-size:8.5px;
+    font-weight:900;
+    color:#17345E;
+    white-space:nowrap;
+}
+.aportes-ref-extra {
+    border:1px solid #E6E0F8;
+    background:#FBFAFF;
+    border-radius:10px;
+    padding:9px;
+    margin-top:9px;
+}
+.aportes-ref-extra-head {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:7px;
+}
+.aportes-ref-extra-title {
+    font-size:9px;
+    font-weight:900;
+    color:#17345E;
+}
+.aportes-ref-extra-sub {
+    font-size:7.5px;
+    color:#8A98AA;
+    margin-top:3px;
+}
+.aportes-ref-extra-total-label {
+    font-size:7px;
+    color:#8795A8;
+    text-align:right;
+}
+.aportes-ref-extra-total {
+    font-size:15px;
+    font-weight:900;
+    color:#7757C8;
+    text-align:right;
+    line-height:1;
+    margin-top:2px;
+}
+.aportes-ref-extra-row {
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    align-items:center;
+    background:#FFFFFF;
+    border:1px solid #E6EBF1;
+    border-radius:8px;
+    padding:6px 7px;
+    margin-top:5px;
+}
+.aportes-ref-extra-name {
+    font-size:8px;
+    color:#5F7189;
+    font-weight:700;
+}
+.aportes-ref-extra-value {
+    font-size:8.5px;
+    color:#17345E;
+    font-weight:900;
+}
+.aportes-ref-patrimonio {
+    margin-top:9px;
+    border:1px solid #FFDDE5;
+    background:linear-gradient(180deg,#FFF8FA 0%,#FFF1F5 100%);
+    border-radius:10px;
+    padding:10px 11px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+.aportes-ref-patrimonio-label {
+    font-size:9px;
+    font-weight:900;
+    color:#17345E;
+}
+.aportes-ref-patrimonio-sub {
+    font-size:7.5px;
+    color:#8A98AA;
+    margin-top:3px;
+}
+.aportes-ref-patrimonio-value {
+    font-size:21px;
+    font-weight:900;
+    color:#17345E;
+    text-align:right;
+    line-height:1;
+}
+.aportes-ref-ratio {
+    font-size:8px;
+    font-weight:900;
+    color:#009B70;
+    text-align:right;
+    margin-top:4px;
+}
+</style>
+""")
+
         socio_cols = st.columns(3, gap="small")
 
         for idx, (_, socio_row) in enumerate(resumen_socios.iterrows()):
@@ -4309,42 +4420,26 @@ if st.session_state.vista_airbnb == "Aportes":
             nombre = socio_row["Nombre_Socio"]
 
             clase = (
-                "diego" if "Diego" in nombre
-                else "william" if "William" in nombre
+                "diego"
+                if "Diego" in nombre
+                else "william"
+                if "William" in nombre
                 else "andres"
             )
 
             avatar = (
-                "D" if "Diego" in nombre
-                else "W" if "William" in nombre
+                "D"
+                if "Diego" in nombre
+                else "W"
+                if "William" in nombre
                 else "A"
             )
 
-            grupo_socio = (
-                aportes_base[
-                    aportes_base["Nombre_Socio"] == nombre
-                ]
-                .sort_values("Fecha")
-                .copy()
-            )
-
             total_socio = float(socio_row["Aportes"])
-
-            if grupo_socio.empty:
-                aporte_inicial = 0.0
-            else:
-                primera_fecha = grupo_socio["Fecha"].min()
-                aporte_inicial = float(
-                    grupo_socio.loc[
-                        grupo_socio["Fecha"] == primera_fecha,
-                        "Valor"
-                    ].sum()
-                )
-
-            aporte_adicional = max(
-                total_socio - aporte_inicial,
-                0
-            )
+            patrimonio = float(socio_row["Patrimonio_Estimado"])
+            ratio = float(socio_row["Patrimonio_vs_Aportes"])
+            finca_total = float(socio_row["Finca_Raiz"])
+            adicionales_total = float(socio_row["Activos_Adicionales"])
 
             finca_socio_df = (
                 activos_asociados[
@@ -4378,378 +4473,324 @@ if st.session_state.vista_airbnb == "Aportes":
                 .reset_index(drop=True)
             )
 
-            patrimonio = float(
-                socio_row["Patrimonio_Estimado"]
-            )
-
-            ratio = float(
-                socio_row["Patrimonio_vs_Aportes"]
-            )
-
-            if clase == "diego":
-                finca_colors = [
-                    "#FF3158", "#FF5A73", "#FF7890",
-                    "#FF9CAF", "#FFBCC9", "#FFD3DC",
-                    "#FFE5EA"
-                ]
-            elif clase == "william":
-                finca_colors = [
-                    "#2298DE", "#4D9DE8", "#5DA7F4",
-                    "#79B6F7", "#96C8FA", "#B5D9FC",
-                    "#D1E7FE"
-                ]
-            else:
-                finca_colors = [
-                    "#20B985", "#43C995", "#63D5AB",
-                    "#84DFC0", "#A6E8D2", "#C8F0E2",
-                    "#E2F8F0"
-                ]
-
             with socio_cols[idx]:
 
                 with st.container(
-                    height=610,
+                    height=625,
                     border=True
                 ):
 
-                    # ====================================================
-                    # ENCABEZADO
-                    # ====================================================
-                    render_aportes_html(
-                        f"""
-<div class="aportes-socio-head">
-    <div style="display:flex;align-items:center;gap:9px;min-width:0;">
-        <div class="aportes-avatar {clase}">
-            {avatar}
-        </div>
-        <div class="aportes-socio-name">
-            {escape_html(nombre)}
-        </div>
-    </div>
-
-    <div class="aportes-header-total">
-        <div class="aportes-header-total-label">
-            TOTAL APORTES
-        </div>
-        <div class="aportes-header-total-value">
-            {dinero_corto(total_socio)}
-        </div>
-    </div>
-</div>
-"""
+                    color_principal = (
+                        "#FF5A73"
+                        if clase == "diego"
+                        else "#5DA7F4"
+                        if clase == "william"
+                        else "#43C995"
                     )
 
-                    # ====================================================
-                    # APORTES + FINCA RAÍZ
-                    # ====================================================
-                    main_cols = st.columns(
-                        [0.72, 1.28],
-                        gap="small"
-                    )
+                    # ------------------------------------------------
+                    # CABECERA
+                    # ------------------------------------------------
+                    render_aportes_html(f"""
+<div class="aportes-ref-card">
+    <div class="aportes-ref-topline" style="background:{color_principal};"></div>
 
-                    with main_cols[0]:
+    <div class="aportes-ref-header">
+        <div class="aportes-ref-name-wrap">
+            <div class="aportes-avatar {clase}">
+                {avatar}
+            </div>
+            <div class="aportes-ref-name">
+                {escape_html(nombre)}
+            </div>
+        </div>
 
-                        render_aportes_html(
-                            f"""
-<div class="aportes-aporte-box">
-    <div class="aportes-box-title">
-        💰 Aportes
-    </div>
-
-    <div class="aportes-socio-line">
-        <span>Aporte inicial</span>
-        <span>{dinero_corto(aporte_inicial)}</span>
-    </div>
-
-    <div class="aportes-socio-line">
-        <span>Aportes adicionales</span>
-        <span>{dinero_corto(aporte_adicional)}</span>
-    </div>
-
-    <div class="aportes-socio-total-line">
-        <span>Total aportes</span>
-        <span>{dinero_corto(total_socio)}</span>
+        <div class="aportes-ref-total">
+            <div class="aportes-ref-total-label">
+                Total aportes
+            </div>
+            <div class="aportes-ref-total-value">
+                {dinero_corto(total_socio)}
+            </div>
+        </div>
     </div>
 </div>
-"""
-                        )
+""")
 
-                    with main_cols[1]:
+                    # ------------------------------------------------
+                    # BLOQUE PRINCIPAL: DONUT + DETALLE
+                    # ------------------------------------------------
+                    if not finca_socio_df.empty:
 
-                        render_aportes_html(
-                            """
-<div class="aportes-finca-title">
-    🏠 Finca Raíz (activos asociados)
-</div>
-<div class="aportes-finca-sub">
-    Participación de cada predio en el patrimonio del socio
-</div>
-"""
-                        )
+                        finca_labels = finca_socio_df[
+                            "Nombre_Entidad"
+                        ].tolist()
 
-                        if not finca_socio_df.empty:
+                        finca_values = finca_socio_df[
+                            "Valor_Mercado_Socio"
+                        ].astype(float).tolist()
 
-                            finca_values = (
-                                finca_socio_df[
-                                    "Valor_Mercado_Socio"
-                                ]
-                                .astype(float)
-                                .tolist()
-                            )
+                        if clase == "diego":
+                            finca_colors = [
+                                "#FF3158",
+                                "#FF5A73",
+                                "#FF7890",
+                                "#FF9CAF",
+                                "#FFBCC9",
+                                "#FFD3DC",
+                                "#FFE5EA",
+                                "#FFF0F3",
+                            ]
+                        elif clase == "william":
+                            finca_colors = [
+                                "#348FE6",
+                                "#5DA7F4",
+                                "#79B6F7",
+                                "#96C8FA",
+                                "#B5D9FC",
+                                "#D1E7FE",
+                                "#E6F2FF",
+                                "#F1F7FF",
+                            ]
+                        else:
+                            finca_colors = [
+                                "#29B984",
+                                "#43C995",
+                                "#63D5AB",
+                                "#84DFC0",
+                                "#A6E8D2",
+                                "#C8F0E2",
+                                "#E2F8F0",
+                                "#F1FCF7",
+                            ]
 
-                            finca_labels = (
-                                finca_socio_df[
-                                    "Nombre_Entidad"
-                                ]
-                                .tolist()
-                            )
-
-                            total_finca_socio = sum(
-                                finca_values
-                            )
-
-                            fig_finca = go.Figure(
-                                go.Pie(
-                                    labels=finca_labels,
-                                    values=finca_values,
-                                    hole=0.56,
-                                    marker=dict(
-                                        colors=finca_colors[
-                                            :len(finca_labels)
-                                        ],
-                                        line=dict(
-                                            color="#FFFFFF",
-                                            width=2
-                                        )
-                                    ),
-                                    textinfo="percent",
-                                    textfont=dict(
-                                        size=9,
-                                        color="#4F6075"
-                                    ),
-                                    hovertemplate=(
-                                        "%{label}<br>"
-                                        "$%{value:,.0f}<br>"
-                                        "%{percent}"
-                                        "<extra></extra>"
+                        fig_finca = go.Figure(
+                            go.Pie(
+                                labels=finca_labels,
+                                values=finca_values,
+                                hole=0.58,
+                                marker=dict(
+                                    colors=finca_colors[
+                                        :len(finca_labels)
+                                    ],
+                                    line=dict(
+                                        color="#FFFFFF",
+                                        width=2
                                     )
-                                )
-                            )
-
-                            fig_finca.update_layout(
-                                height=235,
-                                margin=dict(
-                                    l=0,
-                                    r=0,
-                                    t=0,
-                                    b=0
                                 ),
-                                showlegend=False,
-                                paper_bgcolor="rgba(0,0,0,0)",
-                                plot_bgcolor="rgba(0,0,0,0)"
-                            )
-
-                            fig_finca.add_annotation(
-                                text=(
-                                    f"<b>{dinero_corto(total_finca_socio)}</b>"
-                                    "<br>"
-                                    "<span style='font-size:8px'>"
-                                    "Finca Raíz"
-                                    "</span>"
+                                textinfo="percent",
+                                textfont=dict(
+                                    size=10,
+                                    color="#4F6075"
                                 ),
-                                x=0.5,
-                                y=0.5,
-                                showarrow=False,
-                                font=dict(
-                                    size=11,
-                                    color="#17345E"
-                                )
+                                hovertemplate=(
+                                    "%{label}<br>"
+                                    "$%{value:,.0f}<br>"
+                                    "%{percent}<extra></extra>"
+                                ),
                             )
+                        )
 
+                        fig_finca.update_layout(
+                            height=275,
+                            margin=dict(
+                                l=0,
+                                r=0,
+                                t=0,
+                                b=0
+                            ),
+                            showlegend=False,
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(0,0,0,0)",
+                        )
+
+                        fig_finca.add_annotation(
+                            text=(
+                                f"<b>{dinero_corto(finca_total)}</b>"
+                                "<br>"
+                                "<span style='font-size:9px'>"
+                                "Finca Raíz"
+                                "</span>"
+                            ),
+                            x=0.5,
+                            y=0.5,
+                            showarrow=False,
+                            font=dict(
+                                size=12,
+                                color="#17345E"
+                            ),
+                        )
+
+                        finca_col, detalle_col = st.columns(
+                            [0.92, 1.08],
+                            gap="small"
+                        )
+
+                        with finca_col:
                             st.plotly_chart(
                                 fig_finca,
                                 use_container_width=True,
-                                config={
-                                    "displayModeBar": False
-                                },
-                                key=f"fig_finca_socio_{idx}",
+                                config={"displayModeBar": False},
+                                key=f"fig_finca_ref_{idx}",
                             )
 
-                            # Detalle de predios
-                            finca_rows_html = """
-<div class="aportes-finca-list">
+                        # --------------------------------------------
+                        # DETALLE DE PREDIOS
+                        # --------------------------------------------
+                        lista_html = """
+<div class="aportes-ref-list">
+    <div class="aportes-ref-list-title">
+        🏠 Predios asociados
+    </div>
+    <div class="aportes-ref-list-sub">
+        Participación de cada predio en la Finca Raíz del socio
+    </div>
 """
 
-                            for pos, asset in (
-                                finca_socio_df.iterrows()
-                            ):
+                        for i, asset in finca_socio_df.iterrows():
 
-                                valor = float(
-                                    asset[
-                                        "Valor_Mercado_Socio"
-                                    ]
-                                )
+                            valor = float(
+                                asset["Valor_Mercado_Socio"]
+                            )
 
-                                pct = (
-                                    valor
-                                    / total_finca_socio
-                                    * 100
-                                    if total_finca_socio
-                                    else 0
-                                )
+                            pct = (
+                                valor / finca_total * 100
+                                if finca_total
+                                else 0
+                            )
 
-                                dot_color = finca_colors[
-                                    pos % len(finca_colors)
-                                ]
+                            color_dot = finca_colors[
+                                i % len(finca_colors)
+                            ]
 
-                                finca_rows_html += f"""
-<div class="aportes-finca-row">
+                            lista_html += f"""
+<div class="aportes-ref-row">
     <span
-        class="aportes-finca-dot"
-        style="background:{dot_color};"
+        class="aportes-ref-dot"
+        style="background:{color_dot};"
     ></span>
 
-    <span class="aportes-finca-name">
+    <span class="aportes-ref-asset">
         {escape_html(asset["Nombre_Entidad"])}
     </span>
 
-    <span class="aportes-finca-pct">
+    <span class="aportes-ref-pct">
         {pct:.1f}%
     </span>
 
-    <span class="aportes-finca-value">
+    <span class="aportes-ref-value">
         {dinero_corto(valor)}
     </span>
 </div>
 """
 
-                            finca_rows_html += "</div>"
+                        lista_html += "</div>"
 
-                            render_aportes_html(
-                                finca_rows_html
-                            )
-
-                        else:
-
-                            render_aportes_html(
-                                """
-<div class="aportes-finca-list">
-    <div class="aportes-finca-list-title">
-        Predios asociados
-    </div>
-    <div class="aportes-mini-asset">
-        <div class="aportes-mini-asset-name">
-            Sin Finca Raíz asociada
-        </div>
-        <div class="aportes-mini-asset-value">
-            -
-        </div>
-    </div>
-</div>
-"""
-                            )
-
-                    # ====================================================
-                    # ACTIVOS ADICIONALES
-                    # ====================================================
-                    total_adicional_socio = float(
-                        adicional_socio_df[
-                            "Valor_Mercado_Socio"
-                        ].sum()
-                    )
-
-                    render_aportes_html(
-                        f"""
-<div class="aportes-adicionales-box">
-    <div class="aportes-adicionales-head">
-        <div>
-            <div class="aportes-adicionales-title">
-                🔗 Activos adicionales (no conjuntos)
-            </div>
-            <div class="aportes-adicionales-sub">
-                Activos donde solo participa {escape_html(nombre.split()[0])}
-            </div>
-        </div>
-
-        <div class="aportes-adicionales-total">
-            {dinero_corto(total_adicional_socio)}
-        </div>
-    </div>
-"""
-                    )
-
-                    if not adicional_socio_df.empty:
-
-                        for _, asset in (
-                            adicional_socio_df.iterrows()
-                        ):
-
-                            render_aportes_html(
-                                f"""
-<div class="aportes-mini-asset">
-    <div class="aportes-mini-asset-name aportes-additional">
-        {escape_html(asset["Nombre_Entidad"])}
-    </div>
-
-    <div class="aportes-mini-asset-value">
-        {dinero_corto(asset["Valor_Mercado_Socio"])}
-    </div>
-</div>
-"""
-                            )
+                        with detalle_col:
+                            render_aportes_html(lista_html)
 
                     else:
-
-                        render_aportes_html(
-                            """
+                        render_aportes_html("""
 <div class="aportes-mini-asset">
     <div class="aportes-mini-asset-name">
-        Sin activos adicionales
+        Sin Finca Raíz asociada
     </div>
     <div class="aportes-mini-asset-value">
         -
     </div>
 </div>
-"""
-                        )
+""")
 
-                    render_aportes_html(
-                        """
-</div>
-"""
-                    )
+                    # ------------------------------------------------
+                    # ACTIVOS ADICIONALES
+                    # ------------------------------------------------
+                    extra_html = f"""
+<div class="aportes-ref-extra">
+    <div class="aportes-ref-extra-head">
 
-                    # ====================================================
+        <div>
+            <div class="aportes-ref-extra-title">
+                🔗 Activos adicionales
+            </div>
+
+            <div class="aportes-ref-extra-sub">
+                Activos donde no participan los tres socios
+            </div>
+        </div>
+
+        <div>
+            <div class="aportes-ref-extra-total-label">
+                Total adicionales
+            </div>
+
+            <div class="aportes-ref-extra-total">
+                {dinero_corto(adicionales_total)}
+            </div>
+        </div>
+
+    </div>
+"""
+
+                    if not adicional_socio_df.empty:
+
+                        for _, asset in adicional_socio_df.head(3).iterrows():
+
+                            extra_html += f"""
+    <div class="aportes-ref-extra-row">
+        <span class="aportes-ref-extra-name">
+            {escape_html(asset["Nombre_Entidad"])}
+        </span>
+        <span class="aportes-ref-extra-value">
+            {dinero_corto(asset["Valor_Mercado_Socio"])}
+        </span>
+    </div>
+"""
+
+                    else:
+
+                        extra_html += """
+    <div class="aportes-ref-extra-row">
+        <span class="aportes-ref-extra-name">
+            Sin activos adicionales
+        </span>
+        <span class="aportes-ref-extra-value">
+            -
+        </span>
+    </div>
+"""
+
+                    extra_html += "</div>"
+
+                    render_aportes_html(extra_html)
+
+                    # ------------------------------------------------
                     # PATRIMONIO TOTAL
-                    # ====================================================
-                    render_aportes_html(
-                        f"""
-<div class="aportes-patrimonio-strip">
+                    # ------------------------------------------------
+                    render_aportes_html(f"""
+<div class="aportes-ref-patrimonio">
+
     <div>
-        <div class="aportes-patrimonio-label">
+        <div class="aportes-ref-patrimonio-label">
             🏢 Patrimonio total estimado
         </div>
-        <div style="
-            font-size:7.5px;
-            color:#8795A8;
-            margin-top:3px;
-        ">
+
+        <div class="aportes-ref-patrimonio-sub">
             Finca Raíz + Activos adicionales
         </div>
     </div>
 
-    <div style="text-align:right;">
-        <div class="aportes-patrimonio-value">
+    <div>
+        <div class="aportes-ref-patrimonio-value">
             {dinero_corto(patrimonio)}
         </div>
 
-        <div class="aportes-patrimonio-ratio">
+        <div class="aportes-ref-ratio">
             ↑ {ratio:+.1f}% vs. aportes
         </div>
     </div>
+
 </div>
-"""
-                    )
+""")
 
         # --------------------------------------------------------
         # BLOQUE INFERIOR: NEGOCIOS Y OTROS ACTIVOS
