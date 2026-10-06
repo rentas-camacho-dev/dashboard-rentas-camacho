@@ -3951,7 +3951,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-kpi-grid6 {
     display:grid;
-    grid-template-columns:repeat(5,minmax(0,1fr));
+    grid-template-columns:repeat(6,minmax(0,1fr));
     gap:8px;
     margin:3px 0 11px;
 }
@@ -4052,6 +4052,7 @@ if st.session_state.vista_airbnb == "Aportes":
 @media (max-width: 700px) {
     .aportes-kpi-grid6 { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .aportes-socio-layout { grid-template-columns:1fr; }
+    .aportes-latest-grid { grid-template-columns:1fr; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -4168,6 +4169,44 @@ if st.session_state.vista_airbnb == "Aportes":
         patrimonio_vs_aportes = ((patrimonio_total / total_aportes) - 1) * 100 if total_aportes else 0
 
         # --------------------------------------------------------
+        # ÚLTIMO APORTE REGISTRADO
+        # --------------------------------------------------------
+        meses_es = {
+            1: "ene", 2: "feb", 3: "mar", 4: "abr",
+            5: "may", 6: "jun", 7: "jul", 8: "ago",
+            9: "sep", 10: "oct", 11: "nov", 12: "dic"
+        }
+
+        if not aportes_base.empty:
+            idx_ultimo = aportes_base["Fecha"].idxmax()
+            ultimo_aporte_row = aportes_base.loc[idx_ultimo]
+            ultimo_aporte_fecha = pd.Timestamp(ultimo_aporte_row["Fecha"])
+            ultimo_aporte_valor = float(ultimo_aporte_row["Valor"])
+            ultimo_aporte_socio = str(ultimo_aporte_row["Nombre_Socio"])
+            ultimo_aporte_dias = max(
+                0,
+                (pd.Timestamp(hoy) - ultimo_aporte_fecha.normalize()).days
+            )
+            ultimo_aporte_fecha_txt = (
+                f"{ultimo_aporte_fecha.day:02d} "
+                f"{meses_es.get(ultimo_aporte_fecha.month, ultimo_aporte_fecha.strftime('%b').lower())} "
+                f"{ultimo_aporte_fecha.year}"
+            )
+        else:
+            ultimo_aporte_fecha_txt = "-"
+            ultimo_aporte_valor = 0
+            ultimo_aporte_socio = "-"
+            ultimo_aporte_dias = 0
+
+        ultimos_por_socio = (
+            aportes_base
+            .sort_values(["Nombre_Socio", "Fecha", "ID_Aporte"])
+            .groupby("Nombre_Socio", as_index=False)
+            .tail(1)
+            .copy()
+        )
+
+        # --------------------------------------------------------
         # COLORES POR SOCIO
         # --------------------------------------------------------
         palette = ["#FF5A73", "#5DA7F4", "#43C995"]
@@ -4185,6 +4224,7 @@ if st.session_state.vista_airbnb == "Aportes":
             ("🪙", "Patrimonio total", dinero_corto(patrimonio_total), "Finca Raíz + adicionales"),
             ("👥", "Número de socios", f"{len(socios)}", "Socios con aportes"),
             ("📈", "Patrimonio vs. aportes", f"{patrimonio_vs_aportes:+.1f}%", "No es valorización contable"),
+            ("📅", "Último aporte", ultimo_aporte_fecha_txt, f"{dinero_corto(ultimo_aporte_valor)} · {ultimo_aporte_socio} · hace {ultimo_aporte_dias} días"),
         ]
 
         kpi_html = '<div class="aportes-kpi-grid6">'
@@ -4625,8 +4665,76 @@ if st.session_state.vista_airbnb == "Aportes":
     overflow-x:auto;
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 1150px) {
+/* ---------- Últimos aportes registrados ---------- */
+.aportes-latest-panel {
+    margin-top:10px;
+    background:#FFFFFF;
+    border:1px solid #DCE5EE;
+    border-radius:14px;
+    padding:10px 11px 8px;
+    box-sizing:border-box;
+}
+.aportes-latest-title {
+    font-size:11px;
+    font-weight:900;
+    color:#17345E;
+}
+.aportes-latest-sub {
+    font-size:7.5px;
+    color:#8A98AA;
+    margin-top:2px;
+    margin-bottom:7px;
+}
+.aportes-latest-grid {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
+}
+.aportes-latest-item {
+    background:#F8FAFC;
+    border:1px solid #E7EDF3;
+    border-radius:10px;
+    padding:7px 8px;
+    min-width:0;
+}
+.aportes-latest-name {
+    font-size:7px;
+    color:#71839A;
+    font-weight:800;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.aportes-latest-date {
+    font-size:10px;
+    color:#17345E;
+    font-weight:900;
+    margin-top:3px;
+    white-space:nowrap;
+}
+.aportes-latest-value {
+    font-size:7.5px;
+    color:#8795A8;
+    margin-top:2px;
+}
+.aportes-latest-avatar {
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:8px;
+    font-weight:900;
+    margin-right:5px;
+    vertical-align:middle;
+}
+.aportes-latest-avatar.diego { background:#FFE9EE; color:#FF5A73; }
+.aportes-latest-avatar.william { background:#EAF2FF; color:#5DA7F4; }
+.aportes-latest-avatar.andres { background:#E8F8F1; color:#43C995; }
+
+@media (max-width: 1200px) {
+
     .aportes-compact-grid { grid-template-columns:1fr; }
     .aportes-bottom-grid { grid-template-columns:1fr; }
 }
@@ -5035,6 +5143,52 @@ if st.session_state.vista_airbnb == "Aportes":
                 config={"displayModeBar": False},
                 key="fig_composicion_patrimonio_compacto",
             )
+
+            # --------------------------------------------------------
+            # ÚLTIMOS APORTES POR SOCIO
+            # --------------------------------------------------------
+            latest_html = """
+<div class="aportes-latest-panel">
+    <div class="aportes-latest-title">📅 Últimos aportes registrados</div>
+    <div class="aportes-latest-sub">Fecha del último aporte por socio</div>
+    <div class="aportes-latest-grid">
+"""
+            for _, r in ultimos_por_socio.iterrows():
+                n = str(r["Nombre_Socio"])
+                clase_latest = (
+                    "diego" if "Diego" in n
+                    else "william" if "William" in n
+                    else "andres"
+                )
+                avatar_latest = (
+                    "D" if "Diego" in n
+                    else "W" if "William" in n
+                    else "A"
+                )
+                fecha_r = pd.Timestamp(r["Fecha"])
+                fecha_r_txt = (
+                    f"{fecha_r.day:02d} "
+                    f"{meses_es.get(fecha_r.month, fecha_r.strftime('%b').lower())} "
+                    f"{fecha_r.year}"
+                )
+                dias_r = max(0, (pd.Timestamp(hoy) - fecha_r.normalize()).days)
+                latest_html += f"""
+        <div class="aportes-latest-item">
+            <div class="aportes-latest-name">
+                <span class="aportes-latest-avatar {clase_latest}">{avatar_latest}</span>
+                {escape_html(n)}
+            </div>
+            <div class="aportes-latest-date">{fecha_r_txt}</div>
+            <div class="aportes-latest-value">
+                {dinero_corto(float(r["Valor"]))} · hace {dias_r} días
+            </div>
+        </div>
+"""
+            latest_html += """
+    </div>
+</div>
+"""
+            render_aportes_html(latest_html)
 
         # --------------------------------------------------------
         # BLOQUE INFERIOR: NEGOCIOS Y OTROS ACTIVOS
