@@ -3993,18 +3993,21 @@ if st.session_state.vista_airbnb == "Aportes":
     border-radius:14px;
     padding:14px;
     box-sizing:border-box;
-    min-height:548px;
+    min-height:520px;
     overflow:hidden;
 }
 .aportes-socio-panel.diego { border-top:3px solid #FF5A73; }
 .aportes-socio-panel.william { border-top:3px solid #5DA7F4; }
 .aportes-socio-panel.andres { border-top:3px solid #43C995; }
-.aportes-socio-head { display:flex;align-items:center;gap:8px;margin-bottom:11px; }
+.aportes-socio-head { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px; }
 .aportes-avatar { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900; }
 .aportes-avatar.diego { background:#FFE9EE;color:#FF5A73; }
 .aportes-avatar.william { background:#EAF2FF;color:#5DA7F4; }
 .aportes-avatar.andres { background:#E8F8F1;color:#43C995; }
-.aportes-socio-name { font-size:13px;font-weight:900;color:#17345E; }
+.aportes-socio-name { font-size:15px;font-weight:900;color:#17345E; }
+.aportes-header-total { margin-left:auto;text-align:right; }
+.aportes-header-total-label { font-size:7px;font-weight:800;color:#8795A8;text-transform:uppercase;letter-spacing:.2px; }
+.aportes-header-total-value { font-size:17px;font-weight:900;color:#17345E;line-height:1;margin-top:3px; }
 .aportes-socio-layout { display:grid;grid-template-columns:0.88fr 1.12fr;gap:12px;align-items:start; }
 .aportes-aporte-box { border-radius:10px;padding:10px 11px;background:#F8FAFC;border:1px solid #E5EBF1; }
 .aportes-socio-panel.diego .aportes-aporte-box { background:#FFF5F7;border-color:#FFE0E7; }
@@ -4017,11 +4020,11 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-socio-total-line { margin-top:9px;padding-top:8px;border-top:1px solid #DFE7EF;display:flex;justify-content:space-between;font-size:9px;font-weight:900;color:#17345E; }
 .aportes-finca-title { font-size:10px;font-weight:900;color:#17345E;margin-bottom:2px; }
 .aportes-finca-sub { font-size:7.5px;color:#8795A8;margin-bottom:2px; }
-.aportes-donut-wrap { min-height:250px; }
-.aportes-adicionales-title { font-size:10px;font-weight:900;color:#17345E;margin-top:7px;margin-bottom:6px; }
-.aportes-mini-asset { display:flex;justify-content:space-between;gap:8px;padding:7px 8px;margin-top:5px;border:1px solid #E7EDF3;border-radius:8px;background:#FAFBFC; }
-.aportes-mini-asset-name { font-size:8px;color:#5F7189;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.aportes-mini-asset-value { font-size:8px;font-weight:900;color:#17345E;white-space:nowrap; }
+.aportes-donut-wrap { min-height:275px; }
+.aportes-adicionales-title { font-size:9px;font-weight:900;color:#17345E;margin-top:4px;margin-bottom:4px; }
+.aportes-mini-asset { display:flex;justify-content:space-between;gap:8px;padding:6px 8px;margin-top:4px;border:1px solid #E7EDF3;border-radius:8px;background:#FAFBFC; }
+.aportes-mini-asset-name { font-size:8.5px;color:#5F7189;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.aportes-mini-asset-value { font-size:8.5px;font-weight:900;color:#17345E;white-space:nowrap; }
 .aportes-additional { color:#7757C8;font-weight:800; }
 .aportes-patrimonio-strip { margin-top:9px;border-top:1px solid #E6ECF2;padding-top:9px;display:flex;justify-content:space-between;align-items:flex-end; }
 .aportes-patrimonio-label { font-size:9px;font-weight:850;color:#71839A; }
@@ -4245,23 +4248,17 @@ if st.session_state.vista_airbnb == "Aportes":
             ratio = float(socio_row["Patrimonio_vs_Aportes"])
 
             with socio_cols[idx]:
-                with st.container(height=610, border=True):
+                with st.container(height=520, border=True):
                     render_aportes_html(f"""
-<div style="border-top:3px solid {'#FF5A73' if clase=='diego' else '#5DA7F4' if clase=='william' else '#43C995'}; margin:-1px -1px 11px; padding-top:10px;">
+<div style="border-top:3px solid {'#FF5A73' if clase=='diego' else '#5DA7F4' if clase=='william' else '#43C995'}; margin:-1px -1px 6px; padding-top:8px;">
     <div class="aportes-socio-head">
-        <div class="aportes-avatar {clase}">{avatar}</div>
-        <div class="aportes-socio-name">{escape_html(nombre)}</div>
-    </div>
-    <div class="aportes-socio-layout">
-        <div class="aportes-aporte-box">
-            <div class="aportes-box-title">💰 Aportes</div>
-            <div class="aportes-socio-line"><span>Aporte inicial</span><span>{dinero_corto(aporte_inicial)}</span></div>
-            <div class="aportes-socio-line"><span>Aportes adicionales</span><span>{dinero_corto(aporte_adicional)}</span></div>
-            <div class="aportes-socio-total-line"><span>Total aportes</span><span>{dinero_corto(total_socio)}</span></div>
+        <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+            <div class="aportes-avatar {clase}">{avatar}</div>
+            <div class="aportes-socio-name">{escape_html(nombre)}</div>
         </div>
-        <div>
-            <div class="aportes-finca-title">🏠 Finca Raíz (activos asociados)</div>
-            <div class="aportes-finca-sub">Participación de cada predio en la Finca Raíz del socio</div>
+        <div class="aportes-header-total">
+            <div class="aportes-header-total-label">Total aportes</div>
+            <div class="aportes-header-total-value">{dinero_corto(total_socio)}</div>
         </div>
     </div>
 </div>
@@ -4280,26 +4277,27 @@ if st.session_state.vista_airbnb == "Aportes":
                         fig_finca = go.Figure(go.Pie(
                             labels=finca_labels,
                             values=finca_values,
-                            hole=0.56,
+                            hole=0.50,
                             marker=dict(
                                 colors=finca_colors[:len(finca_labels)],
                                 line=dict(color="#FFFFFF", width=2)
                             ),
                             textinfo="percent",
-                            textfont=dict(size=7),
+                            textfont=dict(size=10, color="#4F6075"),
                             hovertemplate="%{label}<br>$%{value:,.0f}<br>%{percent}<extra></extra>",
+                            domain=dict(x=[0.0, 0.53], y=[0.0, 1.0]),
                         ))
                         fig_finca.update_layout(
-                            height=225,
+                            height=285,
                             margin=dict(l=0, r=0, t=0, b=0),
                             showlegend=True,
                             legend=dict(
                                 orientation="v",
-                                x=0.55,
+                                x=0.57,
                                 xanchor="left",
                                 y=0.5,
                                 yanchor="middle",
-                                font=dict(size=7, color="#61738C"),
+                                font=dict(size=9, color="#61738C"),
                                 bgcolor="rgba(0,0,0,0)",
                             ),
                             paper_bgcolor="rgba(0,0,0,0)",
@@ -4310,7 +4308,7 @@ if st.session_state.vista_airbnb == "Aportes":
                                 f"<b>{dinero_corto(float(socio_row['Finca_Raiz']))}</b>"
                                 "<br><span style='font-size:8px'>Finca Raíz</span>"
                             ),
-                            x=0.27,
+                            x=0.265,
                             y=0.5,
                             showarrow=False,
                             font=dict(size=10, color="#17345E"),
