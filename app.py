@@ -4032,16 +4032,18 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-patrimonio-ratio { font-size:8px;font-weight:850;color:#009B70;margin-top:4px;text-align:right; }
 
 .aportes-otros-panel { background:#FFFFFF;border:1px solid #DCE5EE;border-radius:14px;padding:14px 16px 10px;margin-top:13px;overflow-x:auto; }
-.aportes-card-title2 { font-size:13px;font-weight:900;color:#17345E; }
+.aportes-card-title2 { font-size:15px;font-weight:900;color:#17345E; }
 .aportes-card-sub2 { font-size:8.5px;color:#8A98AA;margin-top:4px;margin-bottom:9px; }
-.aportes-table2 { width:100%;border-collapse:separate;border-spacing:0;font-size:8.5px;color:#50637B;min-width:850px; }
-.aportes-table2 th { background:#F4F7FA;color:#71839A;font-size:7.5px;font-weight:800;text-transform:uppercase;padding:8px 9px;border-bottom:1px solid #DCE5EE;text-align:right;white-space:nowrap; }
+.aportes-table2 { width:100%;border-collapse:separate;border-spacing:0;font-size:9.5px;color:#50637B;min-width:950px; }
+.aportes-table2 th { background:#F4F7FA;color:#71839A;font-size:8px;font-weight:800;text-transform:uppercase;padding:10px 10px;border-bottom:1px solid #DCE5EE;text-align:right;white-space:nowrap; }
 .aportes-table2 th:first-child,.aportes-table2 th:nth-child(2){text-align:left;}
-.aportes-table2 td { padding:8px 9px;border-bottom:1px solid #EDF1F5;text-align:right;white-space:nowrap; }
+.aportes-table2 td { padding:10px 10px;border-bottom:1px solid #EDF1F5;text-align:right;white-space:nowrap; }
 .aportes-table2 tr:last-child td { border-bottom:none; }
 .aportes-table2 td:first-child{text-align:left;font-weight:800;color:#17345E;}
 .aportes-table2 td:nth-child(2){text-align:left;color:#8290A4;}
 .aportes-badge { display:inline-flex;align-items:center;padding:3px 7px;border-radius:20px;background:#EEF2F6;color:#61738C;font-size:7.5px;font-weight:800; }
+.aportes-badge-warn { background:#FFF3D9; color:#A56B00; }
+.aportes-money-muted { color:#8B98AA; font-weight:800; }
 .aportes-note2 { margin-top:8px;padding:8px 10px;background:#F8FAFC;border:1px solid #E5EBF1;border-radius:9px;font-size:7.5px;color:#71839A;line-height:1.45; }
 
 @media (max-width: 1200px) {
@@ -4226,8 +4228,8 @@ if st.session_state.vista_airbnb == "Aportes":
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:8px;
-    margin-bottom:8px;
+    gap:10px;
+    margin-bottom:7px;
 }
 .aportes-ref-name-wrap {
     display:flex;
@@ -4236,7 +4238,7 @@ if st.session_state.vista_airbnb == "Aportes":
     min-width:0;
 }
 .aportes-ref-name {
-    font-size:16px;
+    font-size:17px;
     font-weight:900;
     color:#17345E;
     white-space:nowrap;
@@ -4245,14 +4247,14 @@ if st.session_state.vista_airbnb == "Aportes":
     text-align:right;
 }
 .aportes-ref-total-label {
-    font-size:7px;
+    font-size:8px;
     font-weight:900;
     color:#8492A5;
     text-transform:uppercase;
     letter-spacing:.25px;
 }
 .aportes-ref-total-value {
-    font-size:21px;
+    font-size:22px;
     font-weight:900;
     color:#17345E;
     line-height:1.0;
@@ -4267,26 +4269,26 @@ if st.session_state.vista_airbnb == "Aportes":
     background:#FFFFFF;
     border:1px solid #E5EBF1;
     border-radius:10px;
-    padding:8px 9px;
+    padding:9px 10px;
     box-sizing:border-box;
 }
 .aportes-ref-list-title {
-    font-size:10px;
+    font-size:11px;
     font-weight:900;
     color:#17345E;
     margin-bottom:5px;
 }
 .aportes-ref-list-sub {
-    font-size:7.5px;
+    font-size:8px;
     color:#8A98AA;
     margin-bottom:6px;
 }
 .aportes-ref-row {
     display:grid;
-    grid-template-columns:11px minmax(0,1fr) 34px 58px;
-    gap:6px;
+    grid-template-columns:11px minmax(0,1fr) 38px 64px;
+    gap:7px;
     align-items:center;
-    padding:5px 0;
+    padding:6px 0;
     border-bottom:1px solid #EDF1F5;
 }
 .aportes-ref-row:last-child {
@@ -4303,17 +4305,17 @@ if st.session_state.vista_airbnb == "Aportes":
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
-    font-size:8px;
+    font-size:9px;
     color:#61738C;
 }
 .aportes-ref-pct {
     text-align:right;
-    font-size:7.5px;
+    font-size:8px;
     color:#8492A5;
 }
 .aportes-ref-value {
     text-align:right;
-    font-size:8.5px;
+    font-size:9px;
     font-weight:900;
     color:#17345E;
     white-space:nowrap;
@@ -4322,8 +4324,8 @@ if st.session_state.vista_airbnb == "Aportes":
     border:1px solid #E6E0F8;
     background:#FBFAFF;
     border-radius:10px;
-    padding:9px;
-    margin-top:9px;
+    padding:10px;
+    margin-top:8px;
 }
 .aportes-ref-extra-head {
     display:flex;
@@ -4332,22 +4334,22 @@ if st.session_state.vista_airbnb == "Aportes":
     gap:7px;
 }
 .aportes-ref-extra-title {
-    font-size:9px;
+    font-size:10px;
     font-weight:900;
     color:#17345E;
 }
 .aportes-ref-extra-sub {
-    font-size:7.5px;
+    font-size:8px;
     color:#8A98AA;
     margin-top:3px;
 }
 .aportes-ref-extra-total-label {
-    font-size:7px;
+    font-size:8px;
     color:#8795A8;
     text-align:right;
 }
 .aportes-ref-extra-total {
-    font-size:15px;
+    font-size:17px;
     font-weight:900;
     color:#7757C8;
     text-align:right;
@@ -4362,21 +4364,21 @@ if st.session_state.vista_airbnb == "Aportes":
     background:#FFFFFF;
     border:1px solid #E6EBF1;
     border-radius:8px;
-    padding:6px 7px;
+    padding:7px 8px;
     margin-top:5px;
 }
 .aportes-ref-extra-name {
-    font-size:8px;
+    font-size:9px;
     color:#5F7189;
     font-weight:700;
 }
 .aportes-ref-extra-value {
-    font-size:8.5px;
+    font-size:9px;
     color:#17345E;
     font-weight:900;
 }
 .aportes-ref-patrimonio {
-    margin-top:9px;
+    margin-top:8px;
     border:1px solid #FFDDE5;
     background:linear-gradient(180deg,#FFF8FA 0%,#FFF1F5 100%);
     border-radius:10px;
@@ -4387,24 +4389,24 @@ if st.session_state.vista_airbnb == "Aportes":
     gap:10px;
 }
 .aportes-ref-patrimonio-label {
-    font-size:9px;
+    font-size:10px;
     font-weight:900;
     color:#17345E;
 }
 .aportes-ref-patrimonio-sub {
-    font-size:7.5px;
+    font-size:8px;
     color:#8A98AA;
     margin-top:3px;
 }
 .aportes-ref-patrimonio-value {
-    font-size:21px;
+    font-size:23px;
     font-weight:900;
     color:#17345E;
     text-align:right;
     line-height:1;
 }
 .aportes-ref-ratio {
-    font-size:8px;
+    font-size:8.5px;
     font-weight:900;
     color:#009B70;
     text-align:right;
@@ -4476,7 +4478,7 @@ if st.session_state.vista_airbnb == "Aportes":
             with socio_cols[idx]:
 
                 with st.container(
-                    height=625,
+                    height=550,
                     border=True
                 ):
 
@@ -4580,8 +4582,8 @@ if st.session_state.vista_airbnb == "Aportes":
                                 ),
                                 textinfo="percent",
                                 textfont=dict(
-                                    size=10,
-                                    color="#4F6075"
+                                    size=11,
+                                    color="#40536B"
                                 ),
                                 hovertemplate=(
                                     "%{label}<br>"
@@ -4592,7 +4594,7 @@ if st.session_state.vista_airbnb == "Aportes":
                         )
 
                         fig_finca.update_layout(
-                            height=275,
+                            height=245,
                             margin=dict(
                                 l=0,
                                 r=0,
@@ -4608,7 +4610,7 @@ if st.session_state.vista_airbnb == "Aportes":
                             text=(
                                 f"<b>{dinero_corto(finca_total)}</b>"
                                 "<br>"
-                                "<span style='font-size:9px'>"
+                                "<span style='font-size:10px'>"
                                 "Finca Raíz"
                                 "</span>"
                             ),
@@ -4616,13 +4618,13 @@ if st.session_state.vista_airbnb == "Aportes":
                             y=0.5,
                             showarrow=False,
                             font=dict(
-                                size=12,
+                                size=14,
                                 color="#17345E"
                             ),
                         )
 
                         finca_col, detalle_col = st.columns(
-                            [0.92, 1.08],
+                            [1.02, 0.98],
                             gap="small"
                         )
 
@@ -4822,7 +4824,7 @@ if st.session_state.vista_airbnb == "Aportes":
             table_html = """
 <div class="aportes-otros-panel">
     <div class="aportes-card-title2">🏪 Negocios y otros activos</div>
-    <div class="aportes-card-sub2">Activos que no hacen parte de la Finca Raíz conjunta · participación registrada</div>
+    <div class="aportes-card-sub2">Activos no inmobiliarios · participación de cada socio · valoración pendiente</div>
     <table class="aportes-table2">
         <thead>
             <tr>
@@ -4836,7 +4838,7 @@ if st.session_state.vista_airbnb == "Aportes":
                 table_html += f"<th>{corto}</th>"
 
             table_html += """
-                <th>Valor</th>
+                <th>Valor patrimonial</th>
                 <th>Estado</th>
             </tr>
         </thead>
@@ -4855,14 +4857,14 @@ if st.session_state.vista_airbnb == "Aportes":
                     pct = raw if raw > 1.01 else raw * 100
                     table_html += f"<td>{'-' if pct == 0 else f'{pct:.1f}%'}</td>"
 
-                table_html += "<td>-</td>"
-                table_html += "<td><span class='aportes-badge'>Por valorar</span></td>"
+                table_html += "<td><span class='aportes-money-muted'>Por valorar</span></td>"
+                table_html += "<td><span class='aportes-badge aportes-badge-warn'>Pendiente</span></td>"
                 table_html += "</tr>"
 
             table_html += """
         </tbody>
     </table>
-    <div class="aportes-note2"><b>Nota:</b> La clasificación patrimonial usa una regla automática: Finca Raíz asociada = activo donde participan los 3 socios de esta app. Todo activo que no cumpla esa condición se considera adicional para el socio que lo posee. La valoración monetaria de Comercio y otros activos se incorporará en la siguiente capa.</div>
+    <div class="aportes-note2"><b>Nota:</b> La clasificación patrimonial usa una regla automática: Finca Raíz asociada = activo donde participan los 3 socios de esta app. Todo activo que no cumpla esa condición se considera adicional para el socio que lo posee. La valoración monetaria de Comercio y otros activos se incorporará en la siguiente capa; mientras tanto, la tabla conserva la participación real de cada socio.</div>
 </div>
 """
             render_aportes_html(table_html)
