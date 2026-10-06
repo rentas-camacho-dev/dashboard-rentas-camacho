@@ -4638,18 +4638,9 @@ if st.session_state.vista_airbnb == "Aportes":
 </style>
 """)
 
-        # Encabezado de la sección
-        render_aportes_html("""
-<div class="aportes-compact-section">
-    <div class="aportes-compact-title-row">
-        <div class="aportes-compact-title">Composición patrimonial por socio</div>
-        <div class="aportes-compact-toggle">
-            <span class="active">Vista compacta</span>
-            <span>Vista detallada</span>
-        </div>
-    </div>
-</div>
-""")
+        # Las tarjetas de socios comienzan directamente debajo de los KPI.
+        # Se elimina el encabezado intermedio y el selector de vista para
+        # reducir espacio y mantener la pantalla más limpia.
 
         # --------------------------------------------------------
         # TRES TARJETAS
