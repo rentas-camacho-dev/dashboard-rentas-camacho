@@ -3952,15 +3952,15 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-kpi-grid6 {
     display:grid;
     grid-template-columns:repeat(6,minmax(0,1fr));
-    gap:10px;
-    margin:4px 0 14px;
+    gap:8px;
+    margin:3px 0 11px;
 }
 .aportes-kpi6 {
     background:#FFFFFF;
     border:1px solid #E3E9F0;
     border-radius:12px;
-    padding:10px 12px;
-    min-height:82px;
+    padding:8px 10px;
+    min-height:70px;
     box-sizing:border-box;
     display:flex;
     align-items:center;
@@ -3968,9 +3968,9 @@ if st.session_state.vista_airbnb == "Aportes":
     box-shadow:0 1px 2px rgba(23,52,94,.025);
 }
 .aportes-kpi6-icon {
-    width:36px;height:36px;border-radius:11px;
+    width:30px;height:30px;border-radius:9px;
     display:flex;align-items:center;justify-content:center;
-    font-size:18px;flex:0 0 36px;
+    font-size:15px;flex:0 0 30px;
 }
 .aportes-kpi6:nth-child(1) .aportes-kpi6-icon { background:#E8F8F1; }
 .aportes-kpi6:nth-child(2) .aportes-kpi6-icon { background:#F1EAFE; }
@@ -3978,9 +3978,9 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-kpi6:nth-child(4) .aportes-kpi6-icon { background:#F6ECFF; }
 .aportes-kpi6:nth-child(5) .aportes-kpi6-icon { background:#FFF0E5; }
 .aportes-kpi6:nth-child(6) .aportes-kpi6-icon { background:#FFE9EE; }
-.aportes-kpi6-label { font-size:8px;color:#7E8DA3;font-weight:800;line-height:1.15; }
-.aportes-kpi6-value { font-size:20px;line-height:1.05;color:#17345E;font-weight:900;margin-top:5px;white-space:nowrap; }
-.aportes-kpi6-sub { font-size:8px;color:#8795A8;margin-top:4px; }
+.aportes-kpi6-label { font-size:7px;color:#7E8DA3;font-weight:800;line-height:1.15; }
+.aportes-kpi6-value { font-size:18px;line-height:1.05;color:#17345E;font-weight:900;margin-top:5px;white-space:nowrap; }
+.aportes-kpi6-sub { font-size:7px;color:#8795A8;margin-top:4px; }
 
 .aportes-socios-grid {
     display:grid;
@@ -3991,9 +3991,9 @@ if st.session_state.vista_airbnb == "Aportes":
     background:#FFFFFF;
     border:1px solid #DCE5EE;
     border-radius:14px;
-    padding:14px;
+    padding:11px;
     box-sizing:border-box;
-    min-height:520px;
+    min-height:480px;
     overflow:hidden;
 }
 .aportes-socio-panel.diego { border-top:3px solid #FF5A73; }
@@ -4004,7 +4004,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-avatar.diego { background:#FFE9EE;color:#FF5A73; }
 .aportes-avatar.william { background:#EAF2FF;color:#5DA7F4; }
 .aportes-avatar.andres { background:#E8F8F1;color:#43C995; }
-.aportes-socio-name { font-size:15px;font-weight:900;color:#17345E; }
+.aportes-socio-name { font-size:14px;font-weight:900;color:#17345E; }
 .aportes-header-total { margin-left:auto;text-align:right; }
 .aportes-header-total-label { font-size:7px;font-weight:800;color:#8795A8;text-transform:uppercase;letter-spacing:.2px; }
 .aportes-header-total-value { font-size:17px;font-weight:900;color:#17345E;line-height:1;margin-top:3px; }
@@ -4228,20 +4228,20 @@ if st.session_state.vista_airbnb == "Aportes":
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:12px;
-    margin:0 0 10px;
+    gap:10px;
+    margin:0 0 7px;
     padding-top:2px;
 }
 
 .aportes-ref-name-wrap {
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:8px;
     min-width:0;
 }
 
 .aportes-ref-name {
-    font-size:19px;
+    font-size:16px;
     line-height:1.05;
     font-weight:900;
     color:#17345E;
@@ -4254,7 +4254,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-ref-total-label {
-    font-size:8px;
+    font-size:7px;
     line-height:1;
     font-weight:900;
     color:#8290A4;
@@ -4263,7 +4263,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-ref-total-value {
-    font-size:25px;
+    font-size:20px;
     line-height:1;
     font-weight:900;
     color:#17345E;
@@ -4272,21 +4272,21 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-ref-main {
     display:grid;
-    grid-template-columns:1.05fr .95fr;
-    gap:10px;
+    grid-template-columns:1.08fr .92fr;
+    gap:8px;
     align-items:center;
 }
 
 .aportes-ref-summary {
     background:#FFFFFF;
     border:1px solid #E2E9F0;
-    border-radius:12px;
-    padding:10px 11px;
+    border-radius:10px;
+    padding:8px 9px;
     box-sizing:border-box;
 }
 
 .aportes-ref-summary-title {
-    font-size:11px;
+    font-size:10px;
     font-weight:900;
     color:#17345E;
     margin-bottom:6px;
@@ -4297,7 +4297,7 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     justify-content:space-between;
     gap:8px;
-    padding:8px 0;
+    padding:6px 0;
     border-bottom:1px solid #EDF1F5;
 }
 
@@ -4306,12 +4306,12 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-ref-summary-label {
-    font-size:8.8px;
+    font-size:8px;
     color:#71839A;
 }
 
 .aportes-ref-summary-value {
-    font-size:10px;
+    font-size:9px;
     color:#17345E;
     font-weight:900;
     white-space:nowrap;
@@ -4319,7 +4319,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-ref-summary-row.total .aportes-ref-summary-label,
 .aportes-ref-summary-row.total .aportes-ref-summary-value {
-    font-size:10px;
+    font-size:9px;
     font-weight:900;
     color:#17345E;
 }
@@ -4329,7 +4329,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-ref-extra {
-    margin-top:9px;
+    margin-top:7px;
     border:1px solid #E5E0F5;
     background:#FCFBFF;
     border-radius:12px;
@@ -4344,13 +4344,13 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-ref-extra-title {
-    font-size:11px;
+    font-size:10px;
     font-weight:900;
     color:#17345E;
 }
 
 .aportes-ref-extra-sub {
-    font-size:8.5px;
+    font-size:7.5px;
     color:#8795A8;
     margin-top:3px;
 }
@@ -4362,7 +4362,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-ref-extra-total {
-    font-size:19px;
+    font-size:17px;
     font-weight:900;
     color:#7757C8;
     line-height:1;
@@ -4377,13 +4377,13 @@ if st.session_state.vista_airbnb == "Aportes":
     gap:8px;
     background:#FFFFFF;
     border:1px solid #E4EAF0;
-    border-radius:9px;
-    padding:8px 9px;
-    margin-top:6px;
+    border-radius:8px;
+    padding:6px 8px;
+    margin-top:5px;
 }
 
 .aportes-ref-extra-name {
-    font-size:9.5px;
+    font-size:8.5px;
     color:#5F7189;
     font-weight:750;
     white-space:nowrap;
@@ -4392,14 +4392,14 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-ref-extra-value {
-    font-size:9.5px;
+    font-size:8.5px;
     color:#17345E;
     font-weight:900;
     white-space:nowrap;
 }
 
 .aportes-ref-patrimonio {
-    margin-top:9px;
+    margin-top:7px;
     border:1px solid #FFD8E2;
     background:linear-gradient(180deg,#FFF8FA 0%,#FFF1F5 100%);
     border-radius:12px;
@@ -4411,7 +4411,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-ref-patrimonio-label {
-    font-size:10.5px;
+    font-size:9px;
     font-weight:900;
     color:#17345E;
 }
@@ -4423,7 +4423,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-ref-patrimonio-value {
-    font-size:24px;
+    font-size:20px;
     font-weight:900;
     color:#17345E;
     text-align:right;
@@ -4431,7 +4431,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-ref-ratio {
-    font-size:8.5px;
+    font-size:8px;
     font-weight:900;
     color:#009B70;
     text-align:right;
@@ -4439,7 +4439,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-finca-summary-panel {
-    margin-top:13px;
+    margin-top:11px;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
     border-radius:14px;
@@ -4457,7 +4457,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-finca-summary-title {
-    font-size:15px;
+    font-size:13px;
     font-weight:900;
     color:#17345E;
 }
@@ -4479,7 +4479,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-finca-summary-total-value {
-    font-size:20px;
+    font-size:18px;
     font-weight:900;
     color:#17345E;
     line-height:1;
@@ -4490,7 +4490,7 @@ if st.session_state.vista_airbnb == "Aportes":
     width:100%;
     border-collapse:separate;
     border-spacing:0;
-    font-size:9px;
+    font-size:8.5px;
     color:#50637B;
     min-width:760px;
 }
@@ -4551,6 +4551,14 @@ if st.session_state.vista_airbnb == "Aportes":
         grid-template-columns:1fr;
     }
 }
+/* Compactación final: misma información, menor escala visual */
+.aportes-ref-card { max-width:100%; }
+.aportes-ref-header { min-height:44px; }
+.aportes-ref-main { align-items:center; }
+.aportes-ref-summary-row { min-height:26px; }
+.aportes-ref-extra-head { min-height:32px; }
+.aportes-ref-extra-row { min-height:30px; box-sizing:border-box; }
+.aportes-ref-patrimonio { min-height:50px; box-sizing:border-box; }
 </style>
 """)
 
@@ -4616,7 +4624,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
             with socio_cols[idx]:
 
-                with st.container(height=610, border=True):
+                with st.container(height=500, border=True):
 
                     color_principal = (
                         "#FF5A73"
@@ -4687,7 +4695,7 @@ if st.session_state.vista_airbnb == "Aportes":
                         )
 
                         fig_finca.update_layout(
-                            height=250,
+                            height=215,
                             margin=dict(l=0, r=0, t=0, b=0),
                             showlegend=False,
                             paper_bgcolor="rgba(0,0,0,0)",
@@ -4702,7 +4710,7 @@ if st.session_state.vista_airbnb == "Aportes":
                             x=0.5,
                             y=0.5,
                             showarrow=False,
-                            font=dict(size=14, color="#17345E"),
+                            font=dict(size=13, color="#17345E"),
                         )
 
                         finca_col, resumen_col = st.columns([1.02, 0.98], gap="small")
