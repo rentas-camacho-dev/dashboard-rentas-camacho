@@ -3918,14 +3918,8 @@ if st.session_state.vista_airbnb == "Aportes":
                 SUM(ABS(COALESCE(Gasto, 0))) AS Gastos_Familiares
             FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
             WHERE
-                LOWER(TRIM(COALESCE(Nombre_Subcategoria, '')))
-                    LIKE '%gasto%familiar%'
-                OR LOWER(TRIM(COALESCE(Nombre_Tipo, '')))
-                    LIKE '%gasto%familiar%'
-                OR LOWER(TRIM(COALESCE(Detalle, '')))
-                    LIKE '%gasto%familiar%'
-                OR LOWER(TRIM(COALESCE(Nombre_Cuenta, '')))
-                    LIKE '%gasto%familiar%'
+                LOWER(TRIM(COALESCE(Nombre_Categoria, '')))
+                    = 'gasto familiar'
             GROUP BY Nombre_Socio
             """
             gastos = client.query(query).to_dataframe()
@@ -4213,7 +4207,8 @@ if st.session_state.vista_airbnb == "Aportes":
         # APORTE BRUTO vs. CAPITAL NETO APORTADO
         # --------------------------------------------------------
         # Los aportes brutos vienen exclusivamente de Aportes_Socios.
-        # Los gastos familiares vienen de
+        # Los gastos familiares vienen de la categoría exacta
+        # Nombre_Categoria = 'Gasto Familiar' en
         # Movimientos_Operativos_Reparto, que ya está prorrateado
         # por socio.
         # --------------------------------------------------------
@@ -5140,7 +5135,7 @@ if st.session_state.vista_airbnb == "Aportes":
     </div>
     <div class="aportes-compact-capital-note">
         Aportes brutos: {dinero_corto(float(socio_row["Aportes_Brutos"]))}
-        · Gastos familiares: -{dinero_corto(float(socio_row["Gastos_Familiares"]))}
+        · Gasto Familiar: -{dinero_corto(float(socio_row["Gastos_Familiares"]))}
     </div>
 </div>
 """)
