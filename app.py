@@ -106,7 +106,7 @@ div[data-testid="stDecoration"] {
 }
 
 .brand-mini-title {
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.05;
     font-weight: 850;
     color: #17345E;
@@ -118,7 +118,7 @@ div[data-testid="stDecoration"] {
 }
 
 .brand-mini-sub {
-    font-size: 9px;
+    font-size: 8px;
     color: #8290A4;
     margin-top: 5px;
     white-space: nowrap;
@@ -3247,7 +3247,7 @@ with top1:
 
                 <div class="brand-mini-title">
                     {(
-                        "Aportes y patrimonio familiar"
+                        "Aportes y patrimonio"
                         if st.session_state.vista_airbnb == "Aportes"
                         else "Airbnb Financial Hub"
                     )}
@@ -3255,7 +3255,7 @@ with top1:
 
                 <div class="brand-mini-sub">
                     {(
-                        "Capital familiar · Predios · Patrimonio"
+                        "Capital · Predios · Deuda"
                         if st.session_state.vista_airbnb == "Aportes"
                         else "Rentabilidad financiera · Solo Airbnb"
                     )}
@@ -4588,7 +4588,7 @@ if st.session_state.vista_airbnb == "Aportes":
             ("📈", "Neto conjunto", dinero_corto(patrimonio_neto_conjunto_total), "Finca Raíz - deuda conjunta"),
             ("🔗", "Activos adicionales", dinero_corto(valor_adicional_total), "Se muestran aparte"),
             ("💳", "Deuda adicional", f"-{dinero_corto(deuda_adicional_total)}", "Activos individuales"),
-            ("💰", "Capital neto aportado", dinero_corto(total_aportes), "Aportes - gastos familiares - personales"),
+            ("💰", "Capital neto aportado", dinero_corto(total_aportes), "Aportes - familiar - personal"),
         ]
 
         kpi_html = '<div class="aportes-kpi-grid6">'
@@ -4731,9 +4731,9 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-capital-breakdown {
     display:grid;
-    grid-template-columns:1.15fr auto 1fr auto 1fr auto 1.05fr;
+    grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;
     align-items:center;
-    gap:7px;
+    gap:5px;
     margin:7px 9px 5px;
     padding:6px 8px;
     background:#F8FAFC;
@@ -4750,14 +4750,14 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-capital-label {
-    font-size:8.5px;
+    font-size:8px;
     color:#7B8CA2;
     font-weight:800;
     white-space:nowrap;
 }
 
 .aportes-capital-item strong {
-    font-size:9.5px;
+    font-size:9px;
     font-weight:900;
     color:#17345E;
     white-space:nowrap;
@@ -5228,31 +5228,31 @@ if st.session_state.vista_airbnb == "Aportes":
         </div>
 
         <div class="aportes-compact-total">
-            <div class="aportes-compact-total-label">Capital neto aportado</div>
+            <div class="aportes-compact-total-label">Capital neto</div>
             <div class="aportes-compact-total-value">{dinero_corto(total_socio)}</div>
         </div>
     </div>
     <div class="aportes-capital-breakdown">
         <div class="aportes-capital-item gross">
-            <span class="aportes-capital-label">Aportes brutos</span>
+            <span class="aportes-capital-label">Brutos</span>
             <strong>{dinero_corto(float(socio_row["Aportes_Brutos"]))}</strong>
         </div>
         <div class="aportes-capital-divider"></div>
 
         <div class="aportes-capital-item expense">
-            <span class="aportes-capital-label">Gasto Familiar</span>
+            <span class="aportes-capital-label">Familiar</span>
             <strong>-{dinero_corto(float(socio_row["Gastos_Familiares"]))}</strong>
         </div>
         <div class="aportes-capital-divider"></div>
 
         <div class="aportes-capital-item expense">
-            <span class="aportes-capital-label">Gasto Personal</span>
+            <span class="aportes-capital-label">Personal</span>
             <strong>-{dinero_corto(float(socio_row["Gastos_Personales"]))}</strong>
         </div>
         <div class="aportes-capital-divider"></div>
 
         <div class="aportes-capital-item net">
-            <span class="aportes-capital-label">Capital neto</span>
+            <span class="aportes-capital-label">Neto</span>
             <strong>{dinero_corto(float(socio_row["Aportes"]))}</strong>
         </div>
     </div>
