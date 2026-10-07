@@ -4287,7 +4287,18 @@ if st.session_state.vista_airbnb == "Aportes":
         # --------------------------------------------------------
         # RESUMEN POR SOCIO
         # --------------------------------------------------------
-        resumen_socios = socios[["Nombre_Socio", "Aportes", "Participacion"]].copy()
+        resumen_socios = socios[
+            [
+                "Nombre_Socio",
+                "Aportes",
+                "Aportes_Brutos",
+                "Gastos_Familiares_Personales",
+                "Participacion",
+                "Movimientos",
+                "Primer_Aporte",
+                "Ultimo_Aporte",
+            ]
+        ].copy()
 
         finca_socio = (
             activos_asociados
