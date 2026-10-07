@@ -4732,7 +4732,15 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-compact-summary-row.ratio .aportes-compact-summary-value {
+    font-weight:900;
+}
+
+.aportes-compact-summary-row.ratio .aportes-compact-summary-value.positive {
     color:#009B70;
+}
+
+.aportes-compact-summary-row.ratio .aportes-compact-summary-value.negative {
+    color:#D64242;
 }
 .aportes-compact-summary-row.debt {
     background:#FFF7F7;
@@ -5039,6 +5047,8 @@ if st.session_state.vista_airbnb == "Aportes":
                 socio_row["Patrimonio_Neto_Conjunto"]
             )
             ratio = float(socio_row["Neto_Conjunto_vs_Aportes"])
+            ratio_icon = "↑" if ratio >= 0 else "↓"
+            ratio_class = "positive" if ratio >= 0 else "negative"
             finca_total = float(socio_row["Finca_Raiz"])
             adicionales_total = float(socio_row["Activos_Adicionales"])
 
@@ -5191,7 +5201,9 @@ if st.session_state.vista_airbnb == "Aportes":
 
     <div class="aportes-compact-summary-row ratio">
         <span class="aportes-compact-summary-label">Neto conjunto vs. aportes</span>
-        <span class="aportes-compact-summary-value">↑ {ratio:+.1f}%</span>
+        <span class="aportes-compact-summary-value {ratio_class}">
+            {ratio_icon} {ratio:+.1f}%
+        </span>
     </div>
 </div>
 """)
