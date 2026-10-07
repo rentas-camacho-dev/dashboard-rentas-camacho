@@ -3905,6 +3905,61 @@ if st.session_state.vista_airbnb == "Aportes":
         return vista
 
     @st.cache_data(ttl=900)
+    def cargar_gastos_familiares_prorrateados():
+        """
+        Carga los gastos familiares desde Movimientos_Operativos_Reparto.
+        La tabla ya está prorrateada por socio, por lo que se suma
+        directamente el Gasto atribuible a cada socio.
+        """
+        try:
+            query = """
+            SELECT
+                Nombre_Socio,
+                SUM(ABS(COALESCE(Gasto, 0))) AS Gastos_Familiares
+            FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
+            WHERE
+                LOWER(TRIM(COALESCE(Nombre_Subcategoria, '')))
+                    LIKE '%gasto%familiar%'
+                OR LOWER(TRIM(COALESCE(Nombre_Tipo, '')))
+                    LIKE '%gasto%familiar%'
+                OR LOWER(TRIM(COALESCE(Detalle, '')))
+                    LIKE '%gasto%familiar%'
+                OR LOWER(TRIM(COALESCE(Nombre_Cuenta, '')))
+                    LIKE '%gasto%familiar%'
+            GROUP BY Nombre_Socio
+            """
+            gastos = client.query(query).to_dataframe()
+
+            if gastos.empty:
+                return pd.DataFrame(
+                    columns=["Nombre_Socio", "Gastos_Familiares"]
+                )
+
+            gastos["Nombre_Socio"] = (
+                gastos["Nombre_Socio"]
+                .fillna("")
+                .astype(str)
+                .str.strip()
+            )
+
+            gastos["Gastos_Familiares"] = (
+                pd.to_numeric(
+                    gastos["Gastos_Familiares"],
+                    errors="coerce"
+                )
+                .fillna(0)
+                .abs()
+            )
+
+            return gastos
+
+        except Exception:
+            return pd.DataFrame(
+                columns=["Nombre_Socio", "Gastos_Familiares"]
+            )
+
+
+    @st.cache_data(ttl=900)
     def cargar_creditos_prorrateados():
         """Carga deuda actual atribuible a cada socio desde la vista prorrateada."""
         try:
@@ -4008,6 +4063,7 @@ if st.session_state.vista_airbnb == "Aportes":
     aportes_base = aportes_socios.copy()
     vista_patrimonio = cargar_estudio_mercado_prorrateado()
     creditos_prorrateados = cargar_creditos_prorrateados()
+    gastos_familiares = cargar_gastos_familiares_prorrateados()
 
     render_aportes_html("""
 <style>
@@ -4156,73 +4212,17 @@ if st.session_state.vista_airbnb == "Aportes":
         # --------------------------------------------------------
         # APORTE BRUTO vs. CAPITAL NETO APORTADO
         # --------------------------------------------------------
-        # Los gastos familiares/personales se descuentan de los
-        # aportes para medir el capital realmente destinado al
-        # patrimonio/inversiones.
-        campos_gasto = [
-            "Nombre_Categoria",
-            "Nombre_Subcategoria",
-            "Detalle",
-            "Nombre_Cuenta",
-            "Observaciones",
-        ]
-
-        for col in campos_gasto:
-            if col not in aportes_base.columns:
-                aportes_base[col] = ""
-            aportes_base[col] = (
-                aportes_base[col]
-                .fillna("")
-                .astype(str)
-                .str.strip()
-            )
-
-        aportes_base["_Texto_Clasificacion"] = (
-            aportes_base[campos_gasto]
-            .agg(" ".join, axis=1)
-            .str.lower()
-        )
-
-        # Solo se consideran gastos cuando la descripción contiene
-        # explícitamente gasto familiar/familia o gasto personal.
-        aportes_base["Es_Gasto_Familiar_Personal"] = (
-            aportes_base["_Texto_Clasificacion"]
-            .str.contains(
-                r"\bgastos?\s+(familiares?|personales?)\b",
-                regex=True,
-                na=False,
-            )
-        )
-
-        aportes_base["Valor_Clasificado"] = (
-            pd.to_numeric(
-                aportes_base["Valor"],
-                errors="coerce"
-            )
-            .fillna(0)
-            .abs()
-        )
-
-        aportes_base["_Gasto_FP_Valor"] = (
-            aportes_base["Valor_Clasificado"]
-            .where(
-                aportes_base["Es_Gasto_Familiar_Personal"],
-                0.0
-            )
-        )
-
+        # Los aportes brutos vienen exclusivamente de Aportes_Socios.
+        # Los gastos familiares vienen de
+        # Movimientos_Operativos_Reparto, que ya está prorrateado
+        # por socio.
         # --------------------------------------------------------
-        # SOCIOS QUE ESTA APP ESTÁ SIGUIENDO
-        # --------------------------------------------------------
+
         socios = (
             aportes_base
             .groupby("Nombre_Socio", as_index=False)
             .agg(
-                Aportes_Brutos=("Valor_Clasificado", "sum"),
-                Gastos_Familiares_Personales=(
-                    "_Gasto_FP_Valor",
-                    "sum"
-                ),
+                Aportes_Brutos=("Valor", "sum"),
                 Movimientos=("ID_Aporte", "nunique"),
                 Primer_Aporte=("Fecha", "min"),
                 Ultimo_Aporte=("Fecha", "max")
@@ -4231,9 +4231,27 @@ if st.session_state.vista_airbnb == "Aportes":
             .reset_index(drop=True)
         )
 
+        # Gastos familiares atribuibles a cada socio.
+        socios = socios.merge(
+            gastos_familiares,
+            on="Nombre_Socio",
+            how="left"
+        )
+
+        socios["Gastos_Familiares"] = (
+            pd.to_numeric(
+                socios["Gastos_Familiares"],
+                errors="coerce"
+            )
+            .fillna(0)
+            .abs()
+        )
+
+        # Capital neto realmente aportado:
+        # aportes registrados - gastos familiares consumidos.
         socios["Aportes"] = (
             socios["Aportes_Brutos"]
-            - socios["Gastos_Familiares_Personales"]
+            - socios["Gastos_Familiares"]
         ).clip(lower=0)
 
         nombres_socios = socios["Nombre_Socio"].tolist()
@@ -4243,8 +4261,8 @@ if st.session_state.vista_airbnb == "Aportes":
             socios["Aportes_Brutos"].sum()
         )
 
-        total_gastos_familiares_personales = float(
-            socios["Gastos_Familiares_Personales"].sum()
+        total_gastos_familiares = float(
+            socios["Gastos_Familiares"].sum()
         )
 
         total_aportes = float(
@@ -4292,7 +4310,7 @@ if st.session_state.vista_airbnb == "Aportes":
                 "Nombre_Socio",
                 "Aportes",
                 "Aportes_Brutos",
-                "Gastos_Familiares_Personales",
+                "Gastos_Familiares",
                 "Participacion",
                 "Movimientos",
                 "Primer_Aporte",
@@ -4516,7 +4534,7 @@ if st.session_state.vista_airbnb == "Aportes":
             ("📈", "Neto conjunto", dinero_corto(patrimonio_neto_conjunto_total), "Finca Raíz - deuda conjunta"),
             ("🔗", "Activos adicionales", dinero_corto(valor_adicional_total), "Se muestran aparte"),
             ("💳", "Deuda adicional", f"-{dinero_corto(deuda_adicional_total)}", "Activos individuales"),
-            ("💰", "Capital neto aportado", dinero_corto(total_aportes), "Aportes - gastos familiares/personales"),
+            ("💰", "Capital neto aportado", dinero_corto(total_aportes), "Aportes - gastos familiares"),
         ]
 
         kpi_html = '<div class="aportes-kpi-grid6">'
@@ -5122,7 +5140,7 @@ if st.session_state.vista_airbnb == "Aportes":
     </div>
     <div class="aportes-compact-capital-note">
         Aportes brutos: {dinero_corto(float(socio_row["Aportes_Brutos"]))}
-        · Gastos familiares/personales: -{dinero_corto(float(socio_row["Gastos_Familiares_Personales"]))}
+        · Gastos familiares: -{dinero_corto(float(socio_row["Gastos_Familiares"]))}
     </div>
 </div>
 """)
