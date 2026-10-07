@@ -4984,7 +4984,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-mini-panel-sub {
     font-size:8px;
-    color:#7B8CA2;
+    color:#667A92;
     margin-bottom:5px;
 }
 
