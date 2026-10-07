@@ -5017,6 +5017,27 @@ if st.session_state.vista_airbnb == "Aportes":
     white-space:nowrap;
 }
 
+.aportes-mini-debt-value {
+    font-size:11px;
+    font-weight:850;
+    color:#D64242;
+    white-space:nowrap;
+}
+
+.aportes-mini-ratio {
+    font-size:12px;
+    font-weight:950;
+    white-space:nowrap;
+}
+
+.aportes-mini-ratio.positive {
+    color:#009B70;
+}
+
+.aportes-mini-ratio.negative {
+    color:#D64242;
+}
+
 .aportes-mini-pct {
     font-size:8px;
     color:#71839A;
@@ -5568,7 +5589,7 @@ if st.session_state.vista_airbnb == "Aportes":
                     Deuda conjunta
                 </span>
 
-                <span class="aportes-finca-debt compact">
+                <span class="aportes-mini-debt-value">
                     -{dinero_corto(deuda_conjunta)}
                 </span>
 
@@ -5596,11 +5617,8 @@ if st.session_state.vista_airbnb == "Aportes":
                     Vs. capital aportado
                 </span>
 
-                <span class="{ratio_class}"
-                      style="font-size:8.5px;font-weight:900;">
-
+                <span class="aportes-mini-ratio {ratio_class}">
                     {ratio_icon} {ratio:+.1f}%
-
                 </span>
 
             </div>
