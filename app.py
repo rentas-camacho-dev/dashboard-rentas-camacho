@@ -1193,6 +1193,30 @@ st.markdown("""
 # FORMATO DINERO
 # ============================================================
 
+def fecha_corta_es(valor):
+    if pd.isna(valor):
+        return "-"
+
+    ts = pd.Timestamp(valor)
+
+    meses = {
+        1: "Ene",
+        2: "Feb",
+        3: "Mar",
+        4: "Abr",
+        5: "May",
+        6: "Jun",
+        7: "Jul",
+        8: "Ago",
+        9: "Sep",
+        10: "Oct",
+        11: "Nov",
+        12: "Dic",
+    }
+
+    return f"{ts.day:02d} {meses.get(ts.month, '')} {ts.year}"
+
+
 def dinero_corto(valor):
 
     if pd.isna(valor):
@@ -4934,6 +4958,163 @@ if st.session_state.vista_airbnb == "Aportes":
     white-space:nowrap;
 }
 
+.aportes-card-body-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+    padding:0 9px 7px;
+}
+
+.aportes-mini-panel {
+    background:#FAFBFD;
+    border:1px solid #E3EAF0;
+    border-radius:10px;
+    padding:8px 9px;
+    min-width:0;
+}
+
+.aportes-mini-panel-title {
+    font-size:9px;
+    font-weight:900;
+    color:#17345E;
+    margin-bottom:4px;
+}
+
+.aportes-mini-panel-sub {
+    font-size:7px;
+    color:#8A98AA;
+    margin-bottom:5px;
+}
+
+.aportes-mini-row {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:5px;
+    padding:5px 0;
+    border-bottom:1px solid #EDF1F5;
+}
+
+.aportes-mini-row:last-child {
+    border-bottom:none;
+}
+
+.aportes-mini-name {
+    min-width:0;
+    font-size:7.8px;
+    color:#61738C;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.aportes-mini-value {
+    font-size:8.5px;
+    font-weight:900;
+    color:#17345E;
+    white-space:nowrap;
+}
+
+.aportes-mini-pct {
+    font-size:7px;
+    color:#8A98AA;
+    margin-left:auto;
+    margin-right:3px;
+    white-space:nowrap;
+}
+
+.aportes-mini-total {
+    margin-top:4px;
+    padding-top:5px;
+    border-top:1px solid #E4EAF0;
+    display:flex;
+    justify-content:space-between;
+    gap:6px;
+}
+
+.aportes-mini-total-label {
+    font-size:7.5px;
+    font-weight:850;
+    color:#61738C;
+}
+
+.aportes-mini-total-value {
+    font-size:9px;
+    font-weight:900;
+    color:#7757C8;
+}
+
+.aportes-last-contrib {
+    margin:0 9px 9px;
+    padding:7px 9px;
+    border:1px solid #E9DFF9;
+    border-radius:9px;
+    background:linear-gradient(90deg,#FBF8FF 0%,#F8F4FF 100%);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+}
+
+.aportes-last-contrib-left {
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-width:0;
+}
+
+.aportes-last-contrib-icon {
+    width:24px;
+    height:24px;
+    border-radius:7px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#EEE5FF;
+    font-size:13px;
+    flex:0 0 24px;
+}
+
+.aportes-last-contrib-label {
+    font-size:7.5px;
+    font-weight:900;
+    color:#61738C;
+}
+
+.aportes-last-contrib-date {
+    font-size:7px;
+    color:#8A98AA;
+    margin-top:1px;
+}
+
+.aportes-last-contrib-value {
+    font-size:10px;
+    font-weight:900;
+    color:#7757C8;
+    white-space:nowrap;
+}
+
+.aportes-participation-panel {
+    background:#FFFFFF;
+    border:1px solid #DCE5EE;
+    border-radius:14px;
+    padding:12px 13px 8px;
+    box-sizing:border-box;
+}
+
+.aportes-participation-title {
+    font-size:13px;
+    font-weight:900;
+    color:#17345E;
+}
+
+.aportes-participation-sub {
+    font-size:8px;
+    color:#8A98AA;
+    margin-top:3px;
+    margin-bottom:4px;
+}
+
 /* ---------- detalle Finca Raíz ---------- */
 .aportes-bottom-grid {
     display:grid;
@@ -5116,6 +5297,7 @@ if st.session_state.vista_airbnb == "Aportes":
 @media (max-width: 800px) {
     .aportes-kpi-grid6 { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .aportes-compact-main { grid-template-columns:1fr; }
+    .aportes-card-body-grid { grid-template-columns:1fr; }
 }
 </style>
 """)
@@ -5196,179 +5378,289 @@ if st.session_state.vista_airbnb == "Aportes":
                 .reset_index(drop=True)
             )
 
-            # Paleta monocromática por socio para que todos los predios
-            # dentro del donut pertenezcan visualmente al mismo grupo.
-            if clase == "diego":
-                finca_colors = [
-                    "#FF3158", "#FF5A73", "#FF7890", "#FF9CAF",
-                    "#FFBCC9", "#FFD3DC", "#FFE5EA"
-                ]
-            elif clase == "william":
-                finca_colors = [
-                    "#348FE6", "#5DA7F4", "#79B6F7", "#96C8FA",
-                    "#B5D9FC", "#D1E7FE", "#E6F2FF"
-                ]
-            else:
-                finca_colors = [
-                    "#29B984", "#43C995", "#63D5AB", "#84DFC0",
-                    "#A6E8D2", "#C8F0E2", "#E2F8F0"
-                ]
+            # --------------------------------------------------------
+            # TARJETA COMPACTA DEL SOCIO
+            # Sin donut: resumen conjunto + activos adicionales +
+            # último aporte.
+            # --------------------------------------------------------
 
             with socio_cols[idx]:
 
-                # Altura fija para que las tres tarjetas patrimoniales queden exactamente alineadas.\n                with st.container(height=650, border=True):
+                with st.container(height=500, border=True):
 
-                    # Cabecera
+                    ultima_fecha = socio_row["Ultimo_Aporte"]
+
+                    ultimo_aporte_valor = float(
+                        aportes_base[
+                            (aportes_base["Nombre_Socio"] == nombre)
+                            & (aportes_base["Fecha"] == ultima_fecha)
+                        ]["Valor"].sum()
+                    )
+
+                    finca_rows_html = ""
+
+                    if not finca_socio_df.empty:
+
+                        finca_total_local = float(
+                            finca_socio_df["Valor_Mercado_Socio"].sum()
+                        )
+
+                        for _, row in finca_socio_df.iterrows():
+
+                            valor_activo = float(
+                                row["Valor_Mercado_Socio"]
+                            )
+
+                            pct_activo = (
+                                valor_activo
+                                / finca_total_local
+                                * 100
+                                if finca_total_local
+                                else 0
+                            )
+
+                            finca_rows_html += f"""
+<div class="aportes-mini-row">
+    <span class="aportes-mini-name">
+        {escape_html(row["Nombre_Entidad"])}
+    </span>
+    <span class="aportes-mini-pct">
+        {pct_activo:.1f}%
+    </span>
+    <span class="aportes-mini-value">
+        {dinero_corto(valor_activo)}
+    </span>
+</div>
+"""
+
+                    adicional_rows_html = ""
+
+                    if not adicional_socio_df.empty:
+
+                        for _, row in adicional_socio_df.head(3).iterrows():
+
+                            adicional_rows_html += f"""
+<div class="aportes-mini-row">
+    <span class="aportes-mini-name">
+        {escape_html(row["Nombre_Entidad"])}
+    </span>
+    <span class="aportes-mini-value">
+        {dinero_corto(float(row["Valor_Mercado_Socio"]))}
+    </span>
+</div>
+"""
+
+                    if not adicional_rows_html:
+
+                        adicional_rows_html = """
+<div class="aportes-mini-row">
+    <span class="aportes-mini-name">
+        Sin activos adicionales
+    </span>
+    <span class="aportes-mini-value">-</span>
+</div>
+"""
+
                     render_aportes_html(f"""
 <div class="aportes-compact-card {clase}">
+
     <div class="aportes-compact-head">
+
         <div class="aportes-compact-name-wrap">
-            <div class="aportes-compact-avatar {clase}">{avatar}</div>
-            <div class="aportes-compact-name">{escape_html(nombre)}</div>
+
+            <div class="aportes-compact-avatar {clase}">
+                {avatar}
+            </div>
+
+            <div class="aportes-compact-name">
+                {escape_html(nombre)}
+            </div>
+
         </div>
 
         <div class="aportes-compact-total">
-            <div class="aportes-compact-total-label">Capital neto</div>
-            <div class="aportes-compact-total-value">{dinero_corto(total_socio)}</div>
+
+            <div class="aportes-compact-total-label">
+                Capital neto
+            </div>
+
+            <div class="aportes-compact-total-value">
+                {dinero_corto(total_socio)}
+            </div>
+
         </div>
+
     </div>
+
     <div class="aportes-capital-breakdown">
+
         <div class="aportes-capital-item gross">
-            <span class="aportes-capital-label">Brutos</span>
-            <strong>{dinero_corto(float(socio_row["Aportes_Brutos"]))}</strong>
+            <span class="aportes-capital-label">
+                Brutos
+            </span>
+            <strong>
+                {dinero_corto(float(socio_row["Aportes_Brutos"]))}
+            </strong>
         </div>
+
         <div class="aportes-capital-divider"></div>
 
         <div class="aportes-capital-item expense">
-            <span class="aportes-capital-label">Familiar</span>
-            <strong>-{dinero_corto(float(socio_row["Gastos_Familiares"]))}</strong>
+            <span class="aportes-capital-label">
+                Familiar
+            </span>
+            <strong>
+                -{dinero_corto(float(socio_row["Gastos_Familiares"]))}
+            </strong>
         </div>
+
         <div class="aportes-capital-divider"></div>
 
         <div class="aportes-capital-item expense">
-            <span class="aportes-capital-label">Personal</span>
-            <strong>-{dinero_corto(float(socio_row["Gastos_Personales"]))}</strong>
+            <span class="aportes-capital-label">
+                Personal
+            </span>
+            <strong>
+                -{dinero_corto(float(socio_row["Gastos_Personales"]))}
+            </strong>
         </div>
+
         <div class="aportes-capital-divider"></div>
 
         <div class="aportes-capital-item net">
-            <span class="aportes-capital-label">Neto</span>
-            <strong>{dinero_corto(float(socio_row["Aportes"]))}</strong>
+            <span class="aportes-capital-label">
+                Neto
+            </span>
+            <strong>
+                {dinero_corto(float(socio_row["Aportes"]))}
+            </strong>
         </div>
-    </div>
-</div>
-""")
 
-                    # Donut + resumen
-                    if not finca_socio_df.empty:
-
-                        finca_labels = finca_socio_df["Nombre_Entidad"].tolist()
-                        finca_values = finca_socio_df["Valor_Mercado_Socio"].astype(float).tolist()
-
-                        fig_finca = go.Figure(
-                            go.Pie(
-                                labels=finca_labels,
-                                values=finca_values,
-                                hole=0.60,
-                                marker=dict(
-                                    colors=finca_colors[:len(finca_labels)],
-                                    line=dict(color="#FFFFFF", width=2)
-                                ),
-                                textinfo="percent",
-                                textfont=dict(size=9, color="#3E526B"),
-                                hovertemplate=(
-                                    "%{label}<br>$%{value:,.0f}<br>%{percent}<extra></extra>"
-                                ),
-                            )
-                        )
-
-                        fig_finca.update_layout(
-                            height=190,
-                            margin=dict(l=0, r=0, t=0, b=0),
-                            showlegend=False,
-                            paper_bgcolor="rgba(0,0,0,0)",
-                            plot_bgcolor="rgba(0,0,0,0)",
-                        )
-
-                        fig_finca.add_annotation(
-                            text=(
-                                f"<b>{dinero_corto(finca_total)}</b>"
-                                "<br><span style='font-size:8px'>Finca Raíz</span>"
-                            ),
-                            x=0.5,
-                            y=0.5,
-                            showarrow=False,
-                            font=dict(size=11, color="#17345E"),
-                        )
-
-                        finca_col, resumen_col = st.columns([1.06, 0.94], gap="small")
-
-                        with finca_col:
-                            st.plotly_chart(
-                                fig_finca,
-                                use_container_width=True,
-                                config={"displayModeBar": False},
-                                key=f"fig_finca_compact_{idx}",
-                            )
-
-                        with resumen_col:
-                            render_aportes_html(f"""
-<div class="aportes-compact-summary">
-    <div class="aportes-compact-summary-title">🏠 Resumen conjunto</div>
-
-    <div class="aportes-compact-summary-row">
-        <span class="aportes-compact-summary-label">Finca Raíz</span>
-        <span class="aportes-compact-summary-value">{dinero_corto(finca_total)}</span>
     </div>
 
-    <div class="aportes-compact-summary-row debt">
-        <span class="aportes-compact-summary-label">Deuda conjunta</span>
-        <span class="aportes-compact-summary-value debt-value">-{dinero_corto(deuda_conjunta)}</span>
-    </div>
+    <div class="aportes-card-body-grid">
 
-    <div class="aportes-compact-summary-row total">
-        <span class="aportes-compact-summary-label">Neto conjunto</span>
-        <span class="aportes-compact-summary-value">{dinero_corto(patrimonio_neto_conjunto)}</span>
-    </div>
+        <div class="aportes-mini-panel">
 
-    <div class="aportes-compact-summary-row ratio">
-        <span class="aportes-compact-summary-label">Neto conjunto vs. aportes</span>
-        <span class="aportes-compact-summary-value {ratio_class}">
-            {ratio_icon} {ratio:+.1f}%
-        </span>
-    </div>
-</div>
-""")
-                    else:
-                        render_aportes_html(f"""
-<div class="aportes-compact-summary">
-    <div class="aportes-compact-summary-title">🏠 Resumen patrimonial</div>
-    <div class="aportes-compact-summary-row">
-        <span class="aportes-compact-summary-label">Finca Raíz</span>
-        <span class="aportes-compact-summary-value">$0</span>
-    </div>
-    <div class="aportes-compact-summary-row debt">
-        <span class="aportes-compact-summary-label">Deuda actual</span>
-        <span class="aportes-compact-summary-value debt-value">$0</span>
-    </div>
-    <div class="aportes-compact-summary-row total">
-        <span class="aportes-compact-summary-label">Patrimonio neto</span>
-        <span class="aportes-compact-summary-value">$0</span>
-    </div>
-</div>
-""")
-
-                    render_aportes_html(f"""
-<div class="aportes-compact-additional compact-note">
-    <div class="aportes-compact-additional-head">
-        <div>
-            <div class="aportes-compact-additional-title">🔗 Activos adicionales</div>
-            <div class="aportes-compact-additional-sub">
-                Ver detalle y deuda en la tabla inferior
+            <div class="aportes-mini-panel-title">
+                🏠 Patrimonio conjunto
             </div>
+
+            <div class="aportes-mini-panel-sub">
+                Participación del socio
+            </div>
+
+            <div class="aportes-mini-row">
+                <span class="aportes-mini-name">
+                    Finca Raíz
+                </span>
+                <span class="aportes-mini-value">
+                    {dinero_corto(finca_total)}
+                </span>
+            </div>
+
+            <div class="aportes-mini-row"
+                 style="background:#FFF7F7;border-radius:6px;padding-left:5px;padding-right:5px;">
+
+                <span class="aportes-mini-name">
+                    Deuda conjunta
+                </span>
+
+                <span class="aportes-finca-debt compact">
+                    -{dinero_corto(deuda_conjunta)}
+                </span>
+
+            </div>
+
+            <div class="aportes-mini-total">
+
+                <span class="aportes-mini-total-label">
+                    Neto conjunto
+                </span>
+
+                <span class="aportes-mini-total-value"
+                      style="color:#17345E;">
+
+                    {dinero_corto(patrimonio_neto_conjunto)}
+
+                </span>
+
+            </div>
+
+            <div class="aportes-mini-row"
+                 style="border-bottom:none;padding-bottom:0;">
+
+                <span class="aportes-mini-name">
+                    Vs. capital aportado
+                </span>
+
+                <span class="{ratio_class}"
+                      style="font-size:8.5px;font-weight:900;">
+
+                    {ratio_icon} {ratio:+.1f}%
+
+                </span>
+
+            </div>
+
         </div>
-        <div class="aportes-compact-additional-total">{dinero_corto(adicionales_total)}</div>
+
+        <div class="aportes-mini-panel">
+
+            <div class="aportes-mini-panel-title">
+                🔗 Activos adicionales
+            </div>
+
+            <div class="aportes-mini-panel-sub">
+                Fuera del patrimonio conjunto
+            </div>
+
+            {adicional_rows_html}
+
+            <div class="aportes-mini-total">
+
+                <span class="aportes-mini-total-label">
+                    Total adicionales
+                </span>
+
+                <span class="aportes-mini-total-value">
+                    {dinero_corto(adicionales_total)}
+                </span>
+
+            </div>
+
+        </div>
+
     </div>
+
+    <div class="aportes-last-contrib">
+
+        <div class="aportes-last-contrib-left">
+
+            <div class="aportes-last-contrib-icon">
+                📅
+            </div>
+
+            <div>
+
+                <div class="aportes-last-contrib-label">
+                    Último aporte
+                </div>
+
+                <div class="aportes-last-contrib-date">
+                    {fecha_corta_es(ultima_fecha)}
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="aportes-last-contrib-value">
+            {dinero_corto(ultimo_aporte_valor)}
+        </div>
+
+    </div>
+
 </div>
 """)
 
@@ -5440,164 +5732,240 @@ if st.session_state.vista_airbnb == "Aportes":
             )
 
         # --------------------------------------------------------
-        # BLOQUE INFERIOR: TABLA + GRÁFICO EN PARALELO
+        # BLOQUE INFERIOR:
+        # PARTICIPACIÓN DE ACTIVOS + DETALLE DE FINCA RAÍZ
         # --------------------------------------------------------
-        bottom_cols = st.columns([1.72, 0.88], gap="small")
+
+        bottom_cols = st.columns([1.05, 1.35], gap="small")
 
         with bottom_cols[0]:
 
-            # Panel de detalle Finca Raíz
-            if not finca_resumen.empty:
+            render_aportes_html(f"""
+<div class="aportes-participation-panel">
 
-                tabla_finca = f"""
-<div class="aportes-finca-summary-panel compact">
-    <div class="aportes-finca-summary-header compact">
-        <div>
-            <div class="aportes-finca-summary-title compact">🏠 Detalle de Finca Raíz (conjunto)</div>
-            <div class="aportes-finca-summary-sub compact">
-                Participación de cada predio en el patrimonio de los tres socios
-            </div>
-        </div>
-
-        <div class="aportes-finca-summary-total compact">
-            <div class="aportes-finca-summary-total-label compact">Valor total Finca Raíz</div>
-            <div class="aportes-finca-summary-total-value compact">{dinero_corto(valor_finca_total)}</div>
-        </div>
+    <div class="aportes-participation-title">
+        🏠 Participación de Finca Raíz (conjunto)
     </div>
 
-    <table class="aportes-finca-table compact">
-        <thead>
-            <tr>
-                <th>Predio</th>
-                <th>Ciudad</th>
-                <th>Tipo</th>
-                <th>% patrimonio conjunto</th>
-                <th>Valor mínimo</th>
-                <th>Deuda actual</th>
-                <th>Neto</th>
-            </tr>
-        </thead>
-        <tbody>
-"""
+    <div class="aportes-participation-sub">
+        Distribución del valor mínimo de mercado por predio
+    </div>
 
-                for _, row in finca_resumen.iterrows():
-                    tabla_finca += f"""
-            <tr>
-                <td>{escape_html(row["Nombre_Entidad"])}</td>
-                <td>{escape_html(row["Ciudad"])}</td>
-                <td>{escape_html(row["Tipo"])}</td>
-                <td><span class="aportes-finca-pct compact">{float(row["Pct_Conjunto"]):.1f}%</span></td>
-                <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Valor_Minimo"]))}</span></td>
-                <td><span class="aportes-finca-debt compact">-{dinero_corto(float(row["Deuda_Actual"]))}</span></td>
-                <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Patrimonio_Neto"]))}</span></td>
-            </tr>
-"""
-
-                tabla_finca += """
-        </tbody>
-    </table>
 </div>
-"""
-                render_aportes_html(tabla_finca)
+""")
+
+            if not finca_resumen.empty:
+
+                participacion_df = (
+                    finca_resumen[
+                        [
+                            "Nombre_Entidad",
+                            "Valor_Minimo",
+                            "Pct_Conjunto"
+                        ]
+                    ]
+                    .sort_values(
+                        "Valor_Minimo",
+                        ascending=True
+                    )
+                )
+
+                fig_part = go.Figure()
+
+                fig_part.add_trace(
+                    go.Bar(
+                        orientation="h",
+                        y=participacion_df["Nombre_Entidad"],
+                        x=participacion_df["Valor_Minimo"],
+                        marker_color="#5DA7F4",
+                        text=[
+                            (
+                                f"{dinero_corto(v)}  "
+                                f"({p:.1f}%)"
+                            )
+                            for v, p in zip(
+                                participacion_df["Valor_Minimo"],
+                                participacion_df["Pct_Conjunto"]
+                            )
+                        ],
+                        textposition="outside",
+                        textfont=dict(
+                            size=8,
+                            color="#17345E"
+                        ),
+                        hovertemplate=(
+                            "%{y}<br>"
+                            "Valor: $%{x:,.0f}"
+                            "<extra></extra>"
+                        ),
+                    )
+                )
+
+                fig_part.update_layout(
+                    height=max(
+                        245,
+                        38 * len(participacion_df) + 55
+                    ),
+                    margin=dict(
+                        l=4,
+                        r=75,
+                        t=3,
+                        b=3
+                    ),
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    showlegend=False,
+                    xaxis=dict(
+                        title=None,
+                        showgrid=False,
+                        zeroline=False,
+                        showticklabels=False,
+                    ),
+                    yaxis=dict(
+                        title=None,
+                        tickfont=dict(
+                            size=8,
+                            color="#5F7189"
+                        ),
+                        showgrid=False,
+                        automargin=True,
+                    ),
+                )
+
+                st.plotly_chart(
+                    fig_part,
+                    use_container_width=True,
+                    config={"displayModeBar": False},
+                    key="fig_participacion_finca"
+                )
 
             else:
+
                 render_aportes_html("""
-<div class="aportes-finca-summary-panel compact">
-    <div class="aportes-finca-summary-title compact">🏠 Detalle de Finca Raíz (conjunto)</div>
-    <div class="aportes-finca-summary-sub compact">Sin registros disponibles.</div>
+<div class="aportes-mini-panel">
+    <div class="aportes-mini-panel-sub">
+        Sin información disponible.
+    </div>
 </div>
 """)
 
         with bottom_cols[1]:
 
-            # Panel de composición patrimonial
-            render_aportes_html("""
-<div class="aportes-composition-panel">
-    <div class="aportes-composition-title">📊 Patrimonio bruto vs. deuda vs. neto</div>
-    <div class="aportes-composition-sub">Comparación patrimonial después de descontar la deuda atribuible</div>
-    <div class="aportes-composition-legend">
-        <span><i class="aportes-composition-dot" style="background:#17345E;"></i>Patrimonio bruto</span>
-        <span><i class="aportes-composition-dot" style="background:#D64242;"></i>Deuda</span>
-        <span><i class="aportes-composition-dot" style="background:#009B70;"></i>Patrimonio neto</span>
+            if not finca_resumen.empty:
+
+                tabla_finca = f"""
+<div class="aportes-finca-summary-panel compact">
+
+    <div class="aportes-finca-summary-header compact">
+
+        <div>
+
+            <div class="aportes-finca-summary-title compact">
+                🏠 Detalle de Finca Raíz conjunta
+            </div>
+
+            <div class="aportes-finca-summary-sub compact">
+                Valor, deuda y patrimonio neto por predio
+            </div>
+
+        </div>
+
+        <div class="aportes-finca-summary-total compact">
+
+            <div class="aportes-finca-summary-total-label compact">
+                Valor total
+            </div>
+
+            <div class="aportes-finca-summary-total-value compact">
+                {dinero_corto(valor_finca_total)}
+            </div>
+
+        </div>
+
     </div>
+
+    <table class="aportes-finca-table compact">
+
+        <thead>
+
+            <tr>
+                <th>Predio</th>
+                <th>Ciudad</th>
+                <th>% conjunto</th>
+                <th>Valor</th>
+                <th>Deuda</th>
+                <th>Neto</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+"""
+
+                for _, row in finca_resumen.iterrows():
+
+                    tabla_finca += f"""
+<tr>
+
+    <td>
+        {escape_html(row["Nombre_Entidad"])}
+    </td>
+
+    <td>
+        {escape_html(row["Ciudad"])}
+    </td>
+
+    <td>
+        <span class="aportes-finca-pct compact">
+            {float(row["Pct_Conjunto"]):.1f}%
+        </span>
+    </td>
+
+    <td>
+        <span class="aportes-finca-value compact">
+            {dinero_corto(float(row["Valor_Minimo"]))}
+        </span>
+    </td>
+
+    <td>
+        <span class="aportes-finca-debt compact">
+            -{dinero_corto(float(row["Deuda_Actual"]))}
+        </span>
+    </td>
+
+    <td>
+        <span class="aportes-finca-value compact">
+            {dinero_corto(float(row["Patrimonio_Neto"]))}
+        </span>
+    </td>
+
+</tr>
+"""
+
+                tabla_finca += """
+        </tbody>
+    </table>
+
+</div>
+"""
+
+                render_aportes_html(tabla_finca)
+
+            else:
+
+                render_aportes_html("""
+<div class="aportes-finca-summary-panel compact">
+
+    <div class="aportes-finca-summary-title compact">
+        🏠 Detalle de Finca Raíz conjunta
+    </div>
+
+    <div class="aportes-finca-summary-sub compact">
+        Sin registros disponibles.
+    </div>
+
 </div>
 """)
-
-            socios_chart = resumen_socios["Nombre_Socio"].tolist()
-
-            fig_comp = go.Figure()
-
-            fig_comp.add_trace(
-                go.Bar(
-                    name="Finca Raíz",
-                    x=socios_chart,
-                    y=resumen_socios["Finca_Raiz"].astype(float),
-                    marker_color="#17345E",
-                    text=[dinero_corto(v) for v in resumen_socios["Finca_Raiz"]],
-                    textposition="outside",
-                    textfont=dict(size=8, color="#17345E"),
-                    hovertemplate="%{x}<br>Finca Raíz: $%{y:,.0f}<extra></extra>",
-                )
-            )
-
-            fig_comp.add_trace(
-                go.Bar(
-                    name="Deuda conjunta",
-                    x=socios_chart,
-                    y=resumen_socios["Deuda_Conjunta"].astype(float),
-                    marker_color="#D64242",
-                    text=[dinero_corto(v) if float(v) > 0 else "" for v in resumen_socios["Deuda_Conjunta"]],
-                    textposition="outside",
-                    textfont=dict(size=8, color="#D64242"),
-                    hovertemplate="%{x}<br>Deuda conjunta: $%{y:,.0f}<extra></extra>",
-                )
-            )
-
-            fig_comp.add_trace(
-                go.Bar(
-                    name="Neto conjunto",
-                    x=socios_chart,
-                    y=resumen_socios["Patrimonio_Neto_Conjunto"].astype(float),
-                    marker_color="#009B70",
-                    text=[dinero_corto(v) for v in resumen_socios["Patrimonio_Neto_Conjunto"]],
-                    textposition="outside",
-                    textfont=dict(size=8, color="#009B70"),
-                    hovertemplate="%{x}<br>Neto conjunto: $%{y:,.0f}<extra></extra>",
-                )
-            )
-
-            fig_comp.update_layout(
-                barmode="group",
-                height=215,
-                margin=dict(l=4, r=4, t=0, b=0),
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)",
-                showlegend=False,
-                font=dict(color="#17345E"),
-                xaxis=dict(
-                    title=None,
-                    tickfont=dict(size=7, color="#50637B"),
-                    showgrid=False,
-                    zeroline=False,
-                ),
-                yaxis=dict(
-                    title=None,
-                    tickfont=dict(size=7, color="#8290A4"),
-                    showgrid=True,
-                    gridcolor="#EDF1F5",
-                    zeroline=False,
-                    tickprefix="$",
-                    ticksuffix="M",
-                    tickformat=".0f",
-                ),
-            )
-
-            st.plotly_chart(
-                fig_comp,
-                use_container_width=True,
-                config={"displayModeBar": False},
-                key="fig_composicion_patrimonio_compacto",
-            )
 
         # --------------------------------------------------------
         # ACTIIVOS ADICIONALES + DEUDA INDIVIDUAL
