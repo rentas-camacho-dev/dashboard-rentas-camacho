@@ -4745,6 +4745,55 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-compact-total {
     text-align:right;
+    min-width:150px;
+}
+
+.aportes-header-patrimonio-label {
+    font-size:8px;
+    color:#6F8198;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.2px;
+    margin-top:2px;
+}
+
+.aportes-header-patrimonio-value {
+    font-size:21px;
+    line-height:1;
+    font-weight:950;
+    color:#17345E;
+    margin-top:3px;
+    white-space:nowrap;
+}
+
+.aportes-header-patrimonio-ratio {
+    font-size:9.5px;
+    font-weight:950;
+    margin-top:5px;
+    white-space:nowrap;
+}
+
+.aportes-header-patrimonio-ratio.positive {
+    color:#009B70;
+}
+
+.aportes-header-patrimonio-ratio.negative {
+    color:#D64242;
+}
+
+.aportes-header-capital-label {
+    font-size:7px;
+    color:#8795A8;
+    font-weight:800;
+    margin-top:5px;
+}
+
+.aportes-header-capital-value {
+    font-size:10px;
+    font-weight:900;
+    color:#17345E;
+    margin-top:1px;
+    white-space:nowrap;
 }
 
 .aportes-compact-total-label {
@@ -5588,11 +5637,23 @@ if st.session_state.vista_airbnb == "Aportes":
 
         <div class="aportes-compact-total">
 
-            <div class="aportes-compact-total-label">
-                Capital neto
+            <div class="aportes-header-patrimonio-label">
+                Patrimonio neto conjunto
             </div>
 
-            <div class="aportes-compact-total-value">
+            <div class="aportes-header-patrimonio-value">
+                {dinero_corto(patrimonio_neto_conjunto)}
+            </div>
+
+            <div class="aportes-header-patrimonio-ratio {ratio_class}">
+                {ratio_icon} {ratio:+.1f}% vs. capital neto
+            </div>
+
+            <div class="aportes-header-capital-label">
+                Capital neto aportado
+            </div>
+
+            <div class="aportes-header-capital-value">
                 {dinero_corto(total_socio)}
             </div>
 
