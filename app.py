@@ -4692,7 +4692,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-compact-card {
     margin-top:-10px;
-    min-height:420px;
+    margin-bottom:-2px;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
     border-radius:15px;
@@ -5136,6 +5136,91 @@ if st.session_state.vista_airbnb == "Aportes":
     color:#8A98AA;
     margin-top:3px;
     margin-bottom:4px;
+}
+
+.aportes-portfolio-panel {
+    background:#FFFFFF;
+    border:1px solid #DCE5EE;
+    border-radius:14px;
+    padding:12px 13px 11px;
+    box-sizing:border-box;
+}
+
+.aportes-portfolio-title {
+    font-size:13px;
+    font-weight:900;
+    color:#17345E;
+}
+
+.aportes-portfolio-sub {
+    font-size:8px;
+    color:#667A92;
+    margin-top:3px;
+    margin-bottom:8px;
+}
+
+.aportes-portfolio-grid {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+}
+
+.aportes-portfolio-item {
+    background:#FAFBFD;
+    border:1px solid #DCE5EE;
+    border-radius:10px;
+    padding:9px 10px;
+}
+
+.aportes-portfolio-item.finca {
+    border-top:3px solid #5DA7F4;
+}
+
+.aportes-portfolio-item.comercio {
+    border-top:3px solid #FF5A73;
+}
+
+.aportes-portfolio-item.vehiculos {
+    border-top:3px solid #43C995;
+}
+
+.aportes-portfolio-label {
+    font-size:9px;
+    font-weight:900;
+    color:#17345E;
+}
+
+.aportes-portfolio-caption {
+    font-size:7.5px;
+    color:#667A92;
+    margin-top:2px;
+}
+
+.aportes-portfolio-value {
+    font-size:16px;
+    font-weight:900;
+    color:#17345E;
+    margin-top:7px;
+    white-space:nowrap;
+}
+
+.aportes-portfolio-pct {
+    font-size:8px;
+    color:#667A92;
+    margin-top:2px;
+}
+
+.aportes-portfolio-pending {
+    font-size:10px;
+    font-weight:900;
+    color:#8A98AA;
+    margin-top:10px;
+}
+
+@media (max-width: 800px) {
+    .aportes-portfolio-grid {
+        grid-template-columns:1fr;
+    }
 }
 
 /* ---------- detalle Finca Raíz ---------- */
@@ -5760,115 +5845,115 @@ if st.session_state.vista_airbnb == "Aportes":
 
         with bottom_cols[0]:
 
+            # --------------------------------------------------------
+            # COMPOSICIÓN DEL PORTAFOLIO
+            # Finca Raíz se calcula automáticamente.
+            # Comercio usa la valoración de referencia de RIE +
+            # Restaurante RIE; vehículos queda preparado para conectar
+            # con Activos_Muebles cuando se incorpore esa tabla.
+            # --------------------------------------------------------
+            valor_comercio = 570_000_000
+            valor_vehiculos = 0
+
+            valor_portafolio_valorado = (
+                valor_finca_total
+                + valor_comercio
+                + valor_vehiculos
+            )
+
+            pct_finca_port = (
+                valor_finca_total
+                / valor_portafolio_valorado
+                * 100
+                if valor_portafolio_valorado
+                else 0
+            )
+
+            pct_comercio_port = (
+                valor_comercio
+                / valor_portafolio_valorado
+                * 100
+                if valor_portafolio_valorado
+                else 0
+            )
+
             render_aportes_html(f"""
-<div class="aportes-participation-panel">
+<div class="aportes-portfolio-panel">
 
-    <div class="aportes-participation-title">
-        🏠 Participación de Finca Raíz (conjunto)
+    <div class="aportes-portfolio-title">
+        📊 Composición del portafolio
     </div>
 
-    <div class="aportes-participation-sub">
-        Distribución del valor mínimo de mercado por predio
+    <div class="aportes-portfolio-sub">
+        Finca Raíz + Comercio + Vehículos
+    </div>
+
+    <div class="aportes-portfolio-grid">
+
+        <div class="aportes-portfolio-item finca">
+
+            <div class="aportes-portfolio-label">
+                🏠 Finca Raíz
+            </div>
+
+            <div class="aportes-portfolio-caption">
+                Activos conjuntos
+            </div>
+
+            <div class="aportes-portfolio-value">
+                {dinero_corto(valor_finca_total)}
+            </div>
+
+            <div class="aportes-portfolio-pct">
+                {pct_finca_port:.1f}% del portafolio valorado
+            </div>
+
+        </div>
+
+        <div class="aportes-portfolio-item comercio">
+
+            <div class="aportes-portfolio-label">
+                🏪 Comercio
+            </div>
+
+            <div class="aportes-portfolio-caption">
+                RIE + Restaurante RIE
+            </div>
+
+            <div class="aportes-portfolio-value">
+                {dinero_corto(valor_comercio)}
+            </div>
+
+            <div class="aportes-portfolio-pct">
+                {pct_comercio_port:.1f}% del portafolio valorado
+            </div>
+
+        </div>
+
+        <div class="aportes-portfolio-item vehiculos">
+
+            <div class="aportes-portfolio-label">
+                🚗 Vehículos
+            </div>
+
+            <div class="aportes-portfolio-caption">
+                Activos muebles
+            </div>
+
+            <div class="aportes-portfolio-pending">
+                Por valorar
+            </div>
+
+            <div class="aportes-portfolio-pct">
+                Se incorporará desde Activos_Muebles
+            </div>
+
+        </div>
+
     </div>
 
 </div>
 """)
-
-            if not finca_resumen.empty:
-
-                participacion_df = (
-                    finca_resumen[
-                        [
-                            "Nombre_Entidad",
-                            "Valor_Minimo",
-                            "Pct_Conjunto"
-                        ]
-                    ]
-                    .sort_values(
-                        "Valor_Minimo",
-                        ascending=True
-                    )
-                )
-
-                fig_part = go.Figure()
-
-                fig_part.add_trace(
-                    go.Bar(
-                        orientation="h",
-                        y=participacion_df["Nombre_Entidad"],
-                        x=participacion_df["Valor_Minimo"],
-                        marker_color="#5DA7F4",
-                        text=[
-                            (
-                                f"{dinero_corto(v)}  "
-                                f"({p:.1f}%)"
-                            )
-                            for v, p in zip(
-                                participacion_df["Valor_Minimo"],
-                                participacion_df["Pct_Conjunto"]
-                            )
-                        ],
-                        textposition="outside",
-                        textfont=dict(
-                            size=8,
-                            color="#17345E"
-                        ),
-                        hovertemplate=(
-                            "%{y}<br>"
-                            "Valor: $%{x:,.0f}"
-                            "<extra></extra>"
-                        ),
-                    )
-                )
-
-                fig_part.update_layout(
-                    height=max(
-                        245,
-                        38 * len(participacion_df) + 55
-                    ),
-                    margin=dict(
-                        l=4,
-                        r=75,
-                        t=3,
-                        b=3
-                    ),
-                    paper_bgcolor="rgba(0,0,0,0)",
-                    plot_bgcolor="rgba(0,0,0,0)",
-                    showlegend=False,
-                    xaxis=dict(
-                        title=None,
-                        showgrid=False,
-                        zeroline=False,
-                        showticklabels=False,
-                    ),
-                    yaxis=dict(
-                        title=None,
-                        tickfont=dict(
-                            size=8,
-                            color="#5F7189"
-                        ),
-                        showgrid=False,
-                        automargin=True,
-                    ),
-                )
-
-                st.plotly_chart(
-                    fig_part,
-                    use_container_width=True,
-                    config={"displayModeBar": False},
-                    key="fig_participacion_finca"
-                )
-
-            else:
-
-                render_aportes_html("""
-<div class="aportes-mini-panel">
-    <div class="aportes-mini-panel-sub">
-        Sin información disponible.
-    </div>
-</div>
-""")
-
         with bottom_cols[1]:
 
             if not finca_resumen.empty:
