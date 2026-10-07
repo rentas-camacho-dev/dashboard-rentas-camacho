@@ -4643,7 +4643,7 @@ if st.session_state.vista_airbnb == "Aportes":
    APPORTES / PATRIMONIO — NUEVO DISEÑO COMPACTO
 ============================================================ */
 .aportes-compact-section {
-    margin-top: 2px;
+    margin-top: 0;
 }
 
 .aportes-compact-title-row {
@@ -4691,6 +4691,8 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-compact-card {
+    margin-top:-10px;
+    min-height:420px;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
     border-radius:15px;
@@ -5045,7 +5047,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-last-contrib {
-    margin:0 9px 9px;
+    margin:0 9px 7px;
     padding:7px 9px;
     border:1px solid #E9DFF9;
     border-radius:9px;
@@ -5386,7 +5388,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
             with socio_cols[idx]:
 
-                with st.container(height=500, border=True):
+                with st.container(border=False):
 
                     ultima_fecha = socio_row["Ultimo_Aporte"]
 
