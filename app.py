@@ -4750,14 +4750,14 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-capital-label {
-    font-size:7.5px;
+    font-size:8.5px;
     color:#7B8CA2;
     font-weight:800;
     white-space:nowrap;
 }
 
 .aportes-capital-item strong {
-    font-size:8.5px;
+    font-size:9.5px;
     font-weight:900;
     color:#17345E;
     white-space:nowrap;
@@ -4826,12 +4826,12 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-compact-summary-label {
-    font-size:8px;
+    font-size:8.5px;
     color:#71839A;
 }
 
 .aportes-compact-summary-value {
-    font-size:9px;
+    font-size:9.5px;
     font-weight:900;
     color:#17345E;
     white-space:nowrap;
@@ -4880,7 +4880,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-compact-additional-title {
-    font-size:8.5px;
+    font-size:9.5px;
     font-weight:900;
     color:#17345E;
 }
@@ -4928,7 +4928,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-compact-extra-value {
-    font-size:8.5px;
+    font-size:9.5px;
     font-weight:900;
     color:#17345E;
     white-space:nowrap;
@@ -4983,7 +4983,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-finca-summary-total-value.compact {
-    font-size:17px;
+    font-size:18px;
     font-weight:900;
     color:#17345E;
     line-height:1;
