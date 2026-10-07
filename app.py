@@ -4154,24 +4154,103 @@ if st.session_state.vista_airbnb == "Aportes":
         ).fillna(0)
 
         # --------------------------------------------------------
+        # APORTE BRUTO vs. CAPITAL NETO APORTADO
+        # --------------------------------------------------------
+        # Los gastos familiares/personales se descuentan de los
+        # aportes para medir el capital realmente destinado al
+        # patrimonio/inversiones.
+        campos_gasto = [
+            "Nombre_Categoria",
+            "Nombre_Subcategoria",
+            "Detalle",
+            "Nombre_Cuenta",
+            "Observaciones",
+        ]
+
+        for col in campos_gasto:
+            if col not in aportes_base.columns:
+                aportes_base[col] = ""
+            aportes_base[col] = (
+                aportes_base[col]
+                .fillna("")
+                .astype(str)
+                .str.strip()
+            )
+
+        aportes_base["_Texto_Clasificacion"] = (
+            aportes_base[campos_gasto]
+            .agg(" ".join, axis=1)
+            .str.lower()
+        )
+
+        # Solo se consideran gastos cuando la descripción contiene
+        # explícitamente gasto familiar/familia o gasto personal.
+        aportes_base["Es_Gasto_Familiar_Personal"] = (
+            aportes_base["_Texto_Clasificacion"]
+            .str.contains(
+                r"\bgastos?\s+(familiares?|personales?)\b",
+                regex=True,
+                na=False,
+            )
+        )
+
+        aportes_base["Valor_Clasificado"] = (
+            pd.to_numeric(
+                aportes_base["Valor"],
+                errors="coerce"
+            )
+            .fillna(0)
+            .abs()
+        )
+
+        aportes_base["_Gasto_FP_Valor"] = (
+            aportes_base["Valor_Clasificado"]
+            .where(
+                aportes_base["Es_Gasto_Familiar_Personal"],
+                0.0
+            )
+        )
+
+        # --------------------------------------------------------
         # SOCIOS QUE ESTA APP ESTÁ SIGUIENDO
         # --------------------------------------------------------
         socios = (
             aportes_base
             .groupby("Nombre_Socio", as_index=False)
             .agg(
-                Aportes=("Valor", "sum"),
+                Aportes_Brutos=("Valor_Clasificado", "sum"),
+                Gastos_Familiares_Personales=(
+                    "_Gasto_FP_Valor",
+                    "sum"
+                ),
                 Movimientos=("ID_Aporte", "nunique"),
                 Primer_Aporte=("Fecha", "min"),
                 Ultimo_Aporte=("Fecha", "max")
             )
-            .sort_values("Aportes", ascending=False)
+            .sort_values("Aportes_Brutos", ascending=False)
             .reset_index(drop=True)
         )
 
+        socios["Aportes"] = (
+            socios["Aportes_Brutos"]
+            - socios["Gastos_Familiares_Personales"]
+        ).clip(lower=0)
+
         nombres_socios = socios["Nombre_Socio"].tolist()
         nombres_socios_set = set(nombres_socios)
-        total_aportes = float(socios["Aportes"].sum())
+
+        total_aportes_brutos = float(
+            socios["Aportes_Brutos"].sum()
+        )
+
+        total_gastos_familiares_personales = float(
+            socios["Gastos_Familiares_Personales"].sum()
+        )
+
+        total_aportes = float(
+            socios["Aportes"].sum()
+        )
+
         socios["Participacion"] = (
             socios["Aportes"] / total_aportes * 100
             if total_aportes else 0
@@ -4426,7 +4505,7 @@ if st.session_state.vista_airbnb == "Aportes":
             ("📈", "Neto conjunto", dinero_corto(patrimonio_neto_conjunto_total), "Finca Raíz - deuda conjunta"),
             ("🔗", "Activos adicionales", dinero_corto(valor_adicional_total), "Se muestran aparte"),
             ("💳", "Deuda adicional", f"-{dinero_corto(deuda_adicional_total)}", "Activos individuales"),
-            ("🏢", "Neto patrimonial total", dinero_corto(patrimonio_neto_total), "Conjuntos + adicionales - deuda"),
+            ("💰", "Capital neto aportado", dinero_corto(total_aportes), "Aportes - gastos familiares/personales"),
         ]
 
         kpi_html = '<div class="aportes-kpi-grid6">'
@@ -4565,6 +4644,14 @@ if st.session_state.vista_airbnb == "Aportes":
     font-weight:900;
     text-transform:uppercase;
     letter-spacing:.2px;
+}
+
+.aportes-compact-capital-note {
+    margin-top:5px;
+    font-size:7px;
+    color:#8A98AA;
+    text-align:right;
+    line-height:1.3;
 }
 
 .aportes-compact-total-value {
@@ -5008,9 +5095,13 @@ if st.session_state.vista_airbnb == "Aportes":
         </div>
 
         <div class="aportes-compact-total">
-            <div class="aportes-compact-total-label">Total aportes</div>
+            <div class="aportes-compact-total-label">Capital neto aportado</div>
             <div class="aportes-compact-total-value">{dinero_corto(total_socio)}</div>
         </div>
+    </div>
+    <div class="aportes-compact-capital-note">
+        Aportes brutos: {dinero_corto(float(socio_row["Aportes_Brutos"]))}
+        · Gastos familiares/personales: -{dinero_corto(float(socio_row["Gastos_Familiares_Personales"]))}
     </div>
 </div>
 """)
