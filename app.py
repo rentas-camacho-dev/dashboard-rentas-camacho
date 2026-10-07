@@ -3905,6 +3905,72 @@ if st.session_state.vista_airbnb == "Aportes":
         return vista
 
     @st.cache_data(ttl=900)
+    def cargar_creditos_prorrateados():
+        """Carga deuda actual atribuible a cada socio desde la vista prorrateada."""
+        try:
+            query = """
+            SELECT
+                ID_Credito,
+                ID_Activo,
+                Propiedad,
+                Banco,
+                Socio,
+                Nombre_Socio,
+                Participacion_Efectiva,
+                Valor_Inicial_Prorrateado,
+                Saldo_Actual_Prorrateado,
+                Cuota_Mensual_Prorrateada,
+                Cuota_Seguros_Prorrateada,
+                Tasa_Interes,
+                Plazo_Meses
+            FROM `rentascamacho.rentas_cortas.Creditos_Prorrateados`
+            ORDER BY ID_Activo, Nombre_Socio, ID_Credito
+            """
+            creditos = client.query(query).to_dataframe()
+
+            if creditos.empty:
+                return creditos
+
+            numeric_cols = [
+                "Participacion_Efectiva",
+                "Valor_Inicial_Prorrateado",
+                "Saldo_Actual_Prorrateado",
+                "Cuota_Mensual_Prorrateada",
+                "Cuota_Seguros_Prorrateada",
+                "Plazo_Meses",
+            ]
+
+            for col in numeric_cols:
+                if col in creditos.columns:
+                    creditos[col] = pd.to_numeric(
+                        creditos[col],
+                        errors="coerce"
+                    ).fillna(0)
+
+            for col in [
+                "ID_Credito",
+                "ID_Activo",
+                "Propiedad",
+                "Banco",
+                "Socio",
+                "Nombre_Socio",
+                "Tasa_Interes",
+            ]:
+                if col in creditos.columns:
+                    creditos[col] = (
+                        creditos[col]
+                        .fillna("")
+                        .astype(str)
+                        .str.strip()
+                    )
+
+            return creditos
+
+        except Exception:
+            return pd.DataFrame()
+
+
+    @st.cache_data(ttl=900)
     def cargar_negocios_y_otros():
         """Carga participaciones no inmobiliarias. Valores monetarios se incorporan después."""
         try:
@@ -3941,6 +4007,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
     aportes_base = aportes_socios.copy()
     vista_patrimonio = cargar_estudio_mercado_prorrateado()
+    creditos_prorrateados = cargar_creditos_prorrateados()
 
     render_aportes_html("""
 <style>
@@ -3951,7 +4018,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-kpi-grid6 {
     display:grid;
-    grid-template-columns:repeat(5,minmax(0,1fr));
+    grid-template-columns:repeat(6,minmax(0,1fr));
     gap:8px;
     margin:3px 0 11px;
 }
@@ -3980,6 +4047,8 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-kpi6-label { font-size:7px;color:#7E8DA3;font-weight:800;line-height:1.15; }
 .aportes-kpi6-value { font-size:18px;line-height:1.05;color:#17345E;font-weight:900;margin-top:5px;white-space:nowrap; }
 .aportes-kpi6-sub { font-size:7px;color:#8795A8;margin-top:4px; }
+.aportes-kpi-debt { color:#D64242 !important; }
+.aportes-kpi-net { color:#17345E !important; }
 
 .aportes-socios-grid {
     display:grid;
@@ -4156,16 +4225,79 @@ if st.session_state.vista_airbnb == "Aportes":
 
         resumen_socios = resumen_socios.merge(finca_socio, on="Nombre_Socio", how="left")
         resumen_socios = resumen_socios.merge(adicional_socio, on="Nombre_Socio", how="left")
-        resumen_socios[["Finca_Raiz", "Activos_Adicionales"]] = resumen_socios[["Finca_Raiz", "Activos_Adicionales"]].fillna(0)
-        resumen_socios["Patrimonio_Estimado"] = resumen_socios["Finca_Raiz"] + resumen_socios["Activos_Adicionales"]
-        resumen_socios["Patrimonio_vs_Aportes"] = (
-            ((resumen_socios["Patrimonio_Estimado"] / resumen_socios["Aportes"]) - 1) * 100
-        ).replace([float("inf"), -float("inf")], pd.NA).fillna(0)
 
-        valor_finca_total = float(activos_asociados["Valor_Mercado_Socio"].sum())
-        valor_adicional_total = float(activos_adicionales["Valor_Mercado_Socio"].sum())
-        patrimonio_total = valor_finca_total + valor_adicional_total
-        patrimonio_vs_aportes = ((patrimonio_total / total_aportes) - 1) * 100 if total_aportes else 0
+        # --------------------------------------------------------
+        # DEUDA ACTUAL PRORRATEADA POR SOCIO
+        # --------------------------------------------------------
+        if not creditos_prorrateados.empty:
+            deuda_socio = (
+                creditos_prorrateados
+                .groupby("Nombre_Socio", as_index=False)["Saldo_Actual_Prorrateado"]
+                .sum()
+                .rename(columns={"Saldo_Actual_Prorrateado": "Deuda_Actual"})
+            )
+        else:
+            deuda_socio = pd.DataFrame(
+                columns=["Nombre_Socio", "Deuda_Actual"]
+            )
+
+        resumen_socios = resumen_socios.merge(
+            deuda_socio,
+            on="Nombre_Socio",
+            how="left"
+        )
+
+        resumen_socios[
+            ["Finca_Raiz", "Activos_Adicionales", "Deuda_Actual"]
+        ] = resumen_socios[
+            ["Finca_Raiz", "Activos_Adicionales", "Deuda_Actual"]
+        ].fillna(0)
+
+        # Patrimonio bruto = activos
+        resumen_socios["Patrimonio_Bruto"] = (
+            resumen_socios["Finca_Raiz"]
+            + resumen_socios["Activos_Adicionales"]
+        )
+
+        # Patrimonio neto = activos - deuda
+        resumen_socios["Patrimonio_Neto"] = (
+            resumen_socios["Patrimonio_Bruto"]
+            - resumen_socios["Deuda_Actual"]
+        )
+
+        resumen_socios["Patrimonio_vs_Aportes"] = (
+            (
+                (resumen_socios["Patrimonio_Neto"] / resumen_socios["Aportes"])
+                - 1
+            ) * 100
+        ).replace(
+            [float("inf"), -float("inf")],
+            pd.NA
+        ).fillna(0)
+
+        valor_finca_total = float(
+            activos_asociados["Valor_Mercado_Socio"].sum()
+        )
+        valor_adicional_total = float(
+            activos_adicionales["Valor_Mercado_Socio"].sum()
+        )
+        deuda_total = float(
+            creditos_prorrateados["Saldo_Actual_Prorrateado"].sum()
+        ) if not creditos_prorrateados.empty else 0.0
+
+        patrimonio_total = (
+            valor_finca_total
+            + valor_adicional_total
+        )
+        patrimonio_neto_total = (
+            patrimonio_total
+            - deuda_total
+        )
+        patrimonio_vs_aportes = (
+            ((patrimonio_neto_total / total_aportes) - 1) * 100
+            if total_aportes
+            else 0
+        )
 
         # --------------------------------------------------------
         # COLORES POR SOCIO
@@ -4182,9 +4314,10 @@ if st.session_state.vista_airbnb == "Aportes":
         kpi_items = [
             ("🏠", "Finca Raíz (conjunto)", dinero_corto(valor_finca_total), "Participación de los 3 socios"),
             ("🔗", "Activos adicionales", dinero_corto(valor_adicional_total), "Propiedad individual / no conjunta"),
-            ("🪙", "Patrimonio total", dinero_corto(patrimonio_total), "Finca Raíz + adicionales"),
+            ("🪙", "Patrimonio bruto", dinero_corto(patrimonio_total), "Finca Raíz + adicionales"),
+            ("💳", "Deuda actual", f"-{dinero_corto(deuda_total)}", "Saldo de créditos atribuible"),
+            ("📈", "Patrimonio neto", dinero_corto(patrimonio_neto_total), "Después de deuda"),
             ("👥", "Número de socios", f"{len(socios)}", "Socios con aportes"),
-            ("📈", "Patrimonio vs. aportes", f"{patrimonio_vs_aportes:+.1f}%", "No es valorización contable"),
         ]
 
         kpi_html = '<div class="aportes-kpi-grid6">'
@@ -4194,7 +4327,7 @@ if st.session_state.vista_airbnb == "Aportes":
     <div class="aportes-kpi6-icon">{icon}</div>
     <div>
         <div class="aportes-kpi6-label">{escape_html(label)}</div>
-        <div class="aportes-kpi6-value">{escape_html(value)}</div>
+        <div class="aportes-kpi6-value {("aportes-kpi-debt" if "Deuda" in label else "aportes-kpi-net" if "Patrimonio neto" in label else "")}">{escape_html(value)}</div>
         <div class="aportes-kpi6-sub">{escape_html(sub)}</div>
     </div>
 </div>
@@ -4394,6 +4527,15 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-summary-row.ratio .aportes-compact-summary-value {
     color:#009B70;
 }
+.aportes-compact-summary-row.debt {
+    background:#FFF7F7;
+    border-radius:6px;
+    padding-left:6px;
+    padding-right:6px;
+}
+.aportes-compact-summary-value.debt-value {
+    color:#D64242;
+}
 
 /* ---------- adicionales ---------- */
 .aportes-compact-additional {
@@ -4571,6 +4713,11 @@ if st.session_state.vista_airbnb == "Aportes":
     color:#5F7189;
 }
 
+.aportes-finca-debt.compact {
+    font-weight:900;
+    color:#D64242;
+}
+
 /* ---------- gráfico composición ---------- */
 .aportes-composition-panel {
     background:#FFFFFF;
@@ -4668,7 +4815,9 @@ if st.session_state.vista_airbnb == "Aportes":
             )
 
             total_socio = float(socio_row["Aportes"])
-            patrimonio = float(socio_row["Patrimonio_Estimado"])
+            patrimonio_bruto = float(socio_row["Patrimonio_Bruto"])
+            deuda_socio = float(socio_row["Deuda_Actual"])
+            patrimonio_neto = float(socio_row["Patrimonio_Neto"])
             ratio = float(socio_row["Patrimonio_vs_Aportes"])
             finca_total = float(socio_row["Finca_Raiz"])
             adicionales_total = float(socio_row["Activos_Adicionales"])
@@ -4811,9 +4960,19 @@ if st.session_state.vista_airbnb == "Aportes":
         <span class="aportes-compact-summary-value">{dinero_corto(adicionales_total)}</span>
     </div>
 
+    <div class="aportes-compact-summary-row">
+        <span class="aportes-compact-summary-label">Patrimonio bruto</span>
+        <span class="aportes-compact-summary-value">{dinero_corto(patrimonio_bruto)}</span>
+    </div>
+
+    <div class="aportes-compact-summary-row debt">
+        <span class="aportes-compact-summary-label">Deuda actual</span>
+        <span class="aportes-compact-summary-value debt-value">-{dinero_corto(deuda_socio)}</span>
+    </div>
+
     <div class="aportes-compact-summary-row total">
-        <span class="aportes-compact-summary-label">Patrimonio total</span>
-        <span class="aportes-compact-summary-value">{dinero_corto(patrimonio)}</span>
+        <span class="aportes-compact-summary-label">Patrimonio neto</span>
+        <span class="aportes-compact-summary-value">{dinero_corto(patrimonio_neto)}</span>
     </div>
 
     <div class="aportes-compact-summary-row ratio">
@@ -4828,6 +4987,14 @@ if st.session_state.vista_airbnb == "Aportes":
     <div class="aportes-compact-summary-title">🏠 Resumen patrimonial</div>
     <div class="aportes-compact-summary-row">
         <span class="aportes-compact-summary-label">Finca Raíz</span>
+        <span class="aportes-compact-summary-value">$0</span>
+    </div>
+    <div class="aportes-compact-summary-row debt">
+        <span class="aportes-compact-summary-label">Deuda actual</span>
+        <span class="aportes-compact-summary-value debt-value">$0</span>
+    </div>
+    <div class="aportes-compact-summary-row total">
+        <span class="aportes-compact-summary-label">Patrimonio neto</span>
         <span class="aportes-compact-summary-value">$0</span>
     </div>
 </div>
@@ -4871,6 +5038,20 @@ if st.session_state.vista_airbnb == "Aportes":
 
         if not activos_asociados.empty:
 
+            # Deuda actual atribuible a la participación conjunta de los tres socios.
+            deuda_finca = pd.DataFrame()
+
+            if not creditos_prorrateados.empty:
+                deuda_finca = (
+                    creditos_prorrateados[
+                        creditos_prorrateados["ID_Activo"].isin(activos_finca_ids)
+                        & creditos_prorrateados["Nombre_Socio"].isin(nombres_socios_set)
+                    ]
+                    .groupby("ID_Activo", as_index=False)["Saldo_Actual_Prorrateado"]
+                    .sum()
+                    .rename(columns={"Saldo_Actual_Prorrateado": "Deuda_Actual"})
+                )
+
             finca_resumen = (
                 activos_asociados
                 .groupby(
@@ -4894,6 +5075,23 @@ if st.session_state.vista_airbnb == "Aportes":
             )
 
             finca_resumen["Tipo"] = "Finca Raíz"
+
+            if not deuda_finca.empty:
+                finca_resumen = finca_resumen.merge(
+                    deuda_finca,
+                    on="ID_Activo",
+                    how="left"
+                )
+            else:
+                finca_resumen["Deuda_Actual"] = 0
+
+            finca_resumen["Deuda_Actual"] = (
+                pd.to_numeric(
+                    finca_resumen["Deuda_Actual"],
+                    errors="coerce"
+                )
+                .fillna(0)
+            )
 
         # --------------------------------------------------------
         # BLOQUE INFERIOR: TABLA + GRÁFICO EN PARALELO
@@ -4929,6 +5127,7 @@ if st.session_state.vista_airbnb == "Aportes":
                 <th>Tipo</th>
                 <th>% patrimonio conjunto</th>
                 <th>Valor mínimo</th>
+                <th>Deuda actual</th>
             </tr>
         </thead>
         <tbody>
@@ -4942,6 +5141,7 @@ if st.session_state.vista_airbnb == "Aportes":
                 <td>{escape_html(row["Tipo"])}</td>
                 <td><span class="aportes-finca-pct compact">{float(row["Pct_Conjunto"]):.1f}%</span></td>
                 <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Valor_Minimo"]))}</span></td>
+                <td><span class="aportes-finca-debt compact">-{dinero_corto(float(row["Deuda_Actual"]))}</span></td>
             </tr>
 """
 
@@ -4965,11 +5165,12 @@ if st.session_state.vista_airbnb == "Aportes":
             # Panel de composición patrimonial
             render_aportes_html("""
 <div class="aportes-composition-panel">
-    <div class="aportes-composition-title">📊 Composición del patrimonio total</div>
-    <div class="aportes-composition-sub">Finca Raíz vs. activos adicionales por socio</div>
+    <div class="aportes-composition-title">📊 Patrimonio bruto vs. deuda vs. neto</div>
+    <div class="aportes-composition-sub">Comparación patrimonial después de descontar la deuda atribuible</div>
     <div class="aportes-composition-legend">
-        <span><i class="aportes-composition-dot" style="background:#FF5A73;"></i>Finca Raíz</span>
-        <span><i class="aportes-composition-dot" style="background:#D9C6FF;"></i>Adicionales</span>
+        <span><i class="aportes-composition-dot" style="background:#17345E;"></i>Patrimonio bruto</span>
+        <span><i class="aportes-composition-dot" style="background:#D64242;"></i>Deuda</span>
+        <span><i class="aportes-composition-dot" style="background:#009B70;"></i>Patrimonio neto</span>
     </div>
 </div>
 """)
@@ -4977,34 +5178,48 @@ if st.session_state.vista_airbnb == "Aportes":
             socios_chart = resumen_socios["Nombre_Socio"].tolist()
 
             fig_comp = go.Figure()
+
             fig_comp.add_trace(
                 go.Bar(
-                    name="Finca Raíz (conjunto)",
+                    name="Patrimonio bruto",
                     x=socios_chart,
-                    y=resumen_socios["Finca_Raiz"].astype(float),
-                    marker_color="#FF5A73",
-                    text=[dinero_corto(v) for v in resumen_socios["Finca_Raiz"]],
-                    textposition="inside",
-                    insidetextanchor="middle",
-                    textfont=dict(size=8, color="#FFFFFF"),
-                    hovertemplate="%{x}<br>Finca Raíz: $%{y:,.0f}<extra></extra>",
+                    y=resumen_socios["Patrimonio_Bruto"].astype(float),
+                    marker_color="#17345E",
+                    text=[dinero_corto(v) for v in resumen_socios["Patrimonio_Bruto"]],
+                    textposition="outside",
+                    textfont=dict(size=8, color="#17345E"),
+                    hovertemplate="%{x}<br>Patrimonio bruto: $%{y:,.0f}<extra></extra>",
                 )
             )
+
             fig_comp.add_trace(
                 go.Bar(
-                    name="Activos adicionales (no conjuntos)",
+                    name="Deuda",
                     x=socios_chart,
-                    y=resumen_socios["Activos_Adicionales"].astype(float),
-                    marker_color="#D9C6FF",
-                    text=[dinero_corto(v) if float(v) > 0 else "" for v in resumen_socios["Activos_Adicionales"]],
-                    textposition="inside",
-                    insidetextanchor="middle",
-                    textfont=dict(size=8, color="#59418D"),
-                    hovertemplate="%{x}<br>Adicionales: $%{y:,.0f}<extra></extra>",
+                    y=resumen_socios["Deuda_Actual"].astype(float),
+                    marker_color="#D64242",
+                    text=[dinero_corto(v) if float(v) > 0 else "" for v in resumen_socios["Deuda_Actual"]],
+                    textposition="outside",
+                    textfont=dict(size=8, color="#D64242"),
+                    hovertemplate="%{x}<br>Deuda: $%{y:,.0f}<extra></extra>",
                 )
             )
+
+            fig_comp.add_trace(
+                go.Bar(
+                    name="Patrimonio neto",
+                    x=socios_chart,
+                    y=resumen_socios["Patrimonio_Neto"].astype(float),
+                    marker_color="#009B70",
+                    text=[dinero_corto(v) for v in resumen_socios["Patrimonio_Neto"]],
+                    textposition="outside",
+                    textfont=dict(size=8, color="#009B70"),
+                    hovertemplate="%{x}<br>Patrimonio neto: $%{y:,.0f}<extra></extra>",
+                )
+            )
+
             fig_comp.update_layout(
-                barmode="stack",
+                barmode="group",
                 height=215,
                 margin=dict(l=4, r=4, t=0, b=0),
                 paper_bgcolor="rgba(0,0,0,0)",
