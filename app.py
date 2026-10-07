@@ -858,7 +858,7 @@ div.stButton > button:hover {
 .aportes-bar-fill { height:100%; background:linear-gradient(90deg,#7964DD 0%,#B37DE8 100%); border-radius:8px; }
 .aportes-row-value { text-align:right; font-size:9px; font-weight:800; color:#17345E; }
 .aportes-table { width:100%; border-collapse:separate; border-spacing:0; font-size:9px; color:#50637B; }
-.aportes-table th { background:#F4F7FA; color:#71839A; font-size:7.5px; font-weight:800; text-transform:uppercase; padding:8px 9px; border-bottom:1px solid #DCE5EE; text-align:right; white-space:nowrap; }
+.aportes-table th { background:#F4F7FA; color:#71839A; font-size:7.5px; font-weight:800; text-transform:uppercase; padding:6px 9px; border-bottom:1px solid #DCE5EE; text-align:right; white-space:nowrap; }
 .aportes-table th:first-child { text-align:left; }
 .aportes-table td { padding:9px; border-bottom:1px solid #EDF1F5; text-align:right; white-space:nowrap; }
 .aportes-table tr:last-child td { border-bottom:none; }
@@ -4192,7 +4192,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-avatar.andres { background:#E8F8F1;color:#43C995; }
 .aportes-socio-name { font-size:14px;font-weight:900;color:#17345E; }
 .aportes-header-total { margin-left:auto;text-align:right; }
-.aportes-header-total-label { font-size:7px;font-weight:800;color:#8795A8;text-transform:uppercase;letter-spacing:.2px; }
+.aportes-header-total-label { font-size:7px;font-weight:800;color:#8795A8;text-transform:uppercase;letter-spacing:.1px; }
 .aportes-header-total-value { font-size:17px;font-weight:900;color:#17345E;line-height:1;margin-top:3px; }
 .aportes-socio-layout { display:grid;grid-template-columns:0.94fr 1.06fr;gap:10px;align-items:start; }
 .aportes-aporte-box { border-radius:10px;padding:10px 11px;background:#F8FAFC;border:1px solid #E5EBF1; }
@@ -4208,7 +4208,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-finca-sub { font-size:7.5px;color:#8795A8;margin-bottom:2px; }
 .aportes-donut-wrap { min-height:275px; }
 .aportes-adicionales-title { font-size:9px;font-weight:900;color:#17345E;margin-top:4px;margin-bottom:4px; }
-.aportes-mini-asset { display:flex;justify-content:space-between;gap:8px;padding:6px 8px;margin-top:4px;border:1px solid #E7EDF3;border-radius:8px;background:#FAFBFC; }
+.aportes-mini-asset { display:flex;justify-content:space-between;gap:8px;padding:5px 8px;margin-top:4px;border:1px solid #E7EDF3;border-radius:8px;background:#FAFBFC; }
 .aportes-mini-asset-name { font-size:8.5px;color:#5F7189;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .aportes-mini-asset-value { font-size:8.5px;font-weight:900;color:#17345E;white-space:nowrap; }
 .aportes-additional { color:#7757C8;font-weight:800; }
@@ -4708,7 +4708,7 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     justify-content:space-between;
     gap:8px;
-    padding:11px 13px 8px;
+    padding:10px 13px 7px;
 }
 
 .aportes-compact-name-wrap {
@@ -4735,7 +4735,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-avatar.andres { background:#E9F8F2; color:#43C995; }
 
 .aportes-compact-name {
-    font-size:15px;
+    font-size:17px;
     font-weight:900;
     color:#17345E;
     white-space:nowrap;
@@ -4746,8 +4746,8 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-compact-total-label {
-    font-size:7px;
-    color:#8290A4;
+    font-size:8px;
+    color:#6F8198;
     font-weight:900;
     text-transform:uppercase;
     letter-spacing:.2px;
@@ -4774,14 +4774,14 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-capital-label {
-    font-size:8px;
-    color:#7B8CA2;
-    font-weight:800;
+    font-size:9px;
+    color:#60738B;
+    font-weight:850;
     white-space:nowrap;
 }
 
 .aportes-capital-item strong {
-    font-size:9px;
+    font-size:10px;
     font-weight:900;
     color:#17345E;
     white-space:nowrap;
@@ -4802,7 +4802,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-compact-total-value {
-    font-size:19px;
+    font-size:20px;
     line-height:1;
     color:#17345E;
     font-weight:900;
@@ -4826,11 +4826,11 @@ if st.session_state.vista_airbnb == "Aportes":
     background:#FAFBFD;
     border:1px solid #E3EAF0;
     border-radius:11px;
-    padding:8px 9px;
+    padding:7px 9px;
 }
 
 .aportes-compact-summary-title {
-    font-size:9px;
+    font-size:10.5px;
     font-weight:900;
     color:#17345E;
     margin-bottom:4px;
@@ -4974,15 +4974,15 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-mini-panel-title {
-    font-size:9px;
+    font-size:10.5px;
     font-weight:900;
     color:#17345E;
     margin-bottom:4px;
 }
 
 .aportes-mini-panel-sub {
-    font-size:7px;
-    color:#8A98AA;
+    font-size:8px;
+    color:#7B8CA2;
     margin-bottom:5px;
 }
 
@@ -4991,7 +4991,7 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     justify-content:space-between;
     gap:5px;
-    padding:5px 0;
+    padding:4px 0;
     border-bottom:1px solid #EDF1F5;
 }
 
@@ -5001,23 +5001,23 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-mini-name {
     min-width:0;
-    font-size:7.8px;
-    color:#61738C;
+    font-size:9px;
+    color:#566B84;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
 }
 
 .aportes-mini-value {
-    font-size:8.5px;
+    font-size:10px;
     font-weight:900;
     color:#17345E;
     white-space:nowrap;
 }
 
 .aportes-mini-pct {
-    font-size:7px;
-    color:#8A98AA;
+    font-size:8px;
+    color:#71839A;
     margin-left:auto;
     margin-right:3px;
     white-space:nowrap;
@@ -5033,13 +5033,13 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-mini-total-label {
-    font-size:7.5px;
+    font-size:8.5px;
     font-weight:850;
-    color:#61738C;
+    color:#586D86;
 }
 
 .aportes-mini-total-value {
-    font-size:9px;
+    font-size:10px;
     font-weight:900;
     color:#7757C8;
 }
@@ -5076,19 +5076,19 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-last-contrib-label {
-    font-size:7.5px;
+    font-size:9px;
     font-weight:900;
-    color:#61738C;
+    color:#586D86;
 }
 
 .aportes-last-contrib-date {
-    font-size:7px;
-    color:#8A98AA;
+    font-size:8px;
+    color:#71839A;
     margin-top:1px;
 }
 
 .aportes-last-contrib-value {
-    font-size:10px;
+    font-size:11px;
     font-weight:900;
     color:#7757C8;
     white-space:nowrap;
