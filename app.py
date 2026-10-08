@@ -5996,7 +5996,7 @@ if st.session_state.vista_airbnb == "Aportes":
         </div>
 
         <div class="aportes-header-last-aporte"
-             style="grid-column:2 !important;grid-row:1 !important;position:static !important;width:120px !important;min-width:120px !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;text-align:center !important;margin:0 !important;padding:0 !important;z-index:30 !important;">
+             style="grid-column:2 !important;grid-row:1 !important;position:static !important;width:120px !important;min-width:120px !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;text-align:center !important;margin:0 0 0 18px !important;padding:0 !important;z-index:30 !important;">
             <span style="display:block !important;font-size:7.5px !important;line-height:1.05 !important;color:#8795A8 !important;font-weight:650 !important;">Último aporte</span>
             <strong style="display:block !important;font-size:9px !important;line-height:1.05 !important;color:#7757C8 !important;font-weight:700 !important;margin-top:2px !important;">{dinero_corto(ultimo_aporte_valor)}</strong>
             <small style="display:block !important;font-size:7px !important;line-height:1.05 !important;color:#9AA6B5 !important;font-weight:600 !important;margin-top:2px !important;">{fecha_corta_es(ultima_fecha)}</small>
