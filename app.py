@@ -5174,8 +5174,7 @@ if st.session_state.vista_airbnb == "Aportes":
     white-space:nowrap;
 }
 
-.aportes-card-body-grid {
-    /* En escritorio: Activos y Activos adicionales siempre lado a lado */
+ .aportes-card-body-grid {
     display:grid;
     grid-template-columns:minmax(0,1fr) minmax(0,1fr);
     gap:7px;
@@ -5187,10 +5186,8 @@ if st.session_state.vista_airbnb == "Aportes":
     background:#FAFBFD;
     border:1px solid #E3EAF0;
     border-radius:10px;
-    padding:7px 9px;
+    padding:8px 9px;
     min-width:0;
-    height:100%;
-    box-sizing:border-box;
 }
 
 .aportes-mini-panel-title {
@@ -5949,9 +5946,6 @@ if st.session_state.vista_airbnb == "Aportes":
                 <span class="aportes-mini-value compact">
                     {dinero_corto(vehiculos_total_socio)}
                 </span>
-            </div>
-
-
             </div>
 
         </div>
