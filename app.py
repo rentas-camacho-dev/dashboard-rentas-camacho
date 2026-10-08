@@ -5185,7 +5185,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-mini-value.compact,
 .aportes-category-value,
 .aportes-mini-debt-value {
-    font-size:15px;
+    font-size:13px;
     line-height:1;
     font-weight:500;
     white-space:nowrap;
@@ -5244,7 +5244,7 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-mini-total-value {
-    font-size:15px;
+    font-size:13px;
     font-weight:500;
     color:#7757C8;
 }
