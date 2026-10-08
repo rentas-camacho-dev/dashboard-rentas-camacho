@@ -4787,12 +4787,12 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 /* V65: impedir que Streamlit estire verticalmente las columnas que contienen
-   las tres tarjetas. La altura visual queda exactamente igual a Diego. */
+   las tres tarjetas. Las tres tarjetas deben conservar exactamente la misma altura visual. */
 div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) {
     align-items:flex-start !important;
 }
 
-/* V66: Streamlit puede hacer stretch vertical de las columnas.
+/* V68: compensar el escalado visual del navegador y mantener las tres tarjetas iguales.
    La tarjeta debe conservar su altura propia y no heredar la altura
    de la columna ni del bloque vertical que la contiene. */
 div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testid="column"] {
@@ -4809,9 +4809,9 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
 .aportes-compact-card {
     box-sizing:border-box;
-    height:412px !important;
-    min-height:412px !important;
-    max-height:412px !important;
+    height:270px !important;
+    min-height:270px !important;
+    max-height:270px !important;
     align-self:start !important;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
