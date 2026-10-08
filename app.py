@@ -5147,7 +5147,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-mini-panel-title {
     font-size:10.5px;
-    font-weight:750;
+    font-weight:500;
     color:#17345E;
     margin-bottom:4px;
 }
@@ -5174,44 +5174,36 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-mini-name {
     min-width:0;
     font-size:9px;
+    font-weight:500;
     color:#566B84;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
 }
 
-.aportes-mini-value {
-    font-size:19px;
-    line-height:1;
-    font-weight:750;
-    color:#17345E;
-    white-space:nowrap;
-}
-
-.aportes-mini-value.compact {
+.aportes-mini-value,
+.aportes-mini-value.compact,
+.aportes-category-value,
+.aportes-mini-debt-value {
     font-size:15px;
-    font-weight:750;
+    line-height:1;
+    font-weight:500;
+    white-space:nowrap;
 }
 
+.aportes-mini-value,
 .aportes-category-value {
-    font-size:11px;
-    line-height:1;
-    font-weight:750;
     color:#17345E;
-    white-space:nowrap;
+}
+
+.aportes-mini-debt-value {
+    color:#D64242;
 }
 
 .aportes-category-row .aportes-mini-name {
     font-size:8.5px;
-    font-weight:700;
+    font-weight:500;
     color:#566B84;
-}
-
-.aportes-mini-debt-value {
-    font-size:14px;
-    font-weight:750;
-    color:#D64242;
-    white-space:nowrap;
 }
 
 .aportes-mini-ratio {
@@ -5247,13 +5239,13 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-mini-total-label {
     font-size:8.5px;
-    font-weight:700;
+    font-weight:500;
     color:#586D86;
 }
 
 .aportes-mini-total-value {
-    font-size:10px;
-    font-weight:750;
+    font-size:15px;
+    font-weight:500;
     color:#7757C8;
 }
 
@@ -5872,7 +5864,7 @@ if st.session_state.vista_airbnb == "Aportes":
             </div>
 
             <div class="aportes-mini-row" style="padding:5px 0;">
-                <span class="aportes-mini-name" style="font-size:9px;font-weight:700;">
+                <span class="aportes-mini-name" style="font-size:9px;font-weight:500;">
                     🏠 Finca Raíz
                 </span>
                 <span class="aportes-mini-value compact">
@@ -5881,7 +5873,7 @@ if st.session_state.vista_airbnb == "Aportes":
             </div>
 
             <div class="aportes-mini-row" style="padding:5px 0;">
-                <span class="aportes-mini-name" style="font-size:9px;font-weight:700;">
+                <span class="aportes-mini-name" style="font-size:9px;font-weight:500;">
                     🏪 Comercio
                 </span>
                 <span class="aportes-mini-value compact">
@@ -5890,7 +5882,7 @@ if st.session_state.vista_airbnb == "Aportes":
             </div>
 
             <div class="aportes-mini-row" style="padding:5px 0;">
-                <span class="aportes-mini-name" style="font-size:9px;font-weight:700;">
+                <span class="aportes-mini-name" style="font-size:9px;font-weight:500;">
                     🚗 Vehículos
                 </span>
                 <span class="aportes-mini-value compact">
@@ -5902,7 +5894,7 @@ if st.session_state.vista_airbnb == "Aportes":
                  style="background:#FFF7F7;border-radius:7px;padding:8px 5px;margin-top:6px;border-bottom:none;">
 
                 <span class="aportes-mini-name"
-                      style="font-size:9px;font-weight:700;">
+                      style="font-size:9px;font-weight:500;">
                     Deuda principal
                 </span>
 
