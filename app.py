@@ -4787,7 +4787,6 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-compact-card {
     box-sizing:border-box;
-    min-height:410px;
     height:auto;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
@@ -4802,10 +4801,10 @@ if st.session_state.vista_airbnb == "Aportes":
 
  .aportes-compact-head {
     position:relative;
-    display:flex;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto 92px;
     align-items:center;
-    justify-content:flex-start;
-    gap:8px;
+    gap:10px;
     padding:9px 13px 5px;
 }
 
@@ -4814,8 +4813,8 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     gap:8px;
     min-width:0;
-    width:calc(100% - 78px);
-    padding-right:2px;
+    width:100%;
+    padding-right:0;
     box-sizing:border-box;
 }
 
@@ -4855,18 +4854,20 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-inline-last-name {
     position:static;
     width:auto;
-    align-items:flex-start;
-    text-align:left;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
     flex-shrink:0;
+    grid-column:2;
 }
 
 .aportes-name-patrimonio-right {
-    position:absolute;
-    top:9px;
-    right:13px;
+    position:static;
+    grid-column:3;
     width:auto;
     align-items:flex-end;
     text-align:right;
+    justify-self:end;
     flex-shrink:0;
 }
 
@@ -5259,7 +5260,7 @@ if st.session_state.vista_airbnb == "Aportes":
     grid-template-columns:minmax(0,1fr) minmax(0,1fr);
     gap:7px;
     padding:0 9px 3px;
-    align-items:stretch;
+    align-items:start;
 }
 
 .aportes-mini-panel {
