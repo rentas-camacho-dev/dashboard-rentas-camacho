@@ -1458,6 +1458,28 @@ def cargar_estudio_mercado_inmobiliario():
     ]
     for col in text_cols:
         estudio[col] = estudio[col].fillna("").astype(str)
+
+    # ------------------------------------------------------------
+    # RADAR = SOLO FINCA RAÍZ
+    # La categoría maestra del activo es la fuente de verdad.
+    # Normalizamos tildes/espacios para aceptar "Finca Raíz" o
+    # "Finca Raiz" sin dejar entrar Comercio ni Vehículos.
+    # ------------------------------------------------------------
+    categoria_radar = (
+        estudio["Conjunto_Proyecto"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .str.normalize("NFKD")
+        .str.encode("ascii", errors="ignore")
+        .str.decode("ascii")
+    )
+
+    estudio = estudio[
+        categoria_radar.eq("finca raiz")
+    ].copy()
+
     return estudio
 
 
@@ -4351,10 +4373,31 @@ if st.session_state.vista_airbnb == "Aportes":
         )
 
         # --------------------------------------------------------
-        # CLASIFICACIÓN AUTOMÁTICA DE ACTIVOS
-        # Regla: si el activo pertenece a los 3 socios de la app,
-        # es Finca Raíz asociada. Todo lo demás es adicional.
+        # CLASIFICACIÓN PATRIMONIAL POR CATEGORÍA
+        # Conjunto_Proyecto es la fuente de verdad:
+        #   - Finca Raíz
+        #   - Comercio
+        #   - Vehículos
+        #
+        # Un activo solo entra al "patrimonio conjunto" cuando:
+        #   1) es Finca Raíz, y
+        #   2) aparecen los 3 socios.
+        #
+        # Todo lo demás queda como activo adicional, pero conserva
+        # su categoría para poder mostrar Finca Raíz + Comercio +
+        # Vehículos sin mezclar RIE ni Carro Padre con la Finca Raíz.
         # --------------------------------------------------------
+        vista_patrimonio["_Categoria_Activo"] = (
+            vista_patrimonio["Conjunto_Proyecto"]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .str.normalize("NFKD")
+            .str.encode("ascii", errors="ignore")
+            .str.decode("ascii")
+        )
+
         socios_por_activo = (
             vista_patrimonio
             .groupby("ID_Activo")["Nombre_Socio"]
@@ -4362,10 +4405,20 @@ if st.session_state.vista_airbnb == "Aportes":
             .to_dict()
         )
 
+        categoria_por_activo = (
+            vista_patrimonio
+            .groupby("ID_Activo")["_Categoria_Activo"]
+            .first()
+            .to_dict()
+        )
+
         activos_finca_ids = {
             id_activo
             for id_activo, propietarios in socios_por_activo.items()
-            if nombres_socios_set.issubset(propietarios)
+            if (
+                categoria_por_activo.get(id_activo, "") == "finca raiz"
+                and nombres_socios_set.issubset(propietarios)
+            )
         }
 
         activos_asociados = vista_patrimonio[
@@ -4376,6 +4429,19 @@ if st.session_state.vista_airbnb == "Aportes":
         activos_adicionales = vista_patrimonio[
             ~vista_patrimonio["ID_Activo"].isin(activos_finca_ids)
             & vista_patrimonio["Nombre_Socio"].isin(nombres_socios_set)
+        ].copy()
+
+        # Subconjuntos por categoría para el resumen patrimonial.
+        activos_finca_adicional = activos_adicionales[
+            activos_adicionales["_Categoria_Activo"] == "finca raiz"
+        ].copy()
+
+        activos_comercio = activos_adicionales[
+            activos_adicionales["_Categoria_Activo"] == "comercio"
+        ].copy()
+
+        activos_vehiculos = activos_adicionales[
+            activos_adicionales["_Categoria_Activo"] == "vehiculos"
         ].copy()
 
         # --------------------------------------------------------
@@ -5067,6 +5133,20 @@ if st.session_state.vista_airbnb == "Aportes":
     white-space:nowrap;
 }
 
+.aportes-category-value {
+    font-size:11px;
+    line-height:1;
+    font-weight:900;
+    color:#17345E;
+    white-space:nowrap;
+}
+
+.aportes-category-row .aportes-mini-name {
+    font-size:8.5px;
+    font-weight:800;
+    color:#566B84;
+}
+
 .aportes-mini-debt-value {
     font-size:14px;
     font-weight:900;
@@ -5525,7 +5605,7 @@ if st.session_state.vista_airbnb == "Aportes":
                     activos_adicionales["Nombre_Socio"] == nombre
                 ]
                 .groupby(
-                    "Nombre_Entidad",
+                    "_Categoria_Activo",
                     as_index=False
                 )["Valor_Mercado_Socio"]
                 .sum()
@@ -5536,9 +5616,15 @@ if st.session_state.vista_airbnb == "Aportes":
                 .reset_index(drop=True)
             )
 
+            adicional_categoria_labels = {
+                "finca raiz": "🏠 Finca Raíz adicional",
+                "comercio": "🏪 Comercio",
+                "vehiculos": "🚗 Vehículos",
+            }
+
             # --------------------------------------------------------
             # TARJETA COMPACTA DEL SOCIO
-            # Sin donut: resumen conjunto + activos adicionales +
+            # Sin donut: resumen conjunto + categorías adicionales +
             # último aporte.
             # --------------------------------------------------------
 
@@ -5595,15 +5681,28 @@ if st.session_state.vista_airbnb == "Aportes":
 
                     if not adicional_socio_df.empty:
 
-                        for _, row in adicional_socio_df.head(3).iterrows():
+                        for _, row in adicional_socio_df.iterrows():
+
+                            categoria_key = str(
+                                row["_Categoria_Activo"]
+                            ).strip().lower()
+
+                            categoria_label = adicional_categoria_labels.get(
+                                categoria_key,
+                                categoria_key.title()
+                            )
+
+                            valor_categoria = float(
+                                row["Valor_Mercado_Socio"]
+                            )
 
                             adicional_rows_html += f"""
-<div class="aportes-mini-row">
+<div class="aportes-mini-row aportes-category-row">
     <span class="aportes-mini-name">
-        {escape_html(row["Nombre_Entidad"])}
+        {escape_html(categoria_label)}
     </span>
-    <span class="aportes-mini-value">
-        {dinero_corto(float(row["Valor_Mercado_Socio"]))}
+    <span class="aportes-category-value">
+        {dinero_corto(valor_categoria)}
     </span>
 </div>
 """
@@ -5615,7 +5714,7 @@ if st.session_state.vista_airbnb == "Aportes":
     <span class="aportes-mini-name">
         Sin activos adicionales
     </span>
-    <span class="aportes-mini-value">-</span>
+    <span class="aportes-category-value">-</span>
 </div>
 """
 
@@ -5891,22 +5990,43 @@ if st.session_state.vista_airbnb == "Aportes":
 
             # --------------------------------------------------------
             # COMPOSICIÓN DEL PORTAFOLIO
-            # Finca Raíz se calcula automáticamente.
-            # Comercio usa la valoración de referencia de RIE +
-            # Restaurante RIE; vehículos queda preparado para conectar
-            # con Activos_Muebles cuando se incorpore esa tabla.
+            # Ahora se calcula por la categoría maestra del activo:
+            # Finca Raíz + Comercio + Vehículos.
+            #
+            # valor_finca_total = solo Finca Raíz conjunta.
+            # Para la composición usamos TODO el portafolio actual
+            # clasificado como Finca Raíz, sin mezclar RIE ni Carro
+            # Padre con la Finca Raíz.
             # --------------------------------------------------------
-            valor_comercio = 570_000_000
-            valor_vehiculos = 0
+            valor_finca_portafolio = float(
+                vista_patrimonio.loc[
+                    vista_patrimonio["_Categoria_Activo"] == "finca raiz",
+                    "Valor_Mercado_Socio"
+                ].sum()
+            )
+
+            valor_comercio = float(
+                vista_patrimonio.loc[
+                    vista_patrimonio["_Categoria_Activo"] == "comercio",
+                    "Valor_Mercado_Socio"
+                ].sum()
+            )
+
+            valor_vehiculos = float(
+                vista_patrimonio.loc[
+                    vista_patrimonio["_Categoria_Activo"] == "vehiculos",
+                    "Valor_Mercado_Socio"
+                ].sum()
+            )
 
             valor_portafolio_valorado = (
-                valor_finca_total
+                valor_finca_portafolio
                 + valor_comercio
                 + valor_vehiculos
             )
 
             pct_finca_port = (
-                valor_finca_total
+                valor_finca_portafolio
                 / valor_portafolio_valorado
                 * 100
                 if valor_portafolio_valorado
@@ -5929,7 +6049,7 @@ if st.session_state.vista_airbnb == "Aportes":
     </div>
 
     <div class="aportes-portfolio-sub">
-        Finca Raíz + Comercio + Vehículos
+        Finca Raíz + Comercio + Vehículos · sin mezclar categorías
     </div>
 
     <div class="aportes-portfolio-grid">
@@ -5941,11 +6061,11 @@ if st.session_state.vista_airbnb == "Aportes":
             </div>
 
             <div class="aportes-portfolio-caption">
-                Activos conjuntos
+                Todos los activos inmobiliarios
             </div>
 
             <div class="aportes-portfolio-value">
-                {dinero_corto(valor_finca_total)}
+                {dinero_corto(valor_finca_portafolio)}
             </div>
 
             <div class="aportes-portfolio-pct">
@@ -6117,7 +6237,7 @@ if st.session_state.vista_airbnb == "Aportes":
 """)
 
         # --------------------------------------------------------
-        # ACTIIVOS ADICIONALES + DEUDA INDIVIDUAL
+        # ACTIVOS ADICIONALES + DEUDA INDIVIDUAL
         # --------------------------------------------------------
         # Aquí salen Malaca, Torre Evoca, Santa Marina II, Torre Ventto
         # y cualquier otro activo que NO sea conjunto de los tres socios.
@@ -7342,6 +7462,23 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
     # ============================================================
 
     estudio = cargar_estudio_mercado_inmobiliario()
+
+    # Defensa adicional: aunque exista caché previo, el Radar nunca
+    # debe mostrar Comercio ni Vehículos.
+    if not estudio.empty:
+        _categoria_radar_render = (
+            estudio["Conjunto_Proyecto"]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .str.normalize("NFKD")
+            .str.encode("ascii", errors="ignore")
+            .str.decode("ascii")
+        )
+        estudio = estudio[
+            _categoria_radar_render.eq("finca raiz")
+        ].copy()
 
     if not estudio.empty:
         html_decision = """
