@@ -4836,10 +4836,8 @@ if st.session_state.vista_airbnb == "Aportes":
 
 /* Patrimonio neto junto al nombre + Último aporte en la esquina */
 .aportes-name-block {
-    display:grid;
-    grid-template-columns:minmax(0,1fr) auto;
+    display:flex;
     align-items:center;
-    gap:4px;
     min-width:0;
     width:100%;
 }
@@ -4854,28 +4852,30 @@ if st.session_state.vista_airbnb == "Aportes":
 /* v52: intercambio de posiciones */
 .aportes-inline-last-name {
     position:static;
-    width:auto;
+    grid-column:2;
+    grid-row:1;
+    width:120px;
+    justify-self:center;
     align-items:center;
     justify-content:center;
     text-align:center;
     flex-shrink:0;
-    grid-column:2;
-    width:120px;
-    justify-self:center;
-    align-items:center;
-    text-align:center;
-    z-index:2;
+    z-index:5;
 }
 
 .aportes-name-patrimonio-right {
     position:static;
     grid-column:3;
+    grid-row:1;
     width:105px;
+    min-width:105px;
     align-items:flex-end;
+    justify-content:center;
     text-align:right;
     justify-self:end;
-    margin-left:auto;
+    margin-left:0;
     flex-shrink:0;
+    z-index:5;
 }
 
 .aportes-name-patrimonio {
@@ -5912,14 +5912,14 @@ if st.session_state.vista_airbnb == "Aportes":
                     {escape_html(nombre)}
                 </div>
 
-                <div class="aportes-inline-last aportes-inline-last-name">
-                    <span>Último aporte</span>
-                    <strong>{dinero_corto(ultimo_aporte_valor)}</strong>
-                    <small>{fecha_corta_es(ultima_fecha)}</small>
-                </div>
-
             </div>
 
+        </div>
+
+        <div class="aportes-inline-last aportes-inline-last-name">
+            <span>Último aporte</span>
+            <strong>{dinero_corto(ultimo_aporte_valor)}</strong>
+            <small>{fecha_corta_es(ultima_fecha)}</small>
         </div>
 
         <div class="aportes-name-patrimonio aportes-name-patrimonio-right">
