@@ -5175,18 +5175,22 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-card-body-grid {
+    /* En escritorio: Activos y Activos adicionales siempre lado a lado */
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
     gap:7px;
     padding:0 9px 5px;
+    align-items:stretch;
 }
 
 .aportes-mini-panel {
     background:#FAFBFD;
     border:1px solid #E3EAF0;
     border-radius:10px;
-    padding:8px 9px;
+    padding:7px 9px;
     min-width:0;
+    height:100%;
+    box-sizing:border-box;
 }
 
 .aportes-mini-panel-title {
