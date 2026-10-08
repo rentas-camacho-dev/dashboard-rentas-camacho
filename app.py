@@ -4787,6 +4787,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-compact-card {
     box-sizing:border-box;
+    min-height:410px;
     height:auto;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
@@ -4848,6 +4849,25 @@ if st.session_state.vista_airbnb == "Aportes":
     min-width:0;
     overflow:hidden;
     text-overflow:ellipsis;
+}
+
+/* v52: intercambio de posiciones */
+.aportes-inline-last-name {
+    position:static;
+    width:auto;
+    align-items:flex-start;
+    text-align:left;
+    flex-shrink:0;
+}
+
+.aportes-name-patrimonio-right {
+    position:absolute;
+    top:9px;
+    right:13px;
+    width:auto;
+    align-items:flex-end;
+    text-align:right;
+    flex-shrink:0;
 }
 
 .aportes-name-patrimonio {
@@ -5884,23 +5904,23 @@ if st.session_state.vista_airbnb == "Aportes":
                     {escape_html(nombre)}
                 </div>
 
-                <div class="aportes-name-patrimonio">
-                    <span class="aportes-name-patrimonio-label">
-                        Patrimonio neto
-                    </span>
-                    <span class="aportes-name-patrimonio-value">
-                        {dinero_corto(patrimonio_neto_conjunto)}
-                    </span>
+                <div class="aportes-inline-last aportes-inline-last-name">
+                    <span>Último aporte</span>
+                    <strong>{dinero_corto(ultimo_aporte_valor)}</strong>
+                    <small>{fecha_corta_es(ultima_fecha)}</small>
                 </div>
 
             </div>
 
         </div>
 
-        <div class="aportes-inline-last">
-            <span>Último aporte</span>
-            <strong>{dinero_corto(ultimo_aporte_valor)}</strong>
-            <small>{fecha_corta_es(ultima_fecha)}</small>
+        <div class="aportes-name-patrimonio aportes-name-patrimonio-right">
+            <span class="aportes-name-patrimonio-label">
+                Patrimonio neto
+            </span>
+            <span class="aportes-name-patrimonio-value">
+                {dinero_corto(patrimonio_neto_conjunto)}
+            </span>
         </div>
 
     </div>
