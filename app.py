@@ -4923,12 +4923,13 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     justify-content:space-between;
     gap:10px;
-    margin:0 13px 6px;
-    padding:5px 0 6px;
+    margin:0 13px 5px;
+    padding:4px 0 5px;
     border-bottom:1px solid #E8EDF2;
 }
 
 .aportes-header-meta-left,
+.aportes-header-meta-center,
 .aportes-header-meta-right {
     display:flex;
     align-items:center;
@@ -4936,8 +4937,15 @@ if st.session_state.vista_airbnb == "Aportes":
     min-width:0;
 }
 
-.aportes-header-meta-right {
-    justify-content:flex-end;
+.aportes-header-meta-left { justify-content:flex-start; }
+.aportes-header-meta-center { justify-content:center; }
+.aportes-header-meta-right { justify-content:flex-end; }
+
+.aportes-header-debt {
+    font-size:9.5px;
+    font-weight:650;
+    color:#D64242;
+    white-space:nowrap;
 }
 
 .aportes-header-meta .aportes-header-patrimonio-ratio {
@@ -5170,7 +5178,7 @@ if st.session_state.vista_airbnb == "Aportes":
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:7px;
-    padding:0 9px 7px;
+    padding:0 9px 5px;
 }
 
 .aportes-mini-panel {
@@ -5832,6 +5840,12 @@ if st.session_state.vista_airbnb == "Aportes":
     <div class="aportes-header-meta">
 
         <div class="aportes-header-meta-left">
+            <span class="aportes-header-debt">
+                Deuda principal -{dinero_corto(deuda_principal)}
+            </span>
+        </div>
+
+        <div class="aportes-header-meta-center">
             <span class="aportes-header-patrimonio-ratio {ratio_class}">
                 {ratio_icon} {ratio:+.1f}% vs. capital neto
             </span>
@@ -5933,17 +5947,6 @@ if st.session_state.vista_airbnb == "Aportes":
                 </span>
             </div>
 
-            <div class="aportes-mini-row"
-                 style="background:#FFF7F7;border-radius:7px;padding:8px 5px;margin-top:6px;border-bottom:none;">
-
-                <span class="aportes-mini-name"
-                      style="font-size:9px;font-weight:500;">
-                    Deuda principal
-                </span>
-
-                <span class="aportes-mini-debt-value">
-                    -{dinero_corto(deuda_principal)}
-                </span>
 
             </div>
 
