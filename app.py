@@ -4857,14 +4857,6 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-avatar.william { background:#EAF2FF; color:#5DA7F4; }
 .aportes-compact-avatar.andres { background:#E9F8F2; color:#43C995; }
 
-/* Tarjetas de socios: altura uniforme y compacta */
-.aportes-compact-card {
-    min-height:420px;
-    box-sizing:border-box;
-    display:flex;
-    flex-direction:column;
-}
-
 .aportes-compact-name {
     font-size:17px;
     font-weight:750;
@@ -4928,49 +4920,12 @@ if st.session_state.vista_airbnb == "Aportes":
 /* Línea completa bajo el nombre */
 .aportes-header-meta {
     display:grid;
-    grid-template-columns:1.15fr 1fr 1fr 1.05fr;
+    grid-template-columns:1.15fr 1fr 1fr;
     align-items:center;
     gap:6px;
     margin:0 13px 5px;
     padding:4px 0 5px;
     border-bottom:1px solid #E8EDF2;
-}
-
-/* Último aporte integrado al encabezado */
-.aportes-header-meta-capital,
-.aportes-header-meta-last {
-    display:flex;
-    align-items:center;
-    gap:3px;
-    min-width:0;
-    overflow:hidden;
-    white-space:nowrap;
-}
-
-.aportes-header-meta-capital {
-    justify-content:flex-end;
-}
-
-.aportes-header-meta-last {
-    justify-content:flex-end;
-}
-
-.aportes-header-last-label {
-    font-size:7.5px;
-    color:#8795A8;
-    font-weight:650;
-}
-
-.aportes-header-last-value {
-    font-size:9px;
-    color:#7757C8;
-    font-weight:700;
-}
-
-.aportes-header-last-date {
-    font-size:7px;
-    color:#9AA6B5;
-    font-weight:600;
 }
 
 .aportes-header-meta-left,
@@ -5228,7 +5183,7 @@ if st.session_state.vista_airbnb == "Aportes":
     display:grid;
     grid-template-columns:minmax(0,1fr) minmax(0,1fr);
     gap:7px;
-    padding:0 9px 5px;
+    padding:0 9px 3px;
     align-items:stretch;
 }
 
@@ -5911,17 +5866,6 @@ if st.session_state.vista_airbnb == "Aportes":
             </span>
         </div>
 
-        <div class="aportes-header-meta-last">
-            <span class="aportes-header-last-label">
-                Último aporte
-            </span>
-            <span class="aportes-header-last-value">
-                {dinero_corto(ultimo_aporte_valor)}
-            </span>
-            <span class="aportes-header-last-date">
-                · {fecha_corta_es(ultima_fecha)}
-            </span>
-        </div>
 
     </div>
 
