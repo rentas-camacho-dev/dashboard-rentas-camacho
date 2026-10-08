@@ -5060,15 +5060,16 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-mini-value {
-    font-size:10px;
-    font-weight:900;
+    font-size:19px;
+    line-height:1;
+    font-weight:950;
     color:#17345E;
     white-space:nowrap;
 }
 
 .aportes-mini-debt-value {
-    font-size:11px;
-    font-weight:850;
+    font-size:14px;
+    font-weight:900;
     color:#D64242;
     white-space:nowrap;
 }
@@ -5719,52 +5720,34 @@ if st.session_state.vista_airbnb == "Aportes":
                 Participación del socio
             </div>
 
-            <div class="aportes-mini-row">
-                <span class="aportes-mini-name">
+            <div class="aportes-mini-row"
+                 style="padding:7px 0 9px;">
+
+                <span class="aportes-mini-name"
+                      style="font-size:9px;font-weight:850;">
+
                     Finca Raíz
+
                 </span>
+
                 <span class="aportes-mini-value">
                     {dinero_corto(finca_total)}
                 </span>
+
             </div>
 
             <div class="aportes-mini-row"
-                 style="background:#FFF7F7;border-radius:6px;padding-left:5px;padding-right:5px;">
+                 style="background:#FFF7F7;border-radius:7px;padding:8px 5px;margin-top:5px;border-bottom:none;">
 
-                <span class="aportes-mini-name">
+                <span class="aportes-mini-name"
+                      style="font-size:9px;font-weight:850;">
+
                     Deuda conjunta
+
                 </span>
 
                 <span class="aportes-mini-debt-value">
                     -{dinero_corto(deuda_conjunta)}
-                </span>
-
-            </div>
-
-            <div class="aportes-mini-total">
-
-                <span class="aportes-mini-total-label">
-                    Neto conjunto
-                </span>
-
-                <span class="aportes-mini-total-value"
-                      style="color:#17345E;">
-
-                    {dinero_corto(patrimonio_neto_conjunto)}
-
-                </span>
-
-            </div>
-
-            <div class="aportes-mini-row"
-                 style="border-bottom:none;padding-bottom:0;">
-
-                <span class="aportes-mini-name">
-                    Vs. capital aportado
-                </span>
-
-                <span class="aportes-mini-ratio {ratio_class}">
-                    {ratio_icon} {ratio:+.1f}%
                 </span>
 
             </div>
