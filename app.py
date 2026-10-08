@@ -5978,37 +5978,34 @@ if st.session_state.vista_airbnb == "Aportes":
                     render_aportes_html(f"""
 <div class="aportes-compact-card {clase}">
 
-    <div class="aportes-compact-head">
+    <div class="aportes-compact-head"
+         style="display:grid !important;grid-template-columns:minmax(0,1fr) 120px 105px !important;column-gap:8px !important;align-items:center !important;position:relative !important;">
 
-        <div class="aportes-compact-name-wrap">
-
+        <div class="aportes-compact-name-wrap"
+             style="grid-column:1 !important;grid-row:1 !important;min-width:0 !important;display:flex !important;align-items:center !important;">
             <div class="aportes-compact-avatar {clase}">
                 {avatar}
             </div>
-
-            <div class="aportes-name-block">
-
-                <div class="aportes-compact-name">
+            <div class="aportes-name-block"
+                 style="min-width:0 !important;width:100% !important;display:flex !important;align-items:center !important;">
+                <div class="aportes-compact-name"
+                     style="white-space:nowrap !important;overflow:visible !important;text-overflow:clip !important;">
                     {escape_html(nombre)}
                 </div>
-
             </div>
-
         </div>
 
-        <div class="aportes-header-last-aporte">
-            <span>Último aporte</span>
-            <strong>{dinero_corto(ultimo_aporte_valor)}</strong>
-            <small>{fecha_corta_es(ultima_fecha)}</small>
+        <div class="aportes-header-last-aporte"
+             style="grid-column:2 !important;grid-row:1 !important;position:static !important;width:120px !important;min-width:120px !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;text-align:center !important;margin:0 !important;padding:0 !important;z-index:30 !important;">
+            <span style="display:block !important;font-size:7.5px !important;line-height:1.05 !important;color:#8795A8 !important;font-weight:650 !important;">Último aporte</span>
+            <strong style="display:block !important;font-size:9px !important;line-height:1.05 !important;color:#7757C8 !important;font-weight:700 !important;margin-top:2px !important;">{dinero_corto(ultimo_aporte_valor)}</strong>
+            <small style="display:block !important;font-size:7px !important;line-height:1.05 !important;color:#9AA6B5 !important;font-weight:600 !important;margin-top:2px !important;">{fecha_corta_es(ultima_fecha)}</small>
         </div>
 
-        <div class="aportes-header-patrimonio">
-            <span class="aportes-name-patrimonio-label">
-                Patrimonio neto
-            </span>
-            <span class="aportes-name-patrimonio-value">
-                {dinero_corto(patrimonio_neto_conjunto)}
-            </span>
+        <div class="aportes-header-patrimonio"
+             style="grid-column:3 !important;grid-row:1 !important;position:static !important;width:105px !important;min-width:105px !important;display:flex !important;flex-direction:column !important;align-items:flex-end !important;justify-content:center !important;text-align:right !important;margin:0 !important;padding:0 !important;z-index:30 !important;">
+            <span style="display:block !important;font-size:7.5px !important;line-height:1 !important;color:#6F8198 !important;font-weight:800 !important;white-space:nowrap !important;">Patrimonio neto</span>
+            <span style="display:block !important;font-size:18px !important;line-height:1 !important;color:#17345E !important;font-weight:750 !important;margin-top:2px !important;white-space:nowrap !important;">{dinero_corto(patrimonio_neto_conjunto)}</span>
         </div>
 
     </div>
