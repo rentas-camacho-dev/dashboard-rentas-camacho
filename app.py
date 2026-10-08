@@ -4792,6 +4792,21 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) {
     align-items:flex-start !important;
 }
 
+/* V66: Streamlit puede hacer stretch vertical de las columnas.
+   La tarjeta debe conservar su altura propia y no heredar la altura
+   de la columna ni del bloque vertical que la contiene. */
+div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testid="column"] {
+    align-self:flex-start !important;
+    height:auto !important;
+    min-height:0 !important;
+}
+
+div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testid="column"] > div[data-testid="stVerticalBlock"] {
+    height:auto !important;
+    min-height:0 !important;
+    align-self:flex-start !important;
+}
+
 .aportes-compact-card {
     box-sizing:border-box;
     height:412px !important;
