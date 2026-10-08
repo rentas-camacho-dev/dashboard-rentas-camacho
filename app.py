@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import base64
@@ -4809,9 +4810,9 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
 .aportes-compact-card {
     box-sizing:border-box;
-    height:262px !important;
-    min-height:262px !important;
-    max-height:262px !important;
+    height:270px !important;
+    min-height:270px !important;
+    max-height:270px !important;
     align-self:start !important;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
