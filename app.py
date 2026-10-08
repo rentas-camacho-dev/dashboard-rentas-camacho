@@ -4812,14 +4812,12 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-compact-card {
-    margin-top:-10px;
-    margin-bottom:-2px;
-    min-height:420px;
+    box-sizing:border-box;
+    height:auto;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
     border-radius:15px;
     overflow:hidden;
-    box-sizing:border-box;
     box-shadow:0 2px 8px rgba(23,52,94,.035);
 }
 
@@ -4868,13 +4866,15 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-name-patrimonio {
     display:flex;
-    align-items:baseline;
-    gap:4px;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:2px;
     white-space:nowrap;
 }
 
 .aportes-name-patrimonio-label {
     font-size:7.5px;
+    line-height:1;
     color:#6F8198;
     font-weight:800;
     text-transform:uppercase;
