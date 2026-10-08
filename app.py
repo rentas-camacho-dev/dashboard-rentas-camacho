@@ -4468,84 +4468,125 @@ if st.session_state.vista_airbnb == "Aportes":
             .sum()
             .rename(columns={"Valor_Mercado_Socio": "Finca_Raiz"})
         )
-        adicional_socio = (
-            activos_adicionales
+        # Comercio y vehículos forman parte del patrimonio principal.
+        # Solo la Finca Raíz que NO es conjunta queda fuera de este
+        # cálculo principal y se presenta como "Activos adicionales".
+        comercio_socio = (
+            activos_comercio
+            .groupby("Nombre_Socio", as_index=False)["Valor_Mercado_Socio"]
+            .sum()
+            .rename(columns={"Valor_Mercado_Socio": "Comercio"})
+        )
+
+        vehiculos_socio = (
+            activos_vehiculos
+            .groupby("Nombre_Socio", as_index=False)["Valor_Mercado_Socio"]
+            .sum()
+            .rename(columns={"Valor_Mercado_Socio": "Vehiculos"})
+        )
+
+        finca_adicional_socio = (
+            activos_finca_adicional
             .groupby("Nombre_Socio", as_index=False)["Valor_Mercado_Socio"]
             .sum()
             .rename(columns={"Valor_Mercado_Socio": "Activos_Adicionales"})
         )
 
-        resumen_socios = resumen_socios.merge(finca_socio, on="Nombre_Socio", how="left")
-        resumen_socios = resumen_socios.merge(adicional_socio, on="Nombre_Socio", how="left")
+        resumen_socios = resumen_socios.merge(
+            finca_socio, on="Nombre_Socio", how="left"
+        )
+        resumen_socios = resumen_socios.merge(
+            comercio_socio, on="Nombre_Socio", how="left"
+        )
+        resumen_socios = resumen_socios.merge(
+            vehiculos_socio, on="Nombre_Socio", how="left"
+        )
+        resumen_socios = resumen_socios.merge(
+            finca_adicional_socio, on="Nombre_Socio", how="left"
+        )
+
+        # Activos principales = Finca Raíz conjunta + Comercio + Vehículos.
+        resumen_socios[
+            ["Finca_Raiz", "Comercio", "Vehiculos", "Activos_Adicionales"]
+        ] = resumen_socios[
+            ["Finca_Raiz", "Comercio", "Vehiculos", "Activos_Adicionales"]
+        ].fillna(0)
+
+        resumen_socios["Activos_Principales"] = (
+            resumen_socios["Finca_Raiz"]
+            + resumen_socios["Comercio"]
+            + resumen_socios["Vehiculos"]
+        )
 
         # --------------------------------------------------------
         # DEUDA SEPARADA:
-        # 1) deuda conjunta = activos donde participan los 3 socios
-        # 2) deuda adicional = activos individuales / no conjuntos
+        # 1) deuda principal = Finca Raíz conjunta + Comercio + Vehículos
+        # 2) deuda adicional = Finca Raíz adicional
         # --------------------------------------------------------
+        activos_principal_ids = (
+            set(activos_finca_ids)
+            | set(activos_comercio["ID_Activo"].unique())
+            | set(activos_vehiculos["ID_Activo"].unique())
+        )
+
         if not creditos_prorrateados.empty:
             creditos_prorrateados = creditos_prorrateados.copy()
 
+            # Se conserva esta bandera para el detalle de Finca Raíz.
             creditos_prorrateados["Es_Conjunta"] = (
                 creditos_prorrateados["ID_Activo"]
                 .isin(activos_finca_ids)
             )
 
-            deuda_conjunta_socio = (
+            # Esta es la clasificación patrimonial principal.
+            creditos_prorrateados["Es_Principal"] = (
+                creditos_prorrateados["ID_Activo"]
+                .isin(activos_principal_ids)
+            )
+
+            deuda_principal_socio = (
                 creditos_prorrateados[
-                    creditos_prorrateados["Es_Conjunta"]
+                    creditos_prorrateados["Es_Principal"]
                 ]
-                .groupby(
-                    "Nombre_Socio",
-                    as_index=False
-                )["Saldo_Actual_Prorrateado"]
+                .groupby("Nombre_Socio", as_index=False)[
+                    "Saldo_Actual_Prorrateado"
+                ]
                 .sum()
                 .rename(
                     columns={
-                        "Saldo_Actual_Prorrateado":
-                            "Deuda_Conjunta"
+                        "Saldo_Actual_Prorrateado": "Deuda_Principal"
                     }
                 )
             )
 
             deuda_adicional_socio = (
                 creditos_prorrateados[
-                    ~creditos_prorrateados["Es_Conjunta"]
+                    ~creditos_prorrateados["Es_Principal"]
                 ]
-                .groupby(
-                    "Nombre_Socio",
-                    as_index=False
-                )["Saldo_Actual_Prorrateado"]
+                .groupby("Nombre_Socio", as_index=False)[
+                    "Saldo_Actual_Prorrateado"
+                ]
                 .sum()
                 .rename(
                     columns={
-                        "Saldo_Actual_Prorrateado":
-                            "Deuda_Adicional"
+                        "Saldo_Actual_Prorrateado": "Deuda_Adicional"
                     }
                 )
             )
 
         else:
-            deuda_conjunta_socio = pd.DataFrame(
-                columns=[
-                    "Nombre_Socio",
-                    "Deuda_Conjunta"
-                ]
+            deuda_principal_socio = pd.DataFrame(
+                columns=["Nombre_Socio", "Deuda_Principal"]
             )
-
             deuda_adicional_socio = pd.DataFrame(
-                columns=[
-                    "Nombre_Socio",
-                    "Deuda_Adicional"
-                ]
+                columns=["Nombre_Socio", "Deuda_Adicional"]
             )
 
         resumen_socios = resumen_socios.merge(
-            deuda_conjunta_socio,
+            deuda_principal_socio,
             on="Nombre_Socio",
             how="left"
         )
-
         resumen_socios = resumen_socios.merge(
             deuda_adicional_socio,
             on="Nombre_Socio",
@@ -4553,38 +4594,36 @@ if st.session_state.vista_airbnb == "Aportes":
         )
 
         resumen_socios[
-            [
-                "Finca_Raiz",
-                "Activos_Adicionales",
-                "Deuda_Conjunta",
-                "Deuda_Adicional",
-            ]
+            ["Deuda_Principal", "Deuda_Adicional"]
         ] = resumen_socios[
-            [
-                "Finca_Raiz",
-                "Activos_Adicionales",
-                "Deuda_Conjunta",
-                "Deuda_Adicional",
-            ]
+            ["Deuda_Principal", "Deuda_Adicional"]
         ].fillna(0)
 
         # --------------------------------------------------------
-        # SOLO LA PARTE CONJUNTA PARA EL ANÁLISIS PRINCIPAL
+        # PATRIMONIO PRINCIPAL
         # --------------------------------------------------------
-        resumen_socios["Patrimonio_Neto_Conjunto"] = (
-            resumen_socios["Finca_Raiz"]
-            - resumen_socios["Deuda_Conjunta"]
+        # Incluye Finca Raíz conjunta + Comercio + Vehículos.
+        # Excluye Finca Raíz adicional.
+        resumen_socios["Patrimonio_Neto_Principal"] = (
+            resumen_socios["Activos_Principales"]
+            - resumen_socios["Deuda_Principal"]
         )
 
-        # Patrimonio personal total sigue incluyendo adicionales
-        # y sus respectivas deudas.
+        # Compatibilidad con el resto del diseño existente.
+        resumen_socios["Patrimonio_Neto_Conjunto"] = (
+            resumen_socios["Patrimonio_Neto_Principal"]
+        )
+        resumen_socios["Deuda_Conjunta"] = resumen_socios["Deuda_Principal"]
+
+        # Patrimonio total histórico/personal, usado solo en tablas
+        # secundarias: incluye también los activos adicionales.
         resumen_socios["Patrimonio_Bruto"] = (
-            resumen_socios["Finca_Raiz"]
+            resumen_socios["Activos_Principales"]
             + resumen_socios["Activos_Adicionales"]
         )
 
         resumen_socios["Deuda_Actual"] = (
-            resumen_socios["Deuda_Conjunta"]
+            resumen_socios["Deuda_Principal"]
             + resumen_socios["Deuda_Adicional"]
         )
 
@@ -4595,7 +4634,7 @@ if st.session_state.vista_airbnb == "Aportes":
 
         resumen_socios["Neto_Conjunto_vs_Aportes"] = (
             (
-                (resumen_socios["Patrimonio_Neto_Conjunto"]
+                (resumen_socios["Patrimonio_Neto_Principal"]
                  / resumen_socios["Aportes"])
                 - 1
             ) * 100
@@ -4608,9 +4647,37 @@ if st.session_state.vista_airbnb == "Aportes":
             activos_asociados["Valor_Mercado_Socio"].sum()
         )
 
-        valor_adicional_total = float(
-            activos_adicionales["Valor_Mercado_Socio"].sum()
+        valor_comercio_total = float(
+            activos_comercio["Valor_Mercado_Socio"].sum()
         )
+
+        valor_vehiculos_total = float(
+            activos_vehiculos["Valor_Mercado_Socio"].sum()
+        )
+
+        valor_adicional_total = float(
+            activos_finca_adicional["Valor_Mercado_Socio"].sum()
+        )
+
+        valor_activos_principales_total = (
+            valor_finca_total
+            + valor_comercio_total
+            + valor_vehiculos_total
+        )
+
+        deuda_principal_total = float(
+            creditos_prorrateados.loc[
+                creditos_prorrateados["Es_Principal"],
+                "Saldo_Actual_Prorrateado"
+            ].sum()
+        ) if not creditos_prorrateados.empty else 0.0
+
+        deuda_adicional_total = float(
+            creditos_prorrateados.loc[
+                ~creditos_prorrateados["Es_Principal"],
+                "Saldo_Actual_Prorrateado"
+            ].sum()
+        ) if not creditos_prorrateados.empty else 0.0
 
         deuda_conjunta_total = float(
             creditos_prorrateados.loc[
@@ -4619,25 +4686,18 @@ if st.session_state.vista_airbnb == "Aportes":
             ].sum()
         ) if not creditos_prorrateados.empty else 0.0
 
-        deuda_adicional_total = float(
-            creditos_prorrateados.loc[
-                ~creditos_prorrateados["Es_Conjunta"],
-                "Saldo_Actual_Prorrateado"
-            ].sum()
-        ) if not creditos_prorrateados.empty else 0.0
-
         deuda_total = (
-            deuda_conjunta_total
+            deuda_principal_total
             + deuda_adicional_total
         )
 
         patrimonio_neto_conjunto_total = (
-            valor_finca_total
-            - deuda_conjunta_total
+            valor_activos_principales_total
+            - deuda_principal_total
         )
 
         patrimonio_total = (
-            valor_finca_total
+            valor_activos_principales_total
             + valor_adicional_total
         )
 
@@ -4648,14 +4708,9 @@ if st.session_state.vista_airbnb == "Aportes":
 
         patrimonio_vs_aportes = (
             (
-                (patrimonio_neto_total / total_aportes)
+                (patrimonio_neto_conjunto_total / total_aportes)
                 - 1
             ) * 100
-            if total_aportes
-            else 0
-        )
-        patrimonio_vs_aportes = (
-            ((patrimonio_neto_total / total_aportes) - 1) * 100
             if total_aportes
             else 0
         )
@@ -4673,11 +4728,11 @@ if st.session_state.vista_airbnb == "Aportes":
         # KPIs
         # --------------------------------------------------------
         kpi_items = [
-            ("🏠", "Finca Raíz (conjunto)", dinero_corto(valor_finca_total), "Participación de los 3 socios"),
-            ("💳", "Deuda conjunta", f"-{dinero_corto(deuda_conjunta_total)}", "Solo activos conjuntos"),
-            ("📈", "Neto conjunto", dinero_corto(patrimonio_neto_conjunto_total), "Finca Raíz - deuda conjunta"),
-            ("🔗", "Activos adicionales", dinero_corto(valor_adicional_total), "Se muestran aparte"),
-            ("💳", "Deuda adicional", f"-{dinero_corto(deuda_adicional_total)}", "Activos individuales"),
+            ("🏠", "Activos", dinero_corto(valor_activos_principales_total), "Finca Raíz + Comercio + Vehículos"),
+            ("💳", "Deuda principal", f"-{dinero_corto(deuda_principal_total)}", "Activos incluidos en el patrimonio neto"),
+            ("📈", "Patrimonio neto", dinero_corto(patrimonio_neto_conjunto_total), "Activos - deuda principal"),
+            ("🔗", "Activos adicionales", dinero_corto(valor_adicional_total), "Finca Raíz adicional, fuera del patrimonio neto"),
+            ("💳", "Deuda adicional", f"-{dinero_corto(deuda_adicional_total)}", "Deuda de activos adicionales"),
             ("💰", "Capital neto aportado", dinero_corto(total_aportes), "Aportes - familiar - personal"),
         ]
 
@@ -5133,6 +5188,11 @@ if st.session_state.vista_airbnb == "Aportes":
     white-space:nowrap;
 }
 
+.aportes-mini-value.compact {
+    font-size:15px;
+    font-weight:900;
+}
+
 .aportes-category-value {
     font-size:11px;
     line-height:1;
@@ -5572,16 +5632,21 @@ if st.session_state.vista_airbnb == "Aportes":
             total_socio = float(socio_row["Aportes"])
             patrimonio_bruto = float(socio_row["Patrimonio_Bruto"])
             deuda_socio = float(socio_row["Deuda_Actual"])
-            deuda_conjunta = float(socio_row["Deuda_Conjunta"])
+            deuda_principal = float(socio_row["Deuda_Principal"])
             deuda_adicional = float(socio_row["Deuda_Adicional"])
             patrimonio_neto = float(socio_row["Patrimonio_Neto"])
-            patrimonio_neto_conjunto = float(
-                socio_row["Patrimonio_Neto_Conjunto"]
+            patrimonio_neto_principal = float(
+                socio_row["Patrimonio_Neto_Principal"]
             )
+            # Alias para conservar el comportamiento visual existente.
+            patrimonio_neto_conjunto = patrimonio_neto_principal
             ratio = float(socio_row["Neto_Conjunto_vs_Aportes"])
             ratio_icon = "↑" if ratio >= 0 else "↓"
             ratio_class = "positive" if ratio >= 0 else "negative"
             finca_total = float(socio_row["Finca_Raiz"])
+            comercio_total_socio = float(socio_row["Comercio"])
+            vehiculos_total_socio = float(socio_row["Vehiculos"])
+            activos_principales_socio = float(socio_row["Activos_Principales"])
             adicionales_total = float(socio_row["Activos_Adicionales"])
 
             finca_socio_df = (
@@ -5600,12 +5665,14 @@ if st.session_state.vista_airbnb == "Aportes":
                 .reset_index(drop=True)
             )
 
+            # Los "Activos adicionales" son únicamente Finca Raíz
+            # que no pertenece al patrimonio principal.
             adicional_socio_df = (
-                activos_adicionales[
-                    activos_adicionales["Nombre_Socio"] == nombre
+                activos_finca_adicional[
+                    activos_finca_adicional["Nombre_Socio"] == nombre
                 ]
                 .groupby(
-                    "_Categoria_Activo",
+                    "Nombre_Entidad",
                     as_index=False
                 )["Valor_Mercado_Socio"]
                 .sum()
@@ -5615,12 +5682,6 @@ if st.session_state.vista_airbnb == "Aportes":
                 )
                 .reset_index(drop=True)
             )
-
-            adicional_categoria_labels = {
-                "finca raiz": "🏠 Finca Raíz adicional",
-                "comercio": "🏪 Comercio",
-                "vehiculos": "🚗 Vehículos",
-            }
 
             # --------------------------------------------------------
             # TARJETA COMPACTA DEL SOCIO
@@ -5683,15 +5744,6 @@ if st.session_state.vista_airbnb == "Aportes":
 
                         for _, row in adicional_socio_df.iterrows():
 
-                            categoria_key = str(
-                                row["_Categoria_Activo"]
-                            ).strip().lower()
-
-                            categoria_label = adicional_categoria_labels.get(
-                                categoria_key,
-                                categoria_key.title()
-                            )
-
                             valor_categoria = float(
                                 row["Valor_Mercado_Socio"]
                             )
@@ -5699,7 +5751,7 @@ if st.session_state.vista_airbnb == "Aportes":
                             adicional_rows_html += f"""
 <div class="aportes-mini-row aportes-category-row">
     <span class="aportes-mini-name">
-        {escape_html(categoria_label)}
+        🏠 {escape_html(row["Nombre_Entidad"])}
     </span>
     <span class="aportes-category-value">
         {dinero_corto(valor_categoria)}
@@ -5738,7 +5790,7 @@ if st.session_state.vista_airbnb == "Aportes":
         <div class="aportes-compact-total">
 
             <div class="aportes-header-patrimonio-label">
-                Patrimonio neto conjunto
+                Patrimonio neto
             </div>
 
             <div class="aportes-header-patrimonio-value">
@@ -5812,41 +5864,50 @@ if st.session_state.vista_airbnb == "Aportes":
         <div class="aportes-mini-panel">
 
             <div class="aportes-mini-panel-title">
-                🏠 Patrimonio conjunto
+                🏠 Activos
             </div>
 
             <div class="aportes-mini-panel-sub">
-                Participación del socio
+                Finca Raíz + Comercio + Vehículos
             </div>
 
-            <div class="aportes-mini-row"
-                 style="padding:7px 0 9px;">
-
-                <span class="aportes-mini-name"
-                      style="font-size:9px;font-weight:850;">
-
-                    Finca Raíz
-
+            <div class="aportes-mini-row" style="padding:5px 0;">
+                <span class="aportes-mini-name" style="font-size:9px;font-weight:850;">
+                    🏠 Finca Raíz
                 </span>
-
-                <span class="aportes-mini-value">
+                <span class="aportes-mini-value compact">
                     {dinero_corto(finca_total)}
                 </span>
+            </div>
 
+            <div class="aportes-mini-row" style="padding:5px 0;">
+                <span class="aportes-mini-name" style="font-size:9px;font-weight:850;">
+                    🏪 Comercio
+                </span>
+                <span class="aportes-mini-value compact">
+                    {dinero_corto(comercio_total_socio)}
+                </span>
+            </div>
+
+            <div class="aportes-mini-row" style="padding:5px 0;">
+                <span class="aportes-mini-name" style="font-size:9px;font-weight:850;">
+                    🚗 Vehículos
+                </span>
+                <span class="aportes-mini-value compact">
+                    {dinero_corto(vehiculos_total_socio)}
+                </span>
             </div>
 
             <div class="aportes-mini-row"
-                 style="background:#FFF7F7;border-radius:7px;padding:8px 5px;margin-top:5px;border-bottom:none;">
+                 style="background:#FFF7F7;border-radius:7px;padding:8px 5px;margin-top:6px;border-bottom:none;">
 
                 <span class="aportes-mini-name"
                       style="font-size:9px;font-weight:850;">
-
-                    Deuda conjunta
-
+                    Deuda principal
                 </span>
 
                 <span class="aportes-mini-debt-value">
-                    -{dinero_corto(deuda_conjunta)}
+                    -{dinero_corto(deuda_principal)}
                 </span>
 
             </div>
@@ -5860,7 +5921,7 @@ if st.session_state.vista_airbnb == "Aportes":
             </div>
 
             <div class="aportes-mini-panel-sub">
-                Fuera del patrimonio conjunto
+                Finca Raíz fuera del patrimonio principal
             </div>
 
             {adicional_rows_html}
@@ -5868,7 +5929,7 @@ if st.session_state.vista_airbnb == "Aportes":
             <div class="aportes-mini-total">
 
                 <span class="aportes-mini-total-label">
-                    Total adicionales
+                    Total Finca Raíz adicional
                 </span>
 
                 <span class="aportes-mini-total-value">
@@ -5998,26 +6059,13 @@ if st.session_state.vista_airbnb == "Aportes":
             # clasificado como Finca Raíz, sin mezclar RIE ni Carro
             # Padre con la Finca Raíz.
             # --------------------------------------------------------
-            valor_finca_portafolio = float(
-                vista_patrimonio.loc[
-                    vista_patrimonio["_Categoria_Activo"] == "finca raiz",
-                    "Valor_Mercado_Socio"
-                ].sum()
-            )
-
-            valor_comercio = float(
-                vista_patrimonio.loc[
-                    vista_patrimonio["_Categoria_Activo"] == "comercio",
-                    "Valor_Mercado_Socio"
-                ].sum()
-            )
-
-            valor_vehiculos = float(
-                vista_patrimonio.loc[
-                    vista_patrimonio["_Categoria_Activo"] == "vehiculos",
-                    "Valor_Mercado_Socio"
-                ].sum()
-            )
+            # Esta composición muestra exactamente los activos que
+            # sí forman parte del patrimonio neto principal:
+            # Finca Raíz conjunta + Comercio + Vehículos.
+            valor_finca_portafolio = valor_finca_total
+            valor_comercio = valor_comercio_total
+            valor_vehiculos = valor_vehiculos_total
+            valor_finca_adicional_portafolio = valor_adicional_total
 
             valor_portafolio_valorado = (
                 valor_finca_portafolio
@@ -6041,15 +6089,23 @@ if st.session_state.vista_airbnb == "Aportes":
                 else 0
             )
 
+            pct_vehiculos_port = (
+                valor_vehiculos
+                / valor_portafolio_valorado
+                * 100
+                if valor_portafolio_valorado
+                else 0
+            )
+
             render_aportes_html(f"""
 <div class="aportes-portfolio-panel">
 
     <div class="aportes-portfolio-title">
-        📊 Composición del portafolio
+        📊 Composición de los activos
     </div>
 
     <div class="aportes-portfolio-sub">
-        Finca Raíz + Comercio + Vehículos · sin mezclar categorías
+        Composición de los activos que forman el patrimonio neto
     </div>
 
     <div class="aportes-portfolio-grid">
@@ -6061,7 +6117,7 @@ if st.session_state.vista_airbnb == "Aportes":
             </div>
 
             <div class="aportes-portfolio-caption">
-                Todos los activos inmobiliarios
+                Finca Raíz conjunta
             </div>
 
             <div class="aportes-portfolio-value">
@@ -6069,7 +6125,7 @@ if st.session_state.vista_airbnb == "Aportes":
             </div>
 
             <div class="aportes-portfolio-pct">
-                {pct_finca_port:.1f}% del portafolio valorado
+                {pct_finca_port:.1f}% del patrimonio principal
             </div>
 
         </div>
@@ -6089,7 +6145,7 @@ if st.session_state.vista_airbnb == "Aportes":
             </div>
 
             <div class="aportes-portfolio-pct">
-                {pct_comercio_port:.1f}% del portafolio valorado
+                {pct_comercio_port:.1f}% del patrimonio principal
             </div>
 
         </div>
@@ -6104,16 +6160,22 @@ if st.session_state.vista_airbnb == "Aportes":
                 Activos muebles
             </div>
 
-            <div class="aportes-portfolio-pending">
-                Por valorar
+            <div class="aportes-portfolio-value">
+                {dinero_corto(valor_vehiculos)}
             </div>
 
             <div class="aportes-portfolio-pct">
-                Se incorporará desde Activos_Muebles
+                {pct_vehiculos_port:.1f}% del patrimonio principal
             </div>
 
         </div>
 
+    </div>
+
+    <div style="margin-top:8px;padding:7px 9px;border:1px dashed #DCE5EE;border-radius:9px;background:#FAFBFD;font-size:8px;color:#667A92;">
+        🏠 <b style="color:#17345E;">Finca Raíz adicional:</b>
+        {dinero_corto(valor_finca_adicional_portafolio)}
+        <span style="color:#8A98AA;">· fuera del patrimonio neto principal</span>
     </div>
 
 </div>
@@ -6237,15 +6299,15 @@ if st.session_state.vista_airbnb == "Aportes":
 """)
 
         # --------------------------------------------------------
-        # ACTIVOS ADICIONALES + DEUDA INDIVIDUAL
+        # FINCA RAÍZ ADICIONAL + DEUDA INDIVIDUAL
         # --------------------------------------------------------
-        # Aquí salen Malaca, Torre Evoca, Santa Marina II, Torre Ventto
-        # y cualquier otro activo que NO sea conjunto de los tres socios.
-        # La deuda se cruza por activo + socio.
-        if not activos_adicionales.empty:
+        # Aquí salen únicamente los activos de Finca Raíz que quedan
+        # fuera del patrimonio principal. Comercio y Vehículos ya están
+        # integrados en "Activos" y no se repiten aquí.
+        if not activos_finca_adicional.empty:
 
             adicionales_tabla = (
-                activos_adicionales
+                activos_finca_adicional
                 .groupby(
                     [
                         "ID_Activo",
@@ -6267,7 +6329,7 @@ if st.session_state.vista_airbnb == "Aportes":
             if not creditos_prorrateados.empty:
                 deuda_individual_tabla = (
                     creditos_prorrateados[
-                        ~creditos_prorrateados["Es_Conjunta"]
+                        ~creditos_prorrateados["Es_Principal"]
                     ]
                     .groupby(
                         [
@@ -6319,9 +6381,9 @@ if st.session_state.vista_airbnb == "Aportes":
 
             adicional_table_html = """
 <div class="aportes-otros-panel">
-    <div class="aportes-card-title2">🔗 Activos adicionales y deuda</div>
+    <div class="aportes-card-title2">🏠 Finca Raíz adicional y deuda</div>
     <div class="aportes-card-sub2">
-        Activos fuera del patrimonio conjunto · deuda atribuible a cada socio
+        Activos inmobiliarios fuera del patrimonio neto principal · deuda atribuible a cada socio
     </div>
 
     <table class="aportes-table2">
@@ -6433,7 +6495,7 @@ if st.session_state.vista_airbnb == "Aportes":
             table_html += """
         </tbody>
     </table>
-    <div class="aportes-note2"><b>Nota:</b> La clasificación patrimonial usa una regla automática: Finca Raíz asociada = activo donde participan los 3 socios de esta app. Todo activo que no cumpla esa condición se considera adicional para el socio que lo posee. La valoración monetaria de Comercio y otros activos se incorporará en la siguiente capa.</div>
+    <div class="aportes-note2"><b>Nota:</b> El patrimonio neto principal está compuesto por Finca Raíz conjunta + Comercio + Vehículos, menos la deuda asociada a esos activos. La Finca Raíz adicional queda fuera del patrimonio neto principal y se presenta por separado.</div>
 </div>
 """
             render_aportes_html(table_html)
