@@ -4878,6 +4878,86 @@ if st.session_state.vista_airbnb == "Aportes":
     z-index:5;
 }
 
+
+/* V58 — encabezado: nombre | ultimo aporte centrado | patrimonio esquina */
+.aportes-header-last-aporte {
+    grid-column:2 !important;
+    grid-row:1 !important;
+    position:static !important;
+    width:120px !important;
+    min-width:120px !important;
+    height:auto !important;
+    margin:0 !important;
+    padding:0 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    justify-self:center !important;
+    align-self:center !important;
+    text-align:center !important;
+    white-space:nowrap !important;
+    color:#8795A8 !important;
+    z-index:20 !important;
+}
+
+.aportes-header-last-aporte span {
+    font-size:7.5px !important;
+    font-weight:650 !important;
+    line-height:1.05 !important;
+}
+
+.aportes-header-last-aporte strong {
+    color:#7757C8 !important;
+    font-size:9px !important;
+    font-weight:700 !important;
+    line-height:1.05 !important;
+}
+
+.aportes-header-last-aporte small {
+    color:#9AA6B5 !important;
+    font-size:7px !important;
+    font-weight:600 !important;
+    line-height:1.05 !important;
+}
+
+.aportes-header-patrimonio {
+    grid-column:3 !important;
+    grid-row:1 !important;
+    position:static !important;
+    width:105px !important;
+    min-width:105px !important;
+    height:auto !important;
+    margin:0 !important;
+    padding:0 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-end !important;
+    justify-content:center !important;
+    justify-self:end !important;
+    align-self:center !important;
+    text-align:right !important;
+    white-space:nowrap !important;
+    z-index:20 !important;
+}
+
+.aportes-header-patrimonio .aportes-name-patrimonio-label {
+    display:block !important;
+    font-size:7.5px !important;
+    line-height:1 !important;
+    color:#6F8198 !important;
+    font-weight:800 !important;
+}
+
+.aportes-header-patrimonio .aportes-name-patrimonio-value {
+    display:block !important;
+    font-size:18px !important;
+    line-height:1 !important;
+    color:#17345E !important;
+    font-weight:750 !important;
+    margin-top:2px !important;
+}
+
 .aportes-name-patrimonio {
     display:flex;
     flex-direction:column;
@@ -4903,7 +4983,7 @@ if st.session_state.vista_airbnb == "Aportes":
     font-weight:750;
 }
 
-.aportes-inline-last {
+.aportes-inline-last:not(.aportes-header-last-aporte) {
     position:absolute;
     top:9px;
     right:13px;
@@ -5916,13 +5996,13 @@ if st.session_state.vista_airbnb == "Aportes":
 
         </div>
 
-        <div class="aportes-inline-last aportes-inline-last-name">
+        <div class="aportes-header-last-aporte">
             <span>Último aporte</span>
             <strong>{dinero_corto(ultimo_aporte_valor)}</strong>
             <small>{fecha_corta_es(ultima_fecha)}</small>
         </div>
 
-        <div class="aportes-name-patrimonio aportes-name-patrimonio-right">
+        <div class="aportes-header-patrimonio">
             <span class="aportes-name-patrimonio-label">
                 Patrimonio neto
             </span>
