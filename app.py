@@ -4792,7 +4792,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) {
     align-items:flex-start !important;
 }
 
-/* V68: compensar el escalado visual del navegador y mantener las tres tarjetas iguales.
+/* V69: reducir solo ~2 mm la altura visual y mantener las tres tarjetas iguales.
    La tarjeta debe conservar su altura propia y no heredar la altura
    de la columna ni del bloque vertical que la contiene. */
 div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testid="column"] {
@@ -4809,9 +4809,9 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
 .aportes-compact-card {
     box-sizing:border-box;
-    height:270px !important;
-    min-height:270px !important;
-    max-height:270px !important;
+    height:262px !important;
+    min-height:262px !important;
+    max-height:262px !important;
     align-self:start !important;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
