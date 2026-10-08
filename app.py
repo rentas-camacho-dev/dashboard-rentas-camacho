@@ -4826,10 +4826,11 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-card.andres { border-top:3px solid #43C995; }
 
  .aportes-compact-head {
+    position:relative;
     display:flex;
     align-items:center;
-    justify-content:space-between;
-    gap:10px;
+    justify-content:flex-start;
+    gap:8px;
     padding:9px 13px 5px;
 }
 
@@ -4838,6 +4839,9 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     gap:8px;
     min-width:0;
+    width:calc(100% - 92px);
+    padding-right:4px;
+    box-sizing:border-box;
 }
 
 .aportes-compact-avatar {
@@ -4858,17 +4862,27 @@ if st.session_state.vista_airbnb == "Aportes":
 
 /* Patrimonio neto junto al nombre + Último aporte en la esquina */
 .aportes-name-block {
-    display:flex;
-    align-items:baseline;
-    gap:10px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 100px;
+    align-items:center;
+    gap:8px;
     min-width:0;
+    width:100%;
+}
+
+.aportes-compact-name {
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
 .aportes-name-patrimonio {
     display:flex;
     flex-direction:column;
     align-items:flex-start;
+    justify-content:center;
     gap:2px;
+    width:100px;
     white-space:nowrap;
 }
 
@@ -4888,6 +4902,10 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-inline-last {
+    position:absolute;
+    top:9px;
+    right:13px;
+    width:72px;
     display:flex;
     flex-direction:column;
     align-items:flex-end;
