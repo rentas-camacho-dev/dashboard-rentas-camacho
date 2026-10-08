@@ -4928,9 +4928,9 @@ if st.session_state.vista_airbnb == "Aportes":
 /* Línea completa bajo el nombre */
 .aportes-header-meta {
     display:grid;
-    grid-template-columns:auto auto 1fr auto;
+    grid-template-columns:1.15fr 1fr 1fr 1.05fr;
     align-items:center;
-    gap:8px;
+    gap:6px;
     margin:0 13px 5px;
     padding:4px 0 5px;
     border-bottom:1px solid #E8EDF2;
@@ -4943,6 +4943,7 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     gap:3px;
     min-width:0;
+    overflow:hidden;
     white-space:nowrap;
 }
 
@@ -4955,19 +4956,19 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-header-last-label {
-    font-size:8px;
+    font-size:7.5px;
     color:#8795A8;
     font-weight:650;
 }
 
 .aportes-header-last-value {
-    font-size:10px;
+    font-size:9px;
     color:#7757C8;
     font-weight:700;
 }
 
 .aportes-header-last-date {
-    font-size:7.5px;
+    font-size:7px;
     color:#9AA6B5;
     font-weight:600;
 }
@@ -4982,27 +4983,32 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-header-meta-left { justify-content:flex-start; }
-.aportes-header-meta-center { justify-content:center; }
+.aportes-header-meta-center { justify-content:flex-start; overflow:hidden; }
 .aportes-header-meta-right { justify-content:flex-end; }
 
 .aportes-header-debt {
-    font-size:9.5px;
+    font-size:8.5px;
     font-weight:650;
     color:#D64242;
     white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
 .aportes-header-meta .aportes-header-patrimonio-ratio {
-    font-size:9.5px;
+    font-size:8.5px;
     margin:0;
+    white-space:nowrap;
 }
 
 .aportes-header-meta .aportes-header-capital-label {
-    font-size:8px;
+    font-size:7.5px;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
 .aportes-header-meta .aportes-header-capital-value {
-    font-size:10px;
+    font-size:9px;
 }
 
 .aportes-compact-total-label {
