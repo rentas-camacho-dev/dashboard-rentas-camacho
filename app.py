@@ -4809,9 +4809,9 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
 .aportes-compact-card {
     box-sizing:border-box;
-    height:262px !important;
-    min-height:262px !important;
-    max-height:262px !important;
+    height:270px !important;
+    min-height:270px !important;
+    max-height:270px !important;
     align-self:start !important;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
@@ -5380,6 +5380,31 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     border-radius:10px;
     padding:8px 9px;
     min-width:0;
+}
+
+/* V73: reducir SOLO la ficha de Activos adicionales de Diego.
+   No modifica la altura de la tarjeta ni el panel Activos. */
+.aportes-mini-panel.adicionales-panel-diego {
+    padding-top:7px;
+    padding-bottom:4px;
+}
+
+.aportes-mini-panel.adicionales-panel-diego .aportes-mini-panel-title {
+    margin-bottom:3px;
+}
+
+.aportes-mini-panel.adicionales-panel-diego .aportes-mini-panel-sub {
+    margin-bottom:3px;
+}
+
+.aportes-mini-panel.adicionales-panel-diego .aportes-mini-row {
+    padding-top:2.5px !important;
+    padding-bottom:2.5px !important;
+}
+
+.aportes-mini-panel.adicionales-panel-diego .aportes-mini-total {
+    margin-top:3px;
+    padding-top:3px;
 }
 
 .aportes-mini-panel-title {
@@ -6147,7 +6172,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
         </div>
 
-        <div class="aportes-mini-panel">
+        <div class="aportes-mini-panel adicionales-panel-{clase}">
 
             <div class="aportes-mini-panel-title">
                 🔗 Activos adicionales
