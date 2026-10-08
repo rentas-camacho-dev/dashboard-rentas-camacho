@@ -4839,8 +4839,8 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     gap:8px;
     min-width:0;
-    width:calc(100% - 92px);
-    padding-right:4px;
+    width:calc(100% - 78px);
+    padding-right:2px;
     box-sizing:border-box;
 }
 
@@ -4863,9 +4863,9 @@ if st.session_state.vista_airbnb == "Aportes":
 /* Patrimonio neto junto al nombre + Último aporte en la esquina */
 .aportes-name-block {
     display:grid;
-    grid-template-columns:minmax(0,1fr) 100px;
+    grid-template-columns:minmax(0,1fr) auto;
     align-items:center;
-    gap:8px;
+    gap:4px;
     min-width:0;
     width:100%;
 }
@@ -4882,7 +4882,7 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:flex-start;
     justify-content:center;
     gap:2px;
-    width:100px;
+    width:auto;
     white-space:nowrap;
 }
 
