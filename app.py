@@ -4826,12 +4826,12 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-card.william { border-top:3px solid #5DA7F4; }
 .aportes-compact-card.andres { border-top:3px solid #43C995; }
 
-.aportes-compact-head {
+ .aportes-compact-head {
     display:flex;
-    align-items:flex-start;
+    align-items:center;
     justify-content:space-between;
     gap:8px;
-    padding:6px 13px 4px;
+    padding:9px 13px 5px;
 }
 
 .aportes-compact-name-wrap {
@@ -4839,7 +4839,6 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     gap:8px;
     min-width:0;
-    padding-top:16px;
 }
 
 .aportes-compact-avatar {
@@ -4873,7 +4872,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-header-patrimonio-label {
     font-size:8px;
     color:#6F8198;
-    font-weight:850;
+    font-weight:900;
     text-transform:uppercase;
     letter-spacing:.2px;
     margin-top:0;
@@ -4891,7 +4890,6 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-header-patrimonio-ratio {
     font-size:9.5px;
     font-weight:700;
-    margin-top:3px;
     white-space:nowrap;
 }
 
@@ -4904,18 +4902,55 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-header-capital-label {
-    font-size:7px;
+    font-size:8px;
     color:#8795A8;
-    font-weight:750;
-    margin-top:3px;
+    font-weight:650;
+    margin:0;
+    white-space:nowrap;
 }
 
 .aportes-header-capital-value {
     font-size:10px;
     font-weight:700;
     color:#17345E;
-    margin-top:0;
+    margin-left:2px;
     white-space:nowrap;
+}
+
+/* Línea completa bajo el nombre */
+.aportes-header-meta {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin:0 13px 6px;
+    padding:5px 0 6px;
+    border-bottom:1px solid #E8EDF2;
+}
+
+.aportes-header-meta-left,
+.aportes-header-meta-right {
+    display:flex;
+    align-items:center;
+    gap:4px;
+    min-width:0;
+}
+
+.aportes-header-meta-right {
+    justify-content:flex-end;
+}
+
+.aportes-header-meta .aportes-header-patrimonio-ratio {
+    font-size:9.5px;
+    margin:0;
+}
+
+.aportes-header-meta .aportes-header-capital-label {
+    font-size:8px;
+}
+
+.aportes-header-meta .aportes-header-capital-value {
+    font-size:10px;
 }
 
 .aportes-compact-total-label {
@@ -4931,7 +4966,7 @@ if st.session_state.vista_airbnb == "Aportes":
     grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;
     align-items:center;
     gap:5px;
-    margin:7px 9px 5px;
+    margin:5px 9px 5px;
     padding:5px 8px;
     background:#F8FAFC;
     border:1px solid #E6ECF2;
@@ -5790,18 +5825,25 @@ if st.session_state.vista_airbnb == "Aportes":
                 {dinero_corto(patrimonio_neto_conjunto)}
             </div>
 
-            <div class="aportes-header-patrimonio-ratio {ratio_class}">
+        </div>
+
+    </div>
+
+    <div class="aportes-header-meta">
+
+        <div class="aportes-header-meta-left">
+            <span class="aportes-header-patrimonio-ratio {ratio_class}">
                 {ratio_icon} {ratio:+.1f}% vs. capital neto
-            </div>
+            </span>
+        </div>
 
-            <div class="aportes-header-capital-label">
+        <div class="aportes-header-meta-right">
+            <span class="aportes-header-capital-label">
                 Capital neto aportado
-            </div>
-
-            <div class="aportes-header-capital-value">
+            </span>
+            <span class="aportes-header-capital-value">
                 {dinero_corto(total_socio)}
-            </div>
-
+            </span>
         </div>
 
     </div>
