@@ -4857,6 +4857,14 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-avatar.william { background:#EAF2FF; color:#5DA7F4; }
 .aportes-compact-avatar.andres { background:#E9F8F2; color:#43C995; }
 
+/* Tarjetas de socios: altura uniforme y compacta */
+.aportes-compact-card {
+    min-height:420px;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+}
+
 .aportes-compact-name {
     font-size:17px;
     font-weight:750;
@@ -4919,13 +4927,49 @@ if st.session_state.vista_airbnb == "Aportes":
 
 /* Línea completa bajo el nombre */
 .aportes-header-meta {
-    display:flex;
+    display:grid;
+    grid-template-columns:auto auto 1fr auto;
     align-items:center;
-    justify-content:space-between;
-    gap:10px;
+    gap:8px;
     margin:0 13px 5px;
     padding:4px 0 5px;
     border-bottom:1px solid #E8EDF2;
+}
+
+/* Último aporte integrado al encabezado */
+.aportes-header-meta-capital,
+.aportes-header-meta-last {
+    display:flex;
+    align-items:center;
+    gap:3px;
+    min-width:0;
+    white-space:nowrap;
+}
+
+.aportes-header-meta-capital {
+    justify-content:flex-end;
+}
+
+.aportes-header-meta-last {
+    justify-content:flex-end;
+}
+
+.aportes-header-last-label {
+    font-size:8px;
+    color:#8795A8;
+    font-weight:650;
+}
+
+.aportes-header-last-value {
+    font-size:10px;
+    color:#7757C8;
+    font-weight:700;
+}
+
+.aportes-header-last-date {
+    font-size:7.5px;
+    color:#9AA6B5;
+    font-weight:600;
 }
 
 .aportes-header-meta-left,
@@ -5852,12 +5896,24 @@ if st.session_state.vista_airbnb == "Aportes":
             </span>
         </div>
 
-        <div class="aportes-header-meta-right">
+        <div class="aportes-header-meta-capital">
             <span class="aportes-header-capital-label">
                 Capital neto aportado
             </span>
             <span class="aportes-header-capital-value">
                 {dinero_corto(total_socio)}
+            </span>
+        </div>
+
+        <div class="aportes-header-meta-last">
+            <span class="aportes-header-last-label">
+                Último aporte
+            </span>
+            <span class="aportes-header-last-value">
+                {dinero_corto(ultimo_aporte_valor)}
+            </span>
+            <span class="aportes-header-last-date">
+                · {fecha_corta_es(ultima_fecha)}
             </span>
         </div>
 
@@ -5974,34 +6030,6 @@ if st.session_state.vista_airbnb == "Aportes":
 
             </div>
 
-        </div>
-
-    </div>
-
-    <div class="aportes-last-contrib">
-
-        <div class="aportes-last-contrib-left">
-
-            <div class="aportes-last-contrib-icon">
-                📅
-            </div>
-
-            <div>
-
-                <div class="aportes-last-contrib-label">
-                    Último aporte
-                </div>
-
-                <div class="aportes-last-contrib-date">
-                    {fecha_corta_es(ultima_fecha)}
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="aportes-last-contrib-value">
-            {dinero_corto(ultimo_aporte_valor)}
         </div>
 
     </div>
