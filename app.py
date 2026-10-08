@@ -1413,6 +1413,7 @@ def cargar_estudio_mercado_inmobiliario():
         Facilidad_Venta, Facilidad_Arriendo,
         Proyeccion_Zona_5A, Rol_Portafolio
     FROM `rentascamacho.rentas_cortas.Estudio_Mercado_Inmobiliario`
+    WHERE LOWER(TRIM(COALESCE(Conjunto_Proyecto, ''))) = 'finca raíz'
     ORDER BY ID_Activo
     """
     estudio = client.query(query).to_dataframe()
@@ -1458,6 +1459,20 @@ def cargar_estudio_mercado_inmobiliario():
     ]
     for col in text_cols:
         estudio[col] = estudio[col].fillna("").astype(str)
+
+    # Radar exclusivamente inmobiliario:
+    # Comercio, Vehículos y cualquier otra categoría quedan fuera.
+    # Se normalizan ambas variantes: "Finca Raíz" y "Finca Raiz".
+    categoria = (
+        estudio["Conjunto_Proyecto"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .str.replace("á", "a", regex=False)
+    )
+    estudio = estudio[categoria.eq("finca raiz")].copy()
+
     return estudio
 
 
@@ -7330,7 +7345,7 @@ elif st.session_state.vista_airbnb == "Análisis":
 </div>
 
 <div class="section-subtitle">
-Estudio de mercado + comportamiento del activo + posición estratégica del portafolio.
+Estudio de mercado + comportamiento del activo + posición estratégica de la Finca Raíz. Solo activos Finca Raíz.
 </div>
 """,
         unsafe_allow_html=True
@@ -7342,6 +7357,20 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
     # ============================================================
 
     estudio = cargar_estudio_mercado_inmobiliario()
+
+    # BLINDAJE FINAL DEL RADAR:
+    # aunque exista caché o se cargue una versión anterior de la consulta,
+    # aquí solo pueden pasar activos clasificados como Finca Raíz.
+    if "Conjunto_Proyecto" in estudio.columns:
+        categoria_radar = (
+            estudio["Conjunto_Proyecto"]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .str.replace("á", "a", regex=False)
+        )
+        estudio = estudio[categoria_radar.eq("finca raiz")].copy()
 
     if not estudio.empty:
         html_decision = """
