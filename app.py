@@ -4828,10 +4828,10 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-compact-head {
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     justify-content:space-between;
     gap:8px;
-    padding:10px 13px 7px;
+    padding:6px 13px 4px;
 }
 
 .aportes-compact-name-wrap {
@@ -4839,6 +4839,7 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     gap:8px;
     min-width:0;
+    padding-top:16px;
 }
 
 .aportes-compact-avatar {
@@ -4872,10 +4873,10 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-header-patrimonio-label {
     font-size:8px;
     color:#6F8198;
-    font-weight:900;
+    font-weight:850;
     text-transform:uppercase;
     letter-spacing:.2px;
-    margin-top:2px;
+    margin-top:0;
 }
 
 .aportes-header-patrimonio-value {
@@ -4883,14 +4884,14 @@ if st.session_state.vista_airbnb == "Aportes":
     line-height:1;
     font-weight:750;
     color:#17345E;
-    margin-top:3px;
+    margin-top:2px;
     white-space:nowrap;
 }
 
 .aportes-header-patrimonio-ratio {
     font-size:9.5px;
     font-weight:700;
-    margin-top:5px;
+    margin-top:3px;
     white-space:nowrap;
 }
 
@@ -4905,15 +4906,15 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-header-capital-label {
     font-size:7px;
     color:#8795A8;
-    font-weight:800;
-    margin-top:5px;
+    font-weight:750;
+    margin-top:3px;
 }
 
 .aportes-header-capital-value {
     font-size:10px;
     font-weight:700;
     color:#17345E;
-    margin-top:1px;
+    margin-top:0;
     white-space:nowrap;
 }
 
@@ -4931,7 +4932,7 @@ if st.session_state.vista_airbnb == "Aportes":
     align-items:center;
     gap:5px;
     margin:7px 9px 5px;
-    padding:6px 8px;
+    padding:5px 8px;
     background:#F8FAFC;
     border:1px solid #E6ECF2;
     border-radius:8px;
@@ -4946,15 +4947,15 @@ if st.session_state.vista_airbnb == "Aportes":
 }
 
 .aportes-capital-label {
-    font-size:9px;
+    font-size:10px;
     color:#60738B;
-    font-weight:850;
+    font-weight:700;
     white-space:nowrap;
 }
 
 .aportes-capital-item strong {
-    font-size:10px;
-    font-weight:700;
+    font-size:10.5px;
+    font-weight:650;
     color:#17345E;
     white-space:nowrap;
 }
