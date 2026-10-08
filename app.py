@@ -4814,6 +4814,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-card {
     margin-top:-10px;
     margin-bottom:-2px;
+    min-height:420px;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
     border-radius:15px;
@@ -4856,6 +4857,40 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-avatar.diego { background:#FFE8EE; color:#FF4C6D; }
 .aportes-compact-avatar.william { background:#EAF2FF; color:#5DA7F4; }
 .aportes-compact-avatar.andres { background:#E9F8F2; color:#43C995; }
+
+/* Último aporte junto al nombre */
+.aportes-name-block {
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    min-width:0;
+}
+
+.aportes-inline-last {
+    display:flex;
+    align-items:baseline;
+    gap:3px;
+    white-space:nowrap;
+    color:#8795A8;
+    font-size:8px;
+    line-height:1;
+}
+
+.aportes-inline-last span {
+    font-weight:650;
+}
+
+.aportes-inline-last strong {
+    color:#7757C8;
+    font-size:9px;
+    font-weight:700;
+}
+
+.aportes-inline-last small {
+    color:#9AA6B5;
+    font-size:7.5px;
+    font-weight:600;
+}
 
 .aportes-compact-name {
     font-size:17px;
@@ -5823,8 +5858,18 @@ if st.session_state.vista_airbnb == "Aportes":
                 {avatar}
             </div>
 
-            <div class="aportes-compact-name">
-                {escape_html(nombre)}
+            <div class="aportes-name-block">
+
+                <div class="aportes-compact-name">
+                    {escape_html(nombre)}
+                </div>
+
+                <div class="aportes-inline-last">
+                    <span>Último aporte</span>
+                    <strong>{dinero_corto(ultimo_aporte_valor)}</strong>
+                    <small>· {fecha_corta_es(ultima_fecha)}</small>
+                </div>
+
             </div>
 
         </div>
