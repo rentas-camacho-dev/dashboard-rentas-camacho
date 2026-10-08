@@ -3889,6 +3889,18 @@ if st.session_state.vista_airbnb == "Aportes":
                 unsafe_allow_html=unsafe_allow_html
             )
 
+    def render_aportes_card_html(html):
+        """Renderiza las tarjetas en el flujo normal de Streamlit.
+        Se evita st.html/iframe para que la altura de una tarjeta no se
+        estire con la altura de la columna vecina.
+        """
+        limpio = "\n".join(
+            linea.strip()
+            for linea in str(html).splitlines()
+            if linea.strip()
+        )
+        st.markdown(limpio, unsafe_allow_html=True)
+
     @st.cache_data(ttl=900)
     def cargar_estudio_mercado_prorrateado():
         query = """
@@ -4783,11 +4795,31 @@ if st.session_state.vista_airbnb == "Aportes":
     display:grid;
     grid-template-columns:repeat(3,minmax(0,1fr));
     gap:12px;
+    align-items:start !important;
+}
+
+/* V65: impedir que Streamlit estire verticalmente las columnas que contienen
+   las tres tarjetas. La altura visual queda exactamente igual a Diego. */
+div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) {
+    align-items:flex-start !important;
+}
+div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testid="column"] {
+    align-self:flex-start !important;
+    height:fit-content !important;
+    min-height:0 !important;
+}
+div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testid="column"] > div {
+    height:fit-content !important;
+    min-height:0 !important;
 }
 
 .aportes-compact-card {
     box-sizing:border-box;
-    height:auto;
+    height:412px !important;
+    min-height:412px !important;
+    max-height:412px !important;
+    flex:none !important;
+    align-self:flex-start !important;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
     border-radius:15px;
@@ -4798,14 +4830,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-card.diego { border-top:3px solid #FF5A73; }
 .aportes-compact-card.william { border-top:3px solid #5DA7F4; }
 .aportes-compact-card.andres { border-top:3px solid #43C995; }
-/* V64: William y Andrés toman exactamente la altura visual de Diego.
-   Diego no se modifica. */
-.aportes-compact-card.william,
-.aportes-compact-card.andres {
-    height:412px;
-}
-
- .aportes-compact-head {
+.aportes-compact-head {
     position:relative;
     display:grid;
     grid-template-columns:minmax(260px,1fr) 120px 105px;
@@ -5981,7 +6006,7 @@ if st.session_state.vista_airbnb == "Aportes":
 </div>
 """
 
-                    render_aportes_html(f"""
+                    render_aportes_card_html(f"""
 <div class="aportes-compact-card {clase}">
 
     <div class="aportes-compact-head"
