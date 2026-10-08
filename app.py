@@ -3889,18 +3889,6 @@ if st.session_state.vista_airbnb == "Aportes":
                 unsafe_allow_html=unsafe_allow_html
             )
 
-    def render_aportes_card_html(html):
-        """Renderiza las tarjetas en el flujo normal de Streamlit.
-        Se evita st.html/iframe para que la altura de una tarjeta no se
-        estire con la altura de la columna vecina.
-        """
-        limpio = "\n".join(
-            linea.strip()
-            for linea in str(html).splitlines()
-            if linea.strip()
-        )
-        st.markdown(limpio, unsafe_allow_html=True)
-
     @st.cache_data(ttl=900)
     def cargar_estudio_mercado_prorrateado():
         query = """
@@ -4803,23 +4791,13 @@ if st.session_state.vista_airbnb == "Aportes":
 div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) {
     align-items:flex-start !important;
 }
-div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testid="column"] {
-    align-self:flex-start !important;
-    height:fit-content !important;
-    min-height:0 !important;
-}
-div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testid="column"] > div {
-    height:fit-content !important;
-    min-height:0 !important;
-}
 
 .aportes-compact-card {
     box-sizing:border-box;
     height:412px !important;
     min-height:412px !important;
     max-height:412px !important;
-    flex:none !important;
-    align-self:flex-start !important;
+    align-self:start !important;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
     border-radius:15px;
@@ -6006,7 +5984,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 </div>
 """
 
-                    render_aportes_card_html(f"""
+                    render_aportes_html(f"""
 <div class="aportes-compact-card {clase}">
 
     <div class="aportes-compact-head"
