@@ -4831,7 +4831,7 @@ if st.session_state.vista_airbnb == "Aportes":
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:8px;
+    gap:10px;
     padding:9px 13px 5px;
 }
 
@@ -4858,7 +4858,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-avatar.william { background:#EAF2FF; color:#5DA7F4; }
 .aportes-compact-avatar.andres { background:#E9F8F2; color:#43C995; }
 
-/* Último aporte junto al nombre */
+/* Patrimonio neto junto al nombre + Último aporte en la esquina */
 .aportes-name-block {
     display:flex;
     align-items:baseline;
@@ -4866,17 +4866,41 @@ if st.session_state.vista_airbnb == "Aportes":
     min-width:0;
 }
 
-.aportes-inline-last {
+.aportes-name-patrimonio {
     display:flex;
     align-items:baseline;
-    gap:3px;
+    gap:4px;
+    white-space:nowrap;
+}
+
+.aportes-name-patrimonio-label {
+    font-size:7.5px;
+    color:#6F8198;
+    font-weight:800;
+    text-transform:uppercase;
+}
+
+.aportes-name-patrimonio-value {
+    font-size:18px;
+    line-height:1;
+    color:#17345E;
+    font-weight:750;
+}
+
+.aportes-inline-last {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    justify-content:center;
+    gap:2px;
     white-space:nowrap;
     color:#8795A8;
-    font-size:8px;
-    line-height:1;
+    line-height:1.05;
+    text-align:right;
 }
 
 .aportes-inline-last span {
+    font-size:7.5px;
     font-weight:650;
 }
 
@@ -4888,8 +4912,12 @@ if st.session_state.vista_airbnb == "Aportes":
 
 .aportes-inline-last small {
     color:#9AA6B5;
-    font-size:7.5px;
+    font-size:7px;
     font-weight:600;
+}
+
+.aportes-compact-head > .aportes-compact-total {
+    display:none;
 }
 
 .aportes-compact-name {
@@ -5864,26 +5892,23 @@ if st.session_state.vista_airbnb == "Aportes":
                     {escape_html(nombre)}
                 </div>
 
-                <div class="aportes-inline-last">
-                    <span>Último aporte</span>
-                    <strong>{dinero_corto(ultimo_aporte_valor)}</strong>
-                    <small>· {fecha_corta_es(ultima_fecha)}</small>
+                <div class="aportes-name-patrimonio">
+                    <span class="aportes-name-patrimonio-label">
+                        Patrimonio neto
+                    </span>
+                    <span class="aportes-name-patrimonio-value">
+                        {dinero_corto(patrimonio_neto_conjunto)}
+                    </span>
                 </div>
 
             </div>
 
         </div>
 
-        <div class="aportes-compact-total">
-
-            <div class="aportes-header-patrimonio-label">
-                Patrimonio neto
-            </div>
-
-            <div class="aportes-header-patrimonio-value">
-                {dinero_corto(patrimonio_neto_conjunto)}
-            </div>
-
+        <div class="aportes-inline-last">
+            <span>Último aporte</span>
+            <strong>{dinero_corto(ultimo_aporte_valor)}</strong>
+            <small>{fecha_corta_es(ultima_fecha)}</small>
         </div>
 
     </div>
