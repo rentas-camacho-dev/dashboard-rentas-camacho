@@ -4798,6 +4798,12 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-compact-card.diego { border-top:3px solid #FF5A73; }
 .aportes-compact-card.william { border-top:3px solid #5DA7F4; }
 .aportes-compact-card.andres { border-top:3px solid #43C995; }
+/* V64: William y Andrés toman exactamente la altura visual de Diego.
+   Diego no se modifica. */
+.aportes-compact-card.william,
+.aportes-compact-card.andres {
+    height:412px;
+}
 
  .aportes-compact-head {
     position:relative;
