@@ -6275,7 +6275,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
         # PARTICIPACIÓN DE ACTIVOS + DETALLE DE FINCA RAÍZ
         # --------------------------------------------------------
 
-        bottom_cols = st.columns([1.05, 1.35], gap="small")
+        bottom_cols = st.columns([1, 1], gap="small")
 
         with bottom_cols[0]:
 
@@ -6416,7 +6416,6 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
       {filas_ciudad if filas_ciudad else '<div style="font-size:9px;color:#8290A4;padding:20px 0;">Sin datos de ciudad disponibles.</div>'}
     </div>
   </div>
-  <div class="portfolio-composition-total"><span>🏠 Finca Raíz adicional · valor total agregado, sin dividir por socio</span><b>{dinero_corto(valor_finca_adicional_portafolio)}</b></div>
 </div>
 """)
         with bottom_cols[1]:
@@ -6501,21 +6500,6 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
             <div class="aportes-finca-summary-total-value compact">
                 {dinero_corto(valor_finca_total)}
             </div>
-        </div>
-    </div>
-
-    <div style="display:flex;flex-wrap:wrap;gap:18px;margin:10px 0 12px;padding:10px 12px;background:#F7F9FC;border:1px solid #E4EAF0;border-radius:10px;">
-        <div>
-            <span style="font-size:9px;color:#71839A;">Valor adicional</span><br>
-            <b style="font-size:14px;color:#17345E;">{dinero_corto(valor_adicional_tabla)}</b>
-        </div>
-        <div>
-            <span style="font-size:9px;color:#71839A;">Deuda adicional</span><br>
-            <b style="font-size:14px;color:#E84235;">-{dinero_corto(deuda_adicional_tabla)}</b>
-        </div>
-        <div>
-            <span style="font-size:9px;color:#71839A;">Patrimonio adicional</span><br>
-            <b style="font-size:14px;color:#17345E;">{dinero_corto(neto_adicional_tabla)}</b>
         </div>
     </div>
 
