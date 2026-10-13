@@ -3246,8 +3246,34 @@ rentabilidad_ytd = (
 # ============================================================
 
 if "vista_airbnb" not in st.session_state:
-
     st.session_state.vista_airbnb = "Aportes"
+
+# ------------------------------------------------------------
+# RECUPERACIÓN DE VISTA
+# Evita que una opción antigua ("Portafolio" o "Rentabilidad")
+# deje la página vacía al no coincidir con las vistas actuales.
+# ------------------------------------------------------------
+_vistas_validas = {
+    "Aportes",
+    "Propiedades",
+    "Ocupación",
+    "Financiero",
+    "Análisis",
+    "Reportes",
+}
+_alias_vistas = {
+    "Portafolio": "Aportes",
+    "Portfolio": "Aportes",
+    "Rentabilidad": "Aportes",
+    "Patrimonio": "Aportes",
+}
+_vista_actual = st.session_state.get("vista_airbnb", "Aportes")
+_vista_actual = _alias_vistas.get(_vista_actual, _vista_actual)
+
+if _vista_actual not in _vistas_validas:
+    _vista_actual = "Aportes"
+
+st.session_state.vista_airbnb = _vista_actual
 
 top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = st.columns(
     [
