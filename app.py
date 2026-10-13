@@ -4239,7 +4239,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-patrimonio-value { font-size:21px;font-weight:900;color:#17345E;line-height:1; }
 .aportes-patrimonio-ratio { font-size:8px;font-weight:850;color:#009B70;margin-top:4px;text-align:right; }
 
-.aportes-otros-panel { background:#FFFFFF;border:1px solid #DCE5EE;border-radius:14px;padding:14px 16px 10px;margin-top:13px;overflow-x:auto; }
+.aportes-otros-panel { background:#FFFFFF;border:1px solid #DCE5EE;border-radius:14px;padding:14px 16px 10px;margin-top:0;overflow-x:auto; }
 .aportes-card-title2 { font-size:15px;font-weight:900;color:#17345E; }
 .aportes-card-sub2 { font-size:8.5px;color:#8A98AA;margin-top:4px;margin-bottom:9px; }
 .aportes-table2 { width:100%;border-collapse:separate;border-spacing:0;font-size:9.5px;color:#50637B;min-width:950px; }
@@ -5665,6 +5665,9 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     .aportes-portfolio-grid {
         grid-template-columns:1fr;
     }
+    .aportes-finca-summary-panel.compact {
+        min-height:0;
+    }
 }
 
 /* ---------- detalle Finca Raíz ---------- */
@@ -5683,6 +5686,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     padding:12px 13px 8px;
     box-sizing:border-box;
     overflow-x:auto;
+    min-height:650px;
 }
 
 .aportes-finca-summary-header.compact {
@@ -6416,7 +6420,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
       {filas_ciudad if filas_ciudad else '<div style="font-size:9px;color:#8290A4;padding:20px 0;">Sin datos de ciudad disponibles.</div>'}
     </div>
   </div>
-  <div class="portfolio-composition-total"><span>🏠 Finca Raíz adicional · fuera del patrimonio neto principal</span><b>{dinero_corto(valor_finca_adicional_portafolio)}</b></div>
+  <div class="portfolio-composition-total"><span>🏠 Finca Raíz adicional · valor total agregado, sin dividir por socio</span><b>{dinero_corto(valor_finca_adicional_portafolio)}</b></div>
 </div>
 """)
         with bottom_cols[1]:
@@ -6664,87 +6668,6 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 """
 
             render_aportes_html(adicional_table_html)
-
-        # --------------------------------------------------------
-        # BLOQUE INFERIOR: NEGOCIOS Y OTROS ACTIVOS
-        # --------------------------------------------------------
-        no_inmo = cargar_negocios_y_otros()
-        if not no_inmo.empty:
-            matriz_no_inmo = (
-                no_inmo
-                .pivot_table(
-                    index=["Nombre", "Sector", "Ciudad"],
-                    columns="Nombre_Socio",
-                    values="Participaci__n",
-                    aggfunc="sum",
-                    fill_value=0
-                )
-                .reset_index()
-            )
-
-            cols_soc = [
-                n for n in [
-                    "Diego Camacho",
-                    "William Camacho",
-                    "Andres Camacho",
-                    "Andrés Camacho",
-                ]
-                if n in matriz_no_inmo.columns
-            ]
-
-            table_html = """
-<div class="aportes-otros-panel">
-    <div class="aportes-card-title2">🏪 Negocios y otros activos</div>
-    <div class="aportes-card-sub2">Activos no inmobiliarios · participación de cada socio · valoración pendiente</div>
-    <table class="aportes-table2">
-        <thead>
-            <tr>
-                <th>Activo</th>
-                <th>Tipo</th>
-                <th>Ciudad</th>
-"""
-            for n in cols_soc:
-                corto = "Diego" if "Diego" in n else "William" if "William" in n else "Andrés"
-                table_html += f"<th>{corto}</th>"
-
-            table_html += """
-                <th>Valor</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-"""
-
-            for _, row in matriz_no_inmo.iterrows():
-                tipo = str(row.get("Sector", "Otros") or "Otros").strip()
-                table_html += "<tr>"
-                table_html += f"<td>{escape_html(row.get('Nombre', ''))}</td>"
-                table_html += f"<td><span class='aportes-badge'>{escape_html(tipo)}</span></td>"
-                table_html += f"<td>{escape_html(row.get('Ciudad', ''))}</td>"
-
-                for n in cols_soc:
-                    raw = float(row.get(n, 0) or 0)
-                    pct = raw if raw > 1.01 else raw * 100
-                    table_html += f"<td>{'-' if pct == 0 else f'{pct:.1f}%'}</td>"
-
-                table_html += "<td>-</td>"
-                table_html += "<td><span class='aportes-badge'>Por valorar</span></td>"
-                table_html += "</tr>"
-
-            table_html += """
-        </tbody>
-    </table>
-    <div class="aportes-note2"><b>Nota:</b> El patrimonio neto principal está compuesto por Finca Raíz conjunta + Comercio + Vehículos, menos la deuda asociada a esos activos. La Finca Raíz adicional queda fuera del patrimonio neto principal y se presenta por separado.</div>
-</div>
-"""
-            render_aportes_html(table_html)
-        else:
-            render_aportes_html("""
-<div class="aportes-otros-panel">
-    <div class="aportes-card-title2">🏪 Negocios y otros activos</div>
-    <div class="aportes-card-sub2">No hay participaciones no inmobiliarias disponibles todavía.</div>
-</div>
-""")
 
 
 
