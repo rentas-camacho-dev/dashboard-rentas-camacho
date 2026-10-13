@@ -6387,10 +6387,10 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 """)
 
             # --------------------------------------------------------
-            # GRÁFICO DE ACTIVOS ADICIONALES
-            # Debajo del panel principal, para equilibrar visualmente
-            # la altura de la columna izquierda con la tabla derecha.
-            # Se muestran por activo, sin separar por socio.
+            # NUEVO GRÁFICO: ACTIVOS ADICIONALES
+            # Se agrega debajo de la composición sin reemplazarla.
+            # La tabla original de Finca Raíz conjunta y la tabla
+            # de Finca Raíz adicional se conservan intactas.
             # --------------------------------------------------------
             if not activos_finca_adicional.empty:
                 activos_adicionales_grafico = (
@@ -6405,25 +6405,20 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                     .reset_index(drop=True)
                 )
 
-                max_adicional = float(
-                    activos_adicionales_grafico["Valor_Activo"].max()
-                ) if not activos_adicionales_grafico.empty else 0
-
-                barras_adicionales_html = ""
+                max_adicional = float(activos_adicionales_grafico["Valor_Activo"].max()) if not activos_adicionales_grafico.empty else 0
                 colores_adicionales = ["#299FE3", "#08B89A", "#8061E8", "#FF456B", "#E8AC3D", "#5DA7F4"]
+                barras_adicionales_html = ""
 
                 for i, activo in activos_adicionales_grafico.iterrows():
                     valor_activo = float(activo["Valor_Activo"] or 0)
-                    ancho_barra = (
-                        valor_activo / max_adicional * 100
-                        if max_adicional > 0 else 0
-                    )
+                    ancho_barra = valor_activo / max_adicional * 100 if max_adicional > 0 else 0
                     color_barra = colores_adicionales[i % len(colores_adicionales)]
                     nombre_activo = escape_html(str(activo["Nombre_Entidad"]))
+                    ciudad_activo = escape_html(str(activo["Ciudad"]))
 
                     barras_adicionales_html += f"""
-                    <div style="display:grid;grid-template-columns:120px minmax(60px,1fr) 76px;gap:10px;align-items:center;margin:10px 0;">
-                        <div style="font-size:10px;font-weight:750;color:#17345E;line-height:1.25;">{nombre_activo}</div>
+                    <div style="display:grid;grid-template-columns:minmax(95px,140px) minmax(50px,1fr) 76px;gap:10px;align-items:center;margin:10px 0;">
+                        <div style="font-size:10px;font-weight:750;color:#17345E;line-height:1.25;">{nombre_activo}<div style="font-size:8px;font-weight:500;color:#667A92;margin-top:2px;">{ciudad_activo}</div></div>
                         <div style="height:13px;background:#EDF2F7;border-radius:99px;overflow:hidden;">
                             <div style="height:100%;width:{ancho_barra:.2f}%;background:{color_barra};border-radius:99px;"></div>
                         </div>
