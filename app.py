@@ -6421,133 +6421,20 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 """)
         with bottom_cols[1]:
 
-            if not finca_resumen.empty:
-
-                tabla_finca = f"""
-<div class="aportes-finca-summary-panel compact">
-
-    <div class="aportes-finca-summary-header compact">
-
-        <div>
-
-            <div class="aportes-finca-summary-title compact">
-                🏠 Detalle de Finca Raíz conjunta
-            </div>
-
-            <div class="aportes-finca-summary-sub compact">
-                Valor, deuda y patrimonio neto por predio
-            </div>
-
-        </div>
-
-        <div class="aportes-finca-summary-total compact">
-
-            <div class="aportes-finca-summary-total-label compact">
-                Valor total
-            </div>
-
-            <div class="aportes-finca-summary-total-value compact">
-                {dinero_corto(valor_finca_total)}
-            </div>
-
-        </div>
-
-    </div>
-
-    <table class="aportes-finca-table compact">
-
-        <thead>
-
-            <tr>
-                <th>Predio</th>
-                <th>Ciudad</th>
-                <th>% conjunto</th>
-                <th>Valor</th>
-                <th>Deuda</th>
-                <th>Neto</th>
-            </tr>
-
-        </thead>
-
-        <tbody>
-"""
-
-                for _, row in finca_resumen.iterrows():
-
-                    tabla_finca += f"""
-<tr>
-
-    <td>
-        {escape_html(row["Nombre_Entidad"])}
-    </td>
-
-    <td>
-        {escape_html(row["Ciudad"])}
-    </td>
-
-    <td>
-        <span class="aportes-finca-pct compact">
-            {float(row["Pct_Conjunto"]):.1f}%
-        </span>
-    </td>
-
-    <td>
-        <span class="aportes-finca-value compact">
-            {dinero_corto(float(row["Valor_Minimo"]))}
-        </span>
-    </td>
-
-    <td>
-        <span class="aportes-finca-debt compact">
-            -{dinero_corto(float(row["Deuda_Actual"]))}
-        </span>
-    </td>
-
-    <td>
-        <span class="aportes-finca-value compact">
-            {dinero_corto(float(row["Patrimonio_Neto"]))}
-        </span>
-    </td>
-
-</tr>
-"""
-
-                tabla_finca += """
-        </tbody>
-    </table>
-
-</div>
-"""
-
-                render_aportes_html(tabla_finca)
-
-            else:
-
-                render_aportes_html("""
-<div class="aportes-finca-summary-panel compact">
-
-    <div class="aportes-finca-summary-title compact">
-        🏠 Detalle de Finca Raíz conjunta
-    </div>
-
-    <div class="aportes-finca-summary-sub compact">
-        Sin registros disponibles.
-    </div>
-
-</div>
-""")
-
             # --------------------------------------------------------
-            # FINCA RAÍZ ADICIONAL + DEUDA INDIVIDUAL
+            # DETALLE ÚNICO: FINCA RAÍZ CONJUNTA + ACTIVOS ADICIONALES
+            # Los adicionales se agregan al final de la misma tabla,
+            # con una fila separadora y sin porcentaje conjunto.
             # --------------------------------------------------------
-            # Aquí salen únicamente los activos de Finca Raíz que quedan
-            # fuera del patrimonio principal. Comercio y Vehículos ya están
-            # integrados en "Activos" y no se repiten aquí.
+
+            adicionales_tabla = pd.DataFrame(
+                columns=[
+                    "ID_Activo", "Nombre_Entidad", "Ciudad",
+                    "Valor_Activo", "Deuda", "Patrimonio_Neto"
+                ]
+            )
+
             if not activos_finca_adicional.empty:
-
-                # Consolidar activos adicionales por inmueble, sin desglosar por socio.
-                # El valor corresponde a la suma de las participaciones registradas
-                # para cada activo en la vista patrimonial.
                 adicionales_tabla = (
                     activos_finca_adicional
                     .groupby(
@@ -6583,50 +6470,113 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                     "Valor_Activo", ascending=False
                 )
 
-                valor_adicional_tabla = float(adicionales_tabla["Valor_Activo"].sum())
-                deuda_adicional_tabla = float(adicionales_tabla["Deuda"].sum())
-                neto_adicional_tabla = float(adicionales_tabla["Patrimonio_Neto"].sum())
+            valor_adicional_tabla = (
+                float(adicionales_tabla["Valor_Activo"].sum())
+                if not adicionales_tabla.empty else 0
+            )
+            deuda_adicional_tabla = (
+                float(adicionales_tabla["Deuda"].sum())
+                if not adicionales_tabla.empty else 0
+            )
+            neto_adicional_tabla = (
+                float(adicionales_tabla["Patrimonio_Neto"].sum())
+                if not adicionales_tabla.empty else 0
+            )
 
-                adicional_table_html = f"""
-    <div class="aportes-otros-panel" style="margin-top:10px;">
-        <div class="aportes-card-title2">🏠 Finca Raíz adicional y deuda</div>
-        <div class="aportes-card-sub2">
-            Activos fuera de la finca raíz conjunta · consolidados por inmueble
+            tabla_finca = f"""
+<div class="aportes-finca-summary-panel compact">
+    <div class="aportes-finca-summary-header compact">
+        <div>
+            <div class="aportes-finca-summary-title compact">
+                🏠 Detalle de Finca Raíz conjunta
+            </div>
+            <div class="aportes-finca-summary-sub compact">
+                Activos conjuntos y adicionales · valor, deuda y patrimonio neto por inmueble
+            </div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:18px;margin:10px 0 12px;padding:10px 12px;background:#F7F9FC;border:1px solid #E4EAF0;border-radius:10px;">
-            <div><span style="font-size:9px;color:#71839A;">Valor agregado</span><br><b style="font-size:14px;color:#17345E;">{dinero_corto(valor_adicional_tabla)}</b></div>
-            <div><span style="font-size:9px;color:#71839A;">Deuda atribuible</span><br><b style="font-size:14px;color:#E84235;">-{dinero_corto(deuda_adicional_tabla)}</b></div>
-            <div><span style="font-size:9px;color:#71839A;">Patrimonio neto</span><br><b style="font-size:14px;color:#17345E;">{dinero_corto(neto_adicional_tabla)}</b></div>
-        </div>
-        <table class="aportes-table2">
-            <thead>
-                <tr>
-                    <th>Activo</th>
-                    <th>Ciudad</th>
-                    <th>Valor agregado</th>
-                    <th>Deuda</th>
-                    <th>Neto</th>
-                </tr>
-            </thead>
-            <tbody>
-    """
-                for _, row in adicionales_tabla.iterrows():
-                    adicional_table_html += f"""
-                <tr>
-                    <td>{escape_html(row["Nombre_Entidad"])}</td>
-                    <td>{escape_html(row["Ciudad"])}</td>
-                    <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Valor_Activo"]))}</span></td>
-                    <td><span class="aportes-finca-debt compact">-{dinero_corto(float(row["Deuda"]))}</span></td>
-                    <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Patrimonio_Neto"]))}</span></td>
-                </tr>
-    """
-                adicional_table_html += """
-            </tbody>
-        </table>
-        <div class="aportes-note2">
-            Estos inmuebles se muestran separados de los activos conjuntos. El valor agregado suma las participaciones registradas en la vista patrimonial; no representa necesariamente el valor bruto total de cada inmueble.
+        <div class="aportes-finca-summary-total compact">
+            <div class="aportes-finca-summary-total-label compact">
+                Valor conjunto
+            </div>
+            <div class="aportes-finca-summary-total-value compact">
+                {dinero_corto(valor_finca_total)}
+            </div>
         </div>
     </div>
-    """
-                render_aportes_html(adicional_table_html)
 
+    <div style="display:flex;flex-wrap:wrap;gap:18px;margin:10px 0 12px;padding:10px 12px;background:#F7F9FC;border:1px solid #E4EAF0;border-radius:10px;">
+        <div>
+            <span style="font-size:9px;color:#71839A;">Valor adicional</span><br>
+            <b style="font-size:14px;color:#17345E;">{dinero_corto(valor_adicional_tabla)}</b>
+        </div>
+        <div>
+            <span style="font-size:9px;color:#71839A;">Deuda adicional</span><br>
+            <b style="font-size:14px;color:#E84235;">-{dinero_corto(deuda_adicional_tabla)}</b>
+        </div>
+        <div>
+            <span style="font-size:9px;color:#71839A;">Patrimonio adicional</span><br>
+            <b style="font-size:14px;color:#17345E;">{dinero_corto(neto_adicional_tabla)}</b>
+        </div>
+    </div>
+
+    <table class="aportes-finca-table compact">
+        <thead>
+            <tr>
+                <th>Predio / activo</th>
+                <th>Ciudad</th>
+                <th>% conjunto</th>
+                <th>Valor</th>
+                <th>Deuda</th>
+                <th>Neto</th>
+            </tr>
+        </thead>
+        <tbody>
+"""
+
+            if not finca_resumen.empty:
+                for _, row in finca_resumen.iterrows():
+                    tabla_finca += f"""
+            <tr>
+                <td>{escape_html(row["Nombre_Entidad"])}</td>
+                <td>{escape_html(row["Ciudad"])}</td>
+                <td><span class="aportes-finca-pct compact">{float(row["Pct_Conjunto"]):.1f}%</span></td>
+                <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Valor_Minimo"]))}</span></td>
+                <td><span class="aportes-finca-debt compact">-{dinero_corto(float(row["Deuda_Actual"]))}</span></td>
+                <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Patrimonio_Neto"]))}</span></td>
+            </tr>
+"""
+
+            if not adicionales_tabla.empty:
+                tabla_finca += """
+            <tr>
+                <td colspan="6" style="background:#F1F5F9;color:#17345E;font-weight:800;padding:10px 12px;">
+                    Finca Raíz adicional
+                </td>
+            </tr>
+"""
+                for _, row in adicionales_tabla.iterrows():
+                    tabla_finca += f"""
+            <tr>
+                <td>{escape_html(row["Nombre_Entidad"])}</td>
+                <td>{escape_html(row["Ciudad"])}</td>
+                <td><span style="color:#8290A4;">—</span></td>
+                <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Valor_Activo"]))}</span></td>
+                <td><span class="aportes-finca-debt compact">-{dinero_corto(float(row["Deuda"]))}</span></td>
+                <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Patrimonio_Neto"]))}</span></td>
+            </tr>
+"""
+
+            if finca_resumen.empty and adicionales_tabla.empty:
+                tabla_finca += """
+            <tr><td colspan="6">Sin registros disponibles.</td></tr>
+"""
+
+            tabla_finca += """
+        </tbody>
+    </table>
+    <div class="aportes-note2">
+        Los activos adicionales se presentan dentro de la misma tabla, separados visualmente de los activos conjuntos. En los adicionales no se muestra porcentaje conjunto.
+    </div>
+</div>
+"""
+            render_aportes_html(tabla_finca)
