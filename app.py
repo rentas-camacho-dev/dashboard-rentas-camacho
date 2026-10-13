@@ -6327,87 +6327,96 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                 else 0
             )
 
+            # Distribución geográfica calculada sobre el valor de la finca raíz conjunta.
+            if not finca_resumen.empty:
+                ciudad_resumen = (
+                    finca_resumen.groupby("Ciudad", as_index=False)["Valor_Minimo"]
+                    .sum()
+                    .sort_values("Valor_Minimo", ascending=False)
+                )
+            else:
+                ciudad_resumen = pd.DataFrame(columns=["Ciudad", "Valor_Minimo"])
+
+            colores_ciudad = ["#2298DE", "#08AE98", "#7964DD", "#FF3158", "#E5AC43", "#64748B"]
+            total_ciudad = float(ciudad_resumen["Valor_Minimo"].sum()) if not ciudad_resumen.empty else 0
+            filas_ciudad = ""
+            for idx, (_, ciudad_row) in enumerate(ciudad_resumen.iterrows()):
+                ciudad_nombre = escape_html(ciudad_row["Ciudad"] or "Sin ciudad")
+                ciudad_valor = float(ciudad_row["Valor_Minimo"] or 0)
+                ciudad_pct = ciudad_valor / total_ciudad * 100 if total_ciudad else 0
+                color_ciudad = colores_ciudad[idx % len(colores_ciudad)]
+                filas_ciudad += f"""
+                <div class=\"portfolio-city-row\">
+                    <div class=\"portfolio-city-label\"><span><i style=\"background:{color_ciudad}\"></i>{ciudad_nombre}</span><b>{ciudad_pct:.1f}%</b></div>
+                    <div class=\"portfolio-city-track\"><div style=\"width:{ciudad_pct:.2f}%;background:{color_ciudad}\"></div></div>
+                    <div class=\"portfolio-city-value\">{dinero_corto(ciudad_valor)}</div>
+                </div>
+                """
+
+            total_tipo = max(float(valor_portafolio_valorado), 0)
+            donas = []
+            acumulado = 0.0
+            for valor_tipo, color_tipo in [
+                (valor_finca_portafolio, "#2298DE"),
+                (valor_comercio, "#FF3158"),
+                (valor_vehiculos, "#08AE98"),
+            ]:
+                pct_tipo = (float(valor_tipo) / total_tipo * 100) if total_tipo else 0
+                inicio = acumulado
+                acumulado += pct_tipo
+                donas.append(f"{color_tipo} {inicio:.2f}% {acumulado:.2f}%")
+            dona_gradient = ", ".join(donas) if donas else "#E8EDF3 0% 100%"
+
             render_aportes_html(f"""
+<style>
+.portfolio-composition-layout{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;}}
+.portfolio-chart-card{{border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:12px;min-width:0;}}
+.portfolio-chart-heading{{font-size:11px;font-weight:850;color:#17345E;margin-bottom:10px;}}
+.portfolio-donut-wrap{{display:flex;align-items:center;gap:14px;min-height:150px;}}
+.portfolio-donut{{width:132px;height:132px;border-radius:50%;background:conic-gradient({dona_gradient});position:relative;flex-shrink:0;}}
+.portfolio-donut:after{{content:"";position:absolute;inset:29px;background:#FAFBFD;border-radius:50%;}}
+.portfolio-donut-center{{position:absolute;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:9px;color:#8290A4;}}
+.portfolio-donut-center b{{font-size:15px;color:#17345E;}}
+.portfolio-legend{{display:flex;flex-direction:column;gap:10px;min-width:0;flex:1;}}
+.portfolio-legend-item{{display:grid;grid-template-columns:9px minmax(0,1fr);column-gap:6px;align-items:start;}}
+.portfolio-legend-item i{{width:9px;height:9px;border-radius:3px;margin-top:3px;}}
+.portfolio-legend-name{{font-size:9px;color:#61738C;font-weight:700;}}
+.portfolio-legend-value{{font-size:12px;color:#17345E;font-weight:850;margin-top:2px;}}
+.portfolio-legend-pct{{font-size:8px;color:#8290A4;margin-top:2px;}}
+.portfolio-city-row{{margin-top:10px;}}
+.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:9px;color:#50637B;}}
+.portfolio-city-label span{{display:flex;align-items:center;gap:6px;min-width:0;}}
+.portfolio-city-label i{{width:8px;height:8px;border-radius:3px;display:inline-block;flex-shrink:0;}}
+.portfolio-city-label b{{color:#17345E;white-space:nowrap;}}
+.portfolio-city-track{{height:7px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:5px;}}
+.portfolio-city-track div{{height:100%;border-radius:8px;}}
+.portfolio-city-value{{font-size:8px;color:#8290A4;text-align:right;margin-top:3px;}}
+.portfolio-composition-total{{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:9px 11px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:10px;}}
+.portfolio-composition-total span{{font-size:9px;color:#71839A;}}
+.portfolio-composition-total b{{font-size:16px;color:#17345E;}}
+@media(max-width:850px){{.portfolio-composition-layout{{grid-template-columns:1fr;}}.portfolio-donut-wrap{{justify-content:center;}}}}
+</style>
 <div class="aportes-portfolio-panel">
-
-    <div class="aportes-portfolio-title">
-        📊 Composición de los activos
-    </div>
-
-    <div class="aportes-portfolio-sub">
-        Composición de los activos que forman el patrimonio neto
-    </div>
-
-    <div class="aportes-portfolio-grid">
-
-        <div class="aportes-portfolio-item finca">
-
-            <div class="aportes-portfolio-label">
-                🏠 Finca Raíz
-            </div>
-
-            <div class="aportes-portfolio-caption">
-                Finca Raíz conjunta
-            </div>
-
-            <div class="aportes-portfolio-value">
-                {dinero_corto(valor_finca_portafolio)}
-            </div>
-
-            <div class="aportes-portfolio-pct">
-                {pct_finca_port:.1f}% del patrimonio principal
-            </div>
-
+  <div class="aportes-portfolio-title">📊 Composición del patrimonio</div>
+  <div class="aportes-portfolio-sub">Distribución por tipo de activo y ubicación de la finca raíz conjunta</div>
+  <div class="portfolio-composition-layout">
+    <div class="portfolio-chart-card">
+      <div class="portfolio-chart-heading">Composición por tipo de activo</div>
+      <div class="portfolio-donut-wrap">
+        <div class="portfolio-donut"><div class="portfolio-donut-center"><b>{dinero_corto(valor_portafolio_valorado)}</b><span>Valor total</span></div></div>
+        <div class="portfolio-legend">
+          <div class="portfolio-legend-item"><i style="background:#2298DE"></i><div><div class="portfolio-legend-name">Finca Raíz</div><div class="portfolio-legend-value">{dinero_corto(valor_finca_portafolio)}</div><div class="portfolio-legend-pct">{pct_finca_port:.1f}%</div></div></div>
+          <div class="portfolio-legend-item"><i style="background:#FF3158"></i><div><div class="portfolio-legend-name">Comercio</div><div class="portfolio-legend-value">{dinero_corto(valor_comercio)}</div><div class="portfolio-legend-pct">{pct_comercio_port:.1f}%</div></div></div>
+          <div class="portfolio-legend-item"><i style="background:#08AE98"></i><div><div class="portfolio-legend-name">Vehículos</div><div class="portfolio-legend-value">{dinero_corto(valor_vehiculos)}</div><div class="portfolio-legend-pct">{pct_vehiculos_port:.1f}%</div></div></div>
         </div>
-
-        <div class="aportes-portfolio-item comercio">
-
-            <div class="aportes-portfolio-label">
-                🏪 Comercio
-            </div>
-
-            <div class="aportes-portfolio-caption">
-                RIE + Restaurante RIE
-            </div>
-
-            <div class="aportes-portfolio-value">
-                {dinero_corto(valor_comercio)}
-            </div>
-
-            <div class="aportes-portfolio-pct">
-                {pct_comercio_port:.1f}% del patrimonio principal
-            </div>
-
-        </div>
-
-        <div class="aportes-portfolio-item vehiculos">
-
-            <div class="aportes-portfolio-label">
-                🚗 Vehículos
-            </div>
-
-            <div class="aportes-portfolio-caption">
-                Activos muebles
-            </div>
-
-            <div class="aportes-portfolio-value">
-                {dinero_corto(valor_vehiculos)}
-            </div>
-
-            <div class="aportes-portfolio-pct">
-                {pct_vehiculos_port:.1f}% del patrimonio principal
-            </div>
-
-        </div>
-
+      </div>
     </div>
-
-    <div style="margin-top:8px;padding:7px 9px;border:1px dashed #DCE5EE;border-radius:9px;background:#FAFBFD;font-size:8px;color:#667A92;">
-        🏠 <b style="color:#17345E;">Finca Raíz adicional:</b>
-        {dinero_corto(valor_finca_adicional_portafolio)}
-        <span style="color:#8A98AA;">· fuera del patrimonio neto principal</span>
+    <div class="portfolio-chart-card">
+      <div class="portfolio-chart-heading">Finca raíz por ciudad</div>
+      {filas_ciudad if filas_ciudad else '<div style="font-size:9px;color:#8290A4;padding:20px 0;">Sin datos de ciudad disponibles.</div>'}
     </div>
-
+  </div>
+  <div class="portfolio-composition-total"><span>🏠 Finca Raíz adicional · fuera del patrimonio neto principal</span><b>{dinero_corto(valor_finca_adicional_portafolio)}</b></div>
 </div>
 """)
         with bottom_cols[1]:
@@ -6527,6 +6536,217 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
 </div>
 """)
+
+        # --------------------------------------------------------
+        # FINCA RAÍZ ADICIONAL + DEUDA INDIVIDUAL
+        # --------------------------------------------------------
+        # Aquí salen únicamente los activos de Finca Raíz que quedan
+        # fuera del patrimonio principal. Comercio y Vehículos ya están
+        # integrados en "Activos" y no se repiten aquí.
+        if not activos_finca_adicional.empty:
+
+            adicionales_tabla = (
+                activos_finca_adicional
+                .groupby(
+                    [
+                        "ID_Activo",
+                        "Nombre_Entidad",
+                        "Ciudad",
+                        "Nombre_Socio",
+                    ],
+                    as_index=False
+                )["Valor_Mercado_Socio"]
+                .sum()
+                .rename(
+                    columns={
+                        "Valor_Mercado_Socio":
+                            "Valor_Activo"
+                    }
+                )
+            )
+
+            if not creditos_prorrateados.empty:
+                deuda_individual_tabla = (
+                    creditos_prorrateados[
+                        ~creditos_prorrateados["Es_Principal"]
+                    ]
+                    .groupby(
+                        [
+                            "ID_Activo",
+                            "Nombre_Socio",
+                        ],
+                        as_index=False
+                    )["Saldo_Actual_Prorrateado"]
+                    .sum()
+                    .rename(
+                        columns={
+                            "Saldo_Actual_Prorrateado":
+                                "Deuda"
+                        }
+                    )
+                )
+
+                adicionales_tabla = adicionales_tabla.merge(
+                    deuda_individual_tabla,
+                    on=[
+                        "ID_Activo",
+                        "Nombre_Socio"
+                    ],
+                    how="left"
+                )
+            else:
+                adicionales_tabla["Deuda"] = 0
+
+            adicionales_tabla["Deuda"] = (
+                pd.to_numeric(
+                    adicionales_tabla["Deuda"],
+                    errors="coerce"
+                )
+                .fillna(0)
+            )
+
+            adicionales_tabla["Patrimonio_Neto"] = (
+                adicionales_tabla["Valor_Activo"]
+                - adicionales_tabla["Deuda"]
+            )
+
+            adicionales_tabla = adicionales_tabla.sort_values(
+                [
+                    "Nombre_Socio",
+                    "Valor_Activo"
+                ],
+                ascending=[True, False]
+            )
+
+            adicional_table_html = """
+<div class="aportes-otros-panel">
+    <div class="aportes-card-title2">🏠 Finca Raíz adicional y deuda</div>
+    <div class="aportes-card-sub2">
+        Activos inmobiliarios fuera del patrimonio neto principal · deuda atribuible a cada socio
+    </div>
+
+    <table class="aportes-table2">
+        <thead>
+            <tr>
+                <th>Activo</th>
+                <th>Socio</th>
+                <th>Ciudad</th>
+                <th>Valor</th>
+                <th>Deuda</th>
+                <th>Neto</th>
+            </tr>
+        </thead>
+        <tbody>
+"""
+
+            for _, row in adicionales_tabla.iterrows():
+
+                adicional_table_html += f"""
+            <tr>
+                <td>{escape_html(row["Nombre_Entidad"])}</td>
+                <td>{escape_html(row["Nombre_Socio"])}</td>
+                <td>{escape_html(row["Ciudad"])}</td>
+                <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Valor_Activo"]))}</span></td>
+                <td><span class="aportes-finca-debt compact">-{dinero_corto(float(row["Deuda"]))}</span></td>
+                <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Patrimonio_Neto"]))}</span></td>
+            </tr>
+"""
+
+            adicional_table_html += """
+        </tbody>
+    </table>
+
+    <div class="aportes-note2">
+        Los activos y deudas individuales se mantienen fuera del cálculo
+        principal del patrimonio conjunto de los tres socios.
+    </div>
+</div>
+"""
+
+            render_aportes_html(adicional_table_html)
+
+        # --------------------------------------------------------
+        # BLOQUE INFERIOR: NEGOCIOS Y OTROS ACTIVOS
+        # --------------------------------------------------------
+        no_inmo = cargar_negocios_y_otros()
+        if not no_inmo.empty:
+            matriz_no_inmo = (
+                no_inmo
+                .pivot_table(
+                    index=["Nombre", "Sector", "Ciudad"],
+                    columns="Nombre_Socio",
+                    values="Participaci__n",
+                    aggfunc="sum",
+                    fill_value=0
+                )
+                .reset_index()
+            )
+
+            cols_soc = [
+                n for n in [
+                    "Diego Camacho",
+                    "William Camacho",
+                    "Andres Camacho",
+                    "Andrés Camacho",
+                ]
+                if n in matriz_no_inmo.columns
+            ]
+
+            table_html = """
+<div class="aportes-otros-panel">
+    <div class="aportes-card-title2">🏪 Negocios y otros activos</div>
+    <div class="aportes-card-sub2">Activos no inmobiliarios · participación de cada socio · valoración pendiente</div>
+    <table class="aportes-table2">
+        <thead>
+            <tr>
+                <th>Activo</th>
+                <th>Tipo</th>
+                <th>Ciudad</th>
+"""
+            for n in cols_soc:
+                corto = "Diego" if "Diego" in n else "William" if "William" in n else "Andrés"
+                table_html += f"<th>{corto}</th>"
+
+            table_html += """
+                <th>Valor</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+"""
+
+            for _, row in matriz_no_inmo.iterrows():
+                tipo = str(row.get("Sector", "Otros") or "Otros").strip()
+                table_html += "<tr>"
+                table_html += f"<td>{escape_html(row.get('Nombre', ''))}</td>"
+                table_html += f"<td><span class='aportes-badge'>{escape_html(tipo)}</span></td>"
+                table_html += f"<td>{escape_html(row.get('Ciudad', ''))}</td>"
+
+                for n in cols_soc:
+                    raw = float(row.get(n, 0) or 0)
+                    pct = raw if raw > 1.01 else raw * 100
+                    table_html += f"<td>{'-' if pct == 0 else f'{pct:.1f}%'}</td>"
+
+                table_html += "<td>-</td>"
+                table_html += "<td><span class='aportes-badge'>Por valorar</span></td>"
+                table_html += "</tr>"
+
+            table_html += """
+        </tbody>
+    </table>
+    <div class="aportes-note2"><b>Nota:</b> El patrimonio neto principal está compuesto por Finca Raíz conjunta + Comercio + Vehículos, menos la deuda asociada a esos activos. La Finca Raíz adicional queda fuera del patrimonio neto principal y se presenta por separado.</div>
+</div>
+"""
+            render_aportes_html(table_html)
+        else:
+            render_aportes_html("""
+<div class="aportes-otros-panel">
+    <div class="aportes-card-title2">🏪 Negocios y otros activos</div>
+    <div class="aportes-card-sub2">No hay participaciones no inmobiliarias disponibles todavía.</div>
+</div>
+""")
+
+
 
 if st.session_state.vista_airbnb == "Propiedades":
 
