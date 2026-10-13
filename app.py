@@ -2429,12 +2429,16 @@ def fecha_corte_cuota(fecha):
 
 
 def incremento_cuotas_desde_base(fecha):
-    # Calcula las cuotas nuevas desde la base 31-ago-2026.
-    # Ejemplos esperados:
-    # 25-sep-2026 -> 0
-    # 30-sep-2026 -> 1
-    # 01-oct-2026 -> 1
-    # 30-oct-2026 -> 2
+    """
+    Calcula cuántas cuotas nuevas se consideran aplicadas
+    desde la base 31-ago-2026.
+
+    Ejemplo:
+    - 25-sep-2026 -> 0
+    - 30-sep-2026 -> 1
+    - 01-oct-2026 -> 1
+    - 30-oct-2026 -> 2
+    """
     fecha = pd.Timestamp(fecha)
     base = pd.Timestamp(FECHA_BASE_CUOTAS)
 
@@ -4235,7 +4239,7 @@ if st.session_state.vista_airbnb == "Aportes":
 .aportes-patrimonio-value { font-size:21px;font-weight:900;color:#17345E;line-height:1; }
 .aportes-patrimonio-ratio { font-size:8px;font-weight:850;color:#009B70;margin-top:4px;text-align:right; }
 
-.aportes-otros-panel { background:#FFFFFF;border:1px solid #DCE5EE;border-radius:14px;padding:14px 16px 10px;margin-top:0;overflow-x:auto; }
+.aportes-otros-panel { background:#FFFFFF;border:1px solid #DCE5EE;border-radius:14px;padding:14px 16px 10px;margin-top:13px;overflow-x:auto; }
 .aportes-card-title2 { font-size:15px;font-weight:900;color:#17345E; }
 .aportes-card-sub2 { font-size:8.5px;color:#8A98AA;margin-top:4px;margin-bottom:9px; }
 .aportes-table2 { width:100%;border-collapse:separate;border-spacing:0;font-size:9.5px;color:#50637B;min-width:950px; }
@@ -4805,9 +4809,9 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
 .aportes-compact-card {
     box-sizing:border-box;
-    height:270px !important;
-    min-height:270px !important;
-    max-height:270px !important;
+    height:254px !important;
+    min-height:254px !important;
+    max-height:254px !important;
     align-self:start !important;
     background:#FFFFFF;
     border:1px solid #DCE5EE;
@@ -5378,31 +5382,6 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     min-width:0;
 }
 
-/* V73: reducir SOLO la ficha de Activos adicionales de Diego.
-   No modifica la altura de la tarjeta ni el panel Activos. */
-.aportes-mini-panel.adicionales-panel-diego {
-    padding-top:7px;
-    padding-bottom:4px;
-}
-
-.aportes-mini-panel.adicionales-panel-diego .aportes-mini-panel-title {
-    margin-bottom:3px;
-}
-
-.aportes-mini-panel.adicionales-panel-diego .aportes-mini-panel-sub {
-    margin-bottom:3px;
-}
-
-.aportes-mini-panel.adicionales-panel-diego .aportes-mini-row {
-    padding-top:2.5px !important;
-    padding-bottom:2.5px !important;
-}
-
-.aportes-mini-panel.adicionales-panel-diego .aportes-mini-total {
-    margin-top:3px;
-    padding-top:3px;
-}
-
 .aportes-mini-panel-title {
     font-size:10.5px;
     font-weight:500;
@@ -5661,9 +5640,6 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     .aportes-portfolio-grid {
         grid-template-columns:1fr;
     }
-    .aportes-finca-summary-panel.compact {
-        min-height:0;
-    }
 }
 
 /* ---------- detalle Finca Raíz ---------- */
@@ -5682,7 +5658,6 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     padding:12px 13px 8px;
     box-sizing:border-box;
     overflow-x:auto;
-    min-height:0;
 }
 
 .aportes-finca-summary-header.compact {
@@ -6172,7 +6147,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
         </div>
 
-        <div class="aportes-mini-panel adicionales-panel-{clase}">
+        <div class="aportes-mini-panel">
 
             <div class="aportes-mini-panel-title">
                 🔗 Activos adicionales
@@ -6275,7 +6250,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
         # PARTICIPACIÓN DE ACTIVOS + DETALLE DE FINCA RAÍZ
         # --------------------------------------------------------
 
-        bottom_cols = st.columns([1, 1], gap="small")
+        bottom_cols = st.columns([1.05, 1.35], gap="small")
 
         with bottom_cols[0]:
 
@@ -6327,114 +6302,98 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                 else 0
             )
 
-            # Distribución geográfica calculada sobre el valor de la finca raíz conjunta.
-            if not finca_resumen.empty:
-                ciudad_resumen = (
-                    finca_resumen.groupby("Ciudad", as_index=False)["Valor_Minimo"]
-                    .sum()
-                    .sort_values("Valor_Minimo", ascending=False)
-                )
-            else:
-                ciudad_resumen = pd.DataFrame(columns=["Ciudad", "Valor_Minimo"])
-
-            colores_ciudad = ["#2298DE", "#08AE98", "#7964DD", "#FF3158", "#E5AC43", "#64748B"]
-            total_ciudad = float(ciudad_resumen["Valor_Minimo"].sum()) if not ciudad_resumen.empty else 0
-            filas_ciudad = ""
-            for idx, (_, ciudad_row) in enumerate(ciudad_resumen.iterrows()):
-                ciudad_nombre = escape_html(ciudad_row["Ciudad"] or "Sin ciudad")
-                ciudad_valor = float(ciudad_row["Valor_Minimo"] or 0)
-                ciudad_pct = ciudad_valor / total_ciudad * 100 if total_ciudad else 0
-                color_ciudad = colores_ciudad[idx % len(colores_ciudad)]
-                filas_ciudad += f"""
-                <div class=\"portfolio-city-row\">
-                    <div class=\"portfolio-city-label\"><span><i style=\"background:{color_ciudad}\"></i>{ciudad_nombre}</span><b>{ciudad_pct:.1f}%</b></div>
-                    <div class=\"portfolio-city-track\"><div style=\"width:{ciudad_pct:.2f}%;background:{color_ciudad}\"></div></div>
-                    <div class=\"portfolio-city-value\">{dinero_corto(ciudad_valor)}</div>
-                </div>
-                """
-
-            total_tipo = max(float(valor_portafolio_valorado), 0)
-            donas = []
-            acumulado = 0.0
-            for valor_tipo, color_tipo in [
-                (valor_finca_portafolio, "#2298DE"),
-                (valor_comercio, "#FF3158"),
-                (valor_vehiculos, "#08AE98"),
-            ]:
-                pct_tipo = (float(valor_tipo) / total_tipo * 100) if total_tipo else 0
-                inicio = acumulado
-                acumulado += pct_tipo
-                donas.append(f"{color_tipo} {inicio:.2f}% {acumulado:.2f}%")
-            dona_gradient = ", ".join(donas) if donas else "#E8EDF3 0% 100%"
-
             render_aportes_html(f"""
-<style>
-.portfolio-composition-layout{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;}}
-.portfolio-chart-card{{border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:12px;min-width:0;}}
-.portfolio-chart-heading{{font-size:11px;font-weight:850;color:#17345E;margin-bottom:10px;}}
-.portfolio-donut-wrap{{display:flex;align-items:center;gap:14px;min-height:150px;}}
-.portfolio-donut{{width:132px;height:132px;border-radius:50%;background:conic-gradient({dona_gradient});position:relative;flex-shrink:0;}}
-.portfolio-donut:after{{content:"";position:absolute;inset:29px;background:#FAFBFD;border-radius:50%;}}
-.portfolio-donut-center{{position:absolute;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:9px;color:#8290A4;}}
-.portfolio-donut-center b{{font-size:15px;color:#17345E;}}
-.portfolio-legend{{display:flex;flex-direction:column;gap:10px;min-width:0;flex:1;}}
-.portfolio-legend-item{{display:grid;grid-template-columns:9px minmax(0,1fr);column-gap:6px;align-items:start;}}
-.portfolio-legend-item i{{width:9px;height:9px;border-radius:3px;margin-top:3px;}}
-.portfolio-legend-name{{font-size:9px;color:#61738C;font-weight:700;}}
-.portfolio-legend-value{{font-size:12px;color:#17345E;font-weight:850;margin-top:2px;}}
-.portfolio-legend-pct{{font-size:8px;color:#8290A4;margin-top:2px;}}
-.portfolio-city-row{{margin-top:10px;}}
-.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:9px;color:#50637B;}}
-.portfolio-city-label span{{display:flex;align-items:center;gap:6px;min-width:0;}}
-.portfolio-city-label i{{width:8px;height:8px;border-radius:3px;display:inline-block;flex-shrink:0;}}
-.portfolio-city-label b{{color:#17345E;white-space:nowrap;}}
-.portfolio-city-track{{height:7px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:5px;}}
-.portfolio-city-track div{{height:100%;border-radius:8px;}}
-.portfolio-city-value{{font-size:8px;color:#8290A4;text-align:right;margin-top:3px;}}
-.portfolio-composition-total{{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:9px 11px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:10px;}}
-.portfolio-composition-total span{{font-size:9px;color:#71839A;}}
-.portfolio-composition-total b{{font-size:16px;color:#17345E;}}
-@media(max-width:850px){{.portfolio-composition-layout{{grid-template-columns:1fr;}}.portfolio-donut-wrap{{justify-content:center;}}}}
-</style>
 <div class="aportes-portfolio-panel">
-  <div class="aportes-portfolio-title">📊 Composición del patrimonio</div>
-  <div class="aportes-portfolio-sub">Distribución por tipo de activo y ubicación de la finca raíz conjunta</div>
-  <div class="portfolio-composition-layout">
-    <div class="portfolio-chart-card">
-      <div class="portfolio-chart-heading">Composición por tipo de activo</div>
-      <div class="portfolio-donut-wrap">
-        <div class="portfolio-donut"><div class="portfolio-donut-center"><b>{dinero_corto(valor_portafolio_valorado)}</b><span>Valor total</span></div></div>
-        <div class="portfolio-legend">
-          <div class="portfolio-legend-item"><i style="background:#2298DE"></i><div><div class="portfolio-legend-name">Finca Raíz</div><div class="portfolio-legend-value">{dinero_corto(valor_finca_portafolio)}</div><div class="portfolio-legend-pct">{pct_finca_port:.1f}%</div></div></div>
-          <div class="portfolio-legend-item"><i style="background:#FF3158"></i><div><div class="portfolio-legend-name">Comercio</div><div class="portfolio-legend-value">{dinero_corto(valor_comercio)}</div><div class="portfolio-legend-pct">{pct_comercio_port:.1f}%</div></div></div>
-          <div class="portfolio-legend-item"><i style="background:#08AE98"></i><div><div class="portfolio-legend-name">Vehículos</div><div class="portfolio-legend-value">{dinero_corto(valor_vehiculos)}</div><div class="portfolio-legend-pct">{pct_vehiculos_port:.1f}%</div></div></div>
+
+    <div class="aportes-portfolio-title">
+        📊 Composición de los activos
+    </div>
+
+    <div class="aportes-portfolio-sub">
+        Composición de los activos que forman el patrimonio neto
+    </div>
+
+    <div class="aportes-portfolio-grid">
+
+        <div class="aportes-portfolio-item finca">
+
+            <div class="aportes-portfolio-label">
+                🏠 Finca Raíz
+            </div>
+
+            <div class="aportes-portfolio-caption">
+                Finca Raíz conjunta
+            </div>
+
+            <div class="aportes-portfolio-value">
+                {dinero_corto(valor_finca_portafolio)}
+            </div>
+
+            <div class="aportes-portfolio-pct">
+                {pct_finca_port:.1f}% del patrimonio principal
+            </div>
+
         </div>
-      </div>
+
+        <div class="aportes-portfolio-item comercio">
+
+            <div class="aportes-portfolio-label">
+                🏪 Comercio
+            </div>
+
+            <div class="aportes-portfolio-caption">
+                RIE + Restaurante RIE
+            </div>
+
+            <div class="aportes-portfolio-value">
+                {dinero_corto(valor_comercio)}
+            </div>
+
+            <div class="aportes-portfolio-pct">
+                {pct_comercio_port:.1f}% del patrimonio principal
+            </div>
+
+        </div>
+
+        <div class="aportes-portfolio-item vehiculos">
+
+            <div class="aportes-portfolio-label">
+                🚗 Vehículos
+            </div>
+
+            <div class="aportes-portfolio-caption">
+                Activos muebles
+            </div>
+
+            <div class="aportes-portfolio-value">
+                {dinero_corto(valor_vehiculos)}
+            </div>
+
+            <div class="aportes-portfolio-pct">
+                {pct_vehiculos_port:.1f}% del patrimonio principal
+            </div>
+
+        </div>
+
     </div>
-    <div class="portfolio-chart-card">
-      <div class="portfolio-chart-heading">Finca raíz por ciudad</div>
-      {filas_ciudad if filas_ciudad else '<div style="font-size:9px;color:#8290A4;padding:20px 0;">Sin datos de ciudad disponibles.</div>'}
+
+    <div style="margin-top:8px;padding:7px 9px;border:1px dashed #DCE5EE;border-radius:9px;background:#FAFBFD;font-size:8px;color:#667A92;">
+        🏠 <b style="color:#17345E;">Finca Raíz adicional:</b>
+        {dinero_corto(valor_finca_adicional_portafolio)}
+        <span style="color:#8A98AA;">· fuera del patrimonio neto principal</span>
     </div>
-  </div>
+
 </div>
 """)
-        with bottom_cols[1]:
 
             # --------------------------------------------------------
-            # DETALLE ÚNICO: FINCA RAÍZ CONJUNTA + ACTIVOS ADICIONALES
-            # Los adicionales se agregan al final de la misma tabla,
-            # con una fila separadora y sin porcentaje conjunto.
+            # GRÁFICO DE ACTIVOS ADICIONALES
+            # Debajo del panel principal, para equilibrar visualmente
+            # la altura de la columna izquierda con la tabla derecha.
+            # Se muestran por activo, sin separar por socio.
             # --------------------------------------------------------
-
-            adicionales_tabla = pd.DataFrame(
-                columns=[
-                    "ID_Activo", "Nombre_Entidad", "Ciudad",
-                    "Valor_Activo", "Deuda", "Patrimonio_Neto"
-                ]
-            )
-
             if not activos_finca_adicional.empty:
-                adicionales_tabla = (
+                activos_adicionales_grafico = (
                     activos_finca_adicional
                     .groupby(
                         ["ID_Activo", "Nombre_Entidad", "Ciudad"],
@@ -6442,73 +6401,264 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                     )["Valor_Mercado_Socio"]
                     .sum()
                     .rename(columns={"Valor_Mercado_Socio": "Valor_Activo"})
+                    .sort_values("Valor_Activo", ascending=False)
+                    .reset_index(drop=True)
                 )
 
-                if not creditos_prorrateados.empty:
-                    deuda_individual_tabla = (
-                        creditos_prorrateados[
-                            ~creditos_prorrateados["Es_Principal"]
-                        ]
-                        .groupby("ID_Activo", as_index=False)["Saldo_Actual_Prorrateado"]
-                        .sum()
-                        .rename(columns={"Saldo_Actual_Prorrateado": "Deuda"})
+                max_adicional = float(
+                    activos_adicionales_grafico["Valor_Activo"].max()
+                ) if not activos_adicionales_grafico.empty else 0
+
+                barras_adicionales_html = ""
+                colores_adicionales = ["#299FE3", "#08B89A", "#8061E8", "#FF456B", "#E8AC3D", "#5DA7F4"]
+
+                for i, activo in activos_adicionales_grafico.iterrows():
+                    valor_activo = float(activo["Valor_Activo"] or 0)
+                    ancho_barra = (
+                        valor_activo / max_adicional * 100
+                        if max_adicional > 0 else 0
                     )
-                    adicionales_tabla = adicionales_tabla.merge(
-                        deuda_individual_tabla, on="ID_Activo", how="left"
-                    )
-                else:
-                    adicionales_tabla["Deuda"] = 0
+                    color_barra = colores_adicionales[i % len(colores_adicionales)]
+                    nombre_activo = escape_html(str(activo["Nombre_Entidad"]))
 
-                adicionales_tabla["Deuda"] = pd.to_numeric(
-                    adicionales_tabla["Deuda"], errors="coerce"
-                ).fillna(0)
-                adicionales_tabla["Patrimonio_Neto"] = (
-                    adicionales_tabla["Valor_Activo"] - adicionales_tabla["Deuda"]
-                )
-                adicionales_tabla = adicionales_tabla.sort_values(
-                    "Valor_Activo", ascending=False
-                )
+                    barras_adicionales_html += f"""
+                    <div style="display:grid;grid-template-columns:120px minmax(60px,1fr) 76px;gap:10px;align-items:center;margin:10px 0;">
+                        <div style="font-size:10px;font-weight:750;color:#17345E;line-height:1.25;">{nombre_activo}</div>
+                        <div style="height:13px;background:#EDF2F7;border-radius:99px;overflow:hidden;">
+                            <div style="height:100%;width:{ancho_barra:.2f}%;background:{color_barra};border-radius:99px;"></div>
+                        </div>
+                        <div style="font-size:10px;font-weight:850;color:#17345E;text-align:right;white-space:nowrap;">{dinero_corto(valor_activo)}</div>
+                    </div>
+                    """
 
-            valor_adicional_tabla = (
-                float(adicionales_tabla["Valor_Activo"].sum())
-                if not adicionales_tabla.empty else 0
-            )
-            deuda_adicional_tabla = (
-                float(adicionales_tabla["Deuda"].sum())
-                if not adicionales_tabla.empty else 0
-            )
-            neto_adicional_tabla = (
-                float(adicionales_tabla["Patrimonio_Neto"].sum())
-                if not adicionales_tabla.empty else 0
-            )
+                grafico_adicional_html = f"""
+<div style="margin-top:10px;background:#FFFFFF;border:1px solid #DCE5EE;border-radius:14px;padding:13px 15px 12px;box-sizing:border-box;">
+    <div style="font-size:13px;font-weight:900;color:#17345E;">🏢 Activos adicionales</div>
+    <div style="font-size:9px;color:#667A92;margin-top:4px;margin-bottom:9px;">Valor de los inmuebles fuera del patrimonio conjunto</div>
+    {barras_adicionales_html}
+</div>
+"""
+                render_aportes_html(grafico_adicional_html)
+            else:
+                render_aportes_html("""
+<div style="margin-top:10px;background:#FFFFFF;border:1px solid #DCE5EE;border-radius:14px;padding:13px 15px;box-sizing:border-box;">
+    <div style="font-size:13px;font-weight:900;color:#17345E;">🏢 Activos adicionales</div>
+    <div style="font-size:9px;color:#667A92;margin-top:4px;">No hay activos adicionales para mostrar.</div>
+</div>
+""")
 
-            tabla_finca = f"""
+        with bottom_cols[1]:
+
+            if not finca_resumen.empty:
+
+                tabla_finca = f"""
 <div class="aportes-finca-summary-panel compact">
+
     <div class="aportes-finca-summary-header compact">
+
         <div>
+
             <div class="aportes-finca-summary-title compact">
                 🏠 Detalle de Finca Raíz conjunta
             </div>
+
             <div class="aportes-finca-summary-sub compact">
-                Activos conjuntos y adicionales · valor, deuda y patrimonio neto por inmueble
+                Valor, deuda y patrimonio neto por predio
             </div>
+
         </div>
+
         <div class="aportes-finca-summary-total compact">
+
             <div class="aportes-finca-summary-total-label compact">
-                Valor conjunto
+                Valor total
             </div>
+
             <div class="aportes-finca-summary-total-value compact">
                 {dinero_corto(valor_finca_total)}
             </div>
+
         </div>
+
     </div>
 
     <table class="aportes-finca-table compact">
+
         <thead>
+
             <tr>
-                <th>Predio / activo</th>
+                <th>Predio</th>
                 <th>Ciudad</th>
                 <th>% conjunto</th>
+                <th>Valor</th>
+                <th>Deuda</th>
+                <th>Neto</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+"""
+
+                for _, row in finca_resumen.iterrows():
+
+                    tabla_finca += f"""
+<tr>
+
+    <td>
+        {escape_html(row["Nombre_Entidad"])}
+    </td>
+
+    <td>
+        {escape_html(row["Ciudad"])}
+    </td>
+
+    <td>
+        <span class="aportes-finca-pct compact">
+            {float(row["Pct_Conjunto"]):.1f}%
+        </span>
+    </td>
+
+    <td>
+        <span class="aportes-finca-value compact">
+            {dinero_corto(float(row["Valor_Minimo"]))}
+        </span>
+    </td>
+
+    <td>
+        <span class="aportes-finca-debt compact">
+            -{dinero_corto(float(row["Deuda_Actual"]))}
+        </span>
+    </td>
+
+    <td>
+        <span class="aportes-finca-value compact">
+            {dinero_corto(float(row["Patrimonio_Neto"]))}
+        </span>
+    </td>
+
+</tr>
+"""
+
+                tabla_finca += """
+        </tbody>
+    </table>
+
+</div>
+"""
+
+                render_aportes_html(tabla_finca)
+
+            else:
+
+                render_aportes_html("""
+<div class="aportes-finca-summary-panel compact">
+
+    <div class="aportes-finca-summary-title compact">
+        🏠 Detalle de Finca Raíz conjunta
+    </div>
+
+    <div class="aportes-finca-summary-sub compact">
+        Sin registros disponibles.
+    </div>
+
+</div>
+""")
+
+        # --------------------------------------------------------
+        # FINCA RAÍZ ADICIONAL + DEUDA INDIVIDUAL
+        # --------------------------------------------------------
+        # Aquí salen únicamente los activos de Finca Raíz que quedan
+        # fuera del patrimonio principal. Comercio y Vehículos ya están
+        # integrados en "Activos" y no se repiten aquí.
+        if not activos_finca_adicional.empty:
+
+            adicionales_tabla = (
+                activos_finca_adicional
+                .groupby(
+                    [
+                        "ID_Activo",
+                        "Nombre_Entidad",
+                        "Ciudad",
+                        "Nombre_Socio",
+                    ],
+                    as_index=False
+                )["Valor_Mercado_Socio"]
+                .sum()
+                .rename(
+                    columns={
+                        "Valor_Mercado_Socio":
+                            "Valor_Activo"
+                    }
+                )
+            )
+
+            if not creditos_prorrateados.empty:
+                deuda_individual_tabla = (
+                    creditos_prorrateados[
+                        ~creditos_prorrateados["Es_Principal"]
+                    ]
+                    .groupby(
+                        [
+                            "ID_Activo",
+                            "Nombre_Socio",
+                        ],
+                        as_index=False
+                    )["Saldo_Actual_Prorrateado"]
+                    .sum()
+                    .rename(
+                        columns={
+                            "Saldo_Actual_Prorrateado":
+                                "Deuda"
+                        }
+                    )
+                )
+
+                adicionales_tabla = adicionales_tabla.merge(
+                    deuda_individual_tabla,
+                    on=[
+                        "ID_Activo",
+                        "Nombre_Socio"
+                    ],
+                    how="left"
+                )
+            else:
+                adicionales_tabla["Deuda"] = 0
+
+            adicionales_tabla["Deuda"] = (
+                pd.to_numeric(
+                    adicionales_tabla["Deuda"],
+                    errors="coerce"
+                )
+                .fillna(0)
+            )
+
+            adicionales_tabla["Patrimonio_Neto"] = (
+                adicionales_tabla["Valor_Activo"]
+                - adicionales_tabla["Deuda"]
+            )
+
+            adicionales_tabla = adicionales_tabla.sort_values(
+                [
+                    "Nombre_Socio",
+                    "Valor_Activo"
+                ],
+                ascending=[True, False]
+            )
+
+            adicional_table_html = """
+<div class="aportes-otros-panel">
+    <div class="aportes-card-title2">🏠 Finca Raíz adicional y deuda</div>
+    <div class="aportes-card-sub2">
+        Activos inmobiliarios fuera del patrimonio neto principal · deuda atribuible a cada socio
+    </div>
+
+    <table class="aportes-table2">
+        <thead>
+            <tr>
+                <th>Activo</th>
+                <th>Socio</th>
+                <th>Ciudad</th>
                 <th>Valor</th>
                 <th>Deuda</th>
                 <th>Neto</th>
@@ -6517,50 +6667,1797 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
         <tbody>
 """
 
-            if not finca_resumen.empty:
-                for _, row in finca_resumen.iterrows():
-                    tabla_finca += f"""
-            <tr>
-                <td>{escape_html(row["Nombre_Entidad"])}</td>
-                <td>{escape_html(row["Ciudad"])}</td>
-                <td><span class="aportes-finca-pct compact">{float(row["Pct_Conjunto"]):.1f}%</span></td>
-                <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Valor_Minimo"]))}</span></td>
-                <td><span class="aportes-finca-debt compact">-{dinero_corto(float(row["Deuda_Actual"]))}</span></td>
-                <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Patrimonio_Neto"]))}</span></td>
-            </tr>
-"""
+            for _, row in adicionales_tabla.iterrows():
 
-            if not adicionales_tabla.empty:
-                tabla_finca += """
-            <tr>
-                <td colspan="6" style="background:#F1F5F9;color:#17345E;font-weight:800;padding:10px 12px;">
-                    Finca Raíz adicional
-                </td>
-            </tr>
-"""
-                for _, row in adicionales_tabla.iterrows():
-                    tabla_finca += f"""
+                adicional_table_html += f"""
             <tr>
                 <td>{escape_html(row["Nombre_Entidad"])}</td>
+                <td>{escape_html(row["Nombre_Socio"])}</td>
                 <td>{escape_html(row["Ciudad"])}</td>
-                <td><span style="color:#8290A4;">—</span></td>
                 <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Valor_Activo"]))}</span></td>
                 <td><span class="aportes-finca-debt compact">-{dinero_corto(float(row["Deuda"]))}</span></td>
                 <td><span class="aportes-finca-value compact">{dinero_corto(float(row["Patrimonio_Neto"]))}</span></td>
             </tr>
 """
 
-            if finca_resumen.empty and adicionales_tabla.empty:
-                tabla_finca += """
-            <tr><td colspan="6">Sin registros disponibles.</td></tr>
-"""
-
-            tabla_finca += """
+            adicional_table_html += """
         </tbody>
     </table>
+
     <div class="aportes-note2">
-        Los activos adicionales se presentan dentro de la misma tabla, separados visualmente de los activos conjuntos. En los adicionales no se muestra porcentaje conjunto.
+        Los activos y deudas individuales se mantienen fuera del cálculo
+        principal del patrimonio conjunto de los tres socios.
     </div>
 </div>
 """
-            render_aportes_html(tabla_finca)
+
+            render_aportes_html(adicional_table_html)
+
+        # --------------------------------------------------------
+        # BLOQUE INFERIOR: NEGOCIOS Y OTROS ACTIVOS
+        # --------------------------------------------------------
+        no_inmo = cargar_negocios_y_otros()
+        if not no_inmo.empty:
+            matriz_no_inmo = (
+                no_inmo
+                .pivot_table(
+                    index=["Nombre", "Sector", "Ciudad"],
+                    columns="Nombre_Socio",
+                    values="Participaci__n",
+                    aggfunc="sum",
+                    fill_value=0
+                )
+                .reset_index()
+            )
+
+            cols_soc = [
+                n for n in [
+                    "Diego Camacho",
+                    "William Camacho",
+                    "Andres Camacho",
+                    "Andrés Camacho",
+                ]
+                if n in matriz_no_inmo.columns
+            ]
+
+            table_html = """
+<div class="aportes-otros-panel">
+    <div class="aportes-card-title2">🏪 Negocios y otros activos</div>
+    <div class="aportes-card-sub2">Activos no inmobiliarios · participación de cada socio · valoración pendiente</div>
+    <table class="aportes-table2">
+        <thead>
+            <tr>
+                <th>Activo</th>
+                <th>Tipo</th>
+                <th>Ciudad</th>
+"""
+            for n in cols_soc:
+                corto = "Diego" if "Diego" in n else "William" if "William" in n else "Andrés"
+                table_html += f"<th>{corto}</th>"
+
+            table_html += """
+                <th>Valor</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+"""
+
+            for _, row in matriz_no_inmo.iterrows():
+                tipo = str(row.get("Sector", "Otros") or "Otros").strip()
+                table_html += "<tr>"
+                table_html += f"<td>{escape_html(row.get('Nombre', ''))}</td>"
+                table_html += f"<td><span class='aportes-badge'>{escape_html(tipo)}</span></td>"
+                table_html += f"<td>{escape_html(row.get('Ciudad', ''))}</td>"
+
+                for n in cols_soc:
+                    raw = float(row.get(n, 0) or 0)
+                    pct = raw if raw > 1.01 else raw * 100
+                    table_html += f"<td>{'-' if pct == 0 else f'{pct:.1f}%'}</td>"
+
+                table_html += "<td>-</td>"
+                table_html += "<td><span class='aportes-badge'>Por valorar</span></td>"
+                table_html += "</tr>"
+
+            table_html += """
+        </tbody>
+    </table>
+    <div class="aportes-note2"><b>Nota:</b> El patrimonio neto principal está compuesto por Finca Raíz conjunta + Comercio + Vehículos, menos la deuda asociada a esos activos. La Finca Raíz adicional queda fuera del patrimonio neto principal y se presenta por separado.</div>
+</div>
+"""
+            render_aportes_html(table_html)
+        else:
+            render_aportes_html("""
+<div class="aportes-otros-panel">
+    <div class="aportes-card-title2">🏪 Negocios y otros activos</div>
+    <div class="aportes-card-sub2">No hay participaciones no inmobiliarias disponibles todavía.</div>
+</div>
+""")
+
+
+
+if st.session_state.vista_airbnb == "Propiedades":
+
+
+    # ========================================================
+    # TARJETAS
+    # ========================================================
+
+    cards_html = '<div class="properties-grid">'
+
+    cards_html += tarjeta_portafolio()
+
+    for _, row in resumen.iterrows():
+
+        cards_html += tarjeta_propiedad(row)
+
+    cards_html += "</div>"
+
+    cards_html = "\n".join(
+        linea.strip()
+        for linea in cards_html.splitlines()
+    )
+
+    st.markdown(
+        cards_html,
+        unsafe_allow_html=True
+    )
+
+    # ========================================================
+    # TABLA DE ANÁLISIS DE INVERSIÓN
+    # ========================================================
+
+    tabla = inversiones.rename(
+        columns={
+            "Activo_Proyecto": "Nombre_Propiedad"
+        }
+    ).copy()
+
+    # Estado del activo
+    tabla["Estado"] = tabla["Nombre_Propiedad"].apply(
+        lambda x: "En desarrollo"
+        if str(x).strip().lower() == "iwani"
+        else "Operando"
+    )
+
+    # Filtros actuales
+    if propiedad != "Todas":
+        tabla = tabla[
+            tabla["Nombre_Propiedad"] == propiedad
+        ]
+
+    if ciudad != "Todas":
+        tabla = tabla[
+            tabla["Ciudad"] == ciudad
+        ]
+
+    # ========================================================
+    # HISTÓRICO FINANCIERO DESDE EL INICIO DE OPERACIÓN
+    # ========================================================
+    # La primera fecha registrada en los movimientos Airbnb
+    # se toma como inicio de operación de cada propiedad.
+    historico = (
+        df
+        .groupby("Nombre_Propiedad", as_index=False)
+        .agg(
+            Fecha_Inicio=("Fecha", "min"),
+            Ingresos_Historicos=("Ingreso", "sum"),
+            Gastos_Historicos=("Gasto", "sum")
+        )
+    )
+
+    # ========================================================
+    # CORRECCIÓN DE INGRESOS: TORRE ACQUA + TEMPUS 49
+    # ========================================================
+    # Los movimientos contables tienen el ingreso combinado de
+    # ambas propiedades distribuido de forma incorrecta.
+    # Airbnb_Prorrateado establece la proporción real:
+    #   Torre Acqua = 70.322145948%
+    #   Tempus 49   = 29.677854052%
+    #
+    # Se conserva exactamente el ingreso histórico combinado
+    # y solamente se redistribuye entre las dos propiedades.
+
+    propiedades_corregidas = [
+        "Torre Acqua",
+        "Tempus 49"
+    ]
+
+    ingreso_combinado = historico.loc[
+        historico["Nombre_Propiedad"].isin(
+            propiedades_corregidas
+        ),
+        "Ingresos_Historicos"
+    ].sum()
+
+    proporcion_acqua = 0.703221459479914
+    proporcion_tempus = 0.296778540520086
+
+    historico.loc[
+        historico["Nombre_Propiedad"] == "Torre Acqua",
+        "Ingresos_Historicos"
+    ] = (
+        ingreso_combinado
+        * proporcion_acqua
+    )
+
+    historico.loc[
+        historico["Nombre_Propiedad"] == "Tempus 49",
+        "Ingresos_Historicos"
+    ] = (
+        ingreso_combinado
+        * proporcion_tempus
+    )
+
+    # ========================================================
+    # AMORTIZACIÓN HISTÓRICA
+    # ========================================================
+    # Los pagos hipotecarios reales permanecen intactos.
+    # Solamente se separa el capital estimado para que no
+    # permanezca como gasto económico.
+    historico = historico.merge(
+        amortizacion_historica[
+            [
+                "Propiedad",
+                "Pagos_Hipotecarios_Reales",
+                "Interes_Historico_Estimado",
+                "Seguro_Historico_Estimado",
+                "Capital_Historico_Estimado",
+                "Cuotas_Conciliadas"
+            ]
+        ],
+        left_on="Nombre_Propiedad",
+        right_on="Propiedad",
+        how="left"
+    ).drop(
+        columns=["Propiedad"],
+        errors="ignore"
+    )
+
+    for col in [
+        "Pagos_Hipotecarios_Reales",
+        "Interes_Historico_Estimado",
+        "Seguro_Historico_Estimado",
+        "Capital_Historico_Estimado",
+        "Cuotas_Conciliadas"
+    ]:
+        historico[col] = (
+            historico[col]
+            .fillna(0)
+        )
+
+    # Capital hipotecario no es gasto económico:
+    # reduce deuda y aumenta patrimonio.
+    historico["Gastos_Historicos_Ajustados"] = (
+        historico["Gastos_Historicos"]
+        - historico["Capital_Historico_Estimado"]
+    ).clip(lower=0)
+
+    historico["Flujo_Historico"] = (
+        historico["Ingresos_Historicos"]
+        - historico["Gastos_Historicos_Ajustados"]
+    )
+
+    hoy_ts = pd.Timestamp(hoy)
+    historico["Meses_Operados"] = (
+        (hoy_ts - historico["Fecha_Inicio"]).dt.days
+        / 30.4375
+    ).clip(lower=1)
+
+    historico["Ingreso_Mensual_Promedio"] = (
+        historico["Ingresos_Historicos"]
+        / historico["Meses_Operados"]
+    )
+
+    historico["Flujo_Mensual_Promedio"] = (
+        historico["Flujo_Historico"]
+        / historico["Meses_Operados"]
+    )
+
+    historico["Flujo_Anualizado"] = (
+        historico["Flujo_Mensual_Promedio"] * 12
+    )
+
+    historico = historico.merge(
+        inversiones[["Activo_Proyecto", "Inversion"]],
+        left_on="Nombre_Propiedad",
+        right_on="Activo_Proyecto",
+        how="left"
+    ).drop(columns=["Activo_Proyecto"])
+
+    historico["ROI_Acumulado"] = (
+        historico["Flujo_Historico"]
+        / historico["Inversion"]
+        * 100
+    ).replace(
+        [float("inf"), -float("inf")],
+        pd.NA
+    )
+
+    historico["Yield_Anualizado"] = (
+        historico["Flujo_Anualizado"]
+        / historico["Inversion"]
+        * 100
+    ).replace(
+        [float("inf"), -float("inf")],
+        pd.NA
+    )
+
+    tabla = tabla.drop(
+        columns=[
+            "Ingresos", "Gastos", "Flujo", "Rentabilidad",
+            "Ocupacion", "Reservas", "Noches_Reservadas"
+        ],
+        errors="ignore"
+    )
+
+    # ========================================================
+    # PROMEDIO MENSUAL DEL AÑO DEL FILTRO - YTD
+    # ========================================================
+    # Se conservan DOS indicadores:
+    #
+    # 1. Ingreso prom./mes
+    #    Ingreso bruto promedio del año.
+    #
+    # 2. Airbnb comparable / mes
+    #    Ingreso bruto promedio
+    #    - aseos
+    #    - internet
+    #    - servicios públicos
+    #
+    # NO se descuenta administración/inmobiliaria porque ese costo
+    # también puede existir en el modelo de renta tradicional.
+    #
+    # Para el año actual se usan los meses completos cerrados.
+    # Ejemplo: octubre 2026 -> enero-septiembre / 9.
+    #
+    # Para años cerrados -> enero-diciembre / 12.
+
+    anio_promedio = int(pd.Timestamp(fecha_fin).year)
+
+    if anio_promedio == int(hoy.year):
+
+        fecha_fin_ts = pd.Timestamp(fecha_fin)
+
+        # Último mes completo disponible al día de hoy.
+        ultimo_mes_cerrado_hoy = (
+            pd.Timestamp(hoy.year, hoy.month, 1)
+            - pd.offsets.MonthEnd(1)
+        )
+
+        # El filtro nunca puede usar meses futuros ni un mes
+        # corriente parcialmente cerrado.
+        fecha_corte_promedio = min(
+            fecha_fin_ts,
+            ultimo_mes_cerrado_hoy
+        )
+
+        if fecha_corte_promedio.year != anio_promedio:
+            fecha_corte_promedio = pd.Timestamp(
+                anio_promedio,
+                1,
+                31
+            )
+            meses_promedio_anual = 1
+        else:
+            meses_promedio_anual = int(
+                fecha_corte_promedio.month
+            )
+
+    else:
+
+        # Para un año cerrado se conserva el promedio anual completo.
+        meses_promedio_anual = 12
+        fecha_corte_promedio = pd.Timestamp(
+            anio_promedio,
+            12,
+            31
+        )
+
+    df_anual_promedio = df[
+        (df["Fecha"].dt.year == anio_promedio)
+        & (
+            df["Fecha"]
+            <= fecha_corte_promedio
+        )
+    ].copy()
+
+    # --------------------------------------------------------
+    # PREPARAR CAMPOS PARA CLASIFICAR LOS GASTOS
+    # --------------------------------------------------------
+    # Se revisan Subcategoría + Detalle + Cuenta para no perder
+    # proveedores o conceptos que no contengan literalmente
+    # la palabra "internet".
+    for col in [
+        "Nombre_Subcategoria",
+        "Detalle",
+        "Nombre_Cuenta"
+    ]:
+        if col not in df_anual_promedio.columns:
+            df_anual_promedio[col] = ""
+
+        df_anual_promedio[col] = (
+            df_anual_promedio[col]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+        )
+
+    df_anual_promedio["_Texto_Gasto"] = (
+        df_anual_promedio["Nombre_Subcategoria"]
+        + " "
+        + df_anual_promedio["Detalle"]
+        + " "
+        + df_anual_promedio["Nombre_Cuenta"]
+    ).str.lower()
+
+    # --------------------------------------------------------
+    # 1. INGRESO BRUTO ANUAL POR PROPIEDAD
+    # --------------------------------------------------------
+    promedio_anual = (
+        df_anual_promedio
+        .groupby(
+            "Nombre_Propiedad",
+            as_index=False
+        )["Ingreso"]
+        .sum()
+        .rename(
+            columns={
+                "Ingreso":
+                    "Ingreso_Anual_YTD"
+            }
+        )
+    )
+
+    # --------------------------------------------------------
+    # 2. CLASIFICACIÓN EXCLUSIVA DE GASTOS COMPARABLES
+    # --------------------------------------------------------
+    # Cada registro entra a UNA SOLA categoría.
+    # Administración/inmobiliaria/comisiones NO se descuentan.
+
+    mascara_no_comparable = (
+        df_anual_promedio["_Texto_Gasto"].str.contains(
+            r"\badministraci[oó]n\b|\binmobiliaria\b|\bcomisi[oó]n\b",
+            regex=True,
+            na=False
+        )
+    )
+
+    gastos_validos = (
+        (df_anual_promedio["Gasto"] > 0)
+        &
+        (~mascara_no_comparable)
+    )
+
+    categoria_gasto = pd.Series(
+        "",
+        index=df_anual_promedio.index,
+        dtype="object"
+    )
+
+    # Aseo / limpieza
+    mascara_aseo = (
+        gastos_validos
+        &
+        df_anual_promedio["_Texto_Gasto"].str.contains(
+            r"\baseo\b|\blimpieza\b|\bcleaning\b",
+            regex=True,
+            na=False
+        )
+    )
+    categoria_gasto.loc[mascara_aseo] = "ASEO"
+
+    # Internet / Wi-Fi
+    mascara_internet = (
+        gastos_validos
+        &
+        (categoria_gasto == "")
+        &
+        df_anual_promedio["_Texto_Gasto"].str.contains(
+            r"\binternet\b|\bwifi\b|\bwi[\s-]?fi\b",
+            regex=True,
+            na=False
+        )
+    )
+    categoria_gasto.loc[mascara_internet] = "INTERNET"
+
+    # Servicios públicos
+    mascara_servicios = (
+        gastos_validos
+        &
+        (categoria_gasto == "")
+        &
+        df_anual_promedio["_Texto_Gasto"].str.contains(
+            (
+                r"\bservicios?\s+p[úu]blicos?\b"
+                r"|\benerg[ií]a\b"
+                r"|\bagua\b"
+                r"|\bacueducto\b"
+                r"|\belectricidad\b"
+                r"|\bluz\b"
+                r"|\bgas\b"
+            ),
+            regex=True,
+            na=False
+        )
+    )
+    categoria_gasto.loc[mascara_servicios] = "SERVICIOS"
+
+    # ESTA COLUMNA ERA LA QUE FALTABA EN LA VERSIÓN ANTERIOR.
+    # El KeyError de tu captura venía exactamente de intentar
+    # usar "_Categoria_Comparable" antes de crearla.
+    df_anual_promedio["_Categoria_Comparable"] = categoria_gasto
+
+    # --------------------------------------------------------
+    # 3. GASTOS COMPARABLES ANUALES
+    # --------------------------------------------------------
+    gastos_comparables = (
+        df_anual_promedio[
+            df_anual_promedio["_Categoria_Comparable"] != ""
+        ]
+        .groupby(
+            [
+                "Nombre_Propiedad",
+                "_Categoria_Comparable"
+            ],
+            as_index=False
+        )["Gasto"]
+        .sum()
+        .pivot(
+            index="Nombre_Propiedad",
+            columns="_Categoria_Comparable",
+            values="Gasto"
+        )
+        .reset_index()
+    )
+
+    for columna in [
+        "ASEO",
+        "INTERNET",
+        "SERVICIOS"
+    ]:
+        if columna not in gastos_comparables.columns:
+            gastos_comparables[columna] = 0
+
+    gastos_comparables = gastos_comparables.rename(
+        columns={
+            "ASEO": "Aseo_Anual_YTD",
+            "INTERNET": "Internet_Anual_YTD",
+            "SERVICIOS": "Servicios_Anual_YTD"
+        }
+    )
+
+    # --------------------------------------------------------
+    # 4. ACQUA + TEMPUS 49
+    # --------------------------------------------------------
+    mask_acqua_tempus = promedio_anual[
+        "Nombre_Propiedad"
+    ].isin(
+        [
+            "Torre Acqua",
+            "Tempus 49"
+        ]
+    )
+
+    ingreso_combinado_anual = (
+        promedio_anual.loc[
+            mask_acqua_tempus,
+            "Ingreso_Anual_YTD"
+        ].sum()
+    )
+
+    proporcion_acqua = 0.703221459479914
+    proporcion_tempus = 0.296778540520086
+
+    promedio_anual.loc[
+        promedio_anual["Nombre_Propiedad"] == "Torre Acqua",
+        "Ingreso_Anual_YTD"
+    ] = ingreso_combinado_anual * proporcion_acqua
+
+    promedio_anual.loc[
+        promedio_anual["Nombre_Propiedad"] == "Tempus 49",
+        "Ingreso_Anual_YTD"
+    ] = ingreso_combinado_anual * proporcion_tempus
+
+    # --------------------------------------------------------
+    # 5. PROMEDIO BRUTO MENSUAL
+    # --------------------------------------------------------
+    promedio_anual["Ingreso_Mensual_Medio_Anual"] = (
+        promedio_anual["Ingreso_Anual_YTD"]
+        / meses_promedio_anual
+    )
+
+    # --------------------------------------------------------
+    # 6. CONSOLIDAR PRORRATEOS POR MES
+    # --------------------------------------------------------
+    # Los movimientos están prorrateados por socio.
+    # Por eso un mismo mes puede tener 3 registros de $42k.
+    #
+    # El valor real de ese mes es:
+    #   $42k + $42k + $42k = $126k
+    #
+    # Primero tomamos únicamente los gastos que fueron
+    # clasificados como comparables.
+    df_gastos_clasificados = (
+        df_anual_promedio[
+            df_anual_promedio["_Categoria_Comparable"] != ""
+        ]
+        .copy()
+    )
+
+    # Luego sumamos TODOS los registros de la misma categoría
+    # dentro de cada mes. Los prorrateos del socio se consolidan
+    # antes de calcular el promedio.
+    df_gastos_clasificados["_Mes_Gasto"] = (
+        df_gastos_clasificados["Fecha"]
+        .dt.to_period("M")
+        .astype(str)
+    )
+
+    gastos_mensuales = (
+        df_gastos_clasificados
+        .groupby(
+            [
+                "Nombre_Propiedad",
+                "_Categoria_Comparable",
+                "_Mes_Gasto"
+            ],
+            as_index=False
+        )["Gasto"]
+        .sum()
+    )
+
+    # --------------------------------------------------------
+    # 7. PROMEDIO DE LOS MESES CON INFORMACIÓN
+    # --------------------------------------------------------
+    # Después de consolidar el mes, promediamos SOLO los meses
+    # donde existe al menos un registro.
+    #
+    # Ejemplo Acqua Internet:
+    #   Junio  = 41 + 41 + 41 = 123k
+    #   Julio  = 42 + 42 + 42 = 126k
+    #   Agosto = 43 + 43 + 43 = 129k
+    #   Sept.  = 17k
+    #
+    #   Promedio = (123 + 126 + 129 + 17) / 4
+    #            = 98.75k
+    #
+    # Un mes SIN registro no entra como cero y tampoco como dato.
+
+    gastos_promedio_mensual = (
+        gastos_mensuales
+        .groupby(
+            [
+                "Nombre_Propiedad",
+                "_Categoria_Comparable"
+            ],
+            as_index=False
+        )
+        .agg(
+            Promedio_Mensual=("Gasto", "mean"),
+            Meses_Con_Informacion=("_Mes_Gasto", "nunique")
+        )
+    )
+
+    gastos_promedio_mensual = (
+        gastos_promedio_mensual
+        .pivot(
+            index="Nombre_Propiedad",
+            columns="_Categoria_Comparable",
+            values="Promedio_Mensual"
+        )
+        .reset_index()
+    )
+
+    meses_con_info = (
+        gastos_mensuales
+        .groupby(
+            [
+                "Nombre_Propiedad",
+                "_Categoria_Comparable"
+            ],
+            as_index=False
+        )["_Mes_Gasto"]
+        .nunique()
+        .pivot(
+            index="Nombre_Propiedad",
+            columns="_Categoria_Comparable",
+            values="_Mes_Gasto"
+        )
+        .reset_index()
+    )
+
+    for columna in [
+        "ASEO",
+        "INTERNET",
+        "SERVICIOS"
+    ]:
+        if columna not in gastos_promedio_mensual.columns:
+            gastos_promedio_mensual[columna] = pd.NA
+
+        if columna not in meses_con_info.columns:
+            meses_con_info[columna] = 0
+
+    gastos_promedio_mensual = gastos_promedio_mensual.rename(
+        columns={
+            "ASEO": "Aseo_Mensual_Medio_Anual",
+            "INTERNET": "Internet_Mensual_Medio_Anual",
+            "SERVICIOS": "Servicios_Mensual_Medio_Anual"
+        }
+    )
+
+    meses_con_info = meses_con_info.rename(
+        columns={
+            "ASEO": "Aseo_Meses_Con_Informacion",
+            "INTERNET": "Internet_Meses_Con_Informacion",
+            "SERVICIOS": "Servicios_Meses_Con_Informacion"
+        }
+    )
+
+    promedio_anual = promedio_anual.merge(
+        gastos_promedio_mensual[
+            [
+                "Nombre_Propiedad",
+                "Aseo_Mensual_Medio_Anual",
+                "Internet_Mensual_Medio_Anual",
+                "Servicios_Mensual_Medio_Anual"
+            ]
+        ],
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    promedio_anual = promedio_anual.merge(
+        meses_con_info[
+            [
+                "Nombre_Propiedad",
+                "Aseo_Meses_Con_Informacion",
+                "Internet_Meses_Con_Informacion",
+                "Servicios_Meses_Con_Informacion"
+            ]
+        ],
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    for columna in [
+        "Aseo_Mensual_Medio_Anual",
+        "Internet_Mensual_Medio_Anual",
+        "Servicios_Mensual_Medio_Anual"
+    ]:
+        promedio_anual[columna] = pd.to_numeric(
+            promedio_anual[columna],
+            errors="coerce"
+        )
+
+    for columna in [
+        "Aseo_Meses_Con_Informacion",
+        "Internet_Meses_Con_Informacion",
+        "Servicios_Meses_Con_Informacion"
+    ]:
+        promedio_anual[columna] = pd.to_numeric(
+            promedio_anual[columna],
+            errors="coerce"
+        ).fillna(0).astype(int)
+
+    # --------------------------------------------------------
+    # 8. AIRBNB COMPARABLE
+    # --------------------------------------------------------
+    # Si una propiedad no tiene registros de una categoría,
+    # esa categoría vale 0 para el cálculo.
+    for columna in [
+        "Aseo_Mensual_Medio_Anual",
+        "Internet_Mensual_Medio_Anual",
+        "Servicios_Mensual_Medio_Anual"
+    ]:
+        promedio_anual[columna] = (
+            pd.to_numeric(
+                promedio_anual[columna],
+                errors="coerce"
+            ).fillna(0)
+        )
+
+    promedio_anual["Airbnb_Comparable_Mensual"] = (
+        promedio_anual["Ingreso_Mensual_Medio_Anual"]
+        - promedio_anual["Aseo_Mensual_Medio_Anual"]
+        - promedio_anual["Internet_Mensual_Medio_Anual"]
+        - promedio_anual["Servicios_Mensual_Medio_Anual"]
+    )
+
+    # Limpieza de columnas auxiliares.
+    df_anual_promedio = df_anual_promedio.drop(
+        columns=[
+            "_Texto_Gasto"
+        ],
+        errors="ignore"
+    )
+
+    # Unir el promedio anual/YTD a la tabla principal.
+    # Sin este merge, el HTML no encuentra la columna
+    # `Ingreso_Mensual_Medio_Anual`.
+    tabla = tabla.merge(
+        promedio_anual[
+            [
+                "Nombre_Propiedad",
+                "Ingreso_Anual_YTD",
+                "Ingreso_Mensual_Medio_Anual",
+                "Airbnb_Comparable_Mensual"
+            ]
+        ],
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    tabla = tabla.merge(
+        historico[
+            [
+                "Nombre_Propiedad",
+                "Fecha_Inicio",
+                "Ingresos_Historicos",
+                "Gastos_Historicos",
+                "Gastos_Historicos_Ajustados",
+                "Capital_Historico_Estimado",
+                "Interes_Historico_Estimado",
+                "Seguro_Historico_Estimado",
+                "Flujo_Historico",
+                "Meses_Operados",
+                "Ingreso_Mensual_Promedio",
+                "Flujo_Mensual_Promedio",
+                "Flujo_Anualizado",
+                "ROI_Acumulado",
+                "Yield_Anualizado"
+            ]
+        ],
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    # ========================================================
+    # VALOR ACTUAL / EQUIPAMIENTO / PATRIMONIO
+    # ========================================================
+    tabla = tabla.merge(
+        creditos[
+            [
+                "Propiedad",
+                "Saldo_Actual",
+                "Saldo_Usado",
+                "Valor_Actual",
+                "Equipamiento",
+                "Valor_Total_Actual",
+                "Patrimonio_Actual",
+                "Costo_Mensual_Total"
+            ]
+        ],
+        left_on="Nombre_Propiedad",
+        right_on="Propiedad",
+        how="left"
+    ).drop(columns=["Propiedad"], errors="ignore")
+
+    # ========================================================
+    # CAPITAL PROPIO / CDT
+    # ========================================================
+    # Se incorpora el capital propio utilizado como base del
+    # benchmark CDT. No se mezcla con la inversión total.
+    tabla = tabla.merge(
+        capital_cdt[[
+            "Nombre_Propiedad",
+            "Capital_Propio",
+            "CDT_Promedio"
+        ]],
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    # ========================================================
+    # RETORNO ECONÓMICO TOTAL
+    # ========================================================
+    # Combina el flujo histórico generado por Airbnb con el
+    # valor económico actual del activo.
+
+    tabla["Valorizacion_Actual"] = (
+        tabla["Valor_Total_Actual"]
+        - tabla["Inversion"]
+    )
+
+    tabla["Ganancia_Economica"] = (
+        tabla["Flujo_Historico"]
+        + tabla["Valorizacion_Actual"]
+    )
+
+    tabla["ROI_Total"] = (
+        tabla["Ganancia_Economica"]
+        / tabla["Inversion"]
+        * 100
+    ).replace([float("inf"), -float("inf")], pd.NA)
+
+    tabla["Retorno_Anualizado_Total"] = (
+        (
+            1 + tabla["ROI_Total"] / 100
+        ) ** (1 / (tabla["Meses_Operados"] / 12))
+        - 1
+    ) * 100
+
+    tabla.loc[
+        tabla["Estado"] == "En desarrollo",
+        [
+            "Valorizacion_Actual",
+            "Ganancia_Economica",
+            "ROI_Total",
+            "Retorno_Anualizado_Total"
+        ]
+    ] = pd.NA
+
+    # Diferencia entre el retorno anualizado del activo y la
+    # tasa promedio histórica de CDT utilizada en el benchmark.
+    # Debe calcularse DESPUÉS de crear Retorno_Anualizado_Total.
+    tabla["Diferencia_vs_CDT"] = (
+        tabla["Retorno_Anualizado_Total"]
+        - tabla["CDT_Promedio"]
+    )
+
+    # ========================================================
+    # ORDEN VISUAL IGUAL AL PORTAFOLIO
+    # ========================================================
+    orden_tabla = {
+        "Torre Acqua": 1,
+        "Torre Evoca": 2,
+        "Torre Ventto": 3,
+        "Lotus": 4,
+        "Santa Marina": 5,
+        "Base Loft": 6,
+        "Tempus 49": 7,
+        "Iwani": 8
+    }
+
+    tabla["Orden"] = (
+        tabla["Nombre_Propiedad"]
+        .map(orden_tabla)
+        .fillna(99)
+    )
+
+    tabla = (
+        tabla
+        .sort_values("Orden")
+        .drop(columns=["Orden"])
+        .reset_index(drop=True)
+    )
+
+    def valor_tabla(valor):
+        if pd.isna(valor):
+            return "-"
+        return dinero_corto(valor)
+
+    def porcentaje_tabla(valor, puntos=False):
+        if pd.isna(valor):
+            return '<span class="investment-muted">-</span>'
+        clase = (
+            "investment-flow-negative"
+            if float(valor) < 0
+            else "investment-flow-positive"
+        )
+        sufijo = " pp" if puntos else "%"
+        return (
+            f'<span class="{clase}">'
+            f'{float(valor):.1f}{sufijo}'
+            f'</span>'
+        )
+
+    # ========================================================
+    # TABLA ÚNICA DE ANÁLISIS INMOBILIARIO
+    # ========================================================
+    # Se consolidan en una sola vista los datos que antes estaban
+    # distribuidos entre tres tablas: inversión, retorno económico
+    # y comparación contra CDT.
+
+    html_tabla = """
+<div class="investment-panel">
+
+<div class="investment-title">
+📊 Análisis inmobiliario
+</div>
+
+<div class="investment-subtitle">
+Capital propio · inversión total · valor actual · deuda · patrimonio neto · ingreso promedio mensual YTD · Airbnb comparable mensual · flujo histórico · retorno anualizado · benchmark CDT
+</div>
+
+<table class="investment-table">
+<thead>
+<tr>
+    <th>Propiedad</th>
+    <th>Capital propio</th>
+    <th>Inversión total</th>
+    <th>Valor actual</th>
+    <th>Deuda actual</th>
+    <th>Patrimonio neto</th>
+    <th>Flujo histórico</th>
+    <th>Ingreso prom./mes</th>
+    <th>Airbnb comparable / mes</th>
+    <th>Flujo prom./mes</th>
+    <th>Retorno anualizado</th>
+    <th>CDT promedio</th>
+    <th>Dif. vs CDT</th>
+</tr>
+</thead>
+<tbody>
+"""
+
+    for _, row in tabla.iterrows():
+
+        flujo = row["Flujo_Historico"]
+
+        if pd.isna(flujo):
+            flujo_html = '<span class="investment-muted">-</span>'
+        else:
+            clase = (
+                "investment-flow-negative"
+                if float(flujo) < 0
+                else "investment-flow-positive"
+            )
+            flujo_html = (
+                f'<span class="{clase}">'
+                f'{dinero_corto(flujo)}'
+                f'</span>'
+            )
+
+        retorno_html = porcentaje_tabla(
+            row["Retorno_Anualizado_Total"]
+        )
+
+        cdt_html = porcentaje_tabla(
+            row["CDT_Promedio"]
+        )
+
+        diferencia_html = porcentaje_tabla(
+            row["Diferencia_vs_CDT"],
+            puntos=True
+        )
+
+        html_tabla += f"""
+<tr>
+    <td>{row["Nombre_Propiedad"]}</td>
+    <td><span class="investment-money">{valor_tabla(row["Capital_Propio"])}</span></td>
+    <td><span class="investment-money">{valor_tabla(row["Inversion"])}</span></td>
+    <td>{valor_tabla(row["Valor_Total_Actual"])}</td>
+    <td>{valor_tabla(row["Saldo_Usado"] if "Saldo_Usado" in row.index else row["Saldo_Actual"])}</td>
+    <td><span class="investment-money">{valor_tabla(row["Patrimonio_Actual"])}</span></td>
+    <td>{flujo_html}</td>
+    <td>{valor_tabla(row["Ingreso_Mensual_Medio_Anual"])}</td>
+    <td>{valor_tabla(row["Airbnb_Comparable_Mensual"])}</td>
+    <td>{valor_tabla(row["Flujo_Mensual_Promedio"])}</td>
+    <td>{retorno_html}</td>
+    <td>{cdt_html}</td>
+    <td>{diferencia_html}</td>
+</tr>
+"""
+
+    html_tabla += """
+</tbody>
+</table>
+
+<div style="
+    margin-top:8px;
+    font-size:8px;
+    color:#8A98AA;
+">
+    Inversión total = capital propio + financiación incluida en la inversión registrada.
+    Patrimonio neto = valor actual del activo + equipamiento − deuda actual.
+    Ingreso prom./mes = ingreso bruto promedio del año seleccionado; los gastos comparables se consolidan por mes y se promedian solo los meses con información.
+    Airbnb comparable = ingreso prom./mes − aseos − internet − servicios públicos.
+    No se descuenta administración/inmobiliaria en esta comparación.
+    CDT promedio = benchmark histórico ponderado por capital y tiempo de exposición.
+    La diferencia se expresa en puntos porcentuales frente al retorno anualizado.
+</div>
+
+</div>
+"""
+
+    html_tabla = "\n".join(
+        linea.strip()
+        for linea in html_tabla.splitlines()
+    ).strip()
+
+    # Mostrar nuevamente la tabla completa de análisis.
+    # Conserva todos los indicadores financieros y deja únicamente
+    # las dos columnas de ingresos importantes:
+    #   - Ingreso prom./mes
+    #   - Airbnb comparable / mes
+    st.markdown(
+        html_tabla,
+        unsafe_allow_html=True
+    )
+
+# ============================================================
+# VISTA ANÁLISIS - RADAR INMOBILIARIO
+# ============================================================
+
+elif st.session_state.vista_airbnb == "Análisis":
+
+    st.markdown(
+        """
+<div class="section-title">
+📊 Radar inmobiliario
+</div>
+
+<div class="section-subtitle">
+Estudio de mercado + comportamiento del activo + posición estratégica del portafolio.
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+    # ============================================================
+    # ============================================================
+    # RADAR EJECUTIVO - DECISIÓN DEL PORTAFOLIO
+    # ============================================================
+
+    estudio = cargar_estudio_mercado_inmobiliario()
+
+    # Defensa adicional: aunque exista caché previo, el Radar nunca
+    # debe mostrar Comercio ni Vehículos.
+    if not estudio.empty:
+        _categoria_radar_render = (
+            estudio["Conjunto_Proyecto"]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .str.normalize("NFKD")
+            .str.encode("ascii", errors="ignore")
+            .str.decode("ascii")
+        )
+        estudio = estudio[
+            _categoria_radar_render.eq("finca raiz")
+        ].copy()
+
+    if not estudio.empty:
+        html_decision = """
+        <div class="radar-decision-panel">
+            <div class="radar-decision-title">🎯 Radar de decisión</div>
+            <div class="radar-decision-subtitle">Resumen ejecutivo: mercado estimado + Airbnb comparable + proyección + liquidez + estatus estratégico.</div>
+            <table class="radar-decision-table">
+                <thead><tr>
+                    <th>Activo</th><th>Valor estimado</th><th>Renta amoblada</th><th>Airbnb comparable / mes</th><th>Proyección</th><th>Venta</th><th>Estatus</th><th>Lectura</th>
+                </tr></thead><tbody>
+        """
+        orden_decision = {
+            "ENT-0001": 1,
+            "ENT-0002": 2,
+            "ENT-0003": 3,
+            "ENT-0004": 4,
+            "ENT-0005": 5,
+            "ENT-0006": 6,
+            "ENT-0007": 7,
+        }
+        estudio["Orden"] = estudio["ID_Activo"].map(orden_decision).fillna(99)
+        estudio = estudio.sort_values(["Orden", "Nombre_Entidad"])
+
+        comparable_radar = calcular_airbnb_comparable_radar(
+            df,
+            fecha_fin
+        )
+
+        estudio = estudio.merge(
+            comparable_radar,
+            left_on="Nombre_Entidad",
+            right_on="Nombre_Propiedad",
+            how="left"
+        )
+
+        for _, row in estudio.iterrows():
+            # La decisión funciona como semáforo estratégico.
+            # Se calcula con los números visibles del Radar y con la
+            # excepción explícita de Tempus por uso familiar.
+            decision_label, lectura_radar = generar_decision_estrategica_radar(
+                row,
+                row.get("Airbnb_Comparable_Mensual", pd.NA)
+            )
+
+            valor_estimado = rango_millones(
+                row["Venta_Min_M"],
+                row["Venta_Max_M"]
+            )
+            renta_amoblada = rango_millones(
+                row["Renta_Amoblada_Min_M"],
+                row["Renta_Amoblada_Max_M"]
+            )
+            proyeccion = (
+                "-"
+                if pd.isna(row["Proyeccion_Zona_5A"])
+                else f"{float(row['Proyeccion_Zona_5A']):.1f}/10"
+            )
+            venta_label = str(
+                row.get("Facilidad_Venta", "-")
+                or "-"
+            )
+
+            # Resolver el color de venta localmente para evitar
+            # dependencias de funciones externas en el bloque Radar.
+            venta_upper = venta_label.upper()
+
+            if "BUENA" in venta_upper:
+                venta_css = "radar-decision-good"
+            elif "MEDIA" in venta_upper:
+                venta_css = "radar-decision-medium"
+            elif "BAJA" in venta_upper:
+                venta_css = "radar-decision-low"
+            else:
+                venta_css = "radar-decision-neutral"
+
+            decision_css = clase_decision(
+                decision_label
+            )
+
+            comparable = row.get(
+                "Airbnb_Comparable_Mensual",
+                pd.NA
+            )
+
+            comparable_txt = (
+                dinero_corto(comparable)
+                if pd.notna(comparable)
+                else "-"
+            )
+
+            html_decision += f"""
+<tr>
+    <td>{escape_html(row.get("Nombre_Entidad", "-"))}</td>
+    <td><span class="radar-decision-value">{valor_estimado}</span></td>
+    <td><span class="radar-decision-value">{renta_amoblada}</span></td>
+    <td><span class="radar-decision-value">{comparable_txt}</span></td>
+    <td><span class="radar-decision-projection">{proyeccion}</span></td>
+    <td><span class="radar-decision-badge {venta_css}">{escape_html(venta_label)}</span></td>
+    <td><span class="radar-decision-badge {decision_css}">{escape_html(decision_label)}</span></td>
+    <td>{escape_html(lectura_radar)}</td>
+</tr>
+"""
+
+        html_decision += """
+                </tbody>
+            </table>
+            <div class="radar-note">
+                <b>Decisión:</b> funciona como semáforo estratégico y se calcula con los números visibles del Radar.
+                La señal económica no se confunde con la decisión patrimonial: Tempus 49, por ejemplo, conserva
+                una señal de revisión económica, pero permanece en <b>MANTENER</b> mientras tenga uso familiar.
+                <b>Airbnb comparable</b> = ingreso bruto promedio YTD menos aseo/limpieza, internet/wifi
+                y servicios públicos identificados; los gastos prorrateados se consolidan primero por mes
+                y luego se promedian solo los meses con información.
+            </div>
+        </div>
+        """
+
+        # IMPORTANTE: quitar toda la indentación antes de enviar
+        # el HTML a Streamlit. De lo contrario, Markdown lo interpreta
+        # como un bloque de código y muestra <tr>, <td>, etc.
+        html_decision = "\n".join(
+            linea.strip()
+            for linea in html_decision.splitlines()
+            if linea.strip()
+        )
+
+        st.markdown(
+            html_decision,
+            unsafe_allow_html=True
+        )
+    else:
+        st.markdown(
+            """
+            <div class="radar-decision-panel">
+                <div class="radar-decision-title">🎯 Radar de decisión</div>
+                <div class="radar-note">No hay datos disponibles en Estudio_Mercado_Inmobiliario.</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # ============================================================
+    # CONCLUSIÓN EJECUTIVA DEL PORTAFOLIO
+    # ============================================================
+    # Esta conclusión usa únicamente los datos disponibles en
+    # Estudio_Mercado_Inmobiliario. No pretende ser una señal automática
+    # de venta ni reemplaza una revisión puntual del mercado externo.
+
+    if not estudio.empty:
+        estudio_conclusion = estudio.copy()
+        estudio_conclusion["Proyeccion_Num"] = pd.to_numeric(
+            estudio_conclusion["Proyeccion_Zona_5A"],
+            errors="coerce"
+        )
+
+        proyeccion_promedio = estudio_conclusion["Proyeccion_Num"].mean()
+        row_max = estudio_conclusion.loc[
+            estudio_conclusion["Proyeccion_Num"].idxmax()
+        ] if estudio_conclusion["Proyeccion_Num"].notna().any() else None
+
+        candidatos_rotacion = estudio_conclusion[
+            estudio_conclusion["Rol_Portafolio"].str.upper().str.contains(
+                "VENDER|ROTAR", regex=True, na=False
+            )
+        ]
+
+        activos_alta_proyeccion = estudio_conclusion[
+            estudio_conclusion["Proyeccion_Num"] >= 8.5
+        ]
+
+        def nombres(df_tmp):
+            if df_tmp.empty:
+                return "ninguno"
+            return ", ".join(df_tmp["Nombre_Entidad"].astype(str).tolist())
+
+        rotacion_txt = nombres(candidatos_rotacion)
+        alta_proj_txt = nombres(activos_alta_proyeccion)
+
+        lectura_mercado = (
+            f"El estudio sitúa la proyección media del portafolio en "
+            f"{proyeccion_promedio:.1f}/10."
+        )
+
+        if row_max is not None:
+            lectura_mercado += (
+                f" {row_max['Nombre_Entidad']} lidera la proyección de zona con "
+                f"{float(row_max['Proyeccion_Num']):.1f}/10."
+            )
+
+        lectura_rotacion = (
+            f"El principal foco de rotación señalado por el estudio es {rotacion_txt}."
+            if not candidatos_rotacion.empty
+            else "El estudio no identifica actualmente un activo con señal explícita de venta/rotación."
+        )
+
+        lectura_oportunidades = (
+            f"Los activos con proyección de zona igual o superior a 8.5/10 son {alta_proj_txt}, "
+            "por lo que conviene priorizar su conservación y optimización antes de plantear una venta."
+            if not activos_alta_proyeccion.empty
+            else "No hay activos con una proyección de zona de 8.5/10 o superior según el estudio."
+        )
+
+        lectura_final = (
+            "La lectura general favorece conservar los activos con mejor combinación de proyección, renta y liquidez, "
+            "y estudiar una rotación únicamente donde el capital pueda tener un uso más atractivo. "
+            "La decisión final debe contrastarse con deuda, flujo Airbnb, costo de salida y precio realmente negociable."
+        )
+
+        html_conclusion = f"""
+<div class="radar-decision-panel">
+    <div class="radar-decision-title">🧠 Conclusión ejecutiva</div>
+    <div class="radar-decision-subtitle">Lectura automática construida a partir del estudio de mercado cargado en BigQuery.</div>
+    <div class="radar-signal"><b>📊 Lectura de mercado:</b> {escape_html(lectura_mercado)}</div>
+    <div class="radar-signal"><b>🎯 Rotación:</b> {escape_html(lectura_rotacion)}</div>
+    <div class="radar-signal"><b>🚀 Activos a conservar:</b> {escape_html(lectura_oportunidades)}</div>
+    <div class="radar-signal"><b>✅ Conclusión:</b> {escape_html(lectura_final)}</div>
+    <div class="radar-note"><b>Nota:</b> esta conclusión usa el estudio disponible en BigQuery; no está haciendo una consulta en tiempo real a portales inmobiliarios ni pretende estimar precios de cierre.</div>
+</div>
+"""
+
+        html_conclusion = "\n".join(
+            linea.strip()
+            for linea in html_conclusion.splitlines()
+            if linea.strip()
+        )
+
+        st.markdown(
+            html_conclusion,
+            unsafe_allow_html=True
+        )
+    else:
+        st.markdown(
+            """
+<div class="radar-decision-panel">
+    <div class="radar-decision-title">🧠 Conclusión ejecutiva</div>
+    <div class="radar-note">No hay información suficiente en Estudio_Mercado_Inmobiliario para generar una conclusión.</div>
+</div>
+""",
+            unsafe_allow_html=True
+        )
+
+# ============================================================
+# VISTA FINANCIERO
+# ============================================================
+
+elif st.session_state.vista_airbnb == "Financiero":
+
+    st.markdown(
+        """
+<div class="section-title">
+💰 Financiero
+</div>
+
+<div class="section-subtitle">
+Evolución mensual de ingresos, gastos y flujo durante 2026.
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    financiero = df[
+        (df["Fecha"] >= inicio_anio)
+        &
+        (df["Fecha"] < fin_hoy)
+    ].copy()
+
+
+    financiero["Mes_Num"] = (
+        financiero["Fecha"].dt.month
+    )
+
+    financiero["Mes"] = (
+        financiero["Fecha"]
+        .dt.strftime("%b")
+    )
+
+
+    mensual_fin = (
+        financiero
+        .groupby(
+            [
+                "Mes_Num",
+                "Mes"
+            ],
+            as_index=False
+        )
+        .agg(
+            Ingresos=(
+                "Ingreso",
+                "sum"
+            ),
+            Gastos=(
+                "Gasto",
+                "sum"
+            )
+        )
+        .sort_values("Mes_Num")
+    )
+
+
+    mensual_fin["Flujo"] = (
+        mensual_fin["Ingresos"]
+        -
+        mensual_fin["Gastos"]
+    )
+
+
+    fig_fin = go.Figure()
+
+
+    fig_fin.add_trace(
+        go.Bar(
+            x=mensual_fin["Mes"],
+            y=mensual_fin["Ingresos"],
+            name="Ingresos",
+            marker_color="#27B68D"
+        )
+    )
+
+
+    fig_fin.add_trace(
+        go.Bar(
+            x=mensual_fin["Mes"],
+            y=mensual_fin["Gastos"],
+            name="Gastos",
+            marker_color="#EF4338"
+        )
+    )
+
+
+    fig_fin.add_trace(
+        go.Scatter(
+            x=mensual_fin["Mes"],
+            y=mensual_fin["Flujo"],
+            name="Flujo",
+            mode="lines+markers",
+            line=dict(
+                color="#17345E",
+                width=3
+            )
+        )
+    )
+
+
+    fig_fin.update_layout(
+        height=470,
+        barmode="group",
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        margin=dict(
+            l=50,
+            r=30,
+            t=40,
+            b=40
+        ),
+        yaxis=dict(
+            tickprefix="$",
+            tickformat=",.0f",
+            gridcolor="#E9EEF3"
+        ),
+        xaxis=dict(
+            showgrid=False
+        )
+    )
+
+
+    st.plotly_chart(
+        fig_fin,
+        use_container_width=True
+    )
+
+
+# ============================================================
+# VISTA OCUPACIÓN
+# ============================================================
+
+elif st.session_state.vista_airbnb == "Ocupación":
+
+    st.markdown(
+        """
+<div class="section-title">
+📊 Ocupación Airbnb
+</div>
+
+<div class="section-subtitle">
+Reservas y noches ocupadas durante el período seleccionado.
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+
+    try:
+
+        ocupacion = cargar_reservas(
+            fecha_inicio,
+            fecha_fin
+        )
+
+    except Exception:
+
+        ocupacion = pd.DataFrame()
+
+
+    if ocupacion.empty:
+
+        st.info(
+            "No hay reservas para el período seleccionado."
+        )
+
+    else:
+
+        ocupacion["Ocupacion"] = (
+            ocupacion["Noches_Reservadas"]
+            /
+            ocupacion["Noches_Disponibles"]
+            *
+            100
+        )
+
+
+        total_reservas = (
+            ocupacion["Reservas"].sum()
+        )
+
+        total_noches = (
+            ocupacion["Noches_Reservadas"].sum()
+        )
+
+        total_disponibles = (
+            ocupacion["Noches_Disponibles"].sum()
+        )
+
+        ocupacion_total = (
+            total_noches
+            /
+            total_disponibles
+            *
+            100
+            if total_disponibles
+            else 0
+        )
+
+
+        a, b, c = st.columns(
+            3,
+            gap="small"
+        )
+
+
+        with a:
+
+            st.markdown(
+                f"""
+<div class="kpi-card">
+
+<div class="kpi-label">
+OCUPACIÓN PORTAFOLIO
+</div>
+
+<div
+class="kpi-value"
+style="color:#6954E6;">
+{ocupacion_total:.1f}%
+</div>
+
+<div class="kpi-sub">
+Noches ocupadas / disponibles
+</div>
+
+</div>
+""",
+                unsafe_allow_html=True
+            )
+
+
+        with b:
+
+            st.markdown(
+                f"""
+<div class="kpi-card">
+
+<div class="kpi-label">
+RESERVAS
+</div>
+
+<div class="kpi-value">
+{int(total_reservas)}
+</div>
+
+<div class="kpi-sub">
+Período seleccionado
+</div>
+
+</div>
+""",
+                unsafe_allow_html=True
+            )
+
+
+        with c:
+
+            st.markdown(
+                f"""
+<div class="kpi-card">
+
+<div class="kpi-label">
+NOCHES RESERVADAS
+</div>
+
+<div class="kpi-value">
+{int(total_noches)}
+</div>
+
+<div class="kpi-sub">
+De {int(total_disponibles)} disponibles
+</div>
+
+</div>
+""",
+                unsafe_allow_html=True
+            )
+
+
+        # ====================================================
+        # TARJETAS DE OCUPACIÓN
+        # ====================================================
+
+        cards_html = '<div class="properties-grid">'
+
+        for _, row in ocupacion.iterrows():
+
+            porcentaje = float(
+                row["Ocupacion"]
+            )
+
+            progress = min(
+                max(porcentaje, 0),
+                100
+            )
+
+            cards_html += f"""
+<div class="property-card">
+
+<div class="property-header">
+
+<div>
+
+<div class="property-name">
+{row["Nombre_Propiedad"]}
+</div>
+
+<div class="property-city">
+📍 {row["Ciudad"]}
+</div>
+
+</div>
+
+<div class="property-profit">
+
+<div
+class="property-profit-value"
+style="color:#6954E6;">
+{porcentaje:.1f}%
+</div>
+
+<div class="property-profit-label">
+Ocupación
+</div>
+
+</div>
+
+</div>
+
+<div style="
+margin-top:12px;
+">
+
+<div class="metric-label">
+NOCHES RESERVADAS
+</div>
+
+<div style="
+font-size:26px;
+font-weight:850;
+color:#17345E;
+margin-top:5px;
+">
+{int(row["Noches_Reservadas"])}
+</div>
+
+</div>
+
+<div class="profit-section">
+
+<div class="profit-line">
+
+<div class="profit-label">
+Ocupación
+</div>
+
+<div
+class="profit-number"
+style="color:#6954E6;">
+{porcentaje:.1f}%
+</div>
+
+</div>
+
+<div class="progress">
+
+<div
+class="progress-fill"
+style="
+width:{progress:.1f}%;
+background:#6954E6;
+">
+</div>
+
+</div>
+
+</div>
+
+<div class="occupancy-box">
+
+<div class="occupancy-top">
+
+<div class="occupancy-label">
+Reservas
+</div>
+
+<div class="occupancy-value">
+{int(row["Reservas"])}
+</div>
+
+</div>
+
+<div class="occupancy-detail">
+{int(row["Noches_Disponibles"])} noches disponibles
+</div>
+
+</div>
+
+</div>
+"""
+
+        cards_html += "</div>"
+
+        st.markdown(
+            cards_html,
+            unsafe_allow_html=True
+        )
