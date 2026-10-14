@@ -6369,30 +6369,31 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-composition-layout{{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:12px;align-items:stretch;}}
-.portfolio-chart-card{{border:1px solid #E1EAF3;background:#FFFFFF;border-radius:14px;padding:14px 16px;min-width:0;box-sizing:border-box;}}
-.portfolio-chart-heading{{font-size:12px;font-weight:850;color:#17345E;margin-bottom:12px;}}
+.portfolio-composition-layout{{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);gap:10px;margin-top:10px;align-items:stretch;}}
+.portfolio-chart-card{{border:1px solid #E1EAF3;background:#FFFFFF;border-radius:14px;padding:12px 12px;min-width:0;box-sizing:border-box;}}
+.portfolio-chart-heading{{font-size:12px;font-weight:850;color:#17345E;margin-bottom:9px;}}
 .portfolio-type-total{{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px;}}
 .portfolio-type-total span{{font-size:11px;color:#71839A;}}
 .portfolio-type-total b{{font-size:20px;color:#17345E;font-weight:900;}}
 .portfolio-type-stack{{height:20px;display:flex;overflow:hidden;border-radius:8px;background:#E8EDF3;margin-bottom:14px;}}
 .portfolio-type-stack span{{height:100%;display:block;}}
-.portfolio-type-kpis{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}}
-.portfolio-type-kpi{{display:grid;grid-template-columns:12px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:8px;row-gap:5px;padding:12px 11px;border:1px solid #E3EAF2;background:#FBFCFE;border-radius:12px;min-width:0;}}
+.portfolio-type-kpis{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}}
+.portfolio-type-kpi{{display:grid;grid-template-columns:10px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:6px;row-gap:4px;padding:9px 7px;border:1px solid #E3EAF2;background:#FBFCFE;border-radius:10px;min-width:0;}}
 .portfolio-type-kpi i{{width:12px;height:12px;border-radius:4px;display:block;}}
-.portfolio-type-kpi-label{{font-size:12px;color:#61738C;font-weight:750;}}
-.portfolio-type-kpi-value{{grid-column:2;grid-row:2;font-size:13px;color:#17345E;font-weight:900;text-align:left;white-space:nowrap;}}
+.portfolio-type-kpi-label{{font-size:11px;color:#61738C;font-weight:750;overflow-wrap:anywhere;}}
+.portfolio-type-kpi-value{{grid-column:2;grid-row:2;font-size:12px;color:#17345E;font-weight:900;text-align:left;white-space:nowrap;}}
 .portfolio-type-kpi-pct{{font-size:10px;color:#8290A4;font-weight:600;display:block;margin-top:4px;}}
-.portfolio-city-row{{margin-top:10px;}}
-.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:#50637B;}}
+.portfolio-city-row{{margin-top:8px;}}
+.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px;color:#50637B;}}
 .portfolio-city-label span{{display:flex;align-items:center;gap:7px;min-width:0;}}
 .portfolio-city-label i{{width:11px;height:11px;border-radius:4px;display:inline-block;flex-shrink:0;}}
 .portfolio-city-label b{{color:#17345E;white-space:nowrap;font-size:12px;}}
-.portfolio-city-track{{height:8px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:5px;}}
+.portfolio-city-track{{height:7px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:4px;}}
 .portfolio-city-track div{{height:100%;border-radius:8px;}}
 .portfolio-city-value{{font-size:10px;color:#8290A4;text-align:right;margin-top:4px;}}
 @media(max-width:1050px){{.portfolio-type-kpis{{grid-template-columns:repeat(3,minmax(0,1fr));}}}}
-@media(max-width:600px){{.portfolio-type-kpis{{grid-template-columns:1fr;}}.portfolio-type-kpi{{grid-template-columns:10px minmax(0,1fr) auto;grid-template-rows:auto;}}.portfolio-type-kpi-value{{grid-column:3;grid-row:1;text-align:right;}}}}
+@media(max-width:900px){{.portfolio-composition-layout{{grid-template-columns:minmax(0,1fr);}}}}
+@media(max-width:600px){{.portfolio-type-kpis{{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}}.portfolio-type-kpi{{grid-template-columns:10px minmax(0,1fr);grid-template-rows:auto auto;padding:8px 6px;}}.portfolio-type-kpi-value{{grid-column:2;grid-row:2;text-align:left;}}}}
 </style>
 <div class="aportes-portfolio-panel">
   <div class="aportes-portfolio-title">📊 Composición del patrimonio</div>
@@ -6518,12 +6519,12 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-other-assets-panel{{width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;margin-top:12px;padding:12px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:14px;font-family:inherit;}}
+.portfolio-other-assets-panel{{width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;margin-top:10px;padding:10px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:14px;font-family:inherit;}}
 .portfolio-other-assets-heading{{display:flex;align-items:center;gap:6px;font-size:15px;line-height:1.3;font-weight:800;color:#17345E;margin-bottom:4px;}}
-.portfolio-other-assets-sub{{font-size:10px;line-height:1.4;color:#71839A;margin-bottom:10px;}}
+.portfolio-other-assets-sub{{font-size:10px;line-height:1.35;color:#71839A;margin-bottom:7px;}}
 .portfolio-other-assets-columns,.portfolio-other-asset-grid{{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.8fr) minmax(0,.85fr) minmax(0,.8fr) minmax(0,1fr) minmax(0,.65fr);gap:6px;align-items:center;min-width:0;}}
 .portfolio-other-assets-columns{{padding:8px 6px;background:#F3F6FA;border-radius:8px;color:#71839A;font-size:8px;line-height:1.3;font-weight:800;text-transform:uppercase;overflow-wrap:anywhere;}}
-.portfolio-other-asset-row{{min-width:0;padding:8px 4px;border-bottom:1px solid #E8EDF3;}}
+.portfolio-other-asset-row{{min-width:0;padding:6px 4px;border-bottom:1px solid #E8EDF3;}}
 .portfolio-other-asset-grid{{font-size:10px;line-height:1.3;}}
 .portfolio-other-asset-name{{display:flex;align-items:center;gap:6px;min-width:0;color:#405875;font-weight:750;}}
 .portfolio-other-asset-name i{{width:9px;height:9px;flex:0 0 9px;border-radius:3px;display:inline-block;}}
@@ -6534,7 +6535,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 .portfolio-other-asset-debt{{color:#E5484D;}}
 .portfolio-other-asset-net,.portfolio-other-asset-pct{{font-weight:800;}}
 .portfolio-other-asset-pct{{color:#17345E;}}
-.portfolio-other-asset-track{{height:5px;margin:6px 0 0 14px;background:#E8EDF3;border-radius:8px;overflow:hidden;}}
+.portfolio-other-asset-track{{height:5px;margin:4px 0 0 14px;background:#E8EDF3;border-radius:8px;overflow:hidden;}}
 .portfolio-other-asset-track div{{height:100%;border-radius:8px;}}
 .portfolio-other-asset-empty{{font-size:10px;color:#8290A4;padding:10px 0;}}
 @media(max-width:700px){{.portfolio-other-assets-columns{{display:none;}}.portfolio-other-asset-grid{{grid-template-columns:minmax(0,1.3fr) minmax(0,.8fr) minmax(0,1fr);}}.portfolio-other-asset-debt,.portfolio-other-asset-pct{{display:none;}}}}
