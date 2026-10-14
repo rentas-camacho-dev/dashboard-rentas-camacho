@@ -6502,17 +6502,17 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-other-assets-panel{{margin-top:7px;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:8px 9px;}}
+.portfolio-other-assets-panel{{margin-top:5px;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:7px 9px 6px;}}
 .portfolio-other-assets-heading{{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:850;color:#17345E;margin-bottom:1px;}}
-.portfolio-other-assets-sub{{font-size:6.5px;line-height:1.25;color:#8290A4;margin-bottom:4px;}}
-.portfolio-other-asset-row{{padding:3px 0 4px;border-top:1px solid #E8EDF3;}}
-.portfolio-other-asset-head{{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:7.5px;}}
+.portfolio-other-assets-sub{{font-size:6.5px;line-height:1.2;color:#8290A4;margin-bottom:3px;}}
+.portfolio-other-asset-row{{padding:1px 0 2px;border-top:1px solid #E8EDF3;}}
+.portfolio-other-asset-head{{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:7.5px;line-height:1.15;}}
 .portfolio-other-asset-name{{display:flex;align-items:center;gap:6px;min-width:0;color:#50637B;font-weight:750;}}
 .portfolio-other-asset-name i{{width:8px;height:8px;flex:0 0 8px;border-radius:3px;display:inline-block;}}
 .portfolio-other-asset-name span{{overflow-wrap:anywhere;}}
 .portfolio-other-asset-head b{{font-size:8px;white-space:nowrap;}}
-.portfolio-other-asset-meta{{display:flex;flex-wrap:wrap;gap:3px 8px;margin:1px 0 3px 13px;font-size:6px;color:#8290A4;}}
-.portfolio-other-asset-track{{height:4px;margin-left:13px;background:#E8EDF3;border-radius:8px;overflow:hidden;}}
+.portfolio-other-asset-meta{{display:flex;flex-wrap:wrap;gap:2px 8px;margin:1px 0 1px 13px;font-size:6px;line-height:1.15;color:#8290A4;}}
+.portfolio-other-asset-track{{height:3px;margin-left:13px;background:#E8EDF3;border-radius:8px;overflow:hidden;}}
 .portfolio-other-asset-track div{{height:100%;border-radius:8px;}}
 .portfolio-other-asset-empty{{font-size:8px;color:#8290A4;padding:7px 0;}}
 </style>
