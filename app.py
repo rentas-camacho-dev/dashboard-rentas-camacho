@@ -6334,7 +6334,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                 <b>{ciudad_pct:.1f}%</b><span class="patrimonio-muted">{dinero_corto(ciudad_valor)}</span>
             </div>"""
 
-        render_aportes_html(f"""
+        composicion_html = f"""
 <style>
 .patrimonio-top-layout{{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:stretch;margin-top:10px}}
 .patrimonio-panel{{background:#fff;border:1px solid #d9e5f2;border-radius:16px;padding:15px;min-width:0;box-sizing:border-box}}
@@ -6395,7 +6395,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     <div class="patrimonio-note">Valor del patrimonio principal valorado: <b>{dinero_corto(valor_portafolio_valorado)}</b>. La finca raíz adicional se presenta por separado.</div>
   </section>
 </div>
-""")
+"""
 
         # --------------------------------------------------------
         # DETALLE INFERIOR: DOS TABLAS INDEPENDIENTES
@@ -6476,6 +6476,8 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 </div>""")
 
         with bottom_cols[1]:
+            # La composición queda en la columna derecha, encima de los activos adicionales.
+            render_aportes_html(composicion_html)
             render_aportes_html(f"""
 <div class="patrimonio-panel">
   <h3 class="patrimonio-heading">🏢 Finca raíz adicional</h3>
