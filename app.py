@@ -6336,7 +6336,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
         render_aportes_html(f"""
 <style>
-.patrimonio-top-layout{{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.85fr);gap:12px;align-items:stretch;margin-top:10px}}
+.patrimonio-top-layout{{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:stretch;margin-top:10px}}
 .patrimonio-panel{{background:#fff;border:1px solid #d9e5f2;border-radius:16px;padding:15px;min-width:0;box-sizing:border-box}}
 .patrimonio-heading{{font-size:15px;font-weight:850;color:#17345e;margin:0 0 4px}}
 .patrimonio-subtitle{{font-size:10px;color:#7186a2;margin:0 0 13px}}
@@ -6393,11 +6393,6 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
       <div class="patrimonio-type-card"><div class="patrimonio-type-icon" style="background:#e5faf4;color:#08ae98">🚗</div><div><div class="patrimonio-type-label">Vehículos</div><div class="patrimonio-type-value">{dinero_corto(valor_vehiculos)}</div></div><div class="patrimonio-type-pct" style="color:#08ae98">{pct_vehiculos_port:.1f}%</div></div>
     </div>
     <div class="patrimonio-note">Valor del patrimonio principal valorado: <b>{dinero_corto(valor_portafolio_valorado)}</b>. La finca raíz adicional se presenta por separado.</div>
-  </section>
-  <section class="patrimonio-panel">
-    <h3 class="patrimonio-heading">📍 Finca raíz por ciudad</h3>
-    <div class="patrimonio-subtitle">Distribución del valor de los inmuebles conjuntos</div>
-    {filas_ciudad if filas_ciudad else '<div class="patrimonio-note">No hay información de ciudad disponible.</div>'}
   </section>
 </div>
 """)
@@ -6491,10 +6486,6 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     <div class="patrimonio-mini-stat"><span>Patrimonio neto</span><b style="color:#08a77f">{dinero_corto(neto_adicional_tabla)}</b></div>
   </div>
   <div class="patrimonio-table-wrap"><table class="patrimonio-table"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% neto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_adicionales}</tbody></table></div>
-  <div class="patrimonio-donut-layout">
-    <div class="patrimonio-donut" style="background:conic-gradient({dona_gradient})"><div class="patrimonio-donut-center"><b>{dinero_corto(neto_adicional_tabla)}</b>Patrimonio neto adicional</div></div>
-    <div class="patrimonio-legend"><div class="patrimonio-legend-title">Distribución del patrimonio neto adicional</div>{filas_leyenda}</div>
-  </div>
   <div class="patrimonio-note">Los activos adicionales se muestran separados y no se suman al patrimonio neto principal.</div>
 </div>""")
 
