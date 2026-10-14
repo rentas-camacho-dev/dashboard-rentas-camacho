@@ -6383,14 +6383,14 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 .portfolio-legend-name{{font-size:9px;color:#61738C;font-weight:700;}}
 .portfolio-legend-value{{font-size:11px;color:#17345E;font-weight:850;margin-top:2px;}}
 .portfolio-legend-pct{{font-size:8px;color:#8290A4;margin-top:2px;}}
-.portfolio-city-row{{margin-top:7px;}}
-.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:9px;color:#50637B;}}
+.portfolio-city-row{{margin-top:6px;}}
+.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8px;color:#50637B;}}
 .portfolio-city-label span{{display:flex;align-items:center;gap:6px;min-width:0;}}
 .portfolio-city-label i{{width:8px;height:8px;border-radius:3px;display:inline-block;flex-shrink:0;}}
 .portfolio-city-label b{{color:#17345E;white-space:nowrap;}}
 .portfolio-city-track{{height:6px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:4px;}}
 .portfolio-city-track div{{height:100%;border-radius:8px;}}
-.portfolio-city-value{{font-size:7.5px;color:#8290A4;text-align:right;margin-top:2px;}}
+.portfolio-city-value{{font-size:7px;color:#8290A4;text-align:right;margin-top:2px;}}
 .portfolio-composition-total{{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:9px 11px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:10px;}}
 .portfolio-composition-total span{{font-size:9px;color:#71839A;}}
 .portfolio-composition-total b{{font-size:16px;color:#17345E;}}
@@ -6420,29 +6420,12 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 """)
 
             # --------------------------------------------------------
-            # PATRIMONIO NETO POR CIUDAD
-            # Combina finca raíz conjunta y activos adicionales.
-            # Valor neto = valor del inmueble - deuda atribuible.
+            # OTROS ACTIVOS POR CIUDAD
+            # Solo incluye finca raíz adicional, excluyendo la finca
+            # raíz conjunta que ya aparece en la tabla principal.
+            # Patrimonio neto = valor adicional - deuda atribuible.
             # --------------------------------------------------------
             neto_ciudad = {}
-
-            if not finca_resumen.empty:
-                conjunta_ciudad = (
-                    finca_resumen
-                    .groupby("Ciudad", dropna=False)
-                    .agg(
-                        Valor=("Valor_Minimo", "sum"),
-                        Deuda=("Deuda_Actual", "sum")
-                    )
-                    .reset_index()
-                )
-                for _, ciudad_row in conjunta_ciudad.iterrows():
-                    nombre_ciudad = str(ciudad_row["Ciudad"] or "Sin ciudad")
-                    neto_ciudad[nombre_ciudad] = (
-                        neto_ciudad.get(nombre_ciudad, 0.0)
-                        + float(ciudad_row["Valor"] or 0)
-                        - float(ciudad_row["Deuda"] or 0)
-                    )
 
             if not activos_finca_adicional.empty:
                 adicionales_ciudad = (
@@ -6473,65 +6456,34 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                     adicionales_ciudad["Deuda"] = 0
 
                 adicionales_ciudad["Deuda"] = pd.to_numeric(
-                    adicionales_ciudad["Deuda"],
-                    errors="coerce"
+                    adicionales_ciudad["Deuda"], errors="coerce"
                 ).fillna(0)
-
+                adicionales_ciudad["Valor_Activo"] = pd.to_numeric(
+                    adicionales_ciudad["Valor_Activo"], errors="coerce"
+                ).fillna(0)
                 adicionales_ciudad["Ciudad"] = (
-                    adicionales_ciudad["Ciudad"]
-                    .fillna("Sin ciudad")
-                    .astype(str)
+                    adicionales_ciudad["Ciudad"].fillna("Sin ciudad").astype(str)
+                )
+                adicionales_ciudad["Patrimonio_Neto"] = (
+                    adicionales_ciudad["Valor_Activo"] - adicionales_ciudad["Deuda"]
+                )
+                resumen_otros_ciudad = (
+                    adicionales_ciudad.groupby("Ciudad", as_index=False)
+                    ["Patrimonio_Neto"].sum()
                 )
 
-                adicionales_por_ciudad = (
-                    adicionales_ciudad
-                    .groupby("Ciudad", dropna=False)
-                    .agg(
-                        Valor=("Valor_Activo", "sum"),
-                        Deuda=("Deuda", "sum")
-                    )
-                    .reset_index()
-                )
-
-                for _, ciudad_row in adicionales_por_ciudad.iterrows():
-                    nombre_ciudad = str(ciudad_row["Ciudad"] or "Sin ciudad")
-                    neto_ciudad[nombre_ciudad] = (
-                        neto_ciudad.get(nombre_ciudad, 0.0)
-                        + float(ciudad_row["Valor"] or 0)
-                        - float(ciudad_row["Deuda"] or 0)
-                    )
-
-            neto_ciudad_df = pd.DataFrame(
-                [
-                    {"Ciudad": ciudad, "Patrimonio_Neto": valor}
-                    for ciudad, valor in neto_ciudad.items()
-                ],
-                columns=["Ciudad", "Patrimonio_Neto"]
-            )
-
-            if not neto_ciudad_df.empty:
-                neto_ciudad_df = neto_ciudad_df.sort_values(
-                    "Patrimonio_Neto",
-                    ascending=False
-                )
                 max_neto_ciudad = max(
-                    float(neto_ciudad_df["Patrimonio_Neto"].abs().max()),
-                    1.0
+                    float(resumen_otros_ciudad["Patrimonio_Neto"].abs().max()), 1.0
                 )
                 filas_neto_ciudad = ""
-
-                for _, ciudad_row in neto_ciudad_df.iterrows():
-                    nombre_ciudad = escape_html(
-                        ciudad_row["Ciudad"] or "Sin ciudad"
-                    )
+                for _, ciudad_row in resumen_otros_ciudad.sort_values(
+                    "Patrimonio_Neto", ascending=False
+                ).iterrows():
+                    nombre_ciudad = escape_html(ciudad_row["Ciudad"] or "Sin ciudad")
                     valor_neto = float(ciudad_row["Patrimonio_Neto"] or 0)
-                    ancho_barra = min(
-                        abs(valor_neto) / max_neto_ciudad * 100,
-                        100
-                    )
+                    ancho_barra = min(abs(valor_neto) / max_neto_ciudad * 100, 100)
                     color_barra = "#2298DE" if valor_neto >= 0 else "#FF3158"
                     signo_valor = "-" if valor_neto < 0 else ""
-
                     filas_neto_ciudad += f"""
                     <div class="portfolio-net-city-row">
                         <div class="portfolio-net-city-label">
@@ -6545,28 +6497,11 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                     """
             else:
                 filas_neto_ciudad = """
-                <div style="font-size:9px;color:#8290A4;padding:20px 0;">
-                    Sin datos suficientes para calcular el patrimonio neto por ciudad.
+                <div style="font-size:8px;color:#8290A4;padding:8px 0;">
+                    No hay otros activos inmobiliarios para mostrar.
                 </div>
                 """
 
-            render_aportes_html(f"""
-<style>
-.portfolio-net-city-panel{{margin-top:9px;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:10px;}}
-.portfolio-net-city-heading{{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:850;color:#17345E;}}
-.portfolio-net-city-sub{{font-size:8.5px;color:#8290A4;margin-top:3px;margin-bottom:7px;}}
-.portfolio-net-city-row{{margin-top:6px;}}
-.portfolio-net-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8.5px;color:#50637B;}}
-.portfolio-net-city-label b{{font-size:9.5px;color:#17345E;white-space:nowrap;}}
-.portfolio-net-city-track{{height:7px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:3px;}}
-.portfolio-net-city-track div{{height:100%;border-radius:8px;}}
-</style>
-<div class="portfolio-net-city-panel">
-    <div class="portfolio-net-city-heading">📊 Patrimonio neto por ciudad</div>
-    <div class="portfolio-net-city-sub">Valor de los inmuebles menos las deudas atribuibles · incluye activos conjuntos y adicionales</div>
-    {filas_neto_ciudad}
-</div>
-""")
 
         with bottom_cols[1]:
 
@@ -6714,6 +6649,25 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 </div>
 """
             render_aportes_html(tabla_finca)
+
+            render_aportes_html(f"""
+<style>
+.portfolio-net-city-panel{{margin-top:8px;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:8px 10px;}}
+.portfolio-net-city-heading{{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:850;color:#17345E;}}
+.portfolio-net-city-sub{{font-size:7.5px;color:#8290A4;margin-top:2px;margin-bottom:5px;}}
+.portfolio-net-city-row{{margin-top:4px;}}
+.portfolio-net-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:7.5px;color:#50637B;}}
+.portfolio-net-city-label b{{font-size:8.5px;color:#17345E;white-space:nowrap;}}
+.portfolio-net-city-track{{height:5px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:2px;}}
+.portfolio-net-city-track div{{height:100%;border-radius:8px;}}
+</style>
+<div class="portfolio-net-city-panel">
+    <div class="portfolio-net-city-heading">🏠 Otros activos por ciudad</div>
+    <div class="portfolio-net-city-sub">Patrimonio neto de la finca raíz adicional, descontando sus deudas</div>
+    {filas_neto_ciudad}
+</div>
+""")
+
 
 
 if st.session_state.vista_airbnb == "Propiedades":
