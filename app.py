@@ -5840,6 +5840,31 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     overflow-x:auto;
 }
 
+/* Ajuste tipográfico SOLO para los paneles inferiores nuevos:
+   iguala su jerarquía visual con las tarjetas superiores de socios.
+   No modifica los tamaños de letra de las tarjetas superiores. */
+.aportes-finca-summary-title.compact,
+.aportes-composition-title,
+.aportes-portfolio-title,
+.aportes-participation-title { font-size:10px !important; }
+
+.aportes-finca-summary-sub.compact,
+.aportes-composition-sub,
+.aportes-portfolio-sub,
+.aportes-participation-sub { font-size:7px !important; }
+
+.aportes-finca-summary-total-value.compact { font-size:14px !important; }
+.aportes-finca-table.compact { font-size:7.5px !important; }
+.aportes-finca-table.compact th { font-size:6.5px !important; padding:6px 7px !important; }
+.aportes-finca-table.compact td { padding:6px 7px !important; }
+
+.aportes-portfolio-label { font-size:8px !important; }
+.aportes-portfolio-caption,
+.aportes-portfolio-pct { font-size:7px !important; }
+.aportes-portfolio-value { font-size:13px !important; }
+.aportes-portfolio-pending { font-size:8px !important; }
+.aportes-composition-legend span { font-size:7px !important; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1150px) {
     .aportes-compact-grid { grid-template-columns:1fr; }
