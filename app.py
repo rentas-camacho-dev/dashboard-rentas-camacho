@@ -6347,9 +6347,10 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                 color_ciudad = colores_ciudad[idx % len(colores_ciudad)]
                 filas_ciudad += f"""
                 <div class=\"portfolio-city-row\">
-                    <div class=\"portfolio-city-label\"><span><i style=\"background:{color_ciudad}\"></i>{ciudad_nombre}</span><b>{ciudad_pct:.1f}%</b></div>
+                    <div class=\"portfolio-city-name\"><i style=\"background:{color_ciudad}\"></i><span>{ciudad_nombre}</span></div>
                     <div class=\"portfolio-city-track\"><div style=\"width:{ciudad_pct:.2f}%;background:{color_ciudad}\"></div></div>
-                    <div class=\"portfolio-city-value\">{dinero_corto(ciudad_valor)}</div>
+                    <b class=\"portfolio-city-pct\">{ciudad_pct:.1f}%</b>
+                    <span class=\"portfolio-city-value\">{dinero_corto(ciudad_valor)}</span>
                 </div>
                 """
 
@@ -6369,44 +6370,47 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-composition-layout{{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);gap:10px;margin-top:10px;align-items:stretch;}}
-.portfolio-chart-card{{border:1px solid #E1EAF3;background:#FFFFFF;border-radius:14px;padding:12px 12px;min-width:0;box-sizing:border-box;}}
-.portfolio-chart-heading{{font-size:12px;font-weight:850;color:#17345E;margin-bottom:9px;}}
-.portfolio-type-total{{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px;}}
-.portfolio-type-total span{{font-size:11px;color:#71839A;}}
-.portfolio-type-total b{{font-size:20px;color:#17345E;font-weight:900;}}
-.portfolio-type-stack{{height:20px;display:flex;overflow:hidden;border-radius:8px;background:#E8EDF3;margin-bottom:14px;}}
+.portfolio-composition-layout{{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:10px;margin-top:10px;align-items:stretch;}}
+.portfolio-chart-card{{border:1px solid #E1EAF3;background:#FFFFFF;border-radius:14px;padding:11px;min-width:0;box-sizing:border-box;}}
+.portfolio-chart-heading{{font-size:11px;font-weight:850;color:#17345E;margin:0;}}
+.portfolio-type-heading-row{{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}}
+.portfolio-type-total{{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:7px;}}
+.portfolio-type-total span{{font-size:10px;color:#71839A;}}
+.portfolio-type-total b{{font-size:17px;color:#17345E;font-weight:900;}}
+.portfolio-type-stack{{height:13px;flex:0 1 54%;min-width:100px;display:flex;overflow:hidden;border-radius:7px;background:#E8EDF3;margin:0;}}
 .portfolio-type-stack span{{height:100%;display:block;}}
-.portfolio-type-kpis{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}}
-.portfolio-type-kpi{{display:grid;grid-template-columns:10px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:6px;row-gap:4px;padding:9px 7px;border:1px solid #E3EAF2;background:#FBFCFE;border-radius:10px;min-width:0;}}
-.portfolio-type-kpi i{{width:12px;height:12px;border-radius:4px;display:block;}}
-.portfolio-type-kpi-label{{font-size:11px;color:#61738C;font-weight:750;overflow-wrap:anywhere;}}
-.portfolio-type-kpi-value{{grid-column:2;grid-row:2;font-size:12px;color:#17345E;font-weight:900;text-align:left;white-space:nowrap;}}
-.portfolio-type-kpi-pct{{font-size:10px;color:#8290A4;font-weight:600;display:block;margin-top:4px;}}
-.portfolio-city-row{{margin-top:8px;}}
-.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px;color:#50637B;}}
-.portfolio-city-label span{{display:flex;align-items:center;gap:7px;min-width:0;}}
-.portfolio-city-label i{{width:11px;height:11px;border-radius:4px;display:inline-block;flex-shrink:0;}}
-.portfolio-city-label b{{color:#17345E;white-space:nowrap;font-size:12px;}}
-.portfolio-city-track{{height:7px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:4px;}}
+.portfolio-type-kpis{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}}
+.portfolio-type-kpi{{display:grid;grid-template-columns:8px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:5px;row-gap:3px;padding:7px 6px;border:1px solid #E3EAF2;background:#FBFCFE;border-radius:9px;min-width:0;}}
+.portfolio-type-kpi i{{width:9px;height:9px;border-radius:3px;display:block;}}
+.portfolio-type-kpi-label{{font-size:9px;line-height:1.25;color:#61738C;font-weight:750;overflow-wrap:anywhere;}}
+.portfolio-type-kpi-value{{grid-column:2;grid-row:2;font-size:10px;color:#17345E;font-weight:900;text-align:left;white-space:nowrap;}}
+.portfolio-type-kpi-pct{{font-size:8px;line-height:1.2;color:#8290A4;font-weight:600;display:block;margin-top:2px;}}
+.portfolio-city-row{{display:grid;grid-template-columns:minmax(70px,1.05fr) minmax(55px,1.25fr) 43px 58px;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #EDF1F6;font-size:9px;}}
+.portfolio-city-name{{display:flex;align-items:center;gap:5px;min-width:0;color:#50637B;}}
+.portfolio-city-name span{{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}}
+.portfolio-city-name i{{width:8px;height:8px;border-radius:3px;display:inline-block;flex:0 0 8px;}}
+.portfolio-city-pct{{color:#17345E;text-align:right;white-space:nowrap;font-size:10px;}}
+.portfolio-city-track{{height:5px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin:0;}}
 .portfolio-city-track div{{height:100%;border-radius:8px;}}
-.portfolio-city-value{{font-size:10px;color:#8290A4;text-align:right;margin-top:4px;}}
+.portfolio-city-value{{font-size:9px;color:#8290A4;text-align:right;white-space:nowrap;}}
 @media(max-width:1050px){{.portfolio-type-kpis{{grid-template-columns:repeat(3,minmax(0,1fr));}}}}
-@media(max-width:900px){{.portfolio-composition-layout{{grid-template-columns:minmax(0,1fr);}}}}
-@media(max-width:600px){{.portfolio-type-kpis{{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}}.portfolio-type-kpi{{grid-template-columns:10px minmax(0,1fr);grid-template-rows:auto auto;padding:8px 6px;}}.portfolio-type-kpi-value{{grid-column:2;grid-row:2;text-align:left;}}}}
+@media(max-width:900px){{.portfolio-composition-layout{{grid-template-columns:minmax(0,1fr);}}.portfolio-city-row{{grid-template-columns:minmax(75px,1fr) minmax(70px,1.2fr) 45px 62px;}}}}
+@media(max-width:600px){{.portfolio-type-kpis{{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;}}.portfolio-type-kpi{{padding:6px 4px;}}.portfolio-type-kpi-value{{grid-column:2;grid-row:2;text-align:left;}}.portfolio-type-heading-row{{align-items:flex-start;flex-direction:column;}}.portfolio-type-stack{{width:100%;flex-basis:auto;}}.portfolio-city-row{{grid-template-columns:minmax(65px,1fr) minmax(35px,.8fr) 38px 52px;gap:5px;}}}}
 </style>
 <div class="aportes-portfolio-panel">
   <div class="aportes-portfolio-title">📊 Composición del patrimonio</div>
   <div class="aportes-portfolio-sub">Distribución por tipo de activo y ubicación de la finca raíz conjunta</div>
   <div class="portfolio-composition-layout">
     <div class="portfolio-chart-card">
-      <div class="portfolio-chart-heading">Composición por tipo de activo</div>
-      <div class="portfolio-type-total"><span>Valor total del portafolio</span><b>{dinero_corto(valor_portafolio_valorado)}</b></div>
-      <div class="portfolio-type-stack" aria-label="Distribución por tipo de activo">
-        <span style="width:{pct_finca_port:.2f}%;background:#2298DE"></span>
-        <span style="width:{pct_comercio_port:.2f}%;background:#FF3158"></span>
-        <span style="width:{pct_vehiculos_port:.2f}%;background:#08AE98"></span>
+      <div class="portfolio-type-heading-row">
+        <div class="portfolio-chart-heading">Composición por tipo de activo</div>
+        <div class="portfolio-type-stack" aria-label="Distribución por tipo de activo">
+          <span style="width:{pct_finca_port:.2f}%;background:#2298DE"></span>
+          <span style="width:{pct_comercio_port:.2f}%;background:#FF3158"></span>
+          <span style="width:{pct_vehiculos_port:.2f}%;background:#08AE98"></span>
+        </div>
       </div>
+      <div class="portfolio-type-total"><span>Valor total del portafolio</span><b>{dinero_corto(valor_portafolio_valorado)}</b></div>
       <div class="portfolio-type-kpis">
         <div class="portfolio-type-kpi"><i style="background:#2298DE"></i><div class="portfolio-type-kpi-label">Finca Raíz<span class="portfolio-type-kpi-pct">{pct_finca_port:.1f}% del total</span></div><div class="portfolio-type-kpi-value">{dinero_corto(valor_finca_portafolio)}</div></div>
         <div class="portfolio-type-kpi"><i style="background:#FF3158"></i><div class="portfolio-type-kpi-label">Comercio<span class="portfolio-type-kpi-pct">{pct_comercio_port:.1f}% del total</span></div><div class="portfolio-type-kpi-value">{dinero_corto(valor_comercio)}</div></div>
@@ -6519,7 +6523,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-other-assets-panel{{width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;margin-top:10px;padding:10px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:14px;font-family:inherit;}}
+.portfolio-other-assets-panel{{width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;margin-top:7px;padding:10px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:14px;font-family:inherit;}}
 .portfolio-other-assets-heading{{display:flex;align-items:center;gap:6px;font-size:15px;line-height:1.3;font-weight:800;color:#17345E;margin-bottom:4px;}}
 .portfolio-other-assets-sub{{font-size:10px;line-height:1.35;color:#71839A;margin-bottom:7px;}}
 .portfolio-other-assets-columns,.portfolio-other-asset-grid{{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.8fr) minmax(0,.85fr) minmax(0,.8fr) minmax(0,1fr) minmax(0,.65fr);gap:6px;align-items:center;min-width:0;}}
