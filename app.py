@@ -6463,20 +6463,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
         bottom_cols = st.columns([1, 1], gap="small")
         with bottom_cols[0]:
-            render_aportes_html(f"""
-<div class="patrimonio-panel">
-  <h3 class="patrimonio-heading">🏠 Finca raíz conjunta</h3>
-  <div class="patrimonio-subtitle">Activos compartidos · valor, deuda y patrimonio neto por inmueble</div>
-  <div class="patrimonio-additional-summary">
-    <div class="patrimonio-mini-stat"><span>Valor conjunto</span><b>{dinero_corto(valor_finca_total)}</b></div>
-    <div class="patrimonio-mini-stat"><span>Deuda conjunta</span><b style="color:#ef4444">-{dinero_corto(float(finca_resumen['Deuda_Actual'].sum()) if not finca_resumen.empty else 0)}</b></div>
-    <div class="patrimonio-mini-stat"><span>Patrimonio neto</span><b style="color:#08a77f">{dinero_corto(float(finca_resumen['Patrimonio_Neto'].sum()) if not finca_resumen.empty else 0)}</b></div>
-  </div>
-  <div class="patrimonio-table-wrap"><table class="patrimonio-table"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% conjunto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_conjuntas}</tbody></table></div>
-</div>""")
-
-        with bottom_cols[1]:
-            # La composición queda en la columna derecha, encima de los activos adicionales.
+            # Izquierda: composición del patrimonio y finca raíz adicional.
             render_aportes_html(composicion_html)
             render_aportes_html(f"""
 <div class="patrimonio-panel">
@@ -6491,6 +6478,19 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
   <div class="patrimonio-note">Los activos adicionales se muestran separados y no se suman al patrimonio neto principal.</div>
 </div>""")
 
+        with bottom_cols[1]:
+            # Derecha: finca raíz conjunta.
+            render_aportes_html(f"""
+<div class="patrimonio-panel">
+  <h3 class="patrimonio-heading">🏠 Finca raíz conjunta</h3>
+  <div class="patrimonio-subtitle">Activos compartidos · valor, deuda y patrimonio neto por inmueble</div>
+  <div class="patrimonio-additional-summary">
+    <div class="patrimonio-mini-stat"><span>Valor conjunto</span><b>{dinero_corto(valor_finca_total)}</b></div>
+    <div class="patrimonio-mini-stat"><span>Deuda conjunta</span><b style="color:#ef4444">-{dinero_corto(float(finca_resumen['Deuda_Actual'].sum()) if not finca_resumen.empty else 0)}</b></div>
+    <div class="patrimonio-mini-stat"><span>Patrimonio neto</span><b style="color:#08a77f">{dinero_corto(float(finca_resumen['Patrimonio_Neto'].sum()) if not finca_resumen.empty else 0)}</b></div>
+  </div>
+  <div class="patrimonio-table-wrap"><table class="patrimonio-table"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% conjunto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_conjuntas}</tbody></table></div>
+</div>""")
 
 if st.session_state.vista_airbnb == "Propiedades":
 
