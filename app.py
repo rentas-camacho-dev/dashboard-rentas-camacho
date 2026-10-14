@@ -6503,19 +6503,19 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-other-assets-panel{{margin-top:5px;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:7px 9px 6px;}}
-.portfolio-other-assets-heading{{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:850;color:#17345E;margin-bottom:1px;}}
-.portfolio-other-assets-sub{{font-size:6.5px;line-height:1.2;color:#8290A4;margin-bottom:3px;}}
-.portfolio-other-asset-row{{padding:1px 0 2px;border-top:1px solid #E8EDF3;}}
-.portfolio-other-asset-head{{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:7.5px;line-height:1.15;}}
-.portfolio-other-asset-name{{display:flex;align-items:center;gap:6px;min-width:0;color:#50637B;font-weight:750;}}
-.portfolio-other-asset-name i{{width:8px;height:8px;flex:0 0 8px;border-radius:3px;display:inline-block;}}
+.portfolio-other-assets-panel{{margin-top:5px;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:9px 11px 8px;}}
+.portfolio-other-assets-heading{{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:850;line-height:1.3;color:#17345E;margin-bottom:3px;}}
+.portfolio-other-assets-sub{{font-size:9px;line-height:1.35;color:#8290A4;margin-bottom:5px;}}
+.portfolio-other-asset-row{{padding:4px 0 5px;border-top:1px solid #E8EDF3;}}
+.portfolio-other-asset-head{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;line-height:1.3;}}
+.portfolio-other-asset-name{{display:flex;align-items:center;gap:7px;min-width:0;color:#50637B;font-weight:750;}}
+.portfolio-other-asset-name i{{width:9px;height:9px;flex:0 0 9px;border-radius:3px;display:inline-block;}}
 .portfolio-other-asset-name span{{overflow-wrap:anywhere;}}
-.portfolio-other-asset-head b{{font-size:8px;white-space:nowrap;}}
-.portfolio-other-asset-meta{{display:flex;flex-wrap:wrap;gap:2px 8px;margin:1px 0 1px 13px;font-size:6px;line-height:1.15;color:#8290A4;}}
-.portfolio-other-asset-track{{height:3px;margin-left:13px;background:#E8EDF3;border-radius:8px;overflow:hidden;}}
+.portfolio-other-asset-head b{{font-size:11px;white-space:nowrap;}}
+.portfolio-other-asset-meta{{display:flex;flex-wrap:wrap;gap:3px 10px;margin:3px 0 4px 16px;font-size:9px;line-height:1.3;color:#718198;}}
+.portfolio-other-asset-track{{height:5px;margin-left:16px;background:#E8EDF3;border-radius:8px;overflow:hidden;}}
 .portfolio-other-asset-track div{{height:100%;border-radius:8px;}}
-.portfolio-other-asset-empty{{font-size:8px;color:#8290A4;padding:7px 0;}}
+.portfolio-other-asset-empty{{font-size:10px;color:#8290A4;padding:8px 0;}}
 </style>
 <div class="portfolio-other-assets-panel">
     <div class="portfolio-other-assets-heading">🏠 Otros activos por inmueble</div>
