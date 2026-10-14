@@ -6369,32 +6369,30 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-composition-layout{{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px;}}
-.portfolio-chart-card{{border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:8px;min-width:0;}}
-.portfolio-chart-heading{{font-size:9.5px;font-weight:850;color:#17345E;margin-bottom:5px;}}
-.portfolio-donut-wrap{{display:flex;align-items:center;gap:7px;min-height:96px;}}
-.portfolio-donut{{width:88px;height:88px;border-radius:50%;background:conic-gradient({dona_gradient});position:relative;flex-shrink:0;}}
-.portfolio-donut:after{{content:"";position:absolute;inset:20px;background:#FAFBFD;border-radius:50%;}}
-.portfolio-donut-center{{position:absolute;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:9px;color:#8290A4;}}
-.portfolio-donut-center b{{font-size:10px;color:#17345E;}}
-.portfolio-legend{{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1;}}
-.portfolio-legend-item{{display:grid;grid-template-columns:9px minmax(0,1fr);column-gap:6px;align-items:start;}}
-.portfolio-legend-item i{{width:9px;height:9px;border-radius:3px;margin-top:3px;}}
-.portfolio-legend-name{{font-size:9px;color:#61738C;font-weight:700;}}
-.portfolio-legend-value{{font-size:9px;color:#17345E;font-weight:850;margin-top:1px;}}
-.portfolio-legend-pct{{font-size:7px;color:#8290A4;margin-top:1px;}}
-.portfolio-city-row{{margin-top:4px;}}
-.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8px;color:#50637B;}}
-.portfolio-city-label span{{display:flex;align-items:center;gap:6px;min-width:0;}}
-.portfolio-city-label i{{width:8px;height:8px;border-radius:3px;display:inline-block;flex-shrink:0;}}
-.portfolio-city-label b{{color:#17345E;white-space:nowrap;}}
-.portfolio-city-track{{height:5px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:2px;}}
+.portfolio-composition-layout{{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;align-items:stretch;}}
+.portfolio-chart-card{{border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:12px;min-width:0;}}
+.portfolio-chart-heading{{font-size:11px;font-weight:850;color:#17345E;margin-bottom:12px;}}
+.portfolio-type-total{{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px;}}
+.portfolio-type-total span{{font-size:9px;color:#71839A;}}
+.portfolio-type-total b{{font-size:17px;color:#17345E;font-weight:900;}}
+.portfolio-type-stack{{height:18px;display:flex;overflow:hidden;border-radius:6px;background:#E8EDF3;margin-bottom:14px;}}
+.portfolio-type-stack span{{height:100%;display:block;}}
+.portfolio-type-kpis{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}}
+.portfolio-type-kpi{{display:grid;grid-template-columns:10px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:7px;row-gap:5px;padding:9px 8px;border:1px solid #E6ECF2;background:#FFFFFF;border-radius:9px;min-width:0;}}
+.portfolio-type-kpi i{{width:10px;height:10px;border-radius:3px;display:block;}}
+.portfolio-type-kpi-label{{font-size:10px;color:#61738C;font-weight:750;}}
+.portfolio-type-kpi-value{{grid-column:2;grid-row:2;font-size:11px;color:#17345E;font-weight:900;text-align:left;white-space:nowrap;}}
+.portfolio-type-kpi-pct{{font-size:9px;color:#8290A4;font-weight:600;display:block;margin-top:3px;}}
+.portfolio-city-row{{margin-top:8px;}}
+.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:#50637B;}}
+.portfolio-city-label span{{display:flex;align-items:center;gap:7px;min-width:0;}}
+.portfolio-city-label i{{width:9px;height:9px;border-radius:3px;display:inline-block;flex-shrink:0;}}
+.portfolio-city-label b{{color:#17345E;white-space:nowrap;font-size:10px;}}
+.portfolio-city-track{{height:7px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:4px;}}
 .portfolio-city-track div{{height:100%;border-radius:8px;}}
-.portfolio-city-value{{font-size:6.5px;color:#8290A4;text-align:right;margin-top:1px;}}
-.portfolio-composition-total{{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:9px 11px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:10px;}}
-.portfolio-composition-total span{{font-size:9px;color:#71839A;}}
-.portfolio-composition-total b{{font-size:16px;color:#17345E;}}
-@media(max-width:850px){{.portfolio-composition-layout{{grid-template-columns:1fr;}}.portfolio-donut-wrap{{justify-content:center;}}}}
+.portfolio-city-value{{font-size:8px;color:#8290A4;text-align:right;margin-top:3px;}}
+@media(max-width:1050px){{.portfolio-composition-layout{{grid-template-columns:1fr;}}}}
+@media(max-width:600px){{.portfolio-type-kpis{{grid-template-columns:1fr;}}.portfolio-type-kpi{{grid-template-columns:10px minmax(0,1fr) auto;grid-template-rows:auto;}}.portfolio-type-kpi-value{{grid-column:3;grid-row:1;text-align:right;}}}}
 </style>
 <div class="aportes-portfolio-panel">
   <div class="aportes-portfolio-title">📊 Composición del patrimonio</div>
@@ -6402,18 +6400,21 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
   <div class="portfolio-composition-layout">
     <div class="portfolio-chart-card">
       <div class="portfolio-chart-heading">Composición por tipo de activo</div>
-      <div class="portfolio-donut-wrap">
-        <div class="portfolio-donut"><div class="portfolio-donut-center"><b>{dinero_corto(valor_portafolio_valorado)}</b><span>Valor total</span></div></div>
-        <div class="portfolio-legend">
-          <div class="portfolio-legend-item"><i style="background:#2298DE"></i><div><div class="portfolio-legend-name">Finca Raíz</div><div class="portfolio-legend-value">{dinero_corto(valor_finca_portafolio)}</div><div class="portfolio-legend-pct">{pct_finca_port:.1f}%</div></div></div>
-          <div class="portfolio-legend-item"><i style="background:#FF3158"></i><div><div class="portfolio-legend-name">Comercio</div><div class="portfolio-legend-value">{dinero_corto(valor_comercio)}</div><div class="portfolio-legend-pct">{pct_comercio_port:.1f}%</div></div></div>
-          <div class="portfolio-legend-item"><i style="background:#08AE98"></i><div><div class="portfolio-legend-name">Vehículos</div><div class="portfolio-legend-value">{dinero_corto(valor_vehiculos)}</div><div class="portfolio-legend-pct">{pct_vehiculos_port:.1f}%</div></div></div>
-        </div>
+      <div class="portfolio-type-total"><span>Valor total del portafolio</span><b>{dinero_corto(valor_portafolio_valorado)}</b></div>
+      <div class="portfolio-type-stack" aria-label="Distribución por tipo de activo">
+        <span style="width:{pct_finca_port:.2f}%;background:#2298DE"></span>
+        <span style="width:{pct_comercio_port:.2f}%;background:#FF3158"></span>
+        <span style="width:{pct_vehiculos_port:.2f}%;background:#08AE98"></span>
+      </div>
+      <div class="portfolio-type-kpis">
+        <div class="portfolio-type-kpi"><i style="background:#2298DE"></i><div class="portfolio-type-kpi-label">Finca Raíz<span class="portfolio-type-kpi-pct">{pct_finca_port:.1f}% del total</span></div><div class="portfolio-type-kpi-value">{dinero_corto(valor_finca_portafolio)}</div></div>
+        <div class="portfolio-type-kpi"><i style="background:#FF3158"></i><div class="portfolio-type-kpi-label">Comercio<span class="portfolio-type-kpi-pct">{pct_comercio_port:.1f}% del total</span></div><div class="portfolio-type-kpi-value">{dinero_corto(valor_comercio)}</div></div>
+        <div class="portfolio-type-kpi"><i style="background:#08AE98"></i><div class="portfolio-type-kpi-label">Vehículos<span class="portfolio-type-kpi-pct">{pct_vehiculos_port:.1f}% del total</span></div><div class="portfolio-type-kpi-value">{dinero_corto(valor_vehiculos)}</div></div>
       </div>
     </div>
     <div class="portfolio-chart-card">
       <div class="portfolio-chart-heading">Finca raíz por ciudad</div>
-      {filas_ciudad if filas_ciudad else '<div style="font-size:9px;color:#8290A4;padding:20px 0;">Sin datos de ciudad disponibles.</div>'}
+      {filas_ciudad if filas_ciudad else '<div style="font-size:10px;color:#8290A4;padding:20px 0;">Sin datos de ciudad disponibles.</div>'}
     </div>
   </div>
 </div>
@@ -6469,6 +6470,9 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                 max_neto_activo = max(
                     float(otros_activos_grafica["Patrimonio_Neto"].abs().max()), 1.0
                 )
+                total_neto_otros_activos = float(
+                    otros_activos_grafica["Patrimonio_Neto"].sum()
+                )
                 colores_activos = [
                     "#2298DE", "#08AE98", "#7964DD", "#FF3158", "#E5AC43",
                     "#F97316", "#64748B", "#D946EF", "#0D9488", "#8B5CF6"
@@ -6481,6 +6485,10 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                     deuda_activo = float(activo_row["Deuda"] or 0)
                     neto_activo = float(activo_row["Patrimonio_Neto"] or 0)
                     ancho_barra = min(abs(neto_activo) / max_neto_activo * 100, 100)
+                    pct_otros_activos = (
+                        neto_activo / total_neto_otros_activos * 100
+                        if total_neto_otros_activos else 0
+                    )
                     color_activo = colores_activos[idx % len(colores_activos)]
                     color_neto = color_activo if neto_activo >= 0 else "#FF3158"
                     deuda_html = (
@@ -6489,12 +6497,20 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
                     )
                     filas_otros_activos += f"""
                     <div class="portfolio-other-asset-row">
-                        <div class="portfolio-other-asset-head">
-                            <span class="portfolio-other-asset-name"><i style="background:{color_activo}"></i><span>{nombre_activo}</span></span>
-                            <b style="color:{color_neto};">{dinero_corto(neto_activo)}</b>
+                        <div class="portfolio-other-asset-grid">
+                            <div class="portfolio-other-asset-name">
+                                <i style="background:{color_activo}"></i>
+                                <span>{nombre_activo}</span>
+                            </div>
+                            <div class="portfolio-other-asset-city">{ciudad_activo}</div>
+                            <div class="portfolio-other-asset-value">{dinero_corto(valor_activo)}</div>
+                            <div class="portfolio-other-asset-debt">{('-' + dinero_corto(deuda_activo)) if deuda_activo > 0 else 'Sin deuda'}</div>
+                            <div class="portfolio-other-asset-net" style="color:{color_neto};">{dinero_corto(neto_activo)}</div>
+                            <div class="portfolio-other-asset-pct">{pct_otros_activos:.1f}%</div>
                         </div>
-                        <div class="portfolio-other-asset-meta"><span>{ciudad_activo}</span><span>Valor: {dinero_corto(valor_activo)}</span>{deuda_html}</div>
-                        <div class="portfolio-other-asset-track"><div style="width:{ancho_barra:.2f}%;background:{color_activo};"></div></div>
+                        <div class="portfolio-other-asset-track">
+                            <div style="width:{ancho_barra:.2f}%;background:{color_activo};"></div>
+                        </div>
                     </div>
                     """
             else:
@@ -6502,23 +6518,30 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-other-assets-panel{{margin-top:7px;height:253px;max-height:253px;box-sizing:border-box;overflow:auto;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:8px 10px;}}
-.portfolio-other-assets-heading{{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:900;color:#17345E;margin-bottom:3px;}}
-.portfolio-other-assets-sub{{font-size:8px;line-height:1.35;color:#8290A4;margin-bottom:5px;}}
-.portfolio-other-asset-row{{padding:3px 0 4px;border-top:1px solid #E8EDF3;}}
-.portfolio-other-asset-head{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:9px;line-height:1.2;}}
-.portfolio-other-asset-name{{display:flex;align-items:center;gap:6px;min-width:0;color:#50637B;font-weight:850;}}
-.portfolio-other-asset-name i{{width:8px;height:8px;flex:0 0 8px;border-radius:3px;display:inline-block;}}
+.portfolio-other-assets-panel{{margin-top:7px;box-sizing:border-box;overflow-x:auto;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:14px;padding:12px 14px;}}
+.portfolio-other-assets-heading{{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:850;color:#17345E;margin-bottom:3px;}}
+.portfolio-other-assets-sub{{font-size:9px;line-height:1.4;color:#71839A;margin-bottom:10px;}}
+.portfolio-other-assets-columns{{display:grid;grid-template-columns:minmax(125px,1.5fr) minmax(65px,.75fr) minmax(70px,.85fr) minmax(70px,.85fr) minmax(80px,1fr) minmax(55px,.55fr);gap:8px;padding:8px;background:#F3F6FA;border-radius:7px;color:#71839A;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;}}
+.portfolio-other-asset-row{{padding:9px 8px 10px;border-bottom:1px solid #E8EDF3;}}
+.portfolio-other-asset-grid{{display:grid;grid-template-columns:minmax(125px,1.5fr) minmax(65px,.75fr) minmax(70px,.85fr) minmax(70px,.85fr) minmax(80px,1fr) minmax(55px,.55fr);gap:8px;align-items:center;font-size:10px;line-height:1.3;}}
+.portfolio-other-asset-name{{display:flex;align-items:center;gap:7px;min-width:0;color:#405875;font-weight:750;}}
+.portfolio-other-asset-name i{{width:9px;height:9px;flex:0 0 9px;border-radius:3px;display:inline-block;}}
 .portfolio-other-asset-name span{{overflow-wrap:anywhere;}}
-.portfolio-other-asset-head b{{font-size:9px;white-space:nowrap;}}
-.portfolio-other-asset-meta{{display:flex;flex-wrap:wrap;gap:3px 8px;margin:2px 0 3px 14px;font-size:7px;line-height:1.2;color:#8290A4;}}
-.portfolio-other-asset-track{{height:5px;margin-left:14px;background:#E8EDF3;border-radius:8px;overflow:hidden;}}
+.portfolio-other-asset-city{{color:#71839A;font-size:9px;}}
+.portfolio-other-asset-value,.portfolio-other-asset-debt,.portfolio-other-asset-net,.portfolio-other-asset-pct{{white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right;}}
+.portfolio-other-asset-value{{color:#405875;}}
+.portfolio-other-asset-debt{{color:#E5484D;font-size:9px;}}
+.portfolio-other-asset-net{{font-weight:850;font-size:10px;}}
+.portfolio-other-asset-pct{{font-weight:800;font-size:10px;color:#17345E;}}
+.portfolio-other-asset-track{{height:5px;margin:7px 0 0 16px;background:#E8EDF3;border-radius:8px;overflow:hidden;}}
 .portfolio-other-asset-track div{{height:100%;border-radius:8px;}}
-.portfolio-other-asset-empty{{font-size:8.5px;color:#8290A4;padding:6px 0;}}
+.portfolio-other-asset-empty{{font-size:10px;color:#8290A4;padding:10px 0;}}
+@media(max-width:1100px){{.portfolio-other-assets-columns{{display:none;}}.portfolio-other-asset-grid{{grid-template-columns:minmax(120px,1.3fr) minmax(65px,.8fr) minmax(70px,1fr);}}.portfolio-other-asset-debt{{display:none;}}.portfolio-other-asset-pct{{display:none;}}}}
 </style>
 <div class="portfolio-other-assets-panel">
     <div class="portfolio-other-assets-heading">🏠 Otros activos por inmueble</div>
-    <div class="portfolio-other-assets-sub">Patrimonio neto por activo; se muestra también el valor y la deuda asociada cuando existe</div>
+    <div class="portfolio-other-assets-sub">Valor, deuda asociada y patrimonio neto por activo · cada color identifica un inmueble</div>
+    <div class="portfolio-other-assets-columns"><span>Inmueble</span><span>Ciudad</span><span style="text-align:right;">Valor</span><span style="text-align:right;">Deuda</span><span style="text-align:right;">Patrimonio neto</span><span style="text-align:right;">% otros activos</span></div>
     {filas_otros_activos}
 </div>
 """)
