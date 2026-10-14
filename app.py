@@ -6338,6 +6338,16 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 <style>
 .patrimonio-top-layout{{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:stretch;margin-top:10px}}
 .patrimonio-panel{{background:#fff;border:1px solid #d9e5f2;border-radius:16px;padding:15px;min-width:0;box-sizing:border-box}}
+.patrimonio-composition-panel{{padding:12px 15px 13px}}
+.patrimonio-composition-header{{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:8px}}
+.patrimonio-composition-header .patrimonio-subtitle{{margin-bottom:0}}
+.patrimonio-total-box{{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:0 0 auto;text-align:right;padding-top:1px}}
+.patrimonio-total-box span{{font-size:9px;color:#7186a2;white-space:nowrap}}
+.patrimonio-total-box strong{{font-size:17px;line-height:1.1;font-weight:900;color:#17345e;white-space:nowrap}}
+.patrimonio-composition-panel .patrimonio-type-card{{padding:9px 11px;gap:9px}}
+.patrimonio-composition-panel .patrimonio-type-icon{{width:32px;height:32px;flex-basis:32px;font-size:16px}}
+.patrimonio-composition-panel .patrimonio-type-label{{margin-bottom:3px}}
+
 .patrimonio-heading{{font-size:15px;font-weight:850;color:#17345e;margin:0 0 4px}}
 .patrimonio-subtitle{{font-size:10px;color:#7186a2;margin:0 0 13px}}
 .patrimonio-type-cards{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}}
@@ -6381,18 +6391,25 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 .patrimonio-legend-row span:last-child{{text-align:right;color:#8293aa;white-space:nowrap}}
 .patrimonio-note{{font-size:9px;color:#8293aa;line-height:1.4;margin-top:9px;padding:8px 10px;background:#f7f9fc;border:1px solid #e2eaf3;border-radius:9px}}
 @media(max-width:950px){{.patrimonio-top-layout,.patrimonio-bottom-layout{{grid-template-columns:minmax(0,1fr)}}}}
-@media(max-width:600px){{.patrimonio-type-cards{{grid-template-columns:1fr}}.patrimonio-type-card{{padding:10px}}.patrimonio-donut-layout{{grid-template-columns:1fr;justify-items:center}}.patrimonio-legend{{width:100%}}.patrimonio-city-row{{grid-template-columns:minmax(70px,1fr) minmax(45px,.8fr) 42px 55px;gap:5px}}}}
+@media(max-width:600px){{.patrimonio-composition-header{{gap:8px}}.patrimonio-total-box strong{{font-size:14px}}.patrimonio-type-cards{{grid-template-columns:1fr}}.patrimonio-type-card{{padding:10px}}.patrimonio-donut-layout{{grid-template-columns:1fr;justify-items:center}}.patrimonio-legend{{width:100%}}.patrimonio-city-row{{grid-template-columns:minmax(70px,1fr) minmax(45px,.8fr) 42px 55px;gap:5px}}}}
 </style>
 <div class="patrimonio-top-layout">
-  <section class="patrimonio-panel">
-    <h3 class="patrimonio-heading">📊 Composición del patrimonio</h3>
-    <div class="patrimonio-subtitle">Distribución por tipo de activo del patrimonio principal</div>
+  <section class="patrimonio-panel patrimonio-composition-panel">
+    <div class="patrimonio-composition-header">
+      <div>
+        <h3 class="patrimonio-heading">📊 Composición del patrimonio</h3>
+        <div class="patrimonio-subtitle">Distribución por tipo de activo del patrimonio principal</div>
+      </div>
+      <div class="patrimonio-total-box">
+        <span>Valor total del patrimonio</span>
+        <strong>{dinero_corto(valor_portafolio_valorado)}</strong>
+      </div>
+    </div>
     <div class="patrimonio-type-cards">
       <div class="patrimonio-type-card"><div class="patrimonio-type-icon" style="background:#e7f4ff;color:#2298de">🏠</div><div><div class="patrimonio-type-label">Finca Raíz</div><div class="patrimonio-type-value">{dinero_corto(valor_finca_portafolio)}</div></div><div class="patrimonio-type-pct" style="color:#2298de">{pct_finca_port:.1f}%</div></div>
       <div class="patrimonio-type-card"><div class="patrimonio-type-icon" style="background:#fff0f3;color:#ff3158">🏪</div><div><div class="patrimonio-type-label">Comercio</div><div class="patrimonio-type-value">{dinero_corto(valor_comercio)}</div></div><div class="patrimonio-type-pct" style="color:#ff3158">{pct_comercio_port:.1f}%</div></div>
       <div class="patrimonio-type-card"><div class="patrimonio-type-icon" style="background:#e5faf4;color:#08ae98">🚗</div><div><div class="patrimonio-type-label">Vehículos</div><div class="patrimonio-type-value">{dinero_corto(valor_vehiculos)}</div></div><div class="patrimonio-type-pct" style="color:#08ae98">{pct_vehiculos_port:.1f}%</div></div>
     </div>
-    <div class="patrimonio-note">Valor del patrimonio principal valorado: <b>{dinero_corto(valor_portafolio_valorado)}</b>. La finca raíz adicional se presenta por separado.</div>
   </section>
 </div>
 """
