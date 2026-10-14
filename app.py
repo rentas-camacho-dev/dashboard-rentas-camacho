@@ -76,6 +76,22 @@ div[data-testid="stDecoration"] {
     display: none !important;
 }
 
+/* AJUSTE FINAL: alinear por arriba las tarjetas de Composición del patrimonio
+   y Finca raíz conjunta, sin estirar ni centrar verticalmente su contenido. */
+div[data-testid="stHorizontalBlock"]:has(.patrimonio-panel) {
+    align-items: flex-start !important;
+}
+div[data-testid="stHorizontalBlock"]:has(.patrimonio-panel) > div[data-testid="column"] {
+    align-self: flex-start !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+div[data-testid="stHorizontalBlock"]:has(.patrimonio-panel) > div[data-testid="column"] > div[data-testid="stVerticalBlock"] {
+    align-self: flex-start !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
 
 /* ============================================================
    MARCA
