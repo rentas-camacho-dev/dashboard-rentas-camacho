@@ -6369,10 +6369,10 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-composition-layout{{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}}
+.portfolio-composition-layout{{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:9px;}}
 .portfolio-chart-card{{border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:10px;min-width:0;}}
-.portfolio-chart-heading{{font-size:11px;font-weight:850;color:#17345E;margin-bottom:10px;}}
-.portfolio-donut-wrap{{display:flex;align-items:center;gap:10px;min-height:125px;}}
+.portfolio-chart-heading{{font-size:10.5px;font-weight:850;color:#17345E;margin-bottom:7px;}}
+.portfolio-donut-wrap{{display:flex;align-items:center;gap:10px;min-height:124px;}}
 .portfolio-donut{{width:112px;height:112px;border-radius:50%;background:conic-gradient({dona_gradient});position:relative;flex-shrink:0;}}
 .portfolio-donut:after{{content:"";position:absolute;inset:25px;background:#FAFBFD;border-radius:50%;}}
 .portfolio-donut-center{{position:absolute;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:9px;color:#8290A4;}}
@@ -6381,17 +6381,17 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 .portfolio-legend-item{{display:grid;grid-template-columns:9px minmax(0,1fr);column-gap:6px;align-items:start;}}
 .portfolio-legend-item i{{width:9px;height:9px;border-radius:3px;margin-top:3px;}}
 .portfolio-legend-name{{font-size:9px;color:#61738C;font-weight:700;}}
-.portfolio-legend-value{{font-size:12px;color:#17345E;font-weight:850;margin-top:2px;}}
+.portfolio-legend-value{{font-size:11px;color:#17345E;font-weight:850;margin-top:2px;}}
 .portfolio-legend-pct{{font-size:8px;color:#8290A4;margin-top:2px;}}
 .portfolio-city-row{{margin-top:7px;}}
 .portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:9px;color:#50637B;}}
 .portfolio-city-label span{{display:flex;align-items:center;gap:6px;min-width:0;}}
 .portfolio-city-label i{{width:8px;height:8px;border-radius:3px;display:inline-block;flex-shrink:0;}}
 .portfolio-city-label b{{color:#17345E;white-space:nowrap;}}
-.portfolio-city-track{{height:7px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:5px;}}
+.portfolio-city-track{{height:6px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:4px;}}
 .portfolio-city-track div{{height:100%;border-radius:8px;}}
-.portfolio-city-value{{font-size:8px;color:#8290A4;text-align:right;margin-top:3px;}}
-.portfolio-composition-total{{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding:9px 11px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:10px;}}
+.portfolio-city-value{{font-size:7.5px;color:#8290A4;text-align:right;margin-top:2px;}}
+.portfolio-composition-total{{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:9px 11px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:10px;}}
 .portfolio-composition-total span{{font-size:9px;color:#71839A;}}
 .portfolio-composition-total b{{font-size:16px;color:#17345E;}}
 @media(max-width:850px){{.portfolio-composition-layout{{grid-template-columns:1fr;}}.portfolio-donut-wrap{{justify-content:center;}}}}
@@ -6552,13 +6552,13 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-net-city-panel{{margin-top:8px;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:10px;}}
-.portfolio-net-city-heading{{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:850;color:#17345E;}}
-.portfolio-net-city-sub{{font-size:9px;color:#8290A4;margin-top:3px;margin-bottom:7px;}}
+.portfolio-net-city-panel{{margin-top:9px;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:10px;}}
+.portfolio-net-city-heading{{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:850;color:#17345E;}}
+.portfolio-net-city-sub{{font-size:8.5px;color:#8290A4;margin-top:3px;margin-bottom:7px;}}
 .portfolio-net-city-row{{margin-top:6px;}}
-.portfolio-net-city-label{{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:9px;color:#50637B;}}
-.portfolio-net-city-label b{{font-size:10px;color:#17345E;white-space:nowrap;}}
-.portfolio-net-city-track{{height:9px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:4px;}}
+.portfolio-net-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8.5px;color:#50637B;}}
+.portfolio-net-city-label b{{font-size:9.5px;color:#17345E;white-space:nowrap;}}
+.portfolio-net-city-track{{height:7px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:3px;}}
 .portfolio-net-city-track div{{height:100%;border-radius:8px;}}
 </style>
 <div class="portfolio-net-city-panel">
@@ -6714,8 +6714,6 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 </div>
 """
             render_aportes_html(tabla_finca)
-
-
 
 
 if st.session_state.vista_airbnb == "Propiedades":
