@@ -6372,13 +6372,13 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 .portfolio-composition-layout{{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px;}}
 .portfolio-chart-card{{border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:8px;min-width:0;}}
 .portfolio-chart-heading{{font-size:9.5px;font-weight:850;color:#17345E;margin-bottom:5px;}}
-.portfolio-donut-wrap{{display:flex;align-items:center;gap:7px;min-height:96px;}}
-.portfolio-donut{{width:88px;height:88px;border-radius:50%;background:conic-gradient({dona_gradient});position:relative;flex-shrink:0;}}
+.portfolio-donut-wrap{{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:0;padding:8px 2px 4px;}}
+.portfolio-donut{{width:88px;height:88px;border-radius:50%;background:conic-gradient({dona_gradient});position:relative;flex-shrink:0;margin:0 auto;}}
 .portfolio-donut:after{{content:"";position:absolute;inset:20px;background:#FAFBFD;border-radius:50%;}}
 .portfolio-donut-center{{position:absolute;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:9px;color:#8290A4;}}
 .portfolio-donut-center b{{font-size:10px;color:#17345E;}}
-.portfolio-legend{{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1;}}
-.portfolio-legend-item{{display:grid;grid-template-columns:9px minmax(0,1fr);column-gap:6px;align-items:start;}}
+.portfolio-legend{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;width:100%;min-width:0;flex:none;}}
+.portfolio-legend-item{{display:grid;grid-template-columns:9px minmax(0,1fr);column-gap:5px;align-items:start;min-width:0;}}
 .portfolio-legend-item i{{width:9px;height:9px;border-radius:3px;margin-top:3px;}}
 .portfolio-legend-name{{font-size:9px;color:#61738C;font-weight:700;}}
 .portfolio-legend-value{{font-size:9px;color:#17345E;font-weight:850;margin-top:1px;}}
@@ -6395,6 +6395,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 .portfolio-composition-total span{{font-size:9px;color:#71839A;}}
 .portfolio-composition-total b{{font-size:16px;color:#17345E;}}
 @media(max-width:850px){{.portfolio-composition-layout{{grid-template-columns:1fr;}}.portfolio-donut-wrap{{justify-content:center;}}}}
+@media(max-width:420px){{.portfolio-legend{{grid-template-columns:1fr;gap:6px;max-width:210px;}}}}
 </style>
 <div class="aportes-portfolio-panel">
   <div class="aportes-portfolio-title">📊 Composición del patrimonio</div>
