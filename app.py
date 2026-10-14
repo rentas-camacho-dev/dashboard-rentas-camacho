@@ -38,13 +38,15 @@ st.markdown("""
 }
 
 .block-container {
-    max-width: 1500px !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
 
-    /* Espacio compacto alrededor de la barra superior */
+    /* Aprovechar el ancho disponible sin dejar una gran franja vacía */
     padding-top: 0.35rem !important;
     padding-bottom: 0.50rem !important;
-    padding-left: 3rem !important;
-    padding-right: 3rem !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
 }
 
 #MainMenu,
@@ -5738,7 +5740,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     font-size:10px;
     font-weight:900;
     text-transform:uppercase;
-    padding:11px 10px;
+    padding:13px 10px;
     border-bottom:1px solid #DCE5EE;
     text-align:right;
     white-space:nowrap;
@@ -5751,7 +5753,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 }
 
 .aportes-finca-table.compact td {
-    padding:11px 10px;
+    padding:16px 10px;
     border-bottom:1px solid #EDF1F5;
     text-align:right;
     white-space:nowrap;
@@ -6275,7 +6277,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
         # PARTICIPACIÓN DE ACTIVOS + DETALLE DE FINCA RAÍZ
         # --------------------------------------------------------
 
-        bottom_cols = st.columns([1.08, 1], gap="small")
+        bottom_cols = st.columns([1.08, 1], gap="medium")
 
         with bottom_cols[0]:
 
@@ -6369,9 +6371,9 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-composition-layout{{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:14px;align-items:stretch;}}
-.portfolio-chart-card{{border:1px solid #E1EAF3;background:#FFFFFF;border-radius:16px;padding:18px 20px;min-width:0;box-sizing:border-box;}}
-.portfolio-chart-heading{{font-size:16px;font-weight:850;color:#17345E;margin-bottom:16px;}}
+.portfolio-composition-layout{{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:12px;margin-top:14px;align-items:stretch;}}
+.portfolio-chart-card{{border:1px solid #E1EAF3;background:#FFFFFF;border-radius:16px;padding:16px 16px;min-width:0;box-sizing:border-box;}}
+.portfolio-chart-heading{{font-size:15px;font-weight:850;color:#17345E;margin-bottom:12px;}}
 .portfolio-type-total{{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:14px;}}
 .portfolio-type-total span{{font-size:13px;color:#71839A;}}
 .portfolio-type-total b{{font-size:24px;color:#17345E;font-weight:900;}}
@@ -6383,7 +6385,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 .portfolio-type-kpi-label{{font-size:15px;color:#61738C;font-weight:750;}}
 .portfolio-type-kpi-value{{grid-column:2;grid-row:2;font-size:17px;color:#17345E;font-weight:900;text-align:left;white-space:nowrap;}}
 .portfolio-type-kpi-pct{{font-size:12px;color:#8290A4;font-weight:600;display:block;margin-top:5px;}}
-.portfolio-city-row{{margin-top:14px;}}
+.portfolio-city-row{{margin-top:11px;}}
 .portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;color:#50637B;}}
 .portfolio-city-label span{{display:flex;align-items:center;gap:7px;min-width:0;}}
 .portfolio-city-label i{{width:13px;height:13px;border-radius:4px;display:inline-block;flex-shrink:0;}}
@@ -6391,7 +6393,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 .portfolio-city-track{{height:10px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:7px;}}
 .portfolio-city-track div{{height:100%;border-radius:8px;}}
 .portfolio-city-value{{font-size:12px;color:#8290A4;text-align:right;margin-top:5px;}}
-@media(max-width:1050px){{.portfolio-type-kpis{{grid-template-columns:repeat(3,minmax(0,1fr));}}}}
+@media(max-width:1050px){{.portfolio-composition-layout{{grid-template-columns:1fr;}}.portfolio-type-kpis{{grid-template-columns:repeat(3,minmax(0,1fr));}}}}
 @media(max-width:600px){{.portfolio-type-kpis{{grid-template-columns:1fr;}}.portfolio-type-kpi{{grid-template-columns:10px minmax(0,1fr) auto;grid-template-rows:auto;}}.portfolio-type-kpi-value{{grid-column:3;grid-row:1;text-align:right;}}}}
 </style>
 <div class="aportes-portfolio-panel">
@@ -6518,12 +6520,12 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-other-assets-panel{{margin-top:14px;box-sizing:border-box;overflow-x:auto;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:16px;padding:18px 20px;}}
-.portfolio-other-assets-heading{{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:850;color:#17345E;margin-bottom:6px;}}
-.portfolio-other-assets-sub{{font-size:13px;line-height:1.45;color:#71839A;margin-bottom:14px;}}
+.portfolio-other-assets-panel{{margin-top:14px;box-sizing:border-box;overflow-x:auto;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:16px;padding:15px 16px;}}
+.portfolio-other-assets-heading{{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:850;color:#17345E;margin-bottom:6px;}}
+.portfolio-other-assets-sub{{font-size:12px;line-height:1.45;color:#71839A;margin-bottom:10px;}}
 .portfolio-other-assets-columns{{display:grid;grid-template-columns:minmax(125px,1.5fr) minmax(65px,.75fr) minmax(70px,.85fr) minmax(70px,.85fr) minmax(80px,1fr) minmax(55px,.55fr);gap:8px;padding:11px;background:#F3F6FA;border-radius:9px;color:#71839A;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;}}
-.portfolio-other-asset-row{{padding:13px 8px 14px;border-bottom:1px solid #E8EDF3;}}
-.portfolio-other-asset-grid{{display:grid;grid-template-columns:minmax(125px,1.5fr) minmax(65px,.75fr) minmax(70px,.85fr) minmax(70px,.85fr) minmax(80px,1fr) minmax(55px,.55fr);gap:8px;align-items:center;font-size:14px;line-height:1.4;}}
+.portfolio-other-asset-row{{padding:10px 8px 11px;border-bottom:1px solid #E8EDF3;}}
+.portfolio-other-asset-grid{{display:grid;grid-template-columns:minmax(125px,1.5fr) minmax(65px,.75fr) minmax(70px,.85fr) minmax(70px,.85fr) minmax(80px,1fr) minmax(55px,.55fr);gap:8px;align-items:center;font-size:13px;line-height:1.35;}}
 .portfolio-other-asset-name{{display:flex;align-items:center;gap:8px;min-width:0;color:#405875;font-weight:750;}}
 .portfolio-other-asset-name i{{width:13px;height:13px;flex:0 0 13px;border-radius:4px;display:inline-block;}}
 .portfolio-other-asset-name span{{overflow-wrap:anywhere;}}
