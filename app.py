@@ -6371,26 +6371,26 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 <style>
 .portfolio-composition-layout{{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px;}}
 .portfolio-chart-card{{border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:8px;min-width:0;}}
-.portfolio-chart-heading{{font-size:9.5px;font-weight:850;color:#17345E;margin-bottom:5px;}}
+.portfolio-chart-heading{{font-size:11px;font-weight:850;color:#17345E;margin-bottom:7px;}}
 .portfolio-donut-wrap{{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:0;padding:8px 2px 4px;}}
 .portfolio-donut{{width:88px;height:88px;border-radius:50%;background:conic-gradient({dona_gradient});position:relative;flex-shrink:0;margin:0 auto;}}
 .portfolio-donut:after{{content:"";position:absolute;inset:20px;background:#FAFBFD;border-radius:50%;}}
-.portfolio-donut-center{{position:absolute;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:9px;color:#8290A4;}}
-.portfolio-donut-center b{{font-size:10px;color:#17345E;}}
+.portfolio-donut-center{{position:absolute;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:10px;color:#8290A4;}}
+.portfolio-donut-center b{{font-size:11px;color:#17345E;}}
 .portfolio-legend{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;width:100%;min-width:0;flex:none;}}
 .portfolio-legend-item{{display:grid;grid-template-columns:9px minmax(0,1fr);column-gap:5px;align-items:start;min-width:0;}}
 .portfolio-legend-item i{{width:9px;height:9px;border-radius:3px;margin-top:3px;}}
-.portfolio-legend-name{{font-size:9px;color:#61738C;font-weight:700;}}
-.portfolio-legend-value{{font-size:9px;color:#17345E;font-weight:850;margin-top:1px;}}
-.portfolio-legend-pct{{font-size:7px;color:#8290A4;margin-top:1px;}}
+.portfolio-legend-name{{font-size:10px;color:#61738C;font-weight:700;}}
+.portfolio-legend-value{{font-size:10px;color:#17345E;font-weight:850;margin-top:2px;}}
+.portfolio-legend-pct{{font-size:8px;color:#8290A4;margin-top:2px;}}
 .portfolio-city-row{{margin-top:4px;}}
-.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8px;color:#50637B;}}
+.portfolio-city-label{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:#50637B;}}
 .portfolio-city-label span{{display:flex;align-items:center;gap:6px;min-width:0;}}
-.portfolio-city-label i{{width:8px;height:8px;border-radius:3px;display:inline-block;flex-shrink:0;}}
+.portfolio-city-label i{{width:9px;height:9px;border-radius:3px;display:inline-block;flex-shrink:0;}}
 .portfolio-city-label b{{color:#17345E;white-space:nowrap;}}
-.portfolio-city-track{{height:5px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:2px;}}
+.portfolio-city-track{{height:6px;background:#E8EDF3;border-radius:8px;overflow:hidden;margin-top:3px;}}
 .portfolio-city-track div{{height:100%;border-radius:8px;}}
-.portfolio-city-value{{font-size:6.5px;color:#8290A4;text-align:right;margin-top:1px;}}
+.portfolio-city-value{{font-size:8px;color:#8290A4;text-align:right;margin-top:2px;}}
 .portfolio-composition-total{{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:9px 11px;border:1px solid #DCE5EE;background:#FFFFFF;border-radius:10px;}}
 .portfolio-composition-total span{{font-size:9px;color:#71839A;}}
 .portfolio-composition-total b{{font-size:16px;color:#17345E;}}
@@ -6503,16 +6503,16 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
             render_aportes_html(f"""
 <style>
-.portfolio-other-assets-panel{{margin-top:5px;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:9px 11px 8px;}}
-.portfolio-other-assets-heading{{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:850;line-height:1.3;color:#17345E;margin-bottom:3px;}}
-.portfolio-other-assets-sub{{font-size:9px;line-height:1.35;color:#8290A4;margin-bottom:5px;}}
-.portfolio-other-asset-row{{padding:4px 0 5px;border-top:1px solid #E8EDF3;}}
-.portfolio-other-asset-head{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;line-height:1.3;}}
+.portfolio-other-assets-panel{{margin-top:5px;height:264px;max-height:264px;box-sizing:border-box;overflow-y:auto;border:1px solid #E4EAF0;background:#FAFBFD;border-radius:12px;padding:8px 10px 6px;}}
+.portfolio-other-assets-heading{{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:850;line-height:1.25;color:#17345E;margin-bottom:2px;}}
+.portfolio-other-assets-sub{{font-size:9px;line-height:1.25;color:#8290A4;margin-bottom:3px;}}
+.portfolio-other-asset-row{{padding:3px 0 3px;border-top:1px solid #E8EDF3;}}
+.portfolio-other-asset-head{{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;line-height:1.2;}}
 .portfolio-other-asset-name{{display:flex;align-items:center;gap:7px;min-width:0;color:#50637B;font-weight:750;}}
 .portfolio-other-asset-name i{{width:9px;height:9px;flex:0 0 9px;border-radius:3px;display:inline-block;}}
 .portfolio-other-asset-name span{{overflow-wrap:anywhere;}}
 .portfolio-other-asset-head b{{font-size:11px;white-space:nowrap;}}
-.portfolio-other-asset-meta{{display:flex;flex-wrap:wrap;gap:3px 10px;margin:3px 0 4px 16px;font-size:9px;line-height:1.3;color:#718198;}}
+.portfolio-other-asset-meta{{display:flex;flex-wrap:wrap;gap:2px 9px;margin:2px 0 3px 16px;font-size:9px;line-height:1.2;color:#718198;}}
 .portfolio-other-asset-track{{height:5px;margin-left:16px;background:#E8EDF3;border-radius:8px;overflow:hidden;}}
 .portfolio-other-asset-track div{{height:100%;border-radius:8px;}}
 .portfolio-other-asset-empty{{font-size:10px;color:#8290A4;padding:8px 0;}}
