@@ -6384,6 +6384,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 .patrimonio-table{{width:100%;border-collapse:collapse;font-size:10px;min-width:460px}}
 .patrimonio-table th{{text-align:left;background:#f2f6fa;color:#71839a;font-size:8px;text-transform:uppercase;padding:9px 8px;white-space:nowrap}}
 .patrimonio-table td{{padding:10px 8px;border-bottom:1px solid #e8eef5;color:#405875;white-space:nowrap}}
+.patrimonio-table-additional td{{padding:var(--patrimonio-additional-cell-padding,10px) 8px;border-bottom:1px solid #e8eef5;color:#405875;white-space:nowrap}}
 .patrimonio-table .patrimonio-empty-row td{{height:30px;padding:10px 8px;border-bottom:1px solid #e8eef5;background:#fff}}
 .patrimonio-table td:first-child{{font-weight:800;color:#17345e}}
 .patrimonio-table .num{{text-align:right;font-variant-numeric:tabular-nums}}
@@ -6495,14 +6496,14 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
             filas_adicionales = '<tr><td colspan="6">No hay finca raíz adicional registrada.</td></tr>'
             filas_leyenda = '<div class="patrimonio-note">No hay datos suficientes para construir la distribución adicional.</div>'
 
-        # Igualar la altura visual de ambas tablas: completar la tabla adicional
-        # con filas vacías hasta alcanzar el número de inmuebles de la tabla conjunta.
-        if not adicionales_tabla.empty and not finca_resumen.empty:
-            filas_vacias = max(len(finca_resumen) - len(adicionales_tabla), 0)
-            filas_adicionales += "".join(
-                '<tr class="patrimonio-empty-row"><td colspan="6">&nbsp;</td></tr>'
-                for _ in range(filas_vacias)
-            )
+        # Ajuste final de altura: no agregar filas vacías debajo de los activos
+        # adicionales. Si hay menos activos adicionales, aumentar el espaciado
+        # de sus filas para que ambas tablas terminen alineadas visualmente.
+        cantidad_conjuntos = len(finca_resumen)
+        cantidad_adicionales = len(adicionales_tabla)
+        padding_adicional = 10
+        if cantidad_adicionales > 0 and cantidad_conjuntos > cantidad_adicionales:
+            padding_adicional = 10 + ((cantidad_conjuntos / cantidad_adicionales) - 1) * 16
 
         bottom_cols = st.columns([1, 1], gap="small")
         with bottom_cols[0]:
@@ -6517,7 +6518,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     <div class="patrimonio-mini-stat"><span>Deuda adicional</span><b style="color:#ef4444">-{dinero_corto(deuda_adicional_tabla)}</b></div>
     <div class="patrimonio-mini-stat"><span>Patrimonio neto</span><b style="color:#08a77f">{dinero_corto(neto_adicional_tabla)}</b></div>
   </div>
-  <div class="patrimonio-table-wrap"><table class="patrimonio-table"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% neto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_adicionales}</tbody></table></div>
+  <div class="patrimonio-table-wrap"><table class="patrimonio-table patrimonio-table-additional" style="--patrimonio-additional-cell-padding:{padding_adicional:.1f}px"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% neto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_adicionales}</tbody></table></div>
 </div>""")
 
         with bottom_cols[1]:
