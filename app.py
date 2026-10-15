@@ -6385,6 +6385,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 .patrimonio-table th{{text-align:left;background:#f2f6fa;color:#71839a;font-size:8px;text-transform:uppercase;padding:9px 8px;white-space:nowrap}}
 .patrimonio-table td{{padding:10px 8px;border-bottom:1px solid #e8eef5;color:#405875;white-space:nowrap}}
 .patrimonio-table-additional td{{padding:var(--patrimonio-additional-cell-padding,10px) 8px;border-bottom:1px solid #e8eef5;color:#405875;white-space:nowrap}}
+.patrimonio-table-joint td{{padding:24px 8px;border-bottom:1px solid #e8eef5;color:#405875;white-space:nowrap}}
 .patrimonio-table .patrimonio-empty-row td{{height:30px;padding:10px 8px;border-bottom:1px solid #e8eef5;background:#fff}}
 .patrimonio-table td:first-child{{font-weight:800;color:#17345e}}
 .patrimonio-table .num{{text-align:right;font-variant-numeric:tabular-nums}}
@@ -6532,7 +6533,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
     <div class="patrimonio-mini-stat"><span>Deuda conjunta</span><b style="color:#ef4444">-{dinero_corto(float(finca_resumen['Deuda_Actual'].sum()) if not finca_resumen.empty else 0)}</b></div>
     <div class="patrimonio-mini-stat"><span>Patrimonio neto</span><b style="color:#08a77f">{dinero_corto(float(finca_resumen['Patrimonio_Neto'].sum()) if not finca_resumen.empty else 0)}</b></div>
   </div>
-  <div class="patrimonio-table-wrap"><table class="patrimonio-table"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% conjunto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_conjuntas}</tbody></table></div>
+  <div class="patrimonio-table-wrap"><table class="patrimonio-table patrimonio-table-joint"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% conjunto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_conjuntas}</tbody></table></div>
 </div>""")
 
 if st.session_state.vista_airbnb == "Propiedades":
