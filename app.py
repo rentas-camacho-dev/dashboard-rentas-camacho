@@ -6352,7 +6352,7 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
 
         composicion_html = f"""
 <style>
-.patrimonio-top-layout{{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:stretch;margin-top:10px}}
+.patrimonio-top-layout{{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:stretch;margin-top:0}}
 .patrimonio-panel{{background:#fff;border:1px solid #d9e5f2;border-radius:16px;padding:15px;min-width:0;box-sizing:border-box}}
 .patrimonio-composition-panel{{padding:12px 15px 13px}}
 .patrimonio-composition-header{{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:8px}}
@@ -6494,68 +6494,36 @@ div[data-testid="stHorizontalBlock"]:has(.aportes-compact-card) > div[data-testi
             filas_adicionales = '<tr><td colspan="6">No hay finca raíz adicional registrada.</td></tr>'
             filas_leyenda = '<div class="patrimonio-note">No hay datos suficientes para construir la distribución adicional.</div>'
 
-        # Renderizar las tres tarjetas dentro de UN solo HTML.
-        # Así Streamlit no crea contenedores/iframes separados con alturas
-        # diferentes y ambas columnas empiezan exactamente en la misma línea.
-        render_aportes_html(f"""
-<style>
-.patrimonio-aligned-layout {{
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
-  gap: 12px;
-  align-items: start;
-  width: 100%;
-  margin-top: 10px;
-}}
-.patrimonio-aligned-left,
-.patrimonio-aligned-right {{
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-  align-self: start;
-  margin: 0;
-  padding: 0;
-}}
-.patrimonio-aligned-layout .patrimonio-panel {{
-  width: 100%;
-  min-width: 0;
-  margin: 0 !important;
-  box-sizing: border-box;
-}}
-@media (max-width: 950px) {{
-  .patrimonio-aligned-layout {{ grid-template-columns: minmax(0, 1fr); }}
-}}
-</style>
-<div class="patrimonio-aligned-layout">
-  <div class="patrimonio-aligned-left">
-    {composicion_html}
-    <div class="patrimonio-panel">
-      <h3 class="patrimonio-heading">🏢 Finca raíz adicional</h3>
-      <div class="patrimonio-subtitle">Activos inmobiliarios fuera del patrimonio principal</div>
-      <div class="patrimonio-additional-summary">
-        <div class="patrimonio-mini-stat"><span>Valor adicional</span><b>{dinero_corto(valor_adicional_tabla)}</b></div>
-        <div class="patrimonio-mini-stat"><span>Deuda adicional</span><b style="color:#ef4444">-{dinero_corto(deuda_adicional_tabla)}</b></div>
-        <div class="patrimonio-mini-stat"><span>Patrimonio neto</span><b style="color:#08a77f">{dinero_corto(neto_adicional_tabla)}</b></div>
-      </div>
-      <div class="patrimonio-table-wrap"><table class="patrimonio-table"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% neto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_adicionales}</tbody></table></div>
-      <div class="patrimonio-note">Los activos adicionales se muestran separados y no se suman al patrimonio neto principal.</div>
-    </div>
+        bottom_cols = st.columns([1, 1], gap="small")
+        with bottom_cols[0]:
+            # Izquierda: composición del patrimonio y finca raíz adicional.
+            render_aportes_html(composicion_html)
+            render_aportes_html(f"""
+<div class="patrimonio-panel">
+  <h3 class="patrimonio-heading">🏢 Finca raíz adicional</h3>
+  <div class="patrimonio-subtitle">Activos inmobiliarios fuera del patrimonio principal</div>
+  <div class="patrimonio-additional-summary">
+    <div class="patrimonio-mini-stat"><span>Valor adicional</span><b>{dinero_corto(valor_adicional_tabla)}</b></div>
+    <div class="patrimonio-mini-stat"><span>Deuda adicional</span><b style="color:#ef4444">-{dinero_corto(deuda_adicional_tabla)}</b></div>
+    <div class="patrimonio-mini-stat"><span>Patrimonio neto</span><b style="color:#08a77f">{dinero_corto(neto_adicional_tabla)}</b></div>
   </div>
-  <div class="patrimonio-aligned-right">
-    <div class="patrimonio-panel">
-      <h3 class="patrimonio-heading">🏠 Finca raíz conjunta</h3>
-      <div class="patrimonio-subtitle">Activos compartidos · valor, deuda y patrimonio neto por inmueble</div>
-      <div class="patrimonio-additional-summary">
-        <div class="patrimonio-mini-stat"><span>Valor conjunto</span><b>{dinero_corto(valor_finca_total)}</b></div>
-        <div class="patrimonio-mini-stat"><span>Deuda conjunta</span><b style="color:#ef4444">-{dinero_corto(float(finca_resumen['Deuda_Actual'].sum()) if not finca_resumen.empty else 0)}</b></div>
-        <div class="patrimonio-mini-stat"><span>Patrimonio neto</span><b style="color:#08a77f">{dinero_corto(float(finca_resumen['Patrimonio_Neto'].sum()) if not finca_resumen.empty else 0)}</b></div>
-      </div>
-      <div class="patrimonio-table-wrap"><table class="patrimonio-table"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% conjunto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_conjuntas}</tbody></table></div>
-    </div>
+  <div class="patrimonio-table-wrap"><table class="patrimonio-table"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% neto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_adicionales}</tbody></table></div>
+  <div class="patrimonio-note">Los activos adicionales se muestran separados y no se suman al patrimonio neto principal.</div>
+</div>""")
+
+        with bottom_cols[1]:
+            # Derecha: finca raíz conjunta.
+            render_aportes_html(f"""
+<div class="patrimonio-panel">
+  <h3 class="patrimonio-heading">🏠 Finca raíz conjunta</h3>
+  <div class="patrimonio-subtitle">Activos compartidos · valor, deuda y patrimonio neto por inmueble</div>
+  <div class="patrimonio-additional-summary">
+    <div class="patrimonio-mini-stat"><span>Valor conjunto</span><b>{dinero_corto(valor_finca_total)}</b></div>
+    <div class="patrimonio-mini-stat"><span>Deuda conjunta</span><b style="color:#ef4444">-{dinero_corto(float(finca_resumen['Deuda_Actual'].sum()) if not finca_resumen.empty else 0)}</b></div>
+    <div class="patrimonio-mini-stat"><span>Patrimonio neto</span><b style="color:#08a77f">{dinero_corto(float(finca_resumen['Patrimonio_Neto'].sum()) if not finca_resumen.empty else 0)}</b></div>
   </div>
-</div>
-""")
+  <div class="patrimonio-table-wrap"><table class="patrimonio-table"><thead><tr><th>Inmueble</th><th>Ciudad</th><th>% conjunto</th><th>Valor</th><th>Deuda</th><th>Neto</th></tr></thead><tbody>{filas_conjuntas}</tbody></table></div>
+</div>""")
 
 if st.session_state.vista_airbnb == "Propiedades":
 
