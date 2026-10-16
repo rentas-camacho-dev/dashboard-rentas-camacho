@@ -7943,6 +7943,51 @@ elif st.session_state.vista_airbnb == "Financiero":
                 pd.Series(False, index=movimientos_hist.index)
             ).fillna(False).astype(bool)
         )
+
+        # Homologar la entidad de los movimientos operativos con la entidad
+        # oficial del activo en Vista_Inversiones_Prorrateadas.
+        # Ejemplo: Colinas del pinar aparece como "Vivienda" en movimientos,
+        # pero como "Finca Raíz" en inversiones. Sin esta homologación, los
+        # ingresos quedaban separados de la tarjeta de inversión del inmueble.
+        def _clave_activo_financiero(valor):
+            import unicodedata
+            texto = "" if pd.isna(valor) else str(valor)
+            texto = " ".join(texto.strip().split()).casefold()
+            return "".join(
+                caracter for caracter in unicodedata.normalize("NFKD", texto)
+                if not unicodedata.combining(caracter)
+            )
+
+        mask_inversiones_oficiales = movimientos_hist["Es_Inversion_Registrada"]
+        mapa_entidad_activo = {}
+        if mask_inversiones_oficiales.any():
+            filas_inv_entidad = movimientos_hist.loc[
+                mask_inversiones_oficiales,
+                ["Nombre_Propiedad", "Nombre_Tipo"]
+            ].copy()
+            filas_inv_entidad["Clave_Activo_Fin"] = (
+                filas_inv_entidad["Nombre_Propiedad"].apply(_clave_activo_financiero)
+            )
+            filas_inv_entidad = filas_inv_entidad[
+                filas_inv_entidad["Clave_Activo_Fin"] != ""
+            ]
+            for clave_activo, grupo_entidad in filas_inv_entidad.groupby("Clave_Activo_Fin"):
+                valores_entidad = [
+                    str(v).strip() for v in grupo_entidad["Nombre_Tipo"].dropna()
+                    if str(v).strip() and str(v).strip().lower() != "sin información"
+                ]
+                if valores_entidad:
+                    mapa_entidad_activo[clave_activo] = pd.Series(valores_entidad).mode().iloc[0]
+
+        if mapa_entidad_activo:
+            claves_mov = movimientos_hist["Nombre_Propiedad"].apply(_clave_activo_financiero)
+            mask_mov_operativos = ~movimientos_hist["Es_Inversion_Registrada"]
+            entidades_homologadas = claves_mov.map(mapa_entidad_activo)
+            mask_homologar = mask_mov_operativos & entidades_homologadas.notna()
+            movimientos_hist.loc[mask_homologar, "Nombre_Tipo"] = (
+                entidades_homologadas.loc[mask_homologar]
+            )
+
         # Priorizar el valor prorrateado oficial. Los gastos operativos solo
         # se toman de movimientos que no estén clasificados como inversión.
         movimientos_hist["Inversion"] = 0.0
