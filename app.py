@@ -8070,16 +8070,6 @@ elif st.session_state.vista_airbnb == "Financiero":
             k4.metric("Flujo neto acumulado", dinero_corto(flujo_acumulado))
             k5.metric("VAN histórico", dinero_corto(van_total) if van_total is not None else "—", f"Tasa {tasa_descuento:.0%}")
 
-            tir_texto = f"{tir_total:.1%}" if tir_total is not None else "No calculable"
-            roi_texto = f"{roi_total:.1f}%" if roi_total is not None else "No calculable"
-            st.markdown(
-                f"<div class='section-subtitle' style='margin-top:0.15rem'>"
-                f"TIR estimada del flujo seleccionado: <b>{tir_texto}</b> &nbsp; · &nbsp; "
-                f"Retorno acumulado sobre inversión identificada: <b>{roi_texto}</b>"
-                f"</div>", unsafe_allow_html=True
-            )
-
-
             # Fuente independiente de inversión: no depende de que la inversión
             # tenga Fecha ni de que aparezca como movimiento operativo.
             inversiones_activo = cargar_inversiones().copy()
