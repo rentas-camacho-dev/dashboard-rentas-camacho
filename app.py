@@ -8128,14 +8128,56 @@ elif st.session_state.vista_airbnb == "Financiero":
                 )
                 st.plotly_chart(fig_acum, use_container_width=True)
 
-            st.markdown("### Rentabilidad histórica por entidad y proyecto")
+            st.markdown("### Rentabilidad histórica por activo")
+            st.caption(
+                "Cada tarjeta combina los flujos fechados con la inversión total oficial "
+                "de Vista_Inversiones_Prorrateadas. La inversión se consulta por separado "
+                "para que no desaparezca si una fila de inversión no tiene fecha."
+            )
+
+            # Fuente independiente de inversión: no depende de que la inversión
+            # tenga Fecha ni de que aparezca como movimiento operativo.
+            inversiones_activo = cargar_inversiones().copy()
+            if not inversiones_activo.empty:
+                inversiones_activo["Clave_Activo"] = (
+                    inversiones_activo["Activo_Proyecto"].fillna("").astype(str)
+                    .str.strip().str.casefold()
+                )
+                inversiones_activo = inversiones_activo.groupby(
+                    "Clave_Activo", as_index=False
+                ).agg(
+                    Inversion_Oficial=("Inversion", "sum"),
+                    Activo_Proyecto=("Activo_Proyecto", "first")
+                )
+            else:
+                inversiones_activo = pd.DataFrame(
+                    columns=["Clave_Activo", "Inversion_Oficial", "Activo_Proyecto"]
+                )
+
             filas_resumen = []
-            for (entidad, proyecto), grupo in fin.groupby(["Nombre_Tipo", "Nombre_Propiedad"], dropna=False):
+            for (entidad, proyecto), grupo in fin.groupby(
+                ["Nombre_Tipo", "Nombre_Propiedad"], dropna=False
+            ):
                 grupo = grupo.sort_values("Fecha")
-                inv = float(grupo["Inversion"].sum())
+                clave = str(proyecto).strip().casefold()
+                match_inv = inversiones_activo[
+                    inversiones_activo["Clave_Activo"] == clave
+                ]
+                inv_oficial = (
+                    float(match_inv["Inversion_Oficial"].sum())
+                    if not match_inv.empty else 0.0
+                )
+                # Para el filtro de socio, el importe de inversión oficial por
+                # activo no se presenta como participación individual.
+                if socio_sel != "Todos":
+                    inv_mov_socio = float(grupo["Inversion"].sum())
+                    inv = inv_mov_socio if inv_mov_socio > 0 else 0.0
+                else:
+                    inv = inv_oficial if inv_oficial > 0 else float(grupo["Inversion"].sum())
+
                 ing = float(grupo["Ingreso"].sum())
                 gasto_op = float(grupo["Gasto_Operativo"].sum())
-                flujo = float(grupo["Flujo_Caja"].sum())
+                flujo = ing - gasto_op - inv
                 van = _van_de_flujos(grupo["Fecha"], grupo["Flujo_Caja"], tasa_descuento)
                 tir = _tir_de_flujos(grupo["Fecha"], grupo["Flujo_Caja"])
                 roi = (flujo / inv * 100) if inv else None
@@ -8143,33 +8185,64 @@ elif st.session_state.vista_airbnb == "Financiero":
                     grupo["Nombre_Subcategoria"].astype(str) + " "
                     + grupo["Nombre_Cuenta"].astype(str) + " "
                     + grupo["Detalle"].astype(str)
-                ).str.lower().str.contains(r"proyecto cerrado|cierre de proyecto|liquidaci[oó]n final|venta final", regex=True, na=False).any()
+                ).str.lower().str.contains(
+                    r"proyecto cerrado|cierre de proyecto|liquidaci[oó]n final|venta final",
+                    regex=True, na=False
+                ).any()
                 filas_resumen.append({
                     "Entidad": entidad, "Proyecto / activo": proyecto,
                     "Estado": "Cerrado" if texto_cierre else "En seguimiento",
-                    "Primera fecha": grupo["Fecha"].min(), "Último movimiento": grupo["Fecha"].max(),
+                    "Primera fecha": grupo["Fecha"].min(),
+                    "Último movimiento": grupo["Fecha"].max(),
                     "Inversión histórica": inv, "Ingresos históricos": ing,
                     "Gastos operativos": gasto_op, "Flujo neto acumulado": flujo,
-                    "ROI acumulado (%)": roi, "TIR anual estimada (%)": (tir * 100 if tir is not None else None),
+                    "ROI acumulado (%)": roi,
+                    "TIR anual estimada (%)": (tir * 100 if tir is not None else None),
                     "VAN": van
                 })
+
             resumen_proyectos = pd.DataFrame(filas_resumen)
             if not resumen_proyectos.empty:
-                resumen_proyectos = resumen_proyectos.sort_values(["Entidad", "Proyecto / activo"], na_position="last")
-                resumen_mostrar = resumen_proyectos.copy()
-                for col in ["Inversión histórica", "Ingresos históricos", "Gastos operativos", "Flujo neto acumulado", "VAN"]:
-                    resumen_mostrar[col] = resumen_mostrar[col].map(lambda x: dinero_corto(x) if pd.notna(x) else "—")
-                for col in ["ROI acumulado (%)", "TIR anual estimada (%)"]:
-                    resumen_mostrar[col] = resumen_mostrar[col].map(lambda x: f"{x:.1f}%" if pd.notna(x) else "No calculable")
-                for col in ["Primera fecha", "Último movimiento"]:
-                    resumen_mostrar[col] = pd.to_datetime(resumen_mostrar[col], errors="coerce").dt.strftime("%d/%m/%Y")
-                st.dataframe(
-                    resumen_mostrar[[
-                        "Entidad", "Proyecto / activo", "Estado", "Primera fecha", "Último movimiento",
-                        "Inversión histórica", "Ingresos históricos", "Gastos operativos",
-                        "Flujo neto acumulado", "ROI acumulado (%)", "TIR anual estimada (%)", "VAN"
-                    ]], use_container_width=True, hide_index=True
+                resumen_proyectos = resumen_proyectos.sort_values(
+                    ["Entidad", "Proyecto / activo"], na_position="last"
                 )
+                # Tarjetas visuales por activo en lugar de la tabla extensa.
+                for inicio in range(0, len(resumen_proyectos), 3):
+                    tarjetas = st.columns(3)
+                    for columna, (_, fila) in zip(
+                        tarjetas, resumen_proyectos.iloc[inicio:inicio + 3].iterrows()
+                    ):
+                        roi_val = fila["ROI acumulado (%)"]
+                        roi_txt = f"{roi_val:.1f}%" if pd.notna(roi_val) else "No calculable"
+                        tir_val = fila["TIR anual estimada (%)"]
+                        tir_txt = f"{tir_val:.1f}%" if pd.notna(tir_val) else "No calculable"
+                        van_val = fila["VAN"]
+                        van_txt = dinero_corto(van_val) if pd.notna(van_val) else "No calculable"
+                        inv_txt = dinero_corto(fila["Inversión histórica"])
+                        flujo_val = float(fila["Flujo neto acumulado"])
+                        flujo_color = "#008866" if flujo_val >= 0 else "#D83A42"
+                        with columna:
+                            st.markdown(
+                                f"""
+<div style="background:#FFFFFF;border:1px solid #DCE5EE;border-radius:15px;
+padding:17px 18px;margin:5px 0 12px;box-shadow:0 4px 14px rgba(23,52,94,.05);">
+  <div style="font-size:10px;font-weight:800;color:#8290A4;text-transform:uppercase;">{fila['Entidad']}</div>
+  <div style="font-size:21px;font-weight:850;color:#17345E;margin:3px 0 13px;">{fila['Proyecto / activo']}</div>
+  <div style="font-size:10px;color:#8290A4;">INVERSIÓN HISTÓRICA</div>
+  <div style="font-size:25px;font-weight:850;color:#17345E;margin:2px 0 12px;">{inv_txt}</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid #EDF1F5;padding-top:12px;">
+    <div><div style="font-size:10px;color:#8290A4;">Ingresos</div><div style="font-size:15px;font-weight:750;color:#009B70;">{dinero_corto(fila['Ingresos históricos'])}</div></div>
+    <div><div style="font-size:10px;color:#8290A4;">Gastos operativos</div><div style="font-size:15px;font-weight:750;color:#E84235;">{dinero_corto(fila['Gastos operativos'])}</div></div>
+    <div><div style="font-size:10px;color:#8290A4;">Flujo neto acumulado</div><div style="font-size:15px;font-weight:800;color:{flujo_color};">{dinero_corto(flujo_val)}</div></div>
+    <div><div style="font-size:10px;color:#8290A4;">ROI acumulado</div><div style="font-size:15px;font-weight:800;color:#17345E;">{roi_txt}</div></div>
+    <div><div style="font-size:10px;color:#8290A4;">TIR anual estimada</div><div style="font-size:13px;font-weight:750;color:#50637B;">{tir_txt}</div></div>
+    <div><div style="font-size:10px;color:#8290A4;">VAN ({tasa_descuento:.0%})</div><div style="font-size:13px;font-weight:750;color:#50637B;">{van_txt}</div></div>
+  </div>
+  <div style="font-size:9px;color:#8A98AA;margin-top:12px;">{fila['Estado']} · Último movimiento: {pd.to_datetime(fila['Último movimiento']).strftime('%d/%m/%Y') if pd.notna(fila['Último movimiento']) else 'Sin fecha'}</div>
+</div>
+""",
+                                unsafe_allow_html=True
+                            )
 
             st.markdown("### Flujo de caja histórico del proyecto seleccionado")
             flujo_detalle = fin.copy()
