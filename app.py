@@ -1308,6 +1308,60 @@ def cargar_datos_financieros():
 
 
 # ============================================================
+# MOVIMIENTOS FINANCIEROS COMPLETOS - TODAS LAS ENTIDADES
+# Se usa exclusivamente en la vista Financiero para no alterar
+# las vistas Airbnb que dependen de cargar_datos_financieros().
+# ============================================================
+
+@st.cache_data(ttl=300)
+def cargar_movimientos_financieros_completos():
+
+    query = """
+    SELECT
+        Fecha,
+        Nombre_Propiedad,
+        Ciudad,
+        Nombre_Socio,
+        Nombre_Tipo,
+        Nombre_Subcategoria,
+        Detalle,
+        Nombre_Cuenta,
+        Ingreso,
+        Gasto
+    FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
+    WHERE Fecha IS NOT NULL
+    """
+
+    movimientos = client.query(query).to_dataframe()
+
+    if movimientos.empty:
+        return pd.DataFrame(columns=[
+            "Fecha", "Nombre_Propiedad", "Ciudad", "Nombre_Socio",
+            "Nombre_Tipo", "Nombre_Subcategoria", "Detalle",
+            "Nombre_Cuenta", "Ingreso", "Gasto"
+        ])
+
+    movimientos["Fecha"] = pd.to_datetime(
+        movimientos["Fecha"], errors="coerce"
+    )
+
+    for col in ["Ingreso", "Gasto"]:
+        movimientos[col] = pd.to_numeric(
+            movimientos[col], errors="coerce"
+        ).fillna(0)
+
+    for col in [
+        "Nombre_Propiedad", "Ciudad", "Nombre_Socio", "Nombre_Tipo",
+        "Nombre_Subcategoria", "Detalle", "Nombre_Cuenta"
+    ]:
+        movimientos[col] = (
+            movimientos[col].fillna("Sin información").astype(str).str.strip()
+        )
+
+    return movimientos
+
+
+# ============================================================
 # APORTES DE SOCIOS - CAPITAL REAL APORTADO
 # ============================================================
 
@@ -7811,128 +7865,195 @@ elif st.session_state.vista_airbnb == "Financiero":
 
     st.markdown(
         """
-<div class="section-title">
-💰 Financiero
-</div>
-
-<div class="section-subtitle">
-Evolución mensual de ingresos, gastos y flujo durante 2026.
-</div>
+<div class="section-title">💰 Financiero</div>
+<div class="section-subtitle">Control por entidad y proyecto: inversión, ingresos, gastos y resultado acumulado.</div>
 """,
         unsafe_allow_html=True
     )
 
-
-    financiero = df[
-        (df["Fecha"] >= inicio_anio)
-        &
-        (df["Fecha"] < fin_hoy)
+    movimientos_fin = cargar_movimientos_financieros_completos()
+    movimientos_fin = movimientos_fin[
+        (movimientos_fin["Fecha"] >= pd.Timestamp(fecha_inicio))
+        & (movimientos_fin["Fecha"] < pd.Timestamp(fecha_fin) + pd.Timedelta(days=1))
     ].copy()
 
+    if movimientos_fin.empty:
+        st.info("No hay movimientos financieros para el período seleccionado.")
+    else:
+        # Detectar registros de inversión/capital por clasificación contable.
+        # Se conserva la información original y se excluyen de gastos operativos
+        # para evitar contabilizar la inversión dos veces en el resultado.
+        texto_clasificacion = (
+            movimientos_fin["Nombre_Subcategoria"].fillna("").astype(str) + " "
+            + movimientos_fin["Nombre_Cuenta"].fillna("").astype(str) + " "
+            + movimientos_fin["Detalle"].fillna("").astype(str)
+        ).str.lower()
 
-    financiero["Mes_Num"] = (
-        financiero["Fecha"].dt.month
-    )
-
-    financiero["Mes"] = (
-        financiero["Fecha"]
-        .dt.strftime("%b")
-    )
-
-
-    mensual_fin = (
-        financiero
-        .groupby(
-            [
-                "Mes_Num",
-                "Mes"
-            ],
-            as_index=False
+        patron_inversion = r"inversi[oó]n|capital inicial|compra del activo|compra de activo|aporte al proyecto|inversi[oó]n inicial"
+        movimientos_fin["Es_Inversion"] = texto_clasificacion.str.contains(
+            patron_inversion, regex=True, na=False
         )
-        .agg(
-            Ingresos=(
-                "Ingreso",
-                "sum"
-            ),
-            Gastos=(
-                "Gasto",
-                "sum"
+        movimientos_fin["Inversion"] = movimientos_fin["Gasto"].where(
+            movimientos_fin["Es_Inversion"], 0
+        )
+        movimientos_fin["Gasto_Operativo"] = movimientos_fin["Gasto"].where(
+            ~movimientos_fin["Es_Inversion"], 0
+        )
+        movimientos_fin["Resultado"] = (
+            movimientos_fin["Ingreso"]
+            - movimientos_fin["Gasto_Operativo"]
+            - movimientos_fin["Inversion"]
+        )
+
+        # Filtros de la vista financiera, independientes de los filtros Airbnb.
+        f1, f2, f3 = st.columns([1, 1.35, 1])
+        with f1:
+            entidades = sorted(
+                x for x in movimientos_fin["Nombre_Tipo"].dropna().unique().tolist()
+                if str(x).strip() and str(x).strip().lower() != "sin información"
+            )
+            entidad_sel = st.selectbox(
+                "Entidad", ["Todas"] + entidades, key="fin_entidad"
+            )
+        with f2:
+            base_proyectos = movimientos_fin.copy()
+            if entidad_sel != "Todas":
+                base_proyectos = base_proyectos[
+                    base_proyectos["Nombre_Tipo"] == entidad_sel
+                ]
+            proyectos = sorted(
+                x for x in base_proyectos["Nombre_Propiedad"].dropna().unique().tolist()
+                if str(x).strip() and str(x).strip().lower() != "sin información"
+            )
+            proyecto_sel = st.selectbox(
+                "Proyecto / activo", ["Todos"] + proyectos, key="fin_proyecto"
+            )
+        with f3:
+            socios_fin = sorted(
+                x for x in movimientos_fin["Nombre_Socio"].dropna().unique().tolist()
+                if str(x).strip() and str(x).strip().lower() != "sin información"
+            )
+            socio_sel = st.selectbox(
+                "Responsable / socio", ["Todos"] + socios_fin, key="fin_socio"
+            )
+
+        fin = movimientos_fin.copy()
+        if entidad_sel != "Todas":
+            fin = fin[fin["Nombre_Tipo"] == entidad_sel]
+        if proyecto_sel != "Todos":
+            fin = fin[fin["Nombre_Propiedad"] == proyecto_sel]
+        if socio_sel != "Todos":
+            fin = fin[fin["Nombre_Socio"] == socio_sel]
+
+        ingresos_total = float(fin["Ingreso"].sum())
+        gastos_operativos = float(fin["Gasto_Operativo"].sum())
+        inversion_total = float(fin["Inversion"].sum())
+        resultado_total = ingresos_total - gastos_operativos - inversion_total
+        margen = (resultado_total / ingresos_total * 100) if ingresos_total else 0
+
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Ingresos acumulados", dinero_corto(ingresos_total))
+        k2.metric("Gastos operativos", dinero_corto(gastos_operativos))
+        k3.metric("Inversión identificada", dinero_corto(inversion_total))
+        k4.metric("Resultado acumulado", dinero_corto(resultado_total), f"Margen {margen:.1f}%")
+
+        st.markdown("### Evolución financiera")
+        fin_chart = fin.copy()
+        fin_chart["Mes_Num"] = fin_chart["Fecha"].dt.month
+        meses_es = {1:"Ene", 2:"Feb", 3:"Mar", 4:"Abr", 5:"May", 6:"Jun", 7:"Jul", 8:"Ago", 9:"Sep", 10:"Oct", 11:"Nov", 12:"Dic"}
+        fin_chart["Mes"] = fin_chart["Mes_Num"].map(meses_es)
+        mensual_fin = (
+            fin_chart.groupby(["Mes_Num", "Mes"], as_index=False)
+            .agg(Ingresos=("Ingreso", "sum"), Gastos=("Gasto_Operativo", "sum"), Inversion=("Inversion", "sum"))
+            .sort_values("Mes_Num")
+        )
+        mensual_fin["Resultado"] = mensual_fin["Ingresos"] - mensual_fin["Gastos"] - mensual_fin["Inversion"]
+
+        c1, c2 = st.columns([1.6, 1])
+        with c1:
+            fig_fin = go.Figure()
+            fig_fin.add_trace(go.Bar(x=mensual_fin["Mes"], y=mensual_fin["Ingresos"], name="Ingresos", marker_color="#27B68D"))
+            fig_fin.add_trace(go.Bar(x=mensual_fin["Mes"], y=mensual_fin["Gastos"], name="Gastos operativos", marker_color="#EF4338"))
+            fig_fin.add_trace(go.Bar(x=mensual_fin["Mes"], y=mensual_fin["Inversion"], name="Inversión", marker_color="#F2AD3D"))
+            fig_fin.update_layout(
+                height=330, barmode="group", plot_bgcolor="white", paper_bgcolor="white",
+                margin=dict(l=15, r=15, t=20, b=15), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+                yaxis=dict(tickprefix="$", tickformat=",.0f", gridcolor="#E9EEF3"), xaxis=dict(showgrid=False)
+            )
+            st.plotly_chart(fig_fin, use_container_width=True)
+        with c2:
+            fig_resultado = go.Figure()
+            fig_resultado.add_trace(go.Scatter(
+                x=mensual_fin["Mes"], y=mensual_fin["Resultado"], name="Resultado",
+                mode="lines+markers", fill="tozeroy", line=dict(color="#17345E", width=3),
+                marker=dict(size=7)
+            ))
+            fig_resultado.add_hline(y=0, line_dash="dot", line_color="#9AA9BA")
+            fig_resultado.update_layout(
+                height=330, plot_bgcolor="white", paper_bgcolor="white",
+                margin=dict(l=15, r=15, t=20, b=15), showlegend=False,
+                yaxis=dict(tickprefix="$", tickformat=",.0f", gridcolor="#E9EEF3"), xaxis=dict(showgrid=False)
+            )
+            st.plotly_chart(fig_resultado, use_container_width=True)
+
+        st.markdown("### Resultado por entidad y proyecto")
+        resumen_proyectos = (
+            fin.groupby(["Nombre_Tipo", "Nombre_Propiedad"], dropna=False, as_index=False)
+            .agg(
+                Inversion=("Inversion", "sum"),
+                Ingresos=("Ingreso", "sum"),
+                Gastos_Operativos=("Gasto_Operativo", "sum"),
+                Ultimo_Movimiento=("Fecha", "max")
             )
         )
-        .sort_values("Mes_Num")
-    )
-
-
-    mensual_fin["Flujo"] = (
-        mensual_fin["Ingresos"]
-        -
-        mensual_fin["Gastos"]
-    )
-
-
-    fig_fin = go.Figure()
-
-
-    fig_fin.add_trace(
-        go.Bar(
-            x=mensual_fin["Mes"],
-            y=mensual_fin["Ingresos"],
-            name="Ingresos",
-            marker_color="#27B68D"
+        resumen_proyectos["Resultado_Acumulado"] = (
+            resumen_proyectos["Ingresos"]
+            - resumen_proyectos["Gastos_Operativos"]
+            - resumen_proyectos["Inversion"]
         )
-    )
-
-
-    fig_fin.add_trace(
-        go.Bar(
-            x=mensual_fin["Mes"],
-            y=mensual_fin["Gastos"],
-            name="Gastos",
-            marker_color="#EF4338"
-        )
-    )
-
-
-    fig_fin.add_trace(
-        go.Scatter(
-            x=mensual_fin["Mes"],
-            y=mensual_fin["Flujo"],
-            name="Flujo",
-            mode="lines+markers",
-            line=dict(
-                color="#17345E",
-                width=3
+        resumen_proyectos["Estado"] = "En seguimiento"
+        # Si la descripción contable incluye una referencia explícita al cierre,
+        # la vista la identifica; no se infiere el cierre solo por falta de movimientos.
+        cierre_por_proyecto = (
+            fin.assign(
+                Texto_Cierre=(
+                    fin["Nombre_Subcategoria"].astype(str) + " "
+                    + fin["Nombre_Cuenta"].astype(str) + " "
+                    + fin["Detalle"].astype(str)
+                ).str.lower().str.contains(r"proyecto cerrado|cierre de proyecto|liquidaci[oó]n final|venta final", regex=True, na=False)
             )
+            .groupby(["Nombre_Tipo", "Nombre_Propiedad"], dropna=False)["Texto_Cierre"]
+            .any().reset_index()
         )
-    )
-
-
-    fig_fin.update_layout(
-        height=470,
-        barmode="group",
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        margin=dict(
-            l=50,
-            r=30,
-            t=40,
-            b=40
-        ),
-        yaxis=dict(
-            tickprefix="$",
-            tickformat=",.0f",
-            gridcolor="#E9EEF3"
-        ),
-        xaxis=dict(
-            showgrid=False
+        cierre_por_proyecto["Estado"] = cierre_por_proyecto["Texto_Cierre"].map({True: "Cerrado", False: "En seguimiento"})
+        resumen_proyectos = resumen_proyectos.drop(columns=["Estado"]).merge(
+            cierre_por_proyecto[["Nombre_Tipo", "Nombre_Propiedad", "Estado"]],
+            on=["Nombre_Tipo", "Nombre_Propiedad"], how="left"
         )
-    )
+        resumen_proyectos = resumen_proyectos.rename(columns={
+            "Nombre_Tipo": "Entidad", "Nombre_Propiedad": "Proyecto / activo",
+            "Gastos_Operativos": "Gastos operativos",
+            "Resultado_Acumulado": "Resultado acumulado",
+            "Ultimo_Movimiento": "Último movimiento"
+        })
+        resumen_proyectos["Último movimiento"] = pd.to_datetime(
+            resumen_proyectos["Último movimiento"], errors="coerce"
+        ).dt.strftime("%d/%m/%Y")
+        for col in ["Inversion", "Ingresos", "Gastos operativos", "Resultado acumulado"]:
+            resumen_proyectos[col] = resumen_proyectos[col].map(dinero_corto)
+        st.dataframe(
+            resumen_proyectos[[
+                "Entidad", "Proyecto / activo", "Estado", "Inversion", "Ingresos",
+                "Gastos operativos", "Resultado acumulado", "Último movimiento"
+            ]],
+            use_container_width=True, hide_index=True
+        )
 
-
-    st.plotly_chart(
-        fig_fin,
-        use_container_width=True
-    )
+        st.caption(
+            "La inversión se identifica a partir de movimientos cuya subcategoría, cuenta o detalle contiene términos de inversión/capital/compra. "
+            "El estado 'Cerrado' solo se asigna cuando la descripción contiene una referencia explícita al cierre; si no, queda 'En seguimiento'. "
+            "Verifica que las categorías contables estén bien etiquetadas para que inversión y gasto operativo no se mezclen."
+        )
 
 
 # ============================================================
