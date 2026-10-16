@@ -3540,6 +3540,9 @@ with top7:
 # ============================================================
 
 if st.session_state.vista_airbnb == "Financiero":
+    # La vista Financiero no muestra el filtro de período en el menú superior,
+    # pero otras secciones compartidas del script siguen esperando esta variable.
+    periodo = (inicio_mes, hoy)
     try:
         movimientos_hist_menu = cargar_movimientos_financieros_completos().copy()
         if not movimientos_hist_menu.empty:
