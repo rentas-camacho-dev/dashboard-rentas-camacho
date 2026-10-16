@@ -1480,66 +1480,35 @@ def cargar_aportes_socios():
 
 @st.cache_data(ttl=300)
 def cargar_inversiones():
+    """Carga la inversión histórica total por activo.
 
+    Fuente oficial: Vista_Inversiones_Prorrateadas.
+    Valor_Prorrateado_Calculado ya incorpora la participación del socio;
+    al agrupar por activo se suman las participaciones para obtener el total
+    prorrateado del activo. No se aplican valores fijos ni divisiones extra.
+
+    Esta función se usa para el análisis histórico. El valor actual del
+    inmueble, la deuda y el patrimonio se calculan en sus secciones propias.
+    """
     query = """
     SELECT
-        Activo_Proyecto,
+        TRIM(Activo_Proyecto) AS Activo_Proyecto,
         ANY_VALUE(Ciudad) AS Ciudad,
-        SUM(Valor_Prorrateado_Calculado) AS Inversion
+        SUM(CAST(Valor_Prorrateado_Calculado AS FLOAT64)) AS Inversion
     FROM `rentascamacho.rentas_cortas.Vista_Inversiones_Prorrateadas`
-    WHERE Activo_Proyecto IN (
-        'Torre Acqua',
-        'Torre Evoca',
-        'Torre Ventto',
-        'Lotus',
-        'Santa Marina',
-        'Base Loft',
-        'Tempus 49',
-        'Iwani'
-    )
-    GROUP BY Activo_Proyecto
+    WHERE Activo_Proyecto IS NOT NULL
+      AND TRIM(Activo_Proyecto) != ''
+      AND Valor_Prorrateado_Calculado IS NOT NULL
+    GROUP BY TRIM(Activo_Proyecto)
     """
 
     inversiones = client.query(query).to_dataframe()
-
     inversiones["Inversion"] = pd.to_numeric(
-        inversiones["Inversion"],
-        errors="coerce"
-    ).fillna(0)
-
-    # ========================================================
-    # INVERSIÓN TOTAL DEL ACTIVO
-    # ========================================================
-    # La inversión utilizada para el análisis corresponde al
-    # valor total del activo: apartamento + amoblamiento +
-    # equipamiento + demás inversión registrada.
-    #
-    # Excepciones definidas para el portafolio:
-    # - Torre Acqua: inversión registrada + crédito
-    # - Torre Evoca: inversión registrada (contado)
-    # - Torre Ventto: valor total informado externamente
-    # - Lotus: valor total del activo informado
-    # - Santa Marina: inversión registrada + créditos
-    # - Base Loft: inversión registrada ya incluye el crédito
-    # - Tempus 49: inversión registrada + crédito
-    # - Iwani: se mantiene la inversión registrada
-
-    inversiones_totales = {
-        "Torre Acqua": 174662034,
-        "Torre Evoca": 172456719,
-        "Torre Ventto": 190000000,
-        "Lotus": 349775542,
-        "Santa Marina": 181281438,
-        "Base Loft": 166613251,
-        "Tempus 49": 183969093,
-    }
-
-    for propiedad, valor in inversiones_totales.items():
-        inversiones.loc[
-            inversiones["Activo_Proyecto"] == propiedad,
-            "Inversion"
-        ] = valor
-
+        inversiones["Inversion"], errors="coerce"
+    ).fillna(0.0)
+    inversiones["Activo_Proyecto"] = (
+        inversiones["Activo_Proyecto"].fillna("").astype(str).str.strip()
+    )
     return inversiones
 
 
