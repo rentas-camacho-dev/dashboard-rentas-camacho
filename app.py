@@ -3366,20 +3366,27 @@ if "vista_airbnb" not in st.session_state:
 
     st.session_state.vista_airbnb = "Aportes"
 
-top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = st.columns(
-    [
-        1.90,
-        0.68,
-        0.68,
-        0.68,
-        0.68,
-        0.68,
-        0.68,
-        0.90,
-        0.90,
-        1.10
-    ],
-    gap="small"
+# En Financiero se muestran en el encabezado los cuatro filtros propios
+# de esa vista. En las demás vistas se conservan Ciudad, Propiedad y Período.
+_es_vista_financiero = st.session_state.vista_airbnb == "Financiero"
+if _es_vista_financiero:
+    top_cols = st.columns(
+        [1.75, 0.60, 0.60, 0.60, 0.60, 0.60, 0.60, 1.00, 1.20, 1.00, 0.85],
+        gap="small"
+    )
+else:
+    top_cols = st.columns(
+        [1.90, 0.68, 0.68, 0.68, 0.68, 0.68, 0.68, 0.90, 0.90, 1.10],
+        gap="small"
+    )
+top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = top_cols[:10]
+top11 = top_cols[10] if _es_vista_financiero else None
+
+# La vista Financiero necesita su histórico para construir los filtros del menú.
+_movimientos_hist_menu = (
+    cargar_movimientos_financieros_completos().copy()
+    if _es_vista_financiero
+    else None
 )
 
 # ============================================================
@@ -3539,74 +3546,78 @@ with top7:
 
 
 # ============================================================
-# FILTRO CIUDAD
+# FILTROS DEL MENÚ: SOLO CAMBIAN EN LA VISTA FINANCIERO
 # ============================================================
 
-with top8:
+if _es_vista_financiero:
+    _opciones_fin = _movimientos_hist_menu
+    if _opciones_fin is None or _opciones_fin.empty:
+        _entidades_menu = []
+        _proyectos_menu = []
+        _socios_menu = []
+    else:
+        _entidades_menu = sorted(
+            x for x in _opciones_fin["Nombre_Tipo"].dropna().unique().tolist()
+            if str(x).strip() and str(x).strip().lower() != "sin información"
+        )
+        _proyectos_menu = sorted(
+            x for x in _opciones_fin["Nombre_Propiedad"].dropna().unique().tolist()
+            if str(x).strip() and str(x).strip().lower() != "sin información"
+        )
+        _socios_menu = sorted(
+            x for x in _opciones_fin["Nombre_Socio"].dropna().unique().tolist()
+            if str(x).strip() and str(x).strip().lower() != "sin información"
+        )
 
-    st.markdown(
-        '<div class="filter-label">📍 Ciudad</div>',
-        unsafe_allow_html=True
-    )
-
-    ciudad = st.selectbox(
-        "Ciudad",
-        ["Todas"]
-        +
-        sorted(
-            df["Ciudad"]
-            .dropna()
-            .unique()
-            .tolist()
-        ),
-        label_visibility="collapsed"
-    )
-
-
-# ============================================================
-# FILTRO PROPIEDAD
-# ============================================================
-
-with top9:
-
-    st.markdown(
-        '<div class="filter-label">🏢 Propiedad</div>',
-        unsafe_allow_html=True
-    )
-
-    propiedad = st.selectbox(
-        "Propiedad",
-        ["Todas"]
-        +
-        sorted(
-            df["Nombre_Propiedad"]
-            .dropna()
-            .unique()
-            .tolist()
-        ),
-        label_visibility="collapsed"
-    )
-
-
-# ============================================================
-# FILTRO PERÍODO
-# ============================================================
-
-with top10:
-
-    st.markdown(
-        '<div class="filter-label">📅 Período</div>',
-        unsafe_allow_html=True
-    )
-
-    periodo = st.date_input(
-        "Período",
-        value=(
-            inicio_mes,
-            hoy
-        ),
-        label_visibility="collapsed"
-    )
+    with top8:
+        st.markdown('<div class="filter-label">🏷️ Entidad</div>', unsafe_allow_html=True)
+        entidad_sel = st.selectbox("Entidad", ["Todas"] + _entidades_menu,
+                                   key="fin_entidad", label_visibility="collapsed")
+    with top9:
+        # Los proyectos se filtran según la entidad seleccionada.
+        _base_proyectos_menu = _opciones_fin.copy() if _opciones_fin is not None else pd.DataFrame()
+        if not _base_proyectos_menu.empty and entidad_sel != "Todas":
+            _base_proyectos_menu = _base_proyectos_menu[
+                _base_proyectos_menu["Nombre_Tipo"] == entidad_sel
+            ]
+        _proyectos_menu_filtrados = sorted(
+            x for x in _base_proyectos_menu.get("Nombre_Propiedad", pd.Series(dtype=str)).dropna().unique().tolist()
+            if str(x).strip() and str(x).strip().lower() != "sin información"
+        )
+        st.markdown('<div class="filter-label">🏢 Proyecto / activo</div>', unsafe_allow_html=True)
+        proyecto_sel = st.selectbox("Proyecto / activo", ["Todos"] + _proyectos_menu_filtrados,
+                                    key="fin_proyecto", label_visibility="collapsed")
+    with top10:
+        st.markdown('<div class="filter-label">👤 Socio</div>', unsafe_allow_html=True)
+        socio_sel = st.selectbox("Responsable / socio", ["Todos"] + _socios_menu,
+                                 key="fin_socio", label_visibility="collapsed")
+    with top11:
+        st.markdown('<div class="filter-label">📉 VAN (%)</div>', unsafe_allow_html=True)
+        tasa_descuento = st.number_input(
+            "Tasa para VAN (%)", min_value=0.0, max_value=100.0,
+            value=12.0, step=1.0, key="fin_tasa_van", label_visibility="collapsed"
+        ) / 100
+    # Variables generales requeridas por las demás secciones de la aplicación;
+    # el filtro de período no se muestra ni controla el histórico financiero.
+    ciudad = "Todas"
+    propiedad = "Todas"
+    periodo = (inicio_mes, hoy)
+else:
+    with top8:
+        st.markdown('<div class="filter-label">📍 Ciudad</div>', unsafe_allow_html=True)
+        ciudad = st.selectbox(
+            "Ciudad", ["Todas"] + sorted(df["Ciudad"].dropna().unique().tolist()),
+            label_visibility="collapsed"
+        )
+    with top9:
+        st.markdown('<div class="filter-label">🏢 Propiedad</div>', unsafe_allow_html=True)
+        propiedad = st.selectbox(
+            "Propiedad", ["Todas"] + sorted(df["Nombre_Propiedad"].dropna().unique().tolist()),
+            label_visibility="collapsed"
+        )
+    with top10:
+        st.markdown('<div class="filter-label">📅 Período</div>', unsafe_allow_html=True)
+        periodo = st.date_input("Período", value=(inicio_mes, hoy), label_visibility="collapsed")
 
 # ============================================================
 # FECHAS SELECCIONADAS
@@ -7918,7 +7929,9 @@ elif st.session_state.vista_airbnb == "Financiero":
 
     # IMPORTANTE: para evaluar proyectos, TIR y VAN se utiliza TODO el histórico
     # disponible en BigQuery. No se limita por el filtro de período del encabezado.
-    movimientos_hist = cargar_movimientos_financieros_completos().copy()
+    movimientos_hist = (_movimientos_hist_menu.copy()
+                        if _movimientos_hist_menu is not None
+                        else cargar_movimientos_financieros_completos().copy())
 
     if movimientos_hist.empty:
         st.info("No hay movimientos financieros históricos para analizar.")
@@ -8024,34 +8037,8 @@ elif st.session_state.vista_airbnb == "Financiero":
                     lo, flo = mid, fm
             return (lo + hi) / 2
 
-        # Los filtros de entidad/proyecto/socio trabajan sobre el histórico completo.
-        f1, f2, f3, f4 = st.columns([1, 1.35, 1, 0.9])
-        with f1:
-            entidades = sorted(
-                x for x in movimientos_hist["Nombre_Tipo"].dropna().unique().tolist()
-                if str(x).strip() and str(x).strip().lower() != "sin información"
-            )
-            entidad_sel = st.selectbox("Entidad", ["Todas"] + entidades, key="fin_entidad")
-        with f2:
-            base_proyectos = movimientos_hist.copy()
-            if entidad_sel != "Todas":
-                base_proyectos = base_proyectos[base_proyectos["Nombre_Tipo"] == entidad_sel]
-            proyectos = sorted(
-                x for x in base_proyectos["Nombre_Propiedad"].dropna().unique().tolist()
-                if str(x).strip() and str(x).strip().lower() != "sin información"
-            )
-            proyecto_sel = st.selectbox("Proyecto / activo", ["Todos"] + proyectos, key="fin_proyecto")
-        with f3:
-            socios_fin = sorted(
-                x for x in movimientos_hist["Nombre_Socio"].dropna().unique().tolist()
-                if str(x).strip() and str(x).strip().lower() != "sin información"
-            )
-            socio_sel = st.selectbox("Responsable / socio", ["Todos"] + socios_fin, key="fin_socio")
-        with f4:
-            tasa_descuento = st.number_input(
-                "Tasa para VAN (%)", min_value=0.0, max_value=100.0,
-                value=12.0, step=1.0, key="fin_tasa_van"
-            ) / 100
+        # Los filtros de entidad/proyecto/socio y la tasa VAN están en el menú superior
+        # exclusivamente para esta vista; se reutilizan aquí sin duplicar controles.
 
         fin = movimientos_hist.copy()
         if entidad_sel != "Todas":
