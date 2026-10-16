@@ -3532,6 +3532,12 @@ with top7:
         st.rerun()
 
 
+# Variables por defecto para que las vistas que comparten lógica de filtros
+# no fallen cuando Financiero oculta Ciudad / Propiedad / Período.
+ciudad = "Todas"
+propiedad = "Todas"
+periodo = (inicio_mes, hoy)
+
 # ============================================================
 # FILTROS SUPERIORES
 # En Financiero, reemplazan Ciudad / Propiedad / Período por
