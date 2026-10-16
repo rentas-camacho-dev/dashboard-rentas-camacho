@@ -3413,7 +3413,7 @@ with top1:
                         "Aportes y patrimonio"
                         if st.session_state.vista_airbnb == "Aportes"
                         else (
-                            "Finanzas"
+                            "Finanzas y resultados"
                             if st.session_state.vista_airbnb == "Financiero"
                             else "Airbnb Financial Hub"
                         )
@@ -8092,13 +8092,6 @@ elif st.session_state.vista_airbnb == "Financiero":
                 f"</div>", unsafe_allow_html=True
             )
 
-            st.markdown("### Rentabilidad histórica por activo")
-            st.caption(
-                "Cada tarjeta combina los flujos fechados con la inversión total oficial "
-                "de Vista_Inversiones_Prorrateadas. El valor residual se incorporará desde "
-                "el radar patrimonial cuando se confirme el nombre exacto de su campo de valor; "
-                "no se inventa ni se duplica el valor del inmueble."
-            )
 
             # Fuente independiente de inversión: no depende de que la inversión
             # tenga Fecha ni de que aparezca como movimiento operativo.
