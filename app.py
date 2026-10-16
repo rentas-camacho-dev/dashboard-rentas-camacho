@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import unicodedata
 import plotly.graph_objects as go
 import base64
 import textwrap
@@ -8120,12 +8121,31 @@ elif st.session_state.vista_airbnb == "Financiero":
                     columns=["Clave_Activo", "Inversion_Oficial", "Activo_Proyecto"]
                 )
 
+            # Normalizar nombres para evitar que diferencias de mayúsculas,
+            # tildes o espacios separen los movimientos del mismo activo.
+            def _clave_activo(valor):
+                texto = "" if pd.isna(valor) else str(valor)
+                texto = " ".join(texto.strip().split()).casefold()
+                return "".join(
+                    caracter for caracter in unicodedata.normalize("NFKD", texto)
+                    if not unicodedata.combining(caracter)
+                )
+
+            fin = fin.copy()
+            fin["Clave_Activo_Fin"] = fin["Nombre_Propiedad"].apply(_clave_activo)
+            fin["Clave_Entidad_Fin"] = fin["Nombre_Tipo"].apply(_clave_activo)
+            inversiones_activo["Clave_Activo"] = (
+                inversiones_activo["Activo_Proyecto"].apply(_clave_activo)
+            )
+
             filas_resumen = []
-            for (entidad, proyecto), grupo in fin.groupby(
-                ["Nombre_Tipo", "Nombre_Propiedad"], dropna=False
+            for (entidad_key, proyecto_key), grupo in fin.groupby(
+                ["Clave_Entidad_Fin", "Clave_Activo_Fin"], dropna=False
             ):
                 grupo = grupo.sort_values("Fecha")
-                clave = str(proyecto).strip().casefold()
+                entidad = grupo["Nombre_Tipo"].mode().iloc[0] if not grupo["Nombre_Tipo"].mode().empty else "Sin entidad"
+                proyecto = grupo["Nombre_Propiedad"].mode().iloc[0] if not grupo["Nombre_Propiedad"].mode().empty else "Sin activo"
+                clave = _clave_activo(proyecto)
                 match_inv = inversiones_activo[
                     inversiones_activo["Clave_Activo"] == clave
                 ]
