@@ -1315,8 +1315,12 @@ def cargar_datos_financieros():
 
 @st.cache_data(ttl=300)
 def cargar_movimientos_financieros_completos():
+    """Combina movimientos operativos e inversiones históricas prorrateadas.
 
-    query = """
+    Vista_Inversiones_Prorrateadas es la fuente oficial de los importes de
+    inversión. Cada inversión entra como una salida de caja en su fecha real.
+    """
+    query_movimientos = """
     SELECT
         Fecha,
         Nombre_Propiedad,
@@ -1331,24 +1335,60 @@ def cargar_movimientos_financieros_completos():
     FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
     WHERE Fecha IS NOT NULL
     """
+    movimientos = client.query(query_movimientos).to_dataframe()
 
-    movimientos = client.query(query).to_dataframe()
-
+    columnas_base = [
+        "Fecha", "Nombre_Propiedad", "Ciudad", "Nombre_Socio",
+        "Nombre_Tipo", "Nombre_Subcategoria", "Detalle", "Nombre_Cuenta",
+        "Ingreso", "Gasto", "Inversion_Registrada", "Es_Inversion_Registrada"
+    ]
     if movimientos.empty:
-        return pd.DataFrame(columns=[
-            "Fecha", "Nombre_Propiedad", "Ciudad", "Nombre_Socio",
-            "Nombre_Tipo", "Nombre_Subcategoria", "Detalle",
-            "Nombre_Cuenta", "Ingreso", "Gasto"
-        ])
+        movimientos = pd.DataFrame(columns=columnas_base)
+    else:
+        movimientos["Fecha"] = pd.to_datetime(movimientos["Fecha"], errors="coerce")
+        for col in ["Ingreso", "Gasto"]:
+            movimientos[col] = pd.to_numeric(movimientos[col], errors="coerce").fillna(0)
+        movimientos["Inversion_Registrada"] = 0.0
+        movimientos["Es_Inversion_Registrada"] = False
 
-    movimientos["Fecha"] = pd.to_datetime(
-        movimientos["Fecha"], errors="coerce"
+    # Fuente real de inversiones: se conserva el histórico completo, sin
+    # filtrar por la lista de propiedades del panel Airbnb.
+    query_inversiones = """
+    SELECT
+        Fecha,
+        Activo_Proyecto AS Nombre_Propiedad,
+        Ciudad,
+        Nombre_Socio,
+        Sector AS Nombre_Tipo,
+        Nombre_Subcategoria,
+        Detalle,
+        Nombre_Cuenta,
+        CAST(0 AS FLOAT64) AS Ingreso,
+        CAST(0 AS FLOAT64) AS Gasto,
+        CAST(Valor_Prorrateado_Calculado AS FLOAT64) AS Inversion_Registrada,
+        TRUE AS Es_Inversion_Registrada
+    FROM `rentascamacho.rentas_cortas.Vista_Inversiones_Prorrateadas`
+    WHERE Fecha IS NOT NULL
+      AND Valor_Prorrateado_Calculado IS NOT NULL
+      AND Valor_Prorrateado_Calculado != 0
+    """
+    inversiones_hist = client.query(query_inversiones).to_dataframe()
+    if not inversiones_hist.empty:
+        inversiones_hist["Fecha"] = pd.to_datetime(inversiones_hist["Fecha"], errors="coerce")
+        for col in ["Ingreso", "Gasto", "Inversion_Registrada"]:
+            inversiones_hist[col] = pd.to_numeric(
+                inversiones_hist[col], errors="coerce"
+            ).fillna(0)
+
+    # Unificar ambas fuentes. Se normalizan columnas de texto para que los
+    # filtros de entidad, proyecto y socio funcionen también con inversiones.
+    movimientos = pd.concat(
+        [movimientos.reindex(columns=columnas_base),
+         inversiones_hist.reindex(columns=columnas_base)],
+        ignore_index=True
     )
-
-    for col in ["Ingreso", "Gasto"]:
-        movimientos[col] = pd.to_numeric(
-            movimientos[col], errors="coerce"
-        ).fillna(0)
+    movimientos["Fecha"] = pd.to_datetime(movimientos["Fecha"], errors="coerce")
+    movimientos = movimientos.dropna(subset=["Fecha"]).copy()
 
     for col in [
         "Nombre_Propiedad", "Ciudad", "Nombre_Socio", "Nombre_Tipo",
@@ -1357,6 +1397,43 @@ def cargar_movimientos_financieros_completos():
         movimientos[col] = (
             movimientos[col].fillna("Sin información").astype(str).str.strip()
         )
+    movimientos["Es_Inversion_Registrada"] = (
+        movimientos["Es_Inversion_Registrada"].fillna(False).astype(bool)
+    )
+    movimientos["Inversion_Registrada"] = pd.to_numeric(
+        movimientos["Inversion_Registrada"], errors="coerce"
+    ).fillna(0)
+
+    # Evitar doble conteo cuando una compra aparece tanto en la tabla de
+    # inversiones como en movimientos operativos con una descripción de inversión.
+    if movimientos["Es_Inversion_Registrada"].any():
+        texto_mov = (
+            movimientos["Nombre_Subcategoria"].fillna("").astype(str) + " "
+            + movimientos["Nombre_Cuenta"].fillna("").astype(str) + " "
+            + movimientos["Detalle"].fillna("").astype(str)
+        ).str.lower()
+        es_inversion_operativa = (
+            ~movimientos["Es_Inversion_Registrada"]
+            & texto_mov.str.contains(
+                r"inversi[oó]n|capital inicial|compra del activo|compra de activo|aporte al proyecto|inversi[oó]n inicial",
+                regex=True, na=False
+            )
+        )
+        inv = movimientos[movimientos["Es_Inversion_Registrada"]].copy()
+        if not inv.empty:
+            def clave_proyecto(valor):
+                return str(valor).strip().casefold()
+            claves_inv = set(
+                (pd.Timestamp(r.Fecha).normalize(), clave_proyecto(r.Nombre_Propiedad), round(abs(float(r.Inversion_Registrada)), 2))
+                for r in inv.itertuples()
+            )
+            duplicados = []
+            for idx, r in movimientos[es_inversion_operativa].iterrows():
+                clave = (pd.Timestamp(r["Fecha"]).normalize(), clave_proyecto(r["Nombre_Propiedad"]), round(abs(float(r["Gasto"])), 2))
+                duplicados.append(idx if clave in claves_inv else None)
+            duplicados = [idx for idx in duplicados if idx is not None]
+            if duplicados:
+                movimientos = movimientos.drop(index=duplicados).copy()
 
     return movimientos
 
@@ -7887,12 +7964,27 @@ elif st.session_state.vista_airbnb == "Financiero":
             + movimientos_hist["Detalle"].fillna("").astype(str)
         ).str.lower()
         patron_inversion = r"inversi[oó]n|capital inicial|compra del activo|compra de activo|aporte al proyecto|inversi[oó]n inicial"
-        movimientos_hist["Es_Inversion"] = texto_clasificacion.str.contains(
+        movimientos_hist["Es_Inversion_Texto"] = texto_clasificacion.str.contains(
             patron_inversion, regex=True, na=False
         )
-        movimientos_hist["Inversion"] = movimientos_hist["Gasto"].where(
-            movimientos_hist["Es_Inversion"], 0
+        movimientos_hist["Es_Inversion_Registrada"] = (
+            movimientos_hist.get(
+                "Es_Inversion_Registrada",
+                pd.Series(False, index=movimientos_hist.index)
+            ).fillna(False).astype(bool)
         )
+        # Priorizar el valor prorrateado oficial. Los gastos operativos solo
+        # se toman de movimientos que no estén clasificados como inversión.
+        movimientos_hist["Inversion"] = 0.0
+        mask_inv_reg = movimientos_hist["Es_Inversion_Registrada"]
+        movimientos_hist.loc[mask_inv_reg, "Inversion"] = movimientos_hist.loc[
+            mask_inv_reg, "Inversion_Registrada"
+        ].abs()
+        mask_inv_mov = (~mask_inv_reg) & movimientos_hist["Es_Inversion_Texto"]
+        movimientos_hist.loc[mask_inv_mov, "Inversion"] = movimientos_hist.loc[
+            mask_inv_mov, "Gasto"
+        ].abs()
+        movimientos_hist["Es_Inversion"] = mask_inv_reg | movimientos_hist["Es_Inversion_Texto"]
         movimientos_hist["Gasto_Operativo"] = movimientos_hist["Gasto"].where(
             ~movimientos_hist["Es_Inversion"], 0
         )
