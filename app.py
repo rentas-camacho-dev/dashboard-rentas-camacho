@@ -3412,17 +3412,23 @@ with top1:
                     {(
                         "Aportes y patrimonio"
                         if st.session_state.vista_airbnb == "Aportes"
-                        else "Airbnb Financial Hub"
+                        else (
+                            "Finanzas"
+                            if st.session_state.vista_airbnb == "Financiero"
+                            else "Airbnb Financial Hub"
+                        )
                     )}
                 </div>
 
-                <div class="brand-mini-sub">
-                    {(
-                        "Capital · Predios · Deuda"
-                        if st.session_state.vista_airbnb == "Aportes"
-                        else "Rentabilidad financiera · Solo Airbnb"
-                    )}
-                </div>
+                {(
+                    '<div class="brand-mini-sub">Capital · Predios · Deuda</div>'
+                    if st.session_state.vista_airbnb == "Aportes"
+                    else (
+                        ""
+                        if st.session_state.vista_airbnb == "Financiero"
+                        else '<div class="brand-mini-sub">Rentabilidad financiera · Solo Airbnb</div>'
+                    )
+                )}
 
             </div>
 
@@ -3532,116 +3538,75 @@ with top7:
         st.rerun()
 
 
-# Variables por defecto para que las vistas que comparten lógica de filtros
-# no fallen cuando Financiero oculta Ciudad / Propiedad / Período.
-ciudad = "Todas"
-propiedad = "Todas"
-periodo = (inicio_mes, hoy)
-
 # ============================================================
-# FILTROS SUPERIORES
-# En Financiero, reemplazan Ciudad / Propiedad / Período por
-# Entidad / Proyecto / Socio / Tasa VAN.
-# En las demás vistas se conservan los filtros originales.
+# FILTRO CIUDAD
 # ============================================================
 
-if st.session_state.vista_airbnb == "Financiero":
-    # La vista Financiero no muestra el filtro de período en el menú superior,
-    # pero otras secciones compartidas del script siguen esperando esta variable.
-    periodo = (inicio_mes, hoy)
-    try:
-        movimientos_hist_menu = cargar_movimientos_financieros_completos().copy()
-        if not movimientos_hist_menu.empty:
-            movimientos_hist_menu["Fecha"] = pd.to_datetime(
-                movimientos_hist_menu["Fecha"], errors="coerce"
-            )
-            entidades_menu = sorted(
-                x for x in movimientos_hist_menu["Nombre_Tipo"].dropna().unique().tolist()
-                if str(x).strip() and str(x).strip().lower() != "sin información"
-            )
-            with top8:
-                st.markdown('<div class="filter-label">🏷️ Entidad</div>', unsafe_allow_html=True)
-                entidad_sel = st.selectbox(
-                    "Entidad financiera", ["Todas"] + entidades_menu,
-                    key="fin_entidad", label_visibility="collapsed"
-                )
+with top8:
 
-            base_proyectos_menu = movimientos_hist_menu.copy()
-            if entidad_sel != "Todas":
-                base_proyectos_menu = base_proyectos_menu[
-                    base_proyectos_menu["Nombre_Tipo"] == entidad_sel
-                ]
-            proyectos_menu = sorted(
-                x for x in base_proyectos_menu["Nombre_Propiedad"].dropna().unique().tolist()
-                if str(x).strip() and str(x).strip().lower() != "sin información"
-            )
-            with top9:
-                st.markdown('<div class="filter-label">🏢 Proyecto / activo</div>', unsafe_allow_html=True)
-                proyecto_sel = st.selectbox(
-                    "Proyecto financiero", ["Todos"] + proyectos_menu,
-                    key="fin_proyecto", label_visibility="collapsed"
-                )
+    st.markdown(
+        '<div class="filter-label">📍 Ciudad</div>',
+        unsafe_allow_html=True
+    )
 
-            socios_menu = sorted(
-                x for x in movimientos_hist_menu["Nombre_Socio"].dropna().unique().tolist()
-                if str(x).strip() and str(x).strip().lower() != "sin información"
-            )
-            with top10:
-                socio_col, tasa_col = st.columns([1.15, 0.85], gap="small")
-                with socio_col:
-                    st.markdown('<div class="filter-label">👤 Socio</div>', unsafe_allow_html=True)
-                    socio_sel = st.selectbox(
-                        "Socio financiero", ["Todos"] + socios_menu,
-                        key="fin_socio", label_visibility="collapsed"
-                    )
-                with tasa_col:
-                    st.markdown('<div class="filter-label">📉 VAN (%)</div>', unsafe_allow_html=True)
-                    tasa_descuento = st.number_input(
-                        "Tasa VAN", min_value=0.0, max_value=100.0,
-                        value=12.0, step=1.0, key="fin_tasa_van",
-                        label_visibility="collapsed"
-                    ) / 100
-        else:
-            entidad_sel, proyecto_sel, socio_sel, tasa_descuento = "Todas", "Todos", "Todos", 0.12
-            with top8:
-                st.caption("Sin filtros financieros")
-            with top9:
-                st.empty()
-            with top10:
-                st.empty()
-    except Exception:
-        entidad_sel, proyecto_sel, socio_sel, tasa_descuento = "Todas", "Todos", "Todos", 0.12
-        with top8:
-            st.caption("Filtros financieros no disponibles")
-        with top9:
-            st.empty()
-        with top10:
-            st.empty()
-else:
-    with top8:
-        st.markdown('<div class="filter-label">📍 Ciudad</div>', unsafe_allow_html=True)
-        ciudad = st.selectbox(
-            "Ciudad",
-            ["Todas"] + sorted(df["Ciudad"].dropna().unique().tolist()),
-            label_visibility="collapsed"
-        )
+    ciudad = st.selectbox(
+        "Ciudad",
+        ["Todas"]
+        +
+        sorted(
+            df["Ciudad"]
+            .dropna()
+            .unique()
+            .tolist()
+        ),
+        label_visibility="collapsed"
+    )
 
-    with top9:
-        st.markdown('<div class="filter-label">🏢 Propiedad</div>', unsafe_allow_html=True)
-        propiedad = st.selectbox(
-            "Propiedad",
-            ["Todas"] + sorted(df["Nombre_Propiedad"].dropna().unique().tolist()),
-            label_visibility="collapsed"
-        )
 
-    with top10:
-        st.markdown('<div class="filter-label">📅 Período</div>', unsafe_allow_html=True)
-        periodo = st.date_input(
-            "Período",
-            value=(inicio_mes, hoy),
-            label_visibility="collapsed"
-        )
+# ============================================================
+# FILTRO PROPIEDAD
+# ============================================================
 
+with top9:
+
+    st.markdown(
+        '<div class="filter-label">🏢 Propiedad</div>',
+        unsafe_allow_html=True
+    )
+
+    propiedad = st.selectbox(
+        "Propiedad",
+        ["Todas"]
+        +
+        sorted(
+            df["Nombre_Propiedad"]
+            .dropna()
+            .unique()
+            .tolist()
+        ),
+        label_visibility="collapsed"
+    )
+
+
+# ============================================================
+# FILTRO PERÍODO
+# ============================================================
+
+with top10:
+
+    st.markdown(
+        '<div class="filter-label">📅 Período</div>',
+        unsafe_allow_html=True
+    )
+
+    periodo = st.date_input(
+        "Período",
+        value=(
+            inicio_mes,
+            hoy
+        ),
+        label_visibility="collapsed"
+    )
 
 # ============================================================
 # FECHAS SELECCIONADAS
@@ -7951,14 +7916,6 @@ Estudio de mercado + comportamiento del activo + posición estratégica del port
 
 elif st.session_state.vista_airbnb == "Financiero":
 
-    st.markdown(
-        """
-<div class="section-title">💰 Financiero</div>
-<div class="section-subtitle">Histórico completo por entidad y proyecto: inversión inicial, flujos acumulados, TIR, VAN y recuperación de la inversión.</div>
-""",
-        unsafe_allow_html=True
-    )
-
     # IMPORTANTE: para evaluar proyectos, TIR y VAN se utiliza TODO el histórico
     # disponible en BigQuery. No se limita por el filtro de período del encabezado.
     movimientos_hist = cargar_movimientos_financieros_completos().copy()
@@ -7984,51 +7941,6 @@ elif st.session_state.vista_airbnb == "Financiero":
                 pd.Series(False, index=movimientos_hist.index)
             ).fillna(False).astype(bool)
         )
-
-        # Homologar la entidad de los movimientos operativos con la entidad
-        # oficial del activo en Vista_Inversiones_Prorrateadas.
-        # Ejemplo: Colinas del pinar aparece como "Vivienda" en movimientos,
-        # pero como "Finca Raíz" en inversiones. Sin esta homologación, los
-        # ingresos quedaban separados de la tarjeta de inversión del inmueble.
-        def _clave_activo_financiero(valor):
-            import unicodedata
-            texto = "" if pd.isna(valor) else str(valor)
-            texto = " ".join(texto.strip().split()).casefold()
-            return "".join(
-                caracter for caracter in unicodedata.normalize("NFKD", texto)
-                if not unicodedata.combining(caracter)
-            )
-
-        mask_inversiones_oficiales = movimientos_hist["Es_Inversion_Registrada"]
-        mapa_entidad_activo = {}
-        if mask_inversiones_oficiales.any():
-            filas_inv_entidad = movimientos_hist.loc[
-                mask_inversiones_oficiales,
-                ["Nombre_Propiedad", "Nombre_Tipo"]
-            ].copy()
-            filas_inv_entidad["Clave_Activo_Fin"] = (
-                filas_inv_entidad["Nombre_Propiedad"].apply(_clave_activo_financiero)
-            )
-            filas_inv_entidad = filas_inv_entidad[
-                filas_inv_entidad["Clave_Activo_Fin"] != ""
-            ]
-            for clave_activo, grupo_entidad in filas_inv_entidad.groupby("Clave_Activo_Fin"):
-                valores_entidad = [
-                    str(v).strip() for v in grupo_entidad["Nombre_Tipo"].dropna()
-                    if str(v).strip() and str(v).strip().lower() != "sin información"
-                ]
-                if valores_entidad:
-                    mapa_entidad_activo[clave_activo] = pd.Series(valores_entidad).mode().iloc[0]
-
-        if mapa_entidad_activo:
-            claves_mov = movimientos_hist["Nombre_Propiedad"].apply(_clave_activo_financiero)
-            mask_mov_operativos = ~movimientos_hist["Es_Inversion_Registrada"]
-            entidades_homologadas = claves_mov.map(mapa_entidad_activo)
-            mask_homologar = mask_mov_operativos & entidades_homologadas.notna()
-            movimientos_hist.loc[mask_homologar, "Nombre_Tipo"] = (
-                entidades_homologadas.loc[mask_homologar]
-            )
-
         # Priorizar el valor prorrateado oficial. Los gastos operativos solo
         # se toman de movimientos que no estén clasificados como inversión.
         movimientos_hist["Inversion"] = 0.0
@@ -8112,7 +8024,34 @@ elif st.session_state.vista_airbnb == "Financiero":
                     lo, flo = mid, fm
             return (lo + hi) / 2
 
-        # Los filtros financieros se muestran en el menú superior solo en esta vista.
+        # Los filtros de entidad/proyecto/socio trabajan sobre el histórico completo.
+        f1, f2, f3, f4 = st.columns([1, 1.35, 1, 0.9])
+        with f1:
+            entidades = sorted(
+                x for x in movimientos_hist["Nombre_Tipo"].dropna().unique().tolist()
+                if str(x).strip() and str(x).strip().lower() != "sin información"
+            )
+            entidad_sel = st.selectbox("Entidad", ["Todas"] + entidades, key="fin_entidad")
+        with f2:
+            base_proyectos = movimientos_hist.copy()
+            if entidad_sel != "Todas":
+                base_proyectos = base_proyectos[base_proyectos["Nombre_Tipo"] == entidad_sel]
+            proyectos = sorted(
+                x for x in base_proyectos["Nombre_Propiedad"].dropna().unique().tolist()
+                if str(x).strip() and str(x).strip().lower() != "sin información"
+            )
+            proyecto_sel = st.selectbox("Proyecto / activo", ["Todos"] + proyectos, key="fin_proyecto")
+        with f3:
+            socios_fin = sorted(
+                x for x in movimientos_hist["Nombre_Socio"].dropna().unique().tolist()
+                if str(x).strip() and str(x).strip().lower() != "sin información"
+            )
+            socio_sel = st.selectbox("Responsable / socio", ["Todos"] + socios_fin, key="fin_socio")
+        with f4:
+            tasa_descuento = st.number_input(
+                "Tasa para VAN (%)", min_value=0.0, max_value=100.0,
+                value=12.0, step=1.0, key="fin_tasa_van"
+            ) / 100
 
         fin = movimientos_hist.copy()
         if entidad_sel != "Todas":
@@ -8251,13 +8190,11 @@ elif st.session_state.vista_airbnb == "Financiero":
                 resumen_proyectos = resumen_proyectos.sort_values(
                     ["Entidad", "Proyecto / activo"], na_position="last"
                 )
-                # Tarjetas compactas: hasta 8 activos por fila en pantallas anchas.
-                # En pantallas pequeñas Streamlit puede estrechar las columnas;
-                # se prioriza una lectura rápida con indicadores esenciales.
-                for inicio in range(0, len(resumen_proyectos), 8):
-                    tarjetas = st.columns(8, gap="small")
+                # Tarjetas visuales por activo en lugar de la tabla extensa.
+                for inicio in range(0, len(resumen_proyectos), 3):
+                    tarjetas = st.columns(3)
                     for columna, (_, fila) in zip(
-                        tarjetas, resumen_proyectos.iloc[inicio:inicio + 8].iterrows()
+                        tarjetas, resumen_proyectos.iloc[inicio:inicio + 3].iterrows()
                     ):
                         roi_val = fila["ROI acumulado (%)"]
                         roi_txt = f"{roi_val:.1f}%" if pd.notna(roi_val) else "No calculable"
@@ -8271,27 +8208,21 @@ elif st.session_state.vista_airbnb == "Financiero":
                         with columna:
                             st.markdown(
                                 f"""
-<div style="background:#FFFFFF;border:1px solid #DCE5EE;border-radius:10px;
-padding:9px 8px;margin:3px 0 8px;box-shadow:0 2px 7px rgba(23,52,94,.04);
-min-height:190px;overflow-wrap:anywhere;">
-  <div style="font-size:8px;font-weight:800;color:#8290A4;text-transform:uppercase;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{fila['Entidad']}</div>
-  <div title="{fila['Proyecto / activo']}" style="font-size:12px;line-height:1.2;
-  font-weight:850;color:#17345E;margin:4px 0 9px;min-height:29px;
-  overflow-wrap:anywhere;">{fila['Proyecto / activo']}</div>
-  <div style="font-size:8px;color:#8290A4;">INVERSIÓN</div>
-  <div style="font-size:15px;line-height:1.2;font-weight:850;color:#17345E;
-  margin:2px 0 8px;overflow-wrap:anywhere;">{inv_txt}</div>
-  <div style="border-top:1px solid #EDF1F5;padding-top:7px;">
-    <div style="font-size:8px;color:#8290A4;">Ingresos</div>
-    <div style="font-size:11px;font-weight:750;color:#009B70;overflow-wrap:anywhere;">{dinero_corto(fila['Ingresos históricos'])}</div>
-    <div style="font-size:8px;color:#8290A4;margin-top:5px;">Gastos</div>
-    <div style="font-size:11px;font-weight:750;color:#E84235;overflow-wrap:anywhere;">{dinero_corto(fila['Gastos operativos'])}</div>
-    <div style="font-size:8px;color:#8290A4;margin-top:5px;">Flujo neto</div>
-    <div style="font-size:11px;font-weight:800;color:{flujo_color};overflow-wrap:anywhere;">{dinero_corto(flujo_val)}</div>
-    <div style="font-size:8px;color:#8290A4;margin-top:5px;">ROI acumulado</div>
-    <div style="font-size:11px;font-weight:800;color:#17345E;">{roi_txt}</div>
+<div style="background:#FFFFFF;border:1px solid #DCE5EE;border-radius:15px;
+padding:17px 18px;margin:5px 0 12px;box-shadow:0 4px 14px rgba(23,52,94,.05);">
+  <div style="font-size:10px;font-weight:800;color:#8290A4;text-transform:uppercase;">{fila['Entidad']}</div>
+  <div style="font-size:21px;font-weight:850;color:#17345E;margin:3px 0 13px;">{fila['Proyecto / activo']}</div>
+  <div style="font-size:10px;color:#8290A4;">INVERSIÓN HISTÓRICA</div>
+  <div style="font-size:25px;font-weight:850;color:#17345E;margin:2px 0 12px;">{inv_txt}</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid #EDF1F5;padding-top:12px;">
+    <div><div style="font-size:10px;color:#8290A4;">Ingresos</div><div style="font-size:15px;font-weight:750;color:#009B70;">{dinero_corto(fila['Ingresos históricos'])}</div></div>
+    <div><div style="font-size:10px;color:#8290A4;">Gastos operativos</div><div style="font-size:15px;font-weight:750;color:#E84235;">{dinero_corto(fila['Gastos operativos'])}</div></div>
+    <div><div style="font-size:10px;color:#8290A4;">Flujo neto acumulado</div><div style="font-size:15px;font-weight:800;color:{flujo_color};">{dinero_corto(flujo_val)}</div></div>
+    <div><div style="font-size:10px;color:#8290A4;">ROI acumulado</div><div style="font-size:15px;font-weight:800;color:#17345E;">{roi_txt}</div></div>
+    <div><div style="font-size:10px;color:#8290A4;">TIR anual estimada</div><div style="font-size:13px;font-weight:750;color:#50637B;">{tir_txt}</div></div>
+    <div><div style="font-size:10px;color:#8290A4;">VAN ({tasa_descuento:.0%})</div><div style="font-size:13px;font-weight:750;color:#50637B;">{van_txt}</div></div>
   </div>
+  <div style="font-size:9px;color:#8A98AA;margin-top:12px;">{fila['Estado']} · Último movimiento: {pd.to_datetime(fila['Último movimiento']).strftime('%d/%m/%Y') if pd.notna(fila['Último movimiento']) else 'Sin fecha'}</div>
 </div>
 """,
                                 unsafe_allow_html=True
