@@ -1332,7 +1332,7 @@ def cargar_movimientos_financieros_completos():
         Nombre_Cuenta,
         Ingreso,
         Gasto
-    FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Prorrateados`
+    FROM `rentascamacho.rentas_cortas.Movimientos_Operativos_Reparto`
     WHERE Fecha IS NOT NULL
     """
     movimientos = client.query(query_movimientos).to_dataframe()
