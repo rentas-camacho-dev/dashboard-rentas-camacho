@@ -8237,11 +8237,13 @@ elif st.session_state.vista_airbnb == "Financiero":
                 resumen_proyectos = resumen_proyectos.sort_values(
                     ["Entidad", "Proyecto / activo"], na_position="last"
                 )
-                # Tarjetas visuales por activo en lugar de la tabla extensa.
-                for inicio in range(0, len(resumen_proyectos), 3):
-                    tarjetas = st.columns(3)
+                # Tarjetas compactas: hasta 8 activos por fila en pantallas anchas.
+                # En pantallas pequeñas Streamlit puede estrechar las columnas;
+                # se prioriza una lectura rápida con indicadores esenciales.
+                for inicio in range(0, len(resumen_proyectos), 8):
+                    tarjetas = st.columns(8, gap="small")
                     for columna, (_, fila) in zip(
-                        tarjetas, resumen_proyectos.iloc[inicio:inicio + 3].iterrows()
+                        tarjetas, resumen_proyectos.iloc[inicio:inicio + 8].iterrows()
                     ):
                         roi_val = fila["ROI acumulado (%)"]
                         roi_txt = f"{roi_val:.1f}%" if pd.notna(roi_val) else "No calculable"
@@ -8255,21 +8257,27 @@ elif st.session_state.vista_airbnb == "Financiero":
                         with columna:
                             st.markdown(
                                 f"""
-<div style="background:#FFFFFF;border:1px solid #DCE5EE;border-radius:15px;
-padding:17px 18px;margin:5px 0 12px;box-shadow:0 4px 14px rgba(23,52,94,.05);">
-  <div style="font-size:10px;font-weight:800;color:#8290A4;text-transform:uppercase;">{fila['Entidad']}</div>
-  <div style="font-size:21px;font-weight:850;color:#17345E;margin:3px 0 13px;">{fila['Proyecto / activo']}</div>
-  <div style="font-size:10px;color:#8290A4;">INVERSIÓN HISTÓRICA</div>
-  <div style="font-size:25px;font-weight:850;color:#17345E;margin:2px 0 12px;">{inv_txt}</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid #EDF1F5;padding-top:12px;">
-    <div><div style="font-size:10px;color:#8290A4;">Ingresos</div><div style="font-size:15px;font-weight:750;color:#009B70;">{dinero_corto(fila['Ingresos históricos'])}</div></div>
-    <div><div style="font-size:10px;color:#8290A4;">Gastos operativos</div><div style="font-size:15px;font-weight:750;color:#E84235;">{dinero_corto(fila['Gastos operativos'])}</div></div>
-    <div><div style="font-size:10px;color:#8290A4;">Flujo neto acumulado</div><div style="font-size:15px;font-weight:800;color:{flujo_color};">{dinero_corto(flujo_val)}</div></div>
-    <div><div style="font-size:10px;color:#8290A4;">ROI acumulado</div><div style="font-size:15px;font-weight:800;color:#17345E;">{roi_txt}</div></div>
-    <div><div style="font-size:10px;color:#8290A4;">TIR anual estimada</div><div style="font-size:13px;font-weight:750;color:#50637B;">{tir_txt}</div></div>
-    <div><div style="font-size:10px;color:#8290A4;">VAN ({tasa_descuento:.0%})</div><div style="font-size:13px;font-weight:750;color:#50637B;">{van_txt}</div></div>
+<div style="background:#FFFFFF;border:1px solid #DCE5EE;border-radius:10px;
+padding:9px 8px;margin:3px 0 8px;box-shadow:0 2px 7px rgba(23,52,94,.04);
+min-height:190px;overflow-wrap:anywhere;">
+  <div style="font-size:8px;font-weight:800;color:#8290A4;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{fila['Entidad']}</div>
+  <div title="{fila['Proyecto / activo']}" style="font-size:12px;line-height:1.2;
+  font-weight:850;color:#17345E;margin:4px 0 9px;min-height:29px;
+  overflow-wrap:anywhere;">{fila['Proyecto / activo']}</div>
+  <div style="font-size:8px;color:#8290A4;">INVERSIÓN</div>
+  <div style="font-size:15px;line-height:1.2;font-weight:850;color:#17345E;
+  margin:2px 0 8px;overflow-wrap:anywhere;">{inv_txt}</div>
+  <div style="border-top:1px solid #EDF1F5;padding-top:7px;">
+    <div style="font-size:8px;color:#8290A4;">Ingresos</div>
+    <div style="font-size:11px;font-weight:750;color:#009B70;overflow-wrap:anywhere;">{dinero_corto(fila['Ingresos históricos'])}</div>
+    <div style="font-size:8px;color:#8290A4;margin-top:5px;">Gastos</div>
+    <div style="font-size:11px;font-weight:750;color:#E84235;overflow-wrap:anywhere;">{dinero_corto(fila['Gastos operativos'])}</div>
+    <div style="font-size:8px;color:#8290A4;margin-top:5px;">Flujo neto</div>
+    <div style="font-size:11px;font-weight:800;color:{flujo_color};overflow-wrap:anywhere;">{dinero_corto(flujo_val)}</div>
+    <div style="font-size:8px;color:#8290A4;margin-top:5px;">ROI acumulado</div>
+    <div style="font-size:11px;font-weight:800;color:#17345E;">{roi_txt}</div>
   </div>
-  <div style="font-size:9px;color:#8A98AA;margin-top:12px;">{fila['Estado']} · Último movimiento: {pd.to_datetime(fila['Último movimiento']).strftime('%d/%m/%Y') if pd.notna(fila['Último movimiento']) else 'Sin fecha'}</div>
 </div>
 """,
                                 unsafe_allow_html=True
