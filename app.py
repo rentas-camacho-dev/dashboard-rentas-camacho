@@ -8093,46 +8093,12 @@ elif st.session_state.vista_airbnb == "Financiero":
                 f"</div>", unsafe_allow_html=True
             )
 
-            st.markdown("### Evolución histórica acumulada")
-            fin_chart = fin.copy()
-            fin_chart["Mes"] = fin_chart["Fecha"].dt.to_period("M").dt.to_timestamp()
-            mensual_fin = (
-                fin_chart.groupby("Mes", as_index=False)
-                .agg(Ingresos=("Ingreso", "sum"), Gastos=("Gasto_Operativo", "sum"),
-                     Inversion=("Inversion", "sum"), Flujo=("Flujo_Caja", "sum"))
-                .sort_values("Mes")
-            )
-            mensual_fin["Flujo acumulado"] = mensual_fin["Flujo"].cumsum()
-            c1, c2 = st.columns([1.45, 1])
-            with c1:
-                fig_fin = go.Figure()
-                fig_fin.add_trace(go.Bar(x=mensual_fin["Mes"], y=mensual_fin["Ingresos"], name="Ingresos", marker_color="#27B68D"))
-                fig_fin.add_trace(go.Bar(x=mensual_fin["Mes"], y=mensual_fin["Gastos"], name="Gastos operativos", marker_color="#EF4338"))
-                fig_fin.add_trace(go.Bar(x=mensual_fin["Mes"], y=mensual_fin["Inversion"], name="Inversión", marker_color="#F2AD3D"))
-                fig_fin.update_layout(
-                    height=330, barmode="group", plot_bgcolor="white", paper_bgcolor="white",
-                    margin=dict(l=15, r=15, t=20, b=15), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
-                    yaxis=dict(tickprefix="$", tickformat=",.0f", gridcolor="#E9EEF3"), xaxis=dict(showgrid=False, tickformat="%b %Y")
-                )
-                st.plotly_chart(fig_fin, use_container_width=True)
-            with c2:
-                fig_acum = go.Figure()
-                fig_acum.add_trace(go.Scatter(
-                    x=mensual_fin["Mes"], y=mensual_fin["Flujo acumulado"], name="Flujo neto acumulado",
-                    mode="lines+markers", fill="tozeroy", line=dict(color="#17345E", width=3), marker=dict(size=5)
-                ))
-                fig_acum.add_hline(y=0, line_dash="dot", line_color="#9AA9BA")
-                fig_acum.update_layout(
-                    height=330, plot_bgcolor="white", paper_bgcolor="white", margin=dict(l=15, r=15, t=20, b=15), showlegend=False,
-                    yaxis=dict(tickprefix="$", tickformat=",.0f", gridcolor="#E9EEF3"), xaxis=dict(showgrid=False, tickformat="%b %Y")
-                )
-                st.plotly_chart(fig_acum, use_container_width=True)
-
             st.markdown("### Rentabilidad histórica por activo")
             st.caption(
                 "Cada tarjeta combina los flujos fechados con la inversión total oficial "
-                "de Vista_Inversiones_Prorrateadas. La inversión se consulta por separado "
-                "para que no desaparezca si una fila de inversión no tiene fecha."
+                "de Vista_Inversiones_Prorrateadas. El valor residual se incorporará desde "
+                "el radar patrimonial cuando se confirme el nombre exacto de su campo de valor; "
+                "no se inventa ni se duplica el valor del inmueble."
             )
 
             # Fuente independiente de inversión: no depende de que la inversión
