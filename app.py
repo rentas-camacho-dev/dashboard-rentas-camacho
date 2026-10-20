@@ -3397,7 +3397,8 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
         query_activos_finanzas = """
         SELECT
             TRIM(Nombre) AS Nombre,
-            TRIM(Estado) AS Estado
+            TRIM(Estado) AS Estado,
+            TRIM(Sector) AS Sector
         FROM `rentascamacho.rentas_cortas.Maestro_Entidades_External`
         WHERE Nombre IS NOT NULL
           AND Estado IS NOT NULL
@@ -3423,6 +3424,15 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
     _nombres_activos_finanzas = set(
         _activos_finanzas["Nombre"].dropna().map(_normalizar_nombre_finanzas)
     ) if not _activos_finanzas.empty else set()
+    # La categoría visible del activo proviene del maestro, no de Nombre_Tipo
+    # en movimientos, que puede clasificar el mismo inmueble como AIRBNB y FINCA RAÍZ.
+    _sectores_maestro_finanzas = (
+        _activos_finanzas.assign(
+            _Clave_Nombre=_activos_finanzas["Nombre"].map(_normalizar_nombre_finanzas)
+        ).drop_duplicates("_Clave_Nombre", keep="first")
+        .set_index("_Clave_Nombre")["Sector"].fillna("").to_dict()
+        if not _activos_finanzas.empty else {}
+    )
 
     _movimientos_hist_menu = _movimientos_hist_menu[
         _movimientos_hist_menu["Nombre_Propiedad"].map(_normalizar_nombre_finanzas).isin(
@@ -8158,13 +8168,16 @@ elif st.session_state.vista_airbnb == "Financiero":
             )
 
             filas_resumen = []
-            for (entidad_key, proyecto_key), grupo in fin.groupby(
-                ["Clave_Entidad_Fin", "Clave_Activo_Fin"], dropna=False
+            # Una sola tarjeta por activo. No agrupar por Nombre_Tipo:
+            # ese campo cambia entre fuentes (p. ej. AIRBNB / FINCA RAÍZ)
+            # aunque Nombre_Propiedad sea el mismo inmueble.
+            for proyecto_key, grupo in fin.groupby(
+                "Clave_Activo_Fin", dropna=False
             ):
                 grupo = grupo.sort_values("Fecha")
-                entidad = grupo["Nombre_Tipo"].mode().iloc[0] if not grupo["Nombre_Tipo"].mode().empty else "Sin entidad"
                 proyecto = grupo["Nombre_Propiedad"].mode().iloc[0] if not grupo["Nombre_Propiedad"].mode().empty else "Sin activo"
                 clave = _clave_activo(proyecto)
+                entidad = _sectores_maestro_finanzas.get(clave, "") or "Sin categoría"
                 match_inv = inversiones_activo[
                     inversiones_activo["Clave_Activo"] == clave
                 ]
