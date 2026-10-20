@@ -3389,6 +3389,45 @@ _movimientos_hist_menu = (
     else None
 )
 
+# Exclusivo de Finanzas y resultados: mostrar solo activos productivos y cerrados
+# según el maestro oficial. No modifica las demás vistas ni las fuentes financieras.
+if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimientos_hist_menu.empty:
+    @st.cache_data(ttl=300)
+    def cargar_activos_finanzas_permitidos():
+        query_activos_finanzas = """
+        SELECT
+            TRIM(Nombre) AS Nombre,
+            TRIM(Estado) AS Estado
+        FROM `rentascamacho.rentas_cortas.Maestro_Entidades_External`
+        WHERE Nombre IS NOT NULL
+          AND Estado IS NOT NULL
+          AND (
+              LOWER(TRIM(Estado)) LIKE '%productiv%'
+              OR LOWER(TRIM(Estado)) LIKE '%cerrad%'
+          )
+        """
+        return client.query(query_activos_finanzas).to_dataframe()
+
+    _activos_finanzas = cargar_activos_finanzas_permitidos()
+
+    def _normalizar_nombre_finanzas(valor):
+        texto = "" if pd.isna(valor) else str(valor)
+        texto = " ".join(texto.strip().split()).casefold()
+        return "".join(
+            caracter for caracter in unicodedata.normalize("NFKD", texto)
+            if not unicodedata.combining(caracter)
+        )
+
+    _nombres_activos_finanzas = set(
+        _activos_finanzas["Nombre"].dropna().map(_normalizar_nombre_finanzas)
+    ) if not _activos_finanzas.empty else set()
+
+    _movimientos_hist_menu = _movimientos_hist_menu[
+        _movimientos_hist_menu["Nombre_Propiedad"].map(_normalizar_nombre_finanzas).isin(
+            _nombres_activos_finanzas
+        )
+    ].copy()
+
 # ============================================================
 # MARCA
 # ============================================================
@@ -8069,6 +8108,16 @@ elif st.session_state.vista_airbnb == "Financiero":
             k3.metric("Inversión identificada", dinero_corto(inversion_total))
             k4.metric("Flujo neto acumulado", dinero_corto(flujo_acumulado))
             k5.metric("VAN histórico", dinero_corto(van_total) if van_total is not None else "—", f"Tasa {tasa_descuento:.0%}")
+
+            tir_texto = f"{tir_total:.1%}" if tir_total is not None else "No calculable"
+            roi_texto = f"{roi_total:.1f}%" if roi_total is not None else "No calculable"
+            st.markdown(
+                f"<div class='section-subtitle' style='margin-top:0.15rem'>"
+                f"TIR estimada del flujo seleccionado: <b>{tir_texto}</b> &nbsp; · &nbsp; "
+                f"Retorno acumulado sobre inversión identificada: <b>{roi_texto}</b>"
+                f"</div>", unsafe_allow_html=True
+            )
+
 
             # Fuente independiente de inversión: no depende de que la inversión
             # tenga Fecha ni de que aparezca como movimiento operativo.
