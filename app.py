@@ -3402,7 +3402,9 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
         WHERE Nombre IS NOT NULL
           AND Estado IS NOT NULL
           AND (
+              -- El maestro tiene 'Productivo' y también el typo 'Procudtivo'.
               LOWER(TRIM(Estado)) LIKE '%productiv%'
+              OR LOWER(TRIM(Estado)) LIKE '%procudtiv%'
               OR LOWER(TRIM(Estado)) LIKE '%cerrad%'
           )
         """
