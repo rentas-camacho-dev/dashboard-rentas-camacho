@@ -8140,10 +8140,6 @@ elif st.session_state.vista_airbnb == "Financiero":
             tir_total = _tir_de_flujos(fin["Fecha"], fin["Flujo_Caja"])
             roi_total = ((flujo_acumulado / inversion_total) * 100) if inversion_total else None
 
-            st.caption(
-                f"Histórico analizado: {fin['Fecha'].min():%d/%m/%Y} – {fin['Fecha'].max():%d/%m/%Y}. "
-                "Los resultados acumulados no se recortan con el filtro de período del encabezado."
-            )
             # Indicadores de balance consolidado: una tarjeta por concepto,
             # con el detalle por socio en tipografía secundaria. Solo se excluyen
             # filas sin socio y registros totalmente vacíos/en cero.
@@ -8204,7 +8200,7 @@ elif st.session_state.vista_airbnb == "Financiero":
                         "</div></div>"
                     )
                 st.markdown(
-                    "<div style='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;width:100%;margin:8px 0 16px;'>"
+                    "<div style='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;width:100%;margin:0 0 16px;'>"
                     + "".join(tarjetas_balance) + "</div>",
                     unsafe_allow_html=True
                 )
