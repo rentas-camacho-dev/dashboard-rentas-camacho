@@ -3389,52 +3389,27 @@ _movimientos_hist_menu = (
     else None
 )
 
-# Exclusivo de Finanzas y resultados: activos Airbnb con estado productivo.
-# Se consulta SELECT * para no depender de nombres de columnas con espacios
-# que pueden variar en la tabla externa de Google Sheets. Las demás vistas no cambian.
+# Exclusivo de Finanzas y resultados: mostrar solo activos productivos y cerrados
+# según el maestro oficial. No modifica las demás vistas ni las fuentes financieras.
 if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimientos_hist_menu.empty:
     @st.cache_data(ttl=300)
     def cargar_activos_finanzas_permitidos():
         query_activos_finanzas = """
-        SELECT *
+        SELECT
+            TRIM(Nombre) AS Nombre,
+            TRIM(Estado) AS Estado,
+            TRIM(Sector) AS Sector
         FROM `rentascamacho.rentas_cortas.Maestro_Entidades_External`
+        WHERE Nombre IS NOT NULL
+          AND Estado IS NOT NULL
+          AND (
+              -- El maestro tiene 'Productivo' y también el typo 'Procudtivo'.
+              LOWER(TRIM(Estado)) LIKE '%productiv%'
+              OR LOWER(TRIM(Estado)) LIKE '%procudtiv%'
+              OR LOWER(TRIM(Estado)) LIKE '%cerrad%'
+          )
         """
-        activos = client.query(query_activos_finanzas).to_dataframe()
-        if activos.empty:
-            return pd.DataFrame(columns=["Nombre", "Estado", "Tipo_Activo"])
-
-        # Identificar columnas sin depender de tildes, espacios o mayúsculas.
-        def _clave_columna_finanzas(nombre):
-            texto = " ".join(str(nombre).strip().split()).casefold()
-            texto = "".join(
-                c for c in unicodedata.normalize("NFKD", texto)
-                if not unicodedata.combining(c)
-            )
-            return texto.replace(" ", "_")
-
-        columnas = {_clave_columna_finanzas(c): c for c in activos.columns}
-        col_nombre = columnas.get("nombre")
-        col_estado = columnas.get("estado")
-        col_tipo = columnas.get("tipo_de_activo") or columnas.get("tipo_activo")
-        if not col_nombre or not col_estado or not col_tipo:
-            raise ValueError(
-                "Maestro_Entidades_External debe tener columnas Nombre, Estado y Tipo de Activo. "
-                f"Columnas encontradas: {list(activos.columns)}"
-            )
-
-        resultado = activos[[col_nombre, col_estado, col_tipo]].copy()
-        resultado.columns = ["Nombre", "Estado", "Tipo_Activo"]
-        for col in ["Nombre", "Estado", "Tipo_Activo"]:
-            resultado[col] = resultado[col].fillna("").astype(str).str.strip()
-
-        # Inicialmente solo Airbnb productivos; acepta el error tipográfico Procudtivo.
-        tipo = resultado["Tipo_Activo"].map(_clave_columna_finanzas)
-        estado = resultado["Estado"].map(_clave_columna_finanzas)
-        resultado = resultado[
-            tipo.eq("airbnb")
-            & (estado.str.contains("productiv", regex=False) | estado.str.contains("procudtiv", regex=False))
-        ].copy()
-        return resultado.drop_duplicates(subset=["Nombre"], keep="first").reset_index(drop=True)
+        return client.query(query_activos_finanzas).to_dataframe()
 
     _activos_finanzas = cargar_activos_finanzas_permitidos()
 
@@ -3449,13 +3424,13 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
     _nombres_activos_finanzas = set(
         _activos_finanzas["Nombre"].dropna().map(_normalizar_nombre_finanzas)
     ) if not _activos_finanzas.empty else set()
-
-    # Las etiquetas de las tarjetas salen de Tipo de Activo, no de Sector.
-    _tipos_maestro_finanzas = (
+    # La categoría visible del activo proviene del maestro, no de Nombre_Tipo
+    # en movimientos, que puede clasificar el mismo inmueble como AIRBNB y FINCA RAÍZ.
+    _sectores_maestro_finanzas = (
         _activos_finanzas.assign(
             _Clave_Nombre=_activos_finanzas["Nombre"].map(_normalizar_nombre_finanzas)
         ).drop_duplicates("_Clave_Nombre", keep="first")
-        .set_index("_Clave_Nombre")["Tipo_Activo"].fillna("").to_dict()
+        .set_index("_Clave_Nombre")["Sector"].fillna("").to_dict()
         if not _activos_finanzas.empty else {}
     )
 
@@ -8202,7 +8177,7 @@ elif st.session_state.vista_airbnb == "Financiero":
                 grupo = grupo.sort_values("Fecha")
                 proyecto = grupo["Nombre_Propiedad"].mode().iloc[0] if not grupo["Nombre_Propiedad"].mode().empty else "Sin activo"
                 clave = _clave_activo(proyecto)
-                entidad = _tipos_maestro_finanzas.get(clave, "") or "Sin categoría"
+                entidad = _sectores_maestro_finanzas.get(clave, "") or "Sin categoría"
                 match_inv = inversiones_activo[
                     inversiones_activo["Clave_Activo"] == clave
                 ]
@@ -8268,18 +8243,26 @@ elif st.session_state.vista_airbnb == "Financiero":
                             st.markdown(
                                 f"""
 <div style="background:#FFFFFF;border:1px solid #DCE5EE;border-radius:12px;
-padding:11px 10px;margin:3px 0 9px;min-height:245px;box-shadow:0 3px 10px rgba(23,52,94,.045);overflow-wrap:anywhere;">
-  <div style="font-size:8px;font-weight:800;color:#8290A4;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{fila['Entidad']}</div>
-  <div style="font-size:14px;line-height:1.2;font-weight:850;color:#17345E;margin:4px 0 10px;min-height:34px;">{fila['Proyecto / activo']}</div>
-  <div style="font-size:8px;color:#8290A4;">INVERSIÓN</div>
-  <div style="font-size:17px;line-height:1.15;font-weight:850;color:#17345E;margin:3px 0 9px;">{inv_txt}</div>
-  <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:7px;border-top:1px solid #EDF1F5;padding-top:8px;">
-    <div><div style="font-size:9px;color:#8290A4;">Ingresos</div><div style="font-size:12px;font-weight:800;color:#009B70;">{dinero_corto(fila['Ingresos históricos'])}</div></div>
-    <div><div style="font-size:9px;color:#8290A4;">Gastos</div><div style="font-size:12px;font-weight:800;color:#E84235;">{dinero_corto(fila['Gastos operativos'])}</div></div>
-    <div><div style="font-size:9px;color:#8290A4;">Flujo neto</div><div style="font-size:12px;font-weight:800;color:{flujo_color};">{dinero_corto(flujo_val)}</div></div>
-    <div style="display:flex;justify-content:space-between;gap:4px;align-items:baseline;"><span style="font-size:9px;color:#8290A4;">ROI</span><span style="font-size:11px;font-weight:850;color:#17345E;">{roi_txt}</span></div>
-    <div style="display:flex;justify-content:space-between;gap:4px;align-items:baseline;"><span style="font-size:9px;color:#8290A4;">TIR</span><span style="font-size:10px;font-weight:750;color:#50637B;">{tir_txt}</span></div>
-    <div style="display:flex;justify-content:space-between;gap:4px;align-items:baseline;"><span style="font-size:9px;color:#8290A4;">VAN</span><span style="font-size:10px;font-weight:750;color:#50637B;">{van_txt}</span></div>
+padding:10px;margin:3px 0 9px;min-height:0;box-shadow:0 3px 10px rgba(23,52,94,.045);overflow-wrap:anywhere;">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;">
+    <div style="min-width:0;flex:1;">
+      <div style="font-size:8px;font-weight:800;color:#8290A4;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{fila['Entidad']}</div>
+      <div style="font-size:13px;line-height:1.15;font-weight:850;color:#17345E;margin-top:4px;overflow-wrap:anywhere;">{fila['Proyecto / activo']}</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <div style="font-size:8px;color:#8290A4;">INVERSIÓN</div>
+      <div style="font-size:15px;line-height:1.15;font-weight:850;color:#17345E;margin-top:4px;">{inv_txt}</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;border-top:1px solid #EDF1F5;padding-top:8px;">
+    <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">Ingresos</div><div style="font-size:12px;font-weight:800;color:#009B70;margin-top:3px;">{dinero_corto(fila['Ingresos históricos'])}</div></div>
+    <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">Gastos</div><div style="font-size:12px;font-weight:800;color:#E84235;margin-top:3px;">{dinero_corto(fila['Gastos operativos'])}</div></div>
+    <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">Flujo neto</div><div style="font-size:12px;font-weight:800;color:{flujo_color};margin-top:3px;">{dinero_corto(flujo_val)}</div></div>
+    <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">ROI</div><div style="font-size:12px;font-weight:850;color:#17345E;margin-top:3px;">{roi_txt}</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;padding:0 2px;">
+    <div style="display:flex;justify-content:space-between;gap:4px;align-items:baseline;"><span style="font-size:9px;color:#8290A4;">TIR</span><span style="font-size:10px;font-weight:750;color:#50637B;text-align:right;">{tir_txt}</span></div>
+    <div style="display:flex;justify-content:space-between;gap:4px;align-items:baseline;"><span style="font-size:9px;color:#8290A4;">VAN</span><span style="font-size:10px;font-weight:750;color:#50637B;text-align:right;">{van_txt}</span></div>
   </div>
 </div>
 """,
