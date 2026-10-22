@@ -3398,15 +3398,41 @@ _movimientos_hist_menu = (
 if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimientos_hist_menu.empty:
     @st.cache_data(ttl=300)
     def cargar_activos_finanzas_permitidos():
+        # Leer las columnas existentes sin referenciarlas en SQL: evita errores
+        # por encabezados externos con espacios o nombres ligeramente distintos.
         query_activos_finanzas = """
-        SELECT
-            TRIM(Nombre) AS Nombre,
-            TRIM(Estado) AS Estado,
-            TRIM(`Tipo de Activo`) AS Tipo_Activo
+        SELECT *
         FROM `rentascamacho.rentas_cortas.Maestro_Entidades_External`
-        WHERE Nombre IS NOT NULL
         """
-        return client.query(query_activos_finanzas).to_dataframe()
+        df_maestro = client.query(query_activos_finanzas).to_dataframe()
+        if df_maestro.empty:
+            return pd.DataFrame(columns=["Nombre", "Estado", "Tipo_Activo"])
+
+        def _columna_normalizada(nombre):
+            return "".join(
+                c for c in unicodedata.normalize("NFKD", str(nombre)).casefold()
+                if c.isalnum() and not unicodedata.combining(c)
+            )
+
+        columnas = {_columna_normalizada(c): c for c in df_maestro.columns}
+        col_nombre = columnas.get("nombre")
+        col_estado = columnas.get("estado")
+        col_tipo = columnas.get("tipodeactivo") or columnas.get("tipoactivo")
+        faltantes = [etiqueta for etiqueta, columna in [
+            ("Nombre", col_nombre), ("Estado", col_estado), ("Tipo de Activo", col_tipo)
+        ] if columna is None]
+        if faltantes:
+            raise ValueError(
+                "No se encontraron estas columnas en Maestro_Entidades_External: "
+                + ", ".join(faltantes)
+                + ". Columnas disponibles: " + ", ".join(map(str, df_maestro.columns))
+            )
+
+        resultado = df_maestro[[col_nombre, col_estado, col_tipo]].copy()
+        resultado.columns = ["Nombre", "Estado", "Tipo_Activo"]
+        for columna in ["Nombre", "Estado", "Tipo_Activo"]:
+            resultado[columna] = resultado[columna].fillna("").astype(str).str.strip()
+        return resultado[resultado["Nombre"] != ""].copy()
 
     _activos_finanzas = cargar_activos_finanzas_permitidos()
 
