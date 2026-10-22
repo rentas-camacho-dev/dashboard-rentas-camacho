@@ -3389,8 +3389,10 @@ _movimientos_hist_menu = (
     else None
 )
 
-# Exclusivo de Finanzas y resultados: mostrar solo activos productivos y cerrados
-# según el maestro oficial. No modifica las demás vistas ni las fuentes financieras.
+# Exclusivo de Finanzas y resultados: inicialmente mostrar solo activos Airbnb
+# cuyo Estado sea productivo, según Maestro_Entidades_External.
+# Se aceptan ambas escrituras del maestro: "Productivo" y "Procudtivo".
+# No modifica las demás vistas ni las fuentes financieras.
 if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimientos_hist_menu.empty:
     @st.cache_data(ttl=300)
     def cargar_activos_finanzas_permitidos():
@@ -3398,15 +3400,15 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
         SELECT
             TRIM(Nombre) AS Nombre,
             TRIM(Estado) AS Estado,
-            TRIM(Sector) AS Sector
+            TRIM(`Tipo de Activo`) AS Tipo_Activo
         FROM `rentascamacho.rentas_cortas.Maestro_Entidades_External`
         WHERE Nombre IS NOT NULL
           AND Estado IS NOT NULL
+          AND `Tipo de Activo` IS NOT NULL
+          AND LOWER(TRIM(`Tipo de Activo`)) = 'airbnb'
           AND (
-              -- El maestro tiene 'Productivo' y también el typo 'Procudtivo'.
               LOWER(TRIM(Estado)) LIKE '%productiv%'
               OR LOWER(TRIM(Estado)) LIKE '%procudtiv%'
-              OR LOWER(TRIM(Estado)) LIKE '%cerrad%'
           )
         """
         return client.query(query_activos_finanzas).to_dataframe()
@@ -3424,13 +3426,13 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
     _nombres_activos_finanzas = set(
         _activos_finanzas["Nombre"].dropna().map(_normalizar_nombre_finanzas)
     ) if not _activos_finanzas.empty else set()
-    # La categoría visible del activo proviene del maestro, no de Nombre_Tipo
-    # en movimientos, que puede clasificar el mismo inmueble como AIRBNB y FINCA RAÍZ.
-    _sectores_maestro_finanzas = (
+    # La etiqueta de las tarjetas se toma de Tipo de Activo del maestro.
+    # No se usa Sector ni Nombre_Tipo de las tablas financieras para categorizar.
+    _tipos_maestro_finanzas = (
         _activos_finanzas.assign(
             _Clave_Nombre=_activos_finanzas["Nombre"].map(_normalizar_nombre_finanzas)
         ).drop_duplicates("_Clave_Nombre", keep="first")
-        .set_index("_Clave_Nombre")["Sector"].fillna("").to_dict()
+        .set_index("_Clave_Nombre")["Tipo_Activo"].fillna("").to_dict()
         if not _activos_finanzas.empty else {}
     )
 
@@ -8177,7 +8179,7 @@ elif st.session_state.vista_airbnb == "Financiero":
                 grupo = grupo.sort_values("Fecha")
                 proyecto = grupo["Nombre_Propiedad"].mode().iloc[0] if not grupo["Nombre_Propiedad"].mode().empty else "Sin activo"
                 clave = _clave_activo(proyecto)
-                entidad = _sectores_maestro_finanzas.get(clave, "") or "Sin categoría"
+                entidad = _tipos_maestro_finanzas.get(clave, "") or "Sin categoría"
                 match_inv = inversiones_activo[
                     inversiones_activo["Clave_Activo"] == clave
                 ]
