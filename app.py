@@ -3393,58 +3393,20 @@ _movimientos_hist_menu = (
     else None
 )
 
-# Exclusivo de Finanzas y resultados: mostrar solo activos productivos y cerrados
-# según el maestro oficial. No modifica las demás vistas ni las fuentes financieras.
+# Exclusivo de Finanzas y resultados: clasificar entidades por Estado y Tipo de Activo
+# del maestro oficial para mostrar secciones en pestañas. No altera otras vistas.
 if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimientos_hist_menu.empty:
     @st.cache_data(ttl=300)
     def cargar_activos_finanzas_permitidos():
-        # Leer el maestro completo evita que BigQuery falle si el encabezado
-        # "Tipo de Activo" fue normalizado con otro nombre en la tabla externa.
         query_activos_finanzas = """
-        SELECT *
+        SELECT
+            TRIM(Nombre) AS Nombre,
+            TRIM(Estado) AS Estado,
+            TRIM(`Tipo de Activo`) AS Tipo_Activo
         FROM `rentascamacho.rentas_cortas.Maestro_Entidades_External`
+        WHERE Nombre IS NOT NULL
         """
-        df_maestro = client.query(query_activos_finanzas).to_dataframe()
-        if df_maestro.empty:
-            return pd.DataFrame(columns=["Nombre", "Estado", "Tipo_Activo"])
-
-        def _clave_columna_finanzas(columna):
-            texto = str(columna).strip().casefold()
-            texto = "".join(
-                c for c in unicodedata.normalize("NFKD", texto)
-                if not unicodedata.combining(c)
-            )
-            return "".join(c for c in texto if c.isalnum())
-
-        columnas = {_clave_columna_finanzas(c): c for c in df_maestro.columns}
-        col_nombre = columnas.get("nombre")
-        col_estado = columnas.get("estado")
-        col_tipo = (
-            columnas.get("tipodeactivo")
-            or columnas.get("tipoactivo")
-            or columnas.get("tipo_de_activo")
-        )
-        if not col_nombre or not col_estado or not col_tipo:
-            raise ValueError(
-                "Maestro_Entidades_External debe tener columnas Nombre, Estado y Tipo de Activo. "
-                f"Columnas encontradas: {list(df_maestro.columns)}"
-            )
-
-        df_activos = df_maestro[[col_nombre, col_estado, col_tipo]].copy()
-        df_activos.columns = ["Nombre", "Estado", "Tipo_Activo"]
-        df_activos["Nombre"] = df_activos["Nombre"].astype("string").str.strip()
-        df_activos["Estado"] = df_activos["Estado"].astype("string").str.strip()
-        df_activos["Tipo_Activo"] = df_activos["Tipo_Activo"].astype("string").str.strip()
-
-        estado_normalizado = df_activos["Estado"].fillna("").str.casefold()
-        mascara_estado = (
-            estado_normalizado.str.contains("productiv", regex=False)
-            | estado_normalizado.str.contains("procudtiv", regex=False)
-            | estado_normalizado.str.contains("cerrad", regex=False)
-        )
-        return df_activos.loc[
-            mascara_estado & df_activos["Nombre"].notna() & df_activos["Nombre"].ne("")
-        ].copy()
+        return client.query(query_activos_finanzas).to_dataframe()
 
     _activos_finanzas = cargar_activos_finanzas_permitidos()
 
@@ -3461,12 +3423,19 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
     ) if not _activos_finanzas.empty else set()
     # La categoría visible del activo proviene del maestro, no de Nombre_Tipo
     # en movimientos, que puede clasificar el mismo inmueble como AIRBNB y FINCA RAÍZ.
-    _tipos_activo_maestro_finanzas = (
+    _maestro_finanzas_unico = (
         _activos_finanzas.assign(
             _Clave_Nombre=_activos_finanzas["Nombre"].map(_normalizar_nombre_finanzas)
         ).drop_duplicates("_Clave_Nombre", keep="first")
-        .set_index("_Clave_Nombre")["Tipo_Activo"].fillna("").to_dict()
-        if not _activos_finanzas.empty else {}
+        if not _activos_finanzas.empty else pd.DataFrame()
+    )
+    _tipos_activo_maestro_finanzas = (
+        _maestro_finanzas_unico.set_index("_Clave_Nombre")["Tipo_Activo"].fillna("").to_dict()
+        if not _maestro_finanzas_unico.empty else {}
+    )
+    _estados_maestro_finanzas = (
+        _maestro_finanzas_unico.set_index("_Clave_Nombre")["Estado"].fillna("").to_dict()
+        if not _maestro_finanzas_unico.empty else {}
     )
     _movimientos_hist_menu["Tipo_Activo_Maestro"] = (
         _movimientos_hist_menu["Nombre_Propiedad"]
@@ -8213,6 +8182,18 @@ elif st.session_state.vista_airbnb == "Financiero":
                 proyecto = grupo["Nombre_Propiedad"].mode().iloc[0] if not grupo["Nombre_Propiedad"].mode().empty else "Sin activo"
                 clave = _clave_activo(proyecto)
                 entidad = _tipos_activo_maestro_finanzas.get(clave, "") or "Sin categoría"
+                estado_maestro = str(_estados_maestro_finanzas.get(clave, "")).strip().casefold()
+                tipo_maestro = str(entidad).strip().casefold()
+                if "productiv" in estado_maestro or "procudtiv" in estado_maestro:
+                    seccion_fin = "Activos productivos"
+                elif "cerrad" in estado_maestro:
+                    seccion_fin = "Activos cerrados"
+                elif "vivienda" in estado_maestro or tipo_maestro == "vivienda":
+                    seccion_fin = "Vivienda"
+                elif estado_maestro == "gasto" or tipo_maestro in {"personal", "financieros", "familia"}:
+                    seccion_fin = "Gastos"
+                else:
+                    seccion_fin = "Otros activos"
                 match_inv = inversiones_activo[
                     inversiones_activo["Clave_Activo"] == clave
                 ]
@@ -8244,6 +8225,7 @@ elif st.session_state.vista_airbnb == "Financiero":
                 ).any()
                 filas_resumen.append({
                     "Entidad": entidad, "Proyecto / activo": proyecto,
+                    "Sección": seccion_fin,
                     "Estado": "Cerrado" if texto_cierre else "En seguimiento",
                     "Primera fecha": grupo["Fecha"].min(),
                     "Último movimiento": grupo["Fecha"].max(),
@@ -8259,50 +8241,58 @@ elif st.session_state.vista_airbnb == "Financiero":
                 resumen_proyectos = resumen_proyectos.sort_values(
                     ["Entidad", "Proyecto / activo"], na_position="last"
                 )
-                # Tarjetas visuales por activo en lugar de la tabla extensa.
-                for inicio in range(0, len(resumen_proyectos), 6):
-                    tarjetas = st.columns(6, gap="small")
-                    for columna, (_, fila) in zip(
-                        tarjetas, resumen_proyectos.iloc[inicio:inicio + 6].iterrows()
-                    ):
-                        roi_val = fila["ROI acumulado (%)"]
-                        roi_txt = f"{roi_val:.1f}%" if pd.notna(roi_val) else "No calculable"
-                        tir_val = fila["TIR anual estimada (%)"]
-                        tir_txt = f"{tir_val:.1f}%" if pd.notna(tir_val) else "No calculable"
-                        van_val = fila["VAN"]
-                        van_txt = dinero_corto(van_val) if pd.notna(van_val) else "No calculable"
-                        inv_txt = dinero_corto(fila["Inversión histórica"])
-                        flujo_val = float(fila["Flujo neto acumulado"])
-                        flujo_color = "#008866" if flujo_val >= 0 else "#D83A42"
-                        with columna:
-                            st.markdown(
-                                f"""
-<div style="background:#FFFFFF;border:1px solid #DCE5EE;border-radius:12px;
-padding:10px;margin:3px 0 9px;min-height:0;box-shadow:0 3px 10px rgba(23,52,94,.045);overflow-wrap:anywhere;">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;">
-    <div style="min-width:0;flex:1;">
-      <div style="font-size:8px;font-weight:800;color:#8290A4;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{fila['Entidad']}</div>
-      <div style="font-size:13px;line-height:1.15;font-weight:850;color:#17345E;margin-top:4px;overflow-wrap:anywhere;">{fila['Proyecto / activo']}</div>
-    </div>
-    <div style="text-align:right;flex-shrink:0;">
-      <div style="font-size:8px;color:#8290A4;">INVERSIÓN</div>
-      <div style="font-size:15px;line-height:1.15;font-weight:850;color:#17345E;margin-top:4px;">{inv_txt}</div>
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;border-top:1px solid #EDF1F5;padding-top:8px;">
-    <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">Ingresos</div><div style="font-size:12px;font-weight:800;color:#009B70;margin-top:3px;">{dinero_corto(fila['Ingresos históricos'])}</div></div>
-    <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">Gastos</div><div style="font-size:12px;font-weight:800;color:#E84235;margin-top:3px;">{dinero_corto(fila['Gastos operativos'])}</div></div>
-    <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">Flujo neto</div><div style="font-size:12px;font-weight:800;color:{flujo_color};margin-top:3px;">{dinero_corto(flujo_val)}</div></div>
-    <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">ROI</div><div style="font-size:12px;font-weight:850;color:#17345E;margin-top:3px;">{roi_txt}</div></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;padding:0 2px;">
-    <div style="display:flex;justify-content:space-between;gap:4px;align-items:baseline;"><span style="font-size:9px;color:#8290A4;">TIR</span><span style="font-size:10px;font-weight:750;color:#50637B;text-align:right;">{tir_txt}</span></div>
-    <div style="display:flex;justify-content:space-between;gap:4px;align-items:baseline;"><span style="font-size:9px;color:#8290A4;">VAN</span><span style="font-size:10px;font-weight:750;color:#50637B;text-align:right;">{van_txt}</span></div>
-  </div>
-</div>
-""",
-                                unsafe_allow_html=True
-                            )
+                # Las mismas tarjetas compactas se reutilizan en pestañas por clasificación.
+                nombres_secciones = ["Activos productivos", "Activos cerrados", "Vivienda", "Gastos", "Otros activos"]
+                tabs_finanzas = st.tabs(nombres_secciones)
+                for tab_fin, nombre_seccion in zip(tabs_finanzas, nombres_secciones):
+                    with tab_fin:
+                        resumen_seccion = resumen_proyectos[resumen_proyectos["Sección"] == nombre_seccion]
+                        if resumen_seccion.empty:
+                            st.info(f"No hay activos para la sección {nombre_seccion.lower()} con los filtros actuales.")
+                            continue
+                        for inicio in range(0, len(resumen_seccion), 6):
+                            tarjetas = st.columns(6, gap="small")
+                            for columna, (_, fila) in zip(
+                                tarjetas, resumen_seccion.iloc[inicio:inicio + 6].iterrows()
+                            ):
+                                roi_val = fila["ROI acumulado (%)"]
+                                roi_txt = f"{roi_val:.1f}%" if pd.notna(roi_val) else "No calculable"
+                                tir_val = fila["TIR anual estimada (%)"]
+                                tir_txt = f"{tir_val:.1f}%" if pd.notna(tir_val) else "No calculable"
+                                van_val = fila["VAN"]
+                                van_txt = dinero_corto(van_val) if pd.notna(van_val) else "No calculable"
+                                inv_txt = dinero_corto(fila["Inversión histórica"])
+                                flujo_val = float(fila["Flujo neto acumulado"])
+                                flujo_color = "#008866" if flujo_val >= 0 else "#D83A42"
+                                with columna:
+                                    st.markdown(
+                                        f"""
+        <div style="background:#FFFFFF;border:1px solid #DCE5EE;border-radius:12px;
+        padding:10px;margin:3px 0 9px;min-height:0;box-shadow:0 3px 10px rgba(23,52,94,.045);overflow-wrap:anywhere;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;">
+            <div style="min-width:0;flex:1;">
+              <div style="font-size:8px;font-weight:800;color:#8290A4;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{fila['Entidad']}</div>
+              <div style="font-size:13px;line-height:1.15;font-weight:850;color:#17345E;margin-top:4px;overflow-wrap:anywhere;">{fila['Proyecto / activo']}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:8px;color:#8290A4;">INVERSIÓN</div>
+              <div style="font-size:15px;line-height:1.15;font-weight:850;color:#17345E;margin-top:4px;">{inv_txt}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;border-top:1px solid #EDF1F5;padding-top:8px;">
+            <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">Ingresos</div><div style="font-size:12px;font-weight:800;color:#009B70;margin-top:3px;">{dinero_corto(fila['Ingresos históricos'])}</div></div>
+            <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">Gastos</div><div style="font-size:12px;font-weight:800;color:#E84235;margin-top:3px;">{dinero_corto(fila['Gastos operativos'])}</div></div>
+            <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">Flujo neto</div><div style="font-size:12px;font-weight:800;color:{flujo_color};margin-top:3px;">{dinero_corto(flujo_val)}</div></div>
+            <div style="background:#F4F7FA;border-radius:7px;padding:7px 8px;"><div style="font-size:9px;color:#8290A4;">ROI</div><div style="font-size:12px;font-weight:850;color:#17345E;margin-top:3px;">{roi_txt}</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;padding:0 2px;">
+            <div style="display:flex;justify-content:space-between;gap:4px;align-items:baseline;"><span style="font-size:9px;color:#8290A4;">TIR</span><span style="font-size:10px;font-weight:750;color:#50637B;text-align:right;">{tir_txt}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px;align-items:baseline;"><span style="font-size:9px;color:#8290A4;">VAN</span><span style="font-size:10px;font-weight:750;color:#50637B;text-align:right;">{van_txt}</span></div>
+          </div>
+        </div>
+        """,
+                                        unsafe_allow_html=True
+                                    )
 
             st.markdown("### Flujo de caja histórico del proyecto seleccionado")
             flujo_detalle = fin.copy()
