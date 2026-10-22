@@ -3398,22 +3398,53 @@ _movimientos_hist_menu = (
 if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimientos_hist_menu.empty:
     @st.cache_data(ttl=300)
     def cargar_activos_finanzas_permitidos():
+        # Leer el maestro completo evita que BigQuery falle si el encabezado
+        # "Tipo de Activo" fue normalizado con otro nombre en la tabla externa.
         query_activos_finanzas = """
-        SELECT
-            TRIM(Nombre) AS Nombre,
-            TRIM(Estado) AS Estado,
-            TRIM(`Tipo de Activo`) AS Tipo_Activo
+        SELECT *
         FROM `rentascamacho.rentas_cortas.Maestro_Entidades_External`
-        WHERE Nombre IS NOT NULL
-          AND Estado IS NOT NULL
-          AND (
-              -- El maestro tiene 'Productivo' y también el typo 'Procudtivo'.
-              LOWER(TRIM(Estado)) LIKE '%productiv%'
-              OR LOWER(TRIM(Estado)) LIKE '%procudtiv%'
-              OR LOWER(TRIM(Estado)) LIKE '%cerrad%'
-          )
         """
-        return client.query(query_activos_finanzas).to_dataframe()
+        df_maestro = client.query(query_activos_finanzas).to_dataframe()
+        if df_maestro.empty:
+            return pd.DataFrame(columns=["Nombre", "Estado", "Tipo_Activo"])
+
+        def _clave_columna_finanzas(columna):
+            texto = str(columna).strip().casefold()
+            texto = "".join(
+                c for c in unicodedata.normalize("NFKD", texto)
+                if not unicodedata.combining(c)
+            )
+            return "".join(c for c in texto if c.isalnum())
+
+        columnas = {_clave_columna_finanzas(c): c for c in df_maestro.columns}
+        col_nombre = columnas.get("nombre")
+        col_estado = columnas.get("estado")
+        col_tipo = (
+            columnas.get("tipodeactivo")
+            or columnas.get("tipoactivo")
+            or columnas.get("tipo_de_activo")
+        )
+        if not col_nombre or not col_estado or not col_tipo:
+            raise ValueError(
+                "Maestro_Entidades_External debe tener columnas Nombre, Estado y Tipo de Activo. "
+                f"Columnas encontradas: {list(df_maestro.columns)}"
+            )
+
+        df_activos = df_maestro[[col_nombre, col_estado, col_tipo]].copy()
+        df_activos.columns = ["Nombre", "Estado", "Tipo_Activo"]
+        df_activos["Nombre"] = df_activos["Nombre"].astype("string").str.strip()
+        df_activos["Estado"] = df_activos["Estado"].astype("string").str.strip()
+        df_activos["Tipo_Activo"] = df_activos["Tipo_Activo"].astype("string").str.strip()
+
+        estado_normalizado = df_activos["Estado"].fillna("").str.casefold()
+        mascara_estado = (
+            estado_normalizado.str.contains("productiv", regex=False)
+            | estado_normalizado.str.contains("procudtiv", regex=False)
+            | estado_normalizado.str.contains("cerrad", regex=False)
+        )
+        return df_activos.loc[
+            mascara_estado & df_activos["Nombre"].notna() & df_activos["Nombre"].ne("")
+        ].copy()
 
     _activos_finanzas = cargar_activos_finanzas_permitidos()
 
