@@ -8144,12 +8144,72 @@ elif st.session_state.vista_airbnb == "Financiero":
                 f"Histórico analizado: {fin['Fecha'].min():%d/%m/%Y} – {fin['Fecha'].max():%d/%m/%Y}. "
                 "Los resultados acumulados no se recortan con el filtro de período del encabezado."
             )
-            k1, k2, k3, k4, k5 = st.columns(5)
-            k1.metric("Ingresos históricos", dinero_corto(ingresos_total))
-            k2.metric("Gastos operativos", dinero_corto(gastos_operativos))
-            k3.metric("Inversión identificada", dinero_corto(inversion_total))
-            k4.metric("Flujo neto acumulado", dinero_corto(flujo_acumulado))
-            k5.metric("VAN histórico", dinero_corto(van_total) if van_total is not None else "—", f"Tasa {tasa_descuento:.0%}")
+            # Indicadores de balance consolidado: una tarjeta por concepto,
+            # con el detalle por socio en tipografía secundaria. Solo se excluyen
+            # filas sin socio y registros totalmente vacíos/en cero.
+            try:
+                balance_socios = client.query("""
+                    SELECT
+                        Socio,
+                        Total_Aportes,
+                        Total_Ingresos,
+                        Total_Inversiones,
+                        Total_Gastos,
+                        Total_Utilidades_Entregadas,
+                        Balance_Final
+                    FROM `rentascamacho.rentas_cortas.Balance_Consolidado_Socios`
+                """).to_dataframe()
+            except Exception as exc_balance:
+                st.error(f"No fue posible cargar Balance_Consolidado_Socios: {exc_balance}")
+                balance_socios = pd.DataFrame()
+
+            campos_balance = {
+                "Aportes": "Total_Aportes",
+                "Ingresos": "Total_Ingresos",
+                "Inversiones": "Total_Inversiones",
+                "Gastos": "Total_Gastos",
+                "Utilidades entregadas": "Total_Utilidades_Entregadas",
+                "Balance final": "Balance_Final",
+            }
+            if not balance_socios.empty:
+                balance_socios["Socio"] = balance_socios["Socio"].fillna("").astype(str).str.strip()
+                for campo in campos_balance.values():
+                    balance_socios[campo] = pd.to_numeric(balance_socios[campo], errors="coerce").fillna(0)
+                columnas_importes = list(campos_balance.values())
+                balance_socios = balance_socios[
+                    (balance_socios["Socio"] != "") &
+                    (balance_socios[columnas_importes].abs().sum(axis=1) > 0)
+                ].copy()
+
+            try:
+                from html import escape as _html_escape_balance
+                tarjetas_balance = []
+                for titulo_indicador, campo_balance in campos_balance.items():
+                    total_balance = float(balance_socios[campo_balance].sum()) if not balance_socios.empty else 0.0
+                    detalle_socios = "".join(
+                        "<div style='display:flex;justify-content:space-between;gap:6px;margin-top:5px;'>"
+                        f"<span style='color:#71839A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>{_html_escape_balance(str(fila['Socio']))}</span>"
+                        f"<b style='color:{'#009B70' if float(fila[campo_balance]) >= 0 else '#E84235'};white-space:nowrap;'>{dinero_corto(float(fila[campo_balance]))}</b>"
+                        "</div>"
+                        for _, fila in balance_socios.iterrows()
+                    )
+                    if not detalle_socios:
+                        detalle_socios = '<span style="color:#8290A4">Sin datos por socio</span>'
+                    tarjetas_balance.append(
+                        "<div style='background:#FFFFFF;border:1px solid #DCE5EF;border-radius:12px;padding:12px;min-width:0;box-shadow:0 2px 8px rgba(20,50,90,.04);'>"
+                        f"<div style='font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:#8290A4;font-weight:700;'>{_html_escape_balance(titulo_indicador)}</div>"
+                        f"<div style='font-size:23px;line-height:1.2;font-weight:800;color:#17345E;margin:7px 0 10px;'>{dinero_corto(total_balance)}</div>"
+                        "<div style='border-top:1px solid #E8EEF5;padding-top:7px;font-size:10px;line-height:1.25;'>"
+                        f"{detalle_socios}"
+                        "</div></div>"
+                    )
+                st.markdown(
+                    "<div style='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;width:100%;margin:8px 0 16px;'>"
+                    + "".join(tarjetas_balance) + "</div>",
+                    unsafe_allow_html=True
+                )
+            except Exception as exc_render_balance:
+                st.warning(f"No fue posible presentar las tarjetas del balance: {exc_render_balance}")
 
             tir_texto = f"{tir_total:.1%}" if tir_total is not None else "No calculable"
             roi_texto = f"{roi_total:.1f}%" if roi_total is not None else "No calculable"
