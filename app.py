@@ -3366,21 +3366,25 @@ if "vista_airbnb" not in st.session_state:
 
     st.session_state.vista_airbnb = "Aportes"
 
-# En Financiero se muestran en el encabezado los cuatro filtros propios
-# de esa vista. En las demás vistas se conservan Ciudad, Propiedad y Período.
+# En Financiero se muestran únicamente los dos filtros acordados:
+# Entidad (Tipo de Activo del maestro) y Proyecto / activo.
+# En las demás vistas se conservan Ciudad, Propiedad y Período.
 _es_vista_financiero = st.session_state.vista_airbnb == "Financiero"
 if _es_vista_financiero:
     top_cols = st.columns(
-        [1.75, 0.60, 0.60, 0.60, 0.60, 0.60, 0.60, 1.00, 1.20, 1.00, 0.85],
+        [1.75, 0.60, 0.60, 0.60, 0.60, 0.60, 0.60, 1.00, 1.25],
         gap="small"
     )
+    top1, top2, top3, top4, top5, top6, top7, top8, top9 = top_cols
+    top10 = None
+    top11 = None
 else:
     top_cols = st.columns(
         [1.90, 0.68, 0.68, 0.68, 0.68, 0.68, 0.68, 0.90, 0.90, 1.10],
         gap="small"
     )
-top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = top_cols[:10]
-top11 = top_cols[10] if _es_vista_financiero else None
+    top1, top2, top3, top4, top5, top6, top7, top8, top9, top10 = top_cols
+    top11 = None
 
 # La vista Financiero necesita su histórico para construir los filtros del menú.
 _movimientos_hist_menu = (
@@ -3398,7 +3402,7 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
         SELECT
             TRIM(Nombre) AS Nombre,
             TRIM(Estado) AS Estado,
-            TRIM(Sector) AS Sector
+            TRIM(`Tipo de Activo`) AS Tipo_Activo
         FROM `rentascamacho.rentas_cortas.Maestro_Entidades_External`
         WHERE Nombre IS NOT NULL
           AND Estado IS NOT NULL
@@ -3426,12 +3430,18 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
     ) if not _activos_finanzas.empty else set()
     # La categoría visible del activo proviene del maestro, no de Nombre_Tipo
     # en movimientos, que puede clasificar el mismo inmueble como AIRBNB y FINCA RAÍZ.
-    _sectores_maestro_finanzas = (
+    _tipos_activo_maestro_finanzas = (
         _activos_finanzas.assign(
             _Clave_Nombre=_activos_finanzas["Nombre"].map(_normalizar_nombre_finanzas)
         ).drop_duplicates("_Clave_Nombre", keep="first")
-        .set_index("_Clave_Nombre")["Sector"].fillna("").to_dict()
+        .set_index("_Clave_Nombre")["Tipo_Activo"].fillna("").to_dict()
         if not _activos_finanzas.empty else {}
+    )
+    _movimientos_hist_menu["Tipo_Activo_Maestro"] = (
+        _movimientos_hist_menu["Nombre_Propiedad"]
+        .map(_normalizar_nombre_finanzas)
+        .map(_tipos_activo_maestro_finanzas)
+        .fillna("")
     )
 
     _movimientos_hist_menu = _movimientos_hist_menu[
@@ -3605,51 +3615,39 @@ if _es_vista_financiero:
     if _opciones_fin is None or _opciones_fin.empty:
         _entidades_menu = []
         _proyectos_menu = []
-        _socios_menu = []
     else:
         _entidades_menu = sorted(
-            x for x in _opciones_fin["Nombre_Tipo"].dropna().unique().tolist()
-            if str(x).strip() and str(x).strip().lower() != "sin información"
-        )
-        _proyectos_menu = sorted(
-            x for x in _opciones_fin["Nombre_Propiedad"].dropna().unique().tolist()
-            if str(x).strip() and str(x).strip().lower() != "sin información"
-        )
-        _socios_menu = sorted(
-            x for x in _opciones_fin["Nombre_Socio"].dropna().unique().tolist()
+            x for x in _opciones_fin["Tipo_Activo_Maestro"].dropna().unique().tolist()
             if str(x).strip() and str(x).strip().lower() != "sin información"
         )
 
     with top8:
         st.markdown('<div class="filter-label">🏷️ Entidad</div>', unsafe_allow_html=True)
-        entidad_sel = st.selectbox("Entidad", ["Todas"] + _entidades_menu,
-                                   key="fin_entidad", label_visibility="collapsed")
+        entidad_sel = st.selectbox(
+            "Entidad", ["Todas"] + _entidades_menu,
+            key="fin_entidad", label_visibility="collapsed"
+        )
     with top9:
-        # Los proyectos se filtran según la entidad seleccionada.
+        # Los proyectos se filtran según el Tipo de Activo seleccionado.
         _base_proyectos_menu = _opciones_fin.copy() if _opciones_fin is not None else pd.DataFrame()
         if not _base_proyectos_menu.empty and entidad_sel != "Todas":
             _base_proyectos_menu = _base_proyectos_menu[
-                _base_proyectos_menu["Nombre_Tipo"] == entidad_sel
+                _base_proyectos_menu["Tipo_Activo_Maestro"] == entidad_sel
             ]
         _proyectos_menu_filtrados = sorted(
             x for x in _base_proyectos_menu.get("Nombre_Propiedad", pd.Series(dtype=str)).dropna().unique().tolist()
             if str(x).strip() and str(x).strip().lower() != "sin información"
         )
         st.markdown('<div class="filter-label">🏢 Proyecto / activo</div>', unsafe_allow_html=True)
-        proyecto_sel = st.selectbox("Proyecto / activo", ["Todos"] + _proyectos_menu_filtrados,
-                                    key="fin_proyecto", label_visibility="collapsed")
-    with top10:
-        st.markdown('<div class="filter-label">👤 Socio</div>', unsafe_allow_html=True)
-        socio_sel = st.selectbox("Responsable / socio", ["Todos"] + _socios_menu,
-                                 key="fin_socio", label_visibility="collapsed")
-    with top11:
-        st.markdown('<div class="filter-label">📉 VAN (%)</div>', unsafe_allow_html=True)
-        tasa_descuento = st.number_input(
-            "Tasa para VAN (%)", min_value=0.0, max_value=100.0,
-            value=12.0, step=1.0, key="fin_tasa_van", label_visibility="collapsed"
-        ) / 100
-    # Variables generales requeridas por las demás secciones de la aplicación;
-    # el filtro de período no se muestra ni controla el histórico financiero.
+        proyecto_sel = st.selectbox(
+            "Proyecto / activo", ["Todos"] + _proyectos_menu_filtrados,
+            key="fin_proyecto", label_visibility="collapsed"
+        )
+
+    # Se conservan valores por defecto para que los cálculos existentes sigan funcionando,
+    # pero Socio y Tasa VAN ya no aparecen como filtros en el menú.
+    socio_sel = "Todos"
+    tasa_descuento = 0.12
     ciudad = "Todas"
     propiedad = "Todas"
     periodo = (inicio_mes, hoy)
@@ -8088,12 +8086,18 @@ elif st.session_state.vista_airbnb == "Financiero":
                     lo, flo = mid, fm
             return (lo + hi) / 2
 
-        # Los filtros de entidad/proyecto/socio y la tasa VAN están en el menú superior
+        # Los filtros de entidad y proyecto están en el menú superior
         # exclusivamente para esta vista; se reutilizan aquí sin duplicar controles.
 
         fin = movimientos_hist.copy()
         if entidad_sel != "Todas":
-            fin = fin[fin["Nombre_Tipo"] == entidad_sel]
+            fin["Tipo_Activo_Maestro"] = (
+                fin["Nombre_Propiedad"]
+                .map(_normalizar_nombre_finanzas)
+                .map(_tipos_activo_maestro_finanzas)
+                .fillna("")
+            )
+            fin = fin[fin["Tipo_Activo_Maestro"] == entidad_sel]
         if proyecto_sel != "Todos":
             fin = fin[fin["Nombre_Propiedad"] == proyecto_sel]
         if socio_sel != "Todos":
