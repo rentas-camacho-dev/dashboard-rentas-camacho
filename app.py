@@ -3389,29 +3389,52 @@ _movimientos_hist_menu = (
     else None
 )
 
-# Exclusivo de Finanzas y resultados: inicialmente mostrar solo activos Airbnb
-# cuyo Estado sea productivo, según Maestro_Entidades_External.
-# Se aceptan ambas escrituras del maestro: "Productivo" y "Procudtivo".
-# No modifica las demás vistas ni las fuentes financieras.
+# Exclusivo de Finanzas y resultados: activos Airbnb con estado productivo.
+# Se consulta SELECT * para no depender de nombres de columnas con espacios
+# que pueden variar en la tabla externa de Google Sheets. Las demás vistas no cambian.
 if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimientos_hist_menu.empty:
     @st.cache_data(ttl=300)
     def cargar_activos_finanzas_permitidos():
         query_activos_finanzas = """
-        SELECT
-            TRIM(Nombre) AS Nombre,
-            TRIM(Estado) AS Estado,
-            TRIM(`Tipo de Activo`) AS Tipo_Activo
+        SELECT *
         FROM `rentascamacho.rentas_cortas.Maestro_Entidades_External`
-        WHERE Nombre IS NOT NULL
-          AND Estado IS NOT NULL
-          AND `Tipo de Activo` IS NOT NULL
-          AND LOWER(TRIM(`Tipo de Activo`)) = 'airbnb'
-          AND (
-              LOWER(TRIM(Estado)) LIKE '%productiv%'
-              OR LOWER(TRIM(Estado)) LIKE '%procudtiv%'
-          )
         """
-        return client.query(query_activos_finanzas).to_dataframe()
+        activos = client.query(query_activos_finanzas).to_dataframe()
+        if activos.empty:
+            return pd.DataFrame(columns=["Nombre", "Estado", "Tipo_Activo"])
+
+        # Identificar columnas sin depender de tildes, espacios o mayúsculas.
+        def _clave_columna_finanzas(nombre):
+            texto = " ".join(str(nombre).strip().split()).casefold()
+            texto = "".join(
+                c for c in unicodedata.normalize("NFKD", texto)
+                if not unicodedata.combining(c)
+            )
+            return texto.replace(" ", "_")
+
+        columnas = {_clave_columna_finanzas(c): c for c in activos.columns}
+        col_nombre = columnas.get("nombre")
+        col_estado = columnas.get("estado")
+        col_tipo = columnas.get("tipo_de_activo") or columnas.get("tipo_activo")
+        if not col_nombre or not col_estado or not col_tipo:
+            raise ValueError(
+                "Maestro_Entidades_External debe tener columnas Nombre, Estado y Tipo de Activo. "
+                f"Columnas encontradas: {list(activos.columns)}"
+            )
+
+        resultado = activos[[col_nombre, col_estado, col_tipo]].copy()
+        resultado.columns = ["Nombre", "Estado", "Tipo_Activo"]
+        for col in ["Nombre", "Estado", "Tipo_Activo"]:
+            resultado[col] = resultado[col].fillna("").astype(str).str.strip()
+
+        # Inicialmente solo Airbnb productivos; acepta el error tipográfico Procudtivo.
+        tipo = resultado["Tipo_Activo"].map(_clave_columna_finanzas)
+        estado = resultado["Estado"].map(_clave_columna_finanzas)
+        resultado = resultado[
+            tipo.eq("airbnb")
+            & (estado.str.contains("productiv", regex=False) | estado.str.contains("procudtiv", regex=False))
+        ].copy()
+        return resultado.drop_duplicates(subset=["Nombre"], keep="first").reset_index(drop=True)
 
     _activos_finanzas = cargar_activos_finanzas_permitidos()
 
@@ -3426,8 +3449,8 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
     _nombres_activos_finanzas = set(
         _activos_finanzas["Nombre"].dropna().map(_normalizar_nombre_finanzas)
     ) if not _activos_finanzas.empty else set()
-    # La etiqueta de las tarjetas se toma de Tipo de Activo del maestro.
-    # No se usa Sector ni Nombre_Tipo de las tablas financieras para categorizar.
+
+    # Las etiquetas de las tarjetas salen de Tipo de Activo, no de Sector.
     _tipos_maestro_finanzas = (
         _activos_finanzas.assign(
             _Clave_Nombre=_activos_finanzas["Nombre"].map(_normalizar_nombre_finanzas)
