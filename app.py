@@ -8212,7 +8212,7 @@ elif st.session_state.vista_airbnb == "Financiero":
                 grupo = grupo.sort_values("Fecha")
                 proyecto = grupo["Nombre_Propiedad"].mode().iloc[0] if not grupo["Nombre_Propiedad"].mode().empty else "Sin activo"
                 clave = _clave_activo(proyecto)
-                entidad = _sectores_maestro_finanzas.get(clave, "") or "Sin categoría"
+                entidad = _tipos_activo_maestro_finanzas.get(clave, "") or "Sin categoría"
                 match_inv = inversiones_activo[
                     inversiones_activo["Clave_Activo"] == clave
                 ]
