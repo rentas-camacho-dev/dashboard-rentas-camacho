@@ -3398,7 +3398,7 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
         SELECT
             TRIM(Nombre) AS Nombre,
             TRIM(Estado) AS Estado,
-            TRIM(`Tipo de Activo`) AS Tipo_Activo
+            TRIM(Sector) AS Sector
         FROM `rentascamacho.rentas_cortas.Maestro_Entidades_External`
         WHERE Nombre IS NOT NULL
           AND Estado IS NOT NULL
@@ -3426,11 +3426,11 @@ if _es_vista_financiero and _movimientos_hist_menu is not None and not _movimien
     ) if not _activos_finanzas.empty else set()
     # La categoría visible del activo proviene del maestro, no de Nombre_Tipo
     # en movimientos, que puede clasificar el mismo inmueble como AIRBNB y FINCA RAÍZ.
-    _tipo_activo_maestro_finanzas = (
+    _sectores_maestro_finanzas = (
         _activos_finanzas.assign(
             _Clave_Nombre=_activos_finanzas["Nombre"].map(_normalizar_nombre_finanzas)
         ).drop_duplicates("_Clave_Nombre", keep="first")
-        .set_index("_Clave_Nombre")["Tipo_Activo"].fillna("").to_dict()
+        .set_index("_Clave_Nombre")["Sector"].fillna("").to_dict()
         if not _activos_finanzas.empty else {}
     )
 
@@ -8177,7 +8177,7 @@ elif st.session_state.vista_airbnb == "Financiero":
                 grupo = grupo.sort_values("Fecha")
                 proyecto = grupo["Nombre_Propiedad"].mode().iloc[0] if not grupo["Nombre_Propiedad"].mode().empty else "Sin activo"
                 clave = _clave_activo(proyecto)
-                entidad = _tipo_activo_maestro_finanzas.get(clave, "") or "Sin categoría"
+                entidad = _sectores_maestro_finanzas.get(clave, "") or "Sin categoría"
                 match_inv = inversiones_activo[
                     inversiones_activo["Clave_Activo"] == clave
                 ]
