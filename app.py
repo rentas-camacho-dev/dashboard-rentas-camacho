@@ -8167,15 +8167,6 @@ elif st.session_state.vista_airbnb == "Financiero":
                 "Utilidades entregadas": "Total_Utilidades_Entregadas",
                 "Balance final": "Balance_Final",
             }
-            # Icono y color propio para distinguir cada indicador de balance.
-            estilos_indicador = {
-                "Aportes": ("💰", "#2563EB", "#EFF6FF"),
-                "Ingresos": ("📈", "#059669", "#ECFDF5"),
-                "Inversiones": ("🏢", "#7C3AED", "#F5F3FF"),
-                "Gastos": ("🧾", "#DC2626", "#FEF2F2"),
-                "Utilidades entregadas": ("🤝", "#D97706", "#FFFBEB"),
-                "Balance final": ("⚖️", "#0F766E", "#F0FDFA"),
-            }
             if not balance_socios.empty:
                 balance_socios["Socio"] = balance_socios["Socio"].fillna("").astype(str).str.strip()
                 for campo in campos_balance.values():
@@ -8191,33 +8182,21 @@ elif st.session_state.vista_airbnb == "Financiero":
                 tarjetas_balance = []
                 for titulo_indicador, campo_balance in campos_balance.items():
                     total_balance = float(balance_socios[campo_balance].sum()) if not balance_socios.empty else 0.0
-                    # Colores consistentes por socio en todas las tarjetas.
-                    colores_socios = {
-                        "Diego Camacho": "#009B70",   # verde
-                        "William Camacho": "#8B5CF6", # morado
-                        "Andres Camacho": "#2474D2",  # azul
-                        "Andrés Camacho": "#2474D2",  # azul
-                        "Yenny Camacho": "#E64980",   # rosado
-                    }
+                    # Todos los socios usan el mismo color y los importes sin negrita.
+                    color_detalle_socio = "#52657E"
                     detalle_socios = "".join(
                         "<div style='display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:5px;'>"
-                        f"<span style='color:{colores_socios.get(str(fila['Socio']).strip(), '#71839A')};font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>{_html_escape_balance(str(fila['Socio']))}</span>"
-                        f"<b style='color:{'#E84235' if campo_balance == 'Balance_Final' and float(fila[campo_balance]) < 0 else colores_socios.get(str(fila['Socio']).strip(), '#71839A')};white-space:nowrap;'>{dinero_corto(float(fila[campo_balance]))}</b>"
+                        f"<span style='color:{color_detalle_socio};font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>{_html_escape_balance(str(fila['Socio']))}</span>"
+                        f"<span style='color:{color_detalle_socio};font-weight:400;white-space:nowrap;'>{dinero_corto(float(fila[campo_balance]))}</span>"
                         "</div>"
                         for _, fila in balance_socios.iterrows()
                     )
                     if not detalle_socios:
                         detalle_socios = '<span style="color:#8290A4">Sin datos por socio</span>'
-                    icono_indicador, color_indicador, fondo_indicador = estilos_indicador.get(
-                        titulo_indicador, ("📊", "#2563EB", "#EFF6FF")
-                    )
                     tarjetas_balance.append(
-                        f"<div style='background:#FFFFFF;border:1px solid #DCE5EF;border-top:3px solid {color_indicador};border-radius:12px;padding:12px;min-width:0;box-shadow:0 2px 8px rgba(20,50,90,.04);'>"
-                        "<div style='display:flex;align-items:center;gap:8px;margin-bottom:7px;'>"
-                        f"<span style='display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:{fondo_indicador};font-size:16px;'>{icono_indicador}</span>"
-                        f"<div style='font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:{color_indicador};font-weight:800;'>{_html_escape_balance(titulo_indicador)}</div>"
-                        "</div>"
-                        f"<div style='font-size:23px;line-height:1.2;font-weight:800;color:#17345E;margin:5px 0 10px;'>{dinero_corto(total_balance)}</div>"
+                        "<div style='background:#FFFFFF;border:1px solid #DCE5EF;border-radius:12px;padding:12px;min-width:0;box-shadow:0 2px 8px rgba(20,50,90,.04);'>"
+                        f"<div style='font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:#8290A4;font-weight:700;'>{_html_escape_balance(titulo_indicador)}</div>"
+                        f"<div style='font-size:23px;line-height:1.2;font-weight:800;color:#17345E;margin:7px 0 10px;'>{dinero_corto(total_balance)}</div>"
                         "<div style='border-top:1px solid #E8EEF5;padding-top:7px;font-size:10px;line-height:1.25;'>"
                         f"{detalle_socios}"
                         "</div></div>"
