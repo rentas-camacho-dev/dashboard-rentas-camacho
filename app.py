@@ -8344,9 +8344,11 @@ elif st.session_state.vista_airbnb == "Financiero":
                 nombres_secciones = ["Activos productivos", "Activos cerrados", "Vivienda", "Gastos", "Otros activos"]
                 tabs_finanzas = st.tabs(["Resumen financiero"] + nombres_secciones)
 
-                # Pestaña principal: una tarjeta de Inversiones con el listado de activos debajo.
-                # No se modifica la fila de indicadores superiores ni las demás pestañas.
+                # Pestaña principal: portafolio visual agrupado por Tipo de Activo del maestro.
+                # Se mantiene intacta la fila superior de indicadores y las pestañas de activos.
                 with tabs_finanzas[0]:
+                    from html import escape as _html_escape_inv
+
                     detalle_inversiones = resumen_proyectos[[
                         "Proyecto / activo", "Entidad", "Inversión histórica"
                     ]].copy()
@@ -8361,28 +8363,57 @@ elif st.session_state.vista_airbnb == "Financiero":
                     if detalle_inversiones.empty:
                         st.info("No hay inversiones por activo para los filtros actuales.")
                     else:
-                        # Tarjeta mini de inversiones: solo nombre del activo y monto,
-                        # para dejar espacio junto a ella para futuras tarjetas de ingresos y gastos.
-                        filas_activos_html = "".join(
-                            f"""<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid #EDF1F6;">
-                                  <div style="min-width:0;font-size:10px;color:#405675;line-height:1.2;overflow-wrap:anywhere;">{str(fila_inv['Proyecto / activo'])}</div>
-                                  <div style="font-size:10px;font-weight:400;color:#405675;white-space:nowrap;">{dinero_corto(float(fila_inv['Inversión histórica']))}</div>
-                                </div>"""
-                            for _, fila_inv in detalle_inversiones.iterrows()
+                        # Cada activo se clasifica con Tipo de Activo de Maestro_Entidades_External.
+                        detalle_inversiones["Tipo de Activo"] = detalle_inversiones["Proyecto / activo"].map(
+                            lambda nombre: _tipos_activo_maestro_finanzas.get(
+                                _normalizar_nombre_finanzas(nombre), ""
+                            ) or "Otros"
                         )
-                        st.markdown(
-                            f"""<div style="background:#FFFFFF;border:1px solid #DCE5EE;border-top:3px solid #7C3AED;border-radius:10px;
-                            padding:9px 10px;margin:2px 0 8px;box-shadow:0 2px 6px rgba(23,52,94,.035);width:100%;max-width:300px;">
-                              <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">
-                                <div style="width:25px;height:25px;flex:0 0 25px;display:flex;align-items:center;justify-content:center;background:#F2ECFF;border-radius:7px;font-size:14px;">🏢</div>
-                                <div style="flex:1;min-width:0;">
-                                  <div style="font-size:10px;font-weight:700;letter-spacing:.035em;color:#7C3AED;text-transform:uppercase;">Inversiones</div>
-                                  <div style="font-size:18px;font-weight:400;line-height:1.2;color:#17345E;margin-top:1px;">{dinero_corto(total_inversiones_activos)}</div>
-                                </div>
-                                <div style="font-size:9px;color:#8290A4;white-space:nowrap;">{len(detalle_inversiones)} activos</div>
+                        iconos_tipo = {
+                            "airbnb": "🛏️", "comercio": "🏬", "transporte": "🚘",
+                            "vivienda": "🏠", "familia": "👨‍👩‍👧‍👦", "personal": "👤",
+                            "financieros": "💳", "otros": "📦"
+                        }
+                        colores_tipo = {
+                            "airbnb": "#A30D59", "comercio": "#A30D59", "transporte": "#A30D59",
+                            "vivienda": "#A30D59", "familia": "#A30D59", "personal": "#A30D59",
+                            "financieros": "#A30D59", "otros": "#A30D59"
+                        }
+                        tarjetas_portafolio = []
+                        for tipo, activos_tipo in detalle_inversiones.groupby("Tipo de Activo", sort=False):
+                            total_tipo = float(activos_tipo["Inversión histórica"].sum())
+                            tipo_norm = str(tipo).strip().casefold()
+                            icono = iconos_tipo.get(tipo_norm, "📦")
+                            items_tipo = "".join(
+                                f'''<div style="min-width:0;text-align:center;padding:7px 4px 4px;">
+                                      <div style="font-size:23px;line-height:1.2;margin-bottom:5px;">{icono}</div>
+                                      <div style="font-size:12px;font-weight:600;color:#8F174F;line-height:1.25;overflow-wrap:anywhere;">{_html_escape_inv(str(fila_activo['Proyecto / activo']))}</div>
+                                      <div style="font-size:11px;color:#526987;margin-top:5px;white-space:nowrap;">{dinero_corto(float(fila_activo['Inversión histórica']))}</div>
+                                    </div>'''
+                                for _, fila_activo in activos_tipo.iterrows()
+                            )
+                            tarjetas_portafolio.append(
+                                f'''<div style="border:1px solid #A30D59;border-radius:24px;padding:16px 14px 12px;background:#FFFFFF;min-width:0;">
+                                      <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                                        <span style="font-size:12px;font-weight:750;letter-spacing:.035em;color:#A30D59;text-transform:uppercase;">{_html_escape_inv(str(tipo))}</span>
+                                        <span style="font-size:18px;font-weight:400;color:#A30D59;white-space:nowrap;">{dinero_corto(total_tipo)}</span>
+                                      </div>
+                                      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:4px;align-items:start;">{items_tipo}</div>
+                                    </div>'''
+                            )
+
+                        tarjeta_total = f'''<div style="border-radius:24px;background:#F5E6EF;padding:18px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:190px;">
+                              <div style="font-size:12px;font-weight:750;letter-spacing:.035em;color:#8F174F;">INVERSIÓN TOTAL</div>
+                              <div style="font-size:36px;line-height:1.2;margin:12px 0;color:#4B1734;">👥</div>
+                              <div style="background:#D8A8C6;border-radius:10px;padding:10px 12px;color:#7D1248;">
+                                <div style="font-size:11px;font-weight:700;">TOTAL INVERSIONES</div>
+                                <div style="font-size:19px;font-weight:400;margin-top:3px;white-space:nowrap;">{dinero_corto(total_inversiones_activos)}</div>
                               </div>
-                              <div style="border-top:1px solid #E5EAF1;padding-top:3px;">{filas_activos_html}</div>
-                            </div>""",
+                            </div>'''
+                        st.markdown(
+                            f'''<div style="display:grid;grid-template-columns: minmax(155px,.72fr) repeat(auto-fit,minmax(230px,1fr));gap:12px;align-items:stretch;margin:4px 0 12px;">
+                                  {tarjeta_total}{''.join(tarjetas_portafolio)}
+                                </div>''',
                             unsafe_allow_html=True
                         )
 
@@ -8739,4 +8770,3 @@ Reservas
             cards_html,
             unsafe_allow_html=True
         )
-
