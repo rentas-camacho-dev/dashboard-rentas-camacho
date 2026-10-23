@@ -8344,10 +8344,9 @@ elif st.session_state.vista_airbnb == "Financiero":
                 nombres_secciones = ["Activos productivos", "Activos cerrados", "Vivienda", "Gastos", "Otros activos"]
                 tabs_finanzas = st.tabs(["Resumen financiero"] + nombres_secciones)
 
-                # Pestaña principal: composición compacta de inversiones por activo.
-                # Se deja espacio visual para incorporar otros indicadores debajo de cada activo.
+                # Pestaña principal: una tarjeta de Inversiones con el listado de activos debajo.
+                # No se modifica la fila de indicadores superiores ni las demás pestañas.
                 with tabs_finanzas[0]:
-                    st.markdown("### Inversiones por activo")
                     detalle_inversiones = resumen_proyectos[[
                         "Proyecto / activo", "Entidad", "Inversión histórica"
                     ]].copy()
@@ -8358,47 +8357,35 @@ elif st.session_state.vista_airbnb == "Financiero":
                         detalle_inversiones["Inversión histórica"] != 0
                     ].sort_values("Inversión histórica", ascending=False)
                     total_inversiones_activos = float(detalle_inversiones["Inversión histórica"].sum())
+
                     if detalle_inversiones.empty:
                         st.info("No hay inversiones por activo para los filtros actuales.")
                     else:
+                        filas_activos_html = "".join(
+                            f"""<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid #EDF1F6;">
+                                  <div style="min-width:0;">
+                                    <div style="font-size:12px;color:#405675;line-height:1.25;">{str(fila_inv['Proyecto / activo'])}</div>
+                                    <div style="font-size:10px;color:#91A0B5;margin-top:2px;">{str(fila_inv['Entidad'])}</div>
+                                  </div>
+                                  <div style="font-size:12px;font-weight:400;color:#405675;white-space:nowrap;">{dinero_corto(float(fila_inv['Inversión histórica']))}</div>
+                                </div>"""
+                            for _, fila_inv in detalle_inversiones.iterrows()
+                        )
                         st.markdown(
-                            f"<div style='font-size:12px;color:#8290A4;margin:0 0 10px;'>"
-                            f"{len(detalle_inversiones)} activos"
-                            f" &nbsp; · &nbsp; Inversión total: <b>{dinero_corto(total_inversiones_activos)}</b></div>",
+                            f"""<div style="background:#FFFFFF;border:1px solid #DCE5EE;border-top:4px solid #7C3AED;border-radius:12px;
+                            padding:16px 18px;margin:4px 0 12px;box-shadow:0 3px 10px rgba(23,52,94,.045);max-width:760px;">
+                              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                                <div style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:#F2ECFF;border-radius:10px;font-size:21px;">🏢</div>
+                                <div style="flex:1;min-width:0;">
+                                  <div style="font-size:12px;font-weight:750;letter-spacing:.04em;color:#7C3AED;text-transform:uppercase;">Inversiones</div>
+                                  <div style="font-size:25px;font-weight:400;line-height:1.25;color:#17345E;margin-top:2px;">{dinero_corto(total_inversiones_activos)}</div>
+                                </div>
+                                <div style="font-size:11px;color:#8290A4;white-space:nowrap;">{len(detalle_inversiones)} activos</div>
+                              </div>
+                              <div style="border-top:1px solid #E5EAF1;padding-top:4px;">{filas_activos_html}</div>
+                            </div>""",
                             unsafe_allow_html=True
                         )
-                        for inicio_inv in range(0, len(detalle_inversiones), 4):
-                            columnas_inv = st.columns(4, gap="small")
-                            for columna_inv, (_, fila_inv) in zip(
-                                columnas_inv, detalle_inversiones.iloc[inicio_inv:inicio_inv + 4].iterrows()
-                            ):
-                                importe_inv = float(fila_inv["Inversión histórica"])
-                                participacion_inv = (
-                                    importe_inv / total_inversiones_activos * 100
-                                    if total_inversiones_activos else 0.0
-                                )
-                                nombre_inv = str(fila_inv["Proyecto / activo"])
-                                entidad_inv = str(fila_inv["Entidad"])
-                                with columna_inv:
-                                    st.markdown(
-                                        f"""
-        <div style="background:#FFFFFF;border:1px solid #DCE5EE;border-left:3px solid #7C3AED;border-radius:10px;
-        padding:10px 12px;margin:2px 0 8px;min-height:88px;box-shadow:0 2px 7px rgba(23,52,94,.035);">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <div style="min-width:0;font-size:13px;font-weight:650;color:#17345E;overflow-wrap:anywhere;">{nombre_inv}</div>
-            <div style="white-space:nowrap;font-size:15px;font-weight:400;color:#17345E;">{dinero_corto(importe_inv)}</div>
-          </div>
-          <div style="font-size:10px;color:#8290A4;margin-top:3px;">{entidad_inv}</div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:9px;">
-            <div style="flex:1;height:4px;background:#F0EAFE;border-radius:8px;overflow:hidden;">
-              <div style="height:4px;width:{min(max(participacion_inv, 0.0), 100.0):.2f}%;background:#7C3AED;border-radius:8px;"></div>
-            </div>
-            <div style="font-size:10px;color:#8290A4;white-space:nowrap;">{participacion_inv:.1f}%</div>
-          </div>
-        </div>
-        """,
-                                        unsafe_allow_html=True
-                                    )
 
                 for tab_fin, nombre_seccion in zip(tabs_finanzas[1:], nombres_secciones):
                     with tab_fin:
