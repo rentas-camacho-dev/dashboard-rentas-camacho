@@ -8385,33 +8385,33 @@ elif st.session_state.vista_airbnb == "Financiero":
                             tipo_norm = str(tipo).strip().casefold()
                             icono = iconos_tipo.get(tipo_norm, "📦")
                             items_tipo = "".join(
-                                f'''<div style="min-width:0;text-align:center;padding:5px 3px 4px;">
-                                      <div style="font-size:11px;font-weight:500;color:#8F174F;line-height:1.2;overflow-wrap:anywhere;">{_html_escape_inv(str(fila_activo['Proyecto / activo']))}</div>
-                                      <div style="font-size:11px;font-weight:400;color:#526987;margin-top:3px;white-space:nowrap;">{dinero_corto(float(fila_activo['Inversión histórica']))}</div>
+                                f'''<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;padding:3px 0;border-bottom:1px solid #F5E7EF;">
+                                      <span style="font-size:10px;font-weight:400;color:#8F174F;line-height:1.2;overflow-wrap:anywhere;">{_html_escape_inv(str(fila_activo['Proyecto / activo']))}</span>
+                                      <span style="font-size:10px;font-weight:400;color:#526987;white-space:nowrap;flex-shrink:0;">{dinero_corto(float(fila_activo['Inversión histórica']))}</span>
                                     </div>'''
                                 for _, fila_activo in activos_tipo.iterrows()
                             )
                             tarjetas_portafolio.append(
-                                f'''<div style="border:1px solid #A30D59;border-radius:24px;padding:16px 14px 12px;background:#FFFFFF;min-width:0;">
-                                      <div style="display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;margin-bottom:9px;">
-                                        <span style="font-size:17px;line-height:1;">{icono}</span>
-                                        <span style="font-size:12px;font-weight:750;letter-spacing:.035em;color:#A30D59;text-transform:uppercase;">{_html_escape_inv(str(tipo))}</span>
-                                        <span style="font-size:18px;font-weight:400;color:#A30D59;white-space:nowrap;">{dinero_corto(total_tipo)}</span>
+                                f'''<div style="border:1px solid #A30D59;border-radius:13px;padding:8px 10px 7px;background:#FFFFFF;min-width:0;align-self:start;">
+                                      <div style="display:flex;align-items:center;justify-content:flex-start;gap:5px;flex-wrap:wrap;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid #F0D7E4;">
+                                        <span style="font-size:13px;line-height:1;">{icono}</span>
+                                        <span style="font-size:10px;font-weight:750;letter-spacing:.025em;color:#A30D59;text-transform:uppercase;">{_html_escape_inv(str(tipo))}</span>
+                                        <span style="font-size:13px;font-weight:400;color:#A30D59;white-space:nowrap;margin-left:auto;">{dinero_corto(total_tipo)}</span>
                                       </div>
-                                      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:5px 4px;align-items:start;">{items_tipo}</div>
+                                      <div style="display:grid;grid-template-columns:1fr;gap:0;align-items:start;">{items_tipo}</div>
                                     </div>'''
                             )
 
-                        tarjeta_total = f'''<div style="border-radius:24px;background:#F5E6EF;padding:18px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:125px;">
-                              <div style="font-size:12px;font-weight:750;letter-spacing:.035em;color:#8F174F;">INVERSIÓN TOTAL</div>
-                              <div style="font-size:36px;line-height:1.2;margin:12px 0;color:#4B1734;">👥</div>
-                              <div style="background:#D8A8C6;border-radius:10px;padding:10px 12px;color:#7D1248;">
-                                <div style="font-size:11px;font-weight:700;">TOTAL INVERSIONES</div>
-                                <div style="font-size:19px;font-weight:400;margin-top:3px;white-space:nowrap;">{dinero_corto(total_inversiones_activos)}</div>
+                        tarjeta_total = f'''<div style="border-radius:13px;background:#F5E6EF;padding:10px 9px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;align-self:start;">
+                              <div style="font-size:10px;font-weight:750;letter-spacing:.025em;color:#8F174F;">INVERSIÓN TOTAL</div>
+                              <div style="font-size:23px;line-height:1.1;margin:7px 0;color:#4B1734;">👥</div>
+                              <div style="background:#D8A8C6;border-radius:8px;padding:7px 8px;color:#7D1248;">
+                                <div style="font-size:9px;font-weight:700;">TOTAL INVERSIONES</div>
+                                <div style="font-size:15px;font-weight:400;margin-top:3px;white-space:nowrap;">{dinero_corto(total_inversiones_activos)}</div>
                               </div>
                             </div>'''
                         st.markdown(
-                            f'''<div style="display:grid;grid-template-columns: minmax(155px,.72fr) repeat(auto-fit,minmax(230px,1fr));gap:12px;align-items:stretch;margin:4px 0 12px;">
+                            f'''<div style="display:grid;grid-template-columns:minmax(125px,.55fr) repeat(auto-fit,minmax(185px,1fr));gap:8px;align-items:start;margin:4px 0 12px;">
                                   {tarjeta_total}{''.join(tarjetas_portafolio)}
                                 </div>''',
                             unsafe_allow_html=True
