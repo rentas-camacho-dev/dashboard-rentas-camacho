@@ -8140,10 +8140,6 @@ elif st.session_state.vista_airbnb == "Financiero":
             tir_total = _tir_de_flujos(fin["Fecha"], fin["Flujo_Caja"])
             roi_total = ((flujo_acumulado / inversion_total) * 100) if inversion_total else None
 
-            st.caption(
-                f"Histórico analizado: {fin['Fecha'].min():%d/%m/%Y} – {fin['Fecha'].max():%d/%m/%Y}. "
-                "Los resultados acumulados no se recortan con el filtro de período del encabezado."
-            )
             # Indicadores de balance consolidado: una tarjeta por concepto,
             # con el detalle por socio en tipografía secundaria. Solo se excluyen
             # filas sin socio y registros totalmente vacíos/en cero.
@@ -8170,6 +8166,15 @@ elif st.session_state.vista_airbnb == "Financiero":
                 "Gastos": "Total_Gastos",
                 "Utilidades entregadas": "Total_Utilidades_Entregadas",
                 "Balance final": "Balance_Final",
+            }
+            # Icono y color propio para distinguir cada indicador de balance.
+            estilos_indicador = {
+                "Aportes": ("💰", "#2563EB", "#EFF6FF"),
+                "Ingresos": ("📈", "#059669", "#ECFDF5"),
+                "Inversiones": ("🏢", "#7C3AED", "#F5F3FF"),
+                "Gastos": ("🧾", "#DC2626", "#FEF2F2"),
+                "Utilidades entregadas": ("🤝", "#D97706", "#FFFBEB"),
+                "Balance final": ("⚖️", "#0F766E", "#F0FDFA"),
             }
             if not balance_socios.empty:
                 balance_socios["Socio"] = balance_socios["Socio"].fillna("").astype(str).str.strip()
@@ -8203,10 +8208,16 @@ elif st.session_state.vista_airbnb == "Financiero":
                     )
                     if not detalle_socios:
                         detalle_socios = '<span style="color:#8290A4">Sin datos por socio</span>'
+                    icono_indicador, color_indicador, fondo_indicador = estilos_indicador.get(
+                        titulo_indicador, ("📊", "#2563EB", "#EFF6FF")
+                    )
                     tarjetas_balance.append(
-                        "<div style='background:#FFFFFF;border:1px solid #DCE5EF;border-radius:12px;padding:12px;min-width:0;box-shadow:0 2px 8px rgba(20,50,90,.04);'>"
-                        f"<div style='font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:#8290A4;font-weight:700;'>{_html_escape_balance(titulo_indicador)}</div>"
-                        f"<div style='font-size:23px;line-height:1.2;font-weight:800;color:#17345E;margin:7px 0 10px;'>{dinero_corto(total_balance)}</div>"
+                        f"<div style='background:#FFFFFF;border:1px solid #DCE5EF;border-top:3px solid {color_indicador};border-radius:12px;padding:12px;min-width:0;box-shadow:0 2px 8px rgba(20,50,90,.04);'>"
+                        "<div style='display:flex;align-items:center;gap:8px;margin-bottom:7px;'>"
+                        f"<span style='display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:{fondo_indicador};font-size:16px;'>{icono_indicador}</span>"
+                        f"<div style='font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:{color_indicador};font-weight:800;'>{_html_escape_balance(titulo_indicador)}</div>"
+                        "</div>"
+                        f"<div style='font-size:23px;line-height:1.2;font-weight:800;color:#17345E;margin:5px 0 10px;'>{dinero_corto(total_balance)}</div>"
                         "<div style='border-top:1px solid #E8EEF5;padding-top:7px;font-size:10px;line-height:1.25;'>"
                         f"{detalle_socios}"
                         "</div></div>"
