@@ -8140,6 +8140,10 @@ elif st.session_state.vista_airbnb == "Financiero":
             tir_total = _tir_de_flujos(fin["Fecha"], fin["Flujo_Caja"])
             roi_total = ((flujo_acumulado / inversion_total) * 100) if inversion_total else None
 
+            st.caption(
+                f"Histórico analizado: {fin['Fecha'].min():%d/%m/%Y} – {fin['Fecha'].max():%d/%m/%Y}. "
+                "Los resultados acumulados no se recortan con el filtro de período del encabezado."
+            )
             # Indicadores de balance consolidado: una tarjeta por concepto,
             # con el detalle por socio en tipografía secundaria. Solo se excluyen
             # filas sin socio y registros totalmente vacíos/en cero.
@@ -8182,10 +8186,18 @@ elif st.session_state.vista_airbnb == "Financiero":
                 tarjetas_balance = []
                 for titulo_indicador, campo_balance in campos_balance.items():
                     total_balance = float(balance_socios[campo_balance].sum()) if not balance_socios.empty else 0.0
+                    # Colores consistentes por socio en todas las tarjetas.
+                    colores_socios = {
+                        "Diego Camacho": "#009B70",   # verde
+                        "William Camacho": "#8B5CF6", # morado
+                        "Andres Camacho": "#2474D2",  # azul
+                        "Andrés Camacho": "#2474D2",  # azul
+                        "Yenny Camacho": "#E64980",   # rosado
+                    }
                     detalle_socios = "".join(
-                        "<div style='display:flex;justify-content:space-between;gap:6px;margin-top:5px;'>"
-                        f"<span style='color:#71839A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>{_html_escape_balance(str(fila['Socio']))}</span>"
-                        f"<b style='color:{'#009B70' if float(fila[campo_balance]) >= 0 else '#E84235'};white-space:nowrap;'>{dinero_corto(float(fila[campo_balance]))}</b>"
+                        "<div style='display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:5px;'>"
+                        f"<span style='color:{colores_socios.get(str(fila['Socio']).strip(), '#71839A')};font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>{_html_escape_balance(str(fila['Socio']))}</span>"
+                        f"<b style='color:{'#E84235' if campo_balance == 'Balance_Final' and float(fila[campo_balance]) < 0 else colores_socios.get(str(fila['Socio']).strip(), '#71839A')};white-space:nowrap;'>{dinero_corto(float(fila[campo_balance]))}</b>"
                         "</div>"
                         for _, fila in balance_socios.iterrows()
                     )
@@ -8200,7 +8212,7 @@ elif st.session_state.vista_airbnb == "Financiero":
                         "</div></div>"
                     )
                 st.markdown(
-                    "<div style='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;width:100%;margin:0 0 16px;'>"
+                    "<div style='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;width:100%;margin:8px 0 16px;'>"
                     + "".join(tarjetas_balance) + "</div>",
                     unsafe_allow_html=True
                 )
