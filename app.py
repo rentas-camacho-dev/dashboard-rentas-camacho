@@ -8361,28 +8361,27 @@ elif st.session_state.vista_airbnb == "Financiero":
                     if detalle_inversiones.empty:
                         st.info("No hay inversiones por activo para los filtros actuales.")
                     else:
+                        # Tarjeta mini de inversiones: solo nombre del activo y monto,
+                        # para dejar espacio junto a ella para futuras tarjetas de ingresos y gastos.
                         filas_activos_html = "".join(
-                            f"""<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0;padding:5px 8px;border:1px solid #EDF1F6;border-radius:7px;background:#FBFCFE;">
-                                  <div style="min-width:0;overflow:hidden;">
-                                    <div style="font-size:11px;font-weight:500;color:#405675;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{str(fila_inv['Proyecto / activo'])}</div>
-                                    <div style="font-size:9px;color:#91A0B5;margin-top:2px;line-height:1.1;">{str(fila_inv['Entidad'])}</div>
-                                  </div>
-                                  <div style="font-size:11px;font-weight:400;color:#405675;white-space:nowrap;flex-shrink:0;">{dinero_corto(float(fila_inv['Inversión histórica']))}</div>
+                            f"""<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid #EDF1F6;">
+                                  <div style="min-width:0;font-size:10px;color:#405675;line-height:1.2;overflow-wrap:anywhere;">{str(fila_inv['Proyecto / activo'])}</div>
+                                  <div style="font-size:10px;font-weight:400;color:#405675;white-space:nowrap;">{dinero_corto(float(fila_inv['Inversión histórica']))}</div>
                                 </div>"""
                             for _, fila_inv in detalle_inversiones.iterrows()
                         )
                         st.markdown(
-                            f"""<div style="background:#FFFFFF;border:1px solid #DCE5EE;border-top:3px solid #7C3AED;border-radius:11px;
-                            padding:11px 12px;margin:2px 0 10px;box-shadow:0 2px 7px rgba(23,52,94,.035);max-width:100%;">
-                              <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px;">
-                                <div style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:#F2ECFF;border-radius:8px;font-size:17px;flex-shrink:0;">🏢</div>
+                            f"""<div style="background:#FFFFFF;border:1px solid #DCE5EE;border-top:3px solid #7C3AED;border-radius:10px;
+                            padding:9px 10px;margin:2px 0 8px;box-shadow:0 2px 6px rgba(23,52,94,.035);width:100%;max-width:300px;">
+                              <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">
+                                <div style="width:25px;height:25px;flex:0 0 25px;display:flex;align-items:center;justify-content:center;background:#F2ECFF;border-radius:7px;font-size:14px;">🏢</div>
                                 <div style="flex:1;min-width:0;">
-                                  <div style="font-size:11px;font-weight:700;letter-spacing:.04em;color:#7C3AED;text-transform:uppercase;">Inversiones</div>
-                                  <div style="font-size:22px;font-weight:400;line-height:1.15;color:#17345E;margin-top:1px;">{dinero_corto(total_inversiones_activos)}</div>
+                                  <div style="font-size:10px;font-weight:700;letter-spacing:.035em;color:#7C3AED;text-transform:uppercase;">Inversiones</div>
+                                  <div style="font-size:18px;font-weight:400;line-height:1.2;color:#17345E;margin-top:1px;">{dinero_corto(total_inversiones_activos)}</div>
                                 </div>
-                                <div style="font-size:10px;color:#8290A4;white-space:nowrap;background:#F4F6FA;border-radius:6px;padding:4px 6px;">{len(detalle_inversiones)} activos</div>
+                                <div style="font-size:9px;color:#8290A4;white-space:nowrap;">{len(detalle_inversiones)} activos</div>
                               </div>
-                              <div style="border-top:1px solid #E5EAF1;padding-top:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 7px;">{filas_activos_html}</div>
+                              <div style="border-top:1px solid #E5EAF1;padding-top:3px;">{filas_activos_html}</div>
                             </div>""",
                             unsafe_allow_html=True
                         )
@@ -8740,3 +8739,4 @@ Reservas
             cards_html,
             unsafe_allow_html=True
         )
+
