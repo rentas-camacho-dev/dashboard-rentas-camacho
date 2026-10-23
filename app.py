@@ -8344,11 +8344,10 @@ elif st.session_state.vista_airbnb == "Financiero":
                 nombres_secciones = ["Activos productivos", "Activos cerrados", "Vivienda", "Gastos", "Otros activos"]
                 tabs_finanzas = st.tabs(["Resumen financiero"] + nombres_secciones)
 
-                # Pestaña principal: comenzar con la composición de inversiones por activo.
-                # El detalle por socio ya está disponible en las tarjetas superiores; no se duplica aquí.
+                # Pestaña principal: composición compacta de inversiones por activo.
+                # Se deja espacio visual para incorporar otros indicadores debajo de cada activo.
                 with tabs_finanzas[0]:
-                    st.markdown("### Composición de inversiones por activo")
-                    st.caption("Cada tarjeta muestra la inversión identificada para el activo. El total se calcula desde la composición por proyecto disponible en las fuentes financieras.")
+                    st.markdown("### Inversiones por activo")
                     detalle_inversiones = resumen_proyectos[[
                         "Proyecto / activo", "Entidad", "Inversión histórica"
                     ]].copy()
@@ -8363,9 +8362,9 @@ elif st.session_state.vista_airbnb == "Financiero":
                         st.info("No hay inversiones por activo para los filtros actuales.")
                     else:
                         st.markdown(
-                            f"<div style='font-size:13px;color:#8290A4;margin:0 0 12px;'>"
-                            f"Activos con inversión identificada: <b>{len(detalle_inversiones)}</b>"
-                            f" &nbsp; · &nbsp; Total del detalle: <b>{dinero_corto(total_inversiones_activos)}</b></div>",
+                            f"<div style='font-size:12px;color:#8290A4;margin:0 0 10px;'>"
+                            f"{len(detalle_inversiones)} activos"
+                            f" &nbsp; · &nbsp; Inversión total: <b>{dinero_corto(total_inversiones_activos)}</b></div>",
                             unsafe_allow_html=True
                         )
                         for inicio_inv in range(0, len(detalle_inversiones), 4):
@@ -8383,21 +8382,19 @@ elif st.session_state.vista_airbnb == "Financiero":
                                 with columna_inv:
                                     st.markdown(
                                         f"""
-        <div style="background:#FFFFFF;border:1px solid #DCE5EE;border-top:3px solid #7C3AED;border-radius:12px;
-        padding:14px;margin:3px 0 10px;min-height:126px;box-shadow:0 3px 10px rgba(23,52,94,.045);">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:#F5F3FF;font-size:16px;">🏢</span>
-            <div style="min-width:0;">
-              <div style="font-size:9px;font-weight:700;color:#8290A4;text-transform:uppercase;">{entidad_inv}</div>
-              <div style="font-size:14px;font-weight:700;color:#17345E;margin-top:3px;overflow-wrap:anywhere;">{nombre_inv}</div>
+        <div style="background:#FFFFFF;border:1px solid #DCE5EE;border-left:3px solid #7C3AED;border-radius:10px;
+        padding:10px 12px;margin:2px 0 8px;min-height:88px;box-shadow:0 2px 7px rgba(23,52,94,.035);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="min-width:0;font-size:13px;font-weight:650;color:#17345E;overflow-wrap:anywhere;">{nombre_inv}</div>
+            <div style="white-space:nowrap;font-size:15px;font-weight:400;color:#17345E;">{dinero_corto(importe_inv)}</div>
+          </div>
+          <div style="font-size:10px;color:#8290A4;margin-top:3px;">{entidad_inv}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:9px;">
+            <div style="flex:1;height:4px;background:#F0EAFE;border-radius:8px;overflow:hidden;">
+              <div style="height:4px;width:{min(max(participacion_inv, 0.0), 100.0):.2f}%;background:#7C3AED;border-radius:8px;"></div>
             </div>
+            <div style="font-size:10px;color:#8290A4;white-space:nowrap;">{participacion_inv:.1f}%</div>
           </div>
-          <div style="font-size:9px;color:#8290A4;text-transform:uppercase;letter-spacing:.04em;">Inversión identificada</div>
-          <div style="font-size:22px;font-weight:400;line-height:1.25;color:#17345E;margin-top:4px;">{dinero_corto(importe_inv)}</div>
-          <div style="height:5px;background:#F0EAFE;border-radius:8px;margin-top:10px;overflow:hidden;">
-            <div style="height:5px;width:{min(max(participacion_inv, 0.0), 100.0):.2f}%;background:#7C3AED;border-radius:8px;"></div>
-          </div>
-          <div style="font-size:10px;color:#8290A4;margin-top:5px;">{participacion_inv:.1f}% del detalle de inversiones</div>
         </div>
         """,
                                         unsafe_allow_html=True
