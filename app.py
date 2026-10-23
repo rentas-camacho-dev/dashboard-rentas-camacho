@@ -8344,54 +8344,64 @@ elif st.session_state.vista_airbnb == "Financiero":
                 nombres_secciones = ["Activos productivos", "Activos cerrados", "Vivienda", "Gastos", "Otros activos"]
                 tabs_finanzas = st.tabs(["Resumen financiero"] + nombres_secciones)
 
-                # Pestaña principal: composición de los seis indicadores consolidados.
+                # Pestaña principal: comenzar con la composición de inversiones por activo.
+                # El detalle por socio ya está disponible en las tarjetas superiores; no se duplica aquí.
                 with tabs_finanzas[0]:
-                    st.markdown("### Composición de los indicadores")
-                    st.caption("Consulta el origen de cada total por socio o por activo. Los valores se toman de las fuentes financieras existentes.")
-                    col_resumen_a, col_resumen_b = st.columns(2, gap="large")
-                    with col_resumen_a:
-                        st.markdown("#### Aportes por socio")
-                        if not balance_socios.empty:
-                            tabla_aportes = balance_socios[["Socio", "Total_Aportes"]].rename(columns={"Socio": "Socio", "Total_Aportes": "Aportes"}).copy()
-                            tabla_aportes["Aportes"] = tabla_aportes["Aportes"].map(dinero_corto)
-                            st.dataframe(tabla_aportes, use_container_width=True, hide_index=True)
-                        else:
-                            st.info("No hay datos de aportes por socio.")
-                        st.markdown("#### Utilidades entregadas por socio")
-                        if not balance_socios.empty:
-                            tabla_utilidades = balance_socios[["Socio", "Total_Utilidades_Entregadas"]].rename(columns={"Total_Utilidades_Entregadas": "Utilidades entregadas"}).copy()
-                            tabla_utilidades["Utilidades entregadas"] = tabla_utilidades["Utilidades entregadas"].map(dinero_corto)
-                            st.dataframe(tabla_utilidades, use_container_width=True, hide_index=True)
-                        st.markdown("#### Balance final por socio")
-                        if not balance_socios.empty:
-                            tabla_balance = balance_socios[["Socio", "Balance_Final"]].rename(columns={"Balance_Final": "Balance final"}).copy()
-                            tabla_balance["Balance final"] = tabla_balance["Balance final"].map(dinero_corto)
-                            st.dataframe(tabla_balance, use_container_width=True, hide_index=True)
-                    with col_resumen_b:
-                        st.markdown("#### Ingresos por socio")
-                        if not balance_socios.empty:
-                            tabla_ing_soc = balance_socios[["Socio", "Total_Ingresos"]].rename(columns={"Total_Ingresos": "Ingresos"}).copy()
-                            tabla_ing_soc["Ingresos"] = tabla_ing_soc["Ingresos"].map(dinero_corto)
-                            st.dataframe(tabla_ing_soc, use_container_width=True, hide_index=True)
-                        st.markdown("#### Inversiones por socio")
-                        if not balance_socios.empty:
-                            tabla_inv_soc = balance_socios[["Socio", "Total_Inversiones"]].rename(columns={"Total_Inversiones": "Inversiones"}).copy()
-                            tabla_inv_soc["Inversiones"] = tabla_inv_soc["Inversiones"].map(dinero_corto)
-                            st.dataframe(tabla_inv_soc, use_container_width=True, hide_index=True)
-                        st.markdown("#### Gastos por socio")
-                        if not balance_socios.empty:
-                            tabla_gastos_soc = balance_socios[["Socio", "Total_Gastos"]].rename(columns={"Total_Gastos": "Gastos"}).copy()
-                            tabla_gastos_soc["Gastos"] = tabla_gastos_soc["Gastos"].map(dinero_corto)
-                            st.dataframe(tabla_gastos_soc, use_container_width=True, hide_index=True)
-                    st.markdown("#### Composición por activo / proyecto")
-                    if not resumen_proyectos.empty:
-                        columnas_detalle = ["Proyecto / activo", "Entidad", "Inversión histórica", "Ingresos históricos", "Gastos operativos", "Flujo neto acumulado"]
-                        tabla_activos_detalle = resumen_proyectos[columnas_detalle].copy()
-                        for col_importe in columnas_detalle[2:]:
-                            tabla_activos_detalle[col_importe] = tabla_activos_detalle[col_importe].map(dinero_corto)
-                        st.dataframe(tabla_activos_detalle, use_container_width=True, hide_index=True)
+                    st.markdown("### Composición de inversiones por activo")
+                    st.caption("Cada tarjeta muestra la inversión identificada para el activo. El total se calcula desde la composición por proyecto disponible en las fuentes financieras.")
+                    detalle_inversiones = resumen_proyectos[[
+                        "Proyecto / activo", "Entidad", "Inversión histórica"
+                    ]].copy()
+                    detalle_inversiones["Inversión histórica"] = pd.to_numeric(
+                        detalle_inversiones["Inversión histórica"], errors="coerce"
+                    ).fillna(0.0)
+                    detalle_inversiones = detalle_inversiones[
+                        detalle_inversiones["Inversión histórica"] != 0
+                    ].sort_values("Inversión histórica", ascending=False)
+                    total_inversiones_activos = float(detalle_inversiones["Inversión histórica"].sum())
+                    if detalle_inversiones.empty:
+                        st.info("No hay inversiones por activo para los filtros actuales.")
                     else:
-                        st.info("No hay detalle de activos para los filtros actuales.")
+                        st.markdown(
+                            f"<div style='font-size:13px;color:#8290A4;margin:0 0 12px;'>"
+                            f"Activos con inversión identificada: <b>{len(detalle_inversiones)}</b>"
+                            f" &nbsp; · &nbsp; Total del detalle: <b>{dinero_corto(total_inversiones_activos)}</b></div>",
+                            unsafe_allow_html=True
+                        )
+                        for inicio_inv in range(0, len(detalle_inversiones), 4):
+                            columnas_inv = st.columns(4, gap="small")
+                            for columna_inv, (_, fila_inv) in zip(
+                                columnas_inv, detalle_inversiones.iloc[inicio_inv:inicio_inv + 4].iterrows()
+                            ):
+                                importe_inv = float(fila_inv["Inversión histórica"])
+                                participacion_inv = (
+                                    importe_inv / total_inversiones_activos * 100
+                                    if total_inversiones_activos else 0.0
+                                )
+                                nombre_inv = str(fila_inv["Proyecto / activo"])
+                                entidad_inv = str(fila_inv["Entidad"])
+                                with columna_inv:
+                                    st.markdown(
+                                        f"""
+        <div style="background:#FFFFFF;border:1px solid #DCE5EE;border-top:3px solid #7C3AED;border-radius:12px;
+        padding:14px;margin:3px 0 10px;min-height:126px;box-shadow:0 3px 10px rgba(23,52,94,.045);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:#F5F3FF;font-size:16px;">🏢</span>
+            <div style="min-width:0;">
+              <div style="font-size:9px;font-weight:700;color:#8290A4;text-transform:uppercase;">{entidad_inv}</div>
+              <div style="font-size:14px;font-weight:700;color:#17345E;margin-top:3px;overflow-wrap:anywhere;">{nombre_inv}</div>
+            </div>
+          </div>
+          <div style="font-size:9px;color:#8290A4;text-transform:uppercase;letter-spacing:.04em;">Inversión identificada</div>
+          <div style="font-size:22px;font-weight:400;line-height:1.25;color:#17345E;margin-top:4px;">{dinero_corto(importe_inv)}</div>
+          <div style="height:5px;background:#F0EAFE;border-radius:8px;margin-top:10px;overflow:hidden;">
+            <div style="height:5px;width:{min(max(participacion_inv, 0.0), 100.0):.2f}%;background:#7C3AED;border-radius:8px;"></div>
+          </div>
+          <div style="font-size:10px;color:#8290A4;margin-top:5px;">{participacion_inv:.1f}% del detalle de inversiones</div>
+        </div>
+        """,
+                                        unsafe_allow_html=True
+                                    )
 
                 for tab_fin, nombre_seccion in zip(tabs_finanzas[1:], nombres_secciones):
                     with tab_fin:
