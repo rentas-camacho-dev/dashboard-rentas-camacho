@@ -8384,35 +8384,38 @@ elif st.session_state.vista_airbnb == "Financiero":
                             total_tipo = float(activos_tipo["Inversión histórica"].sum())
                             tipo_norm = str(tipo).strip().casefold()
                             icono = iconos_tipo.get(tipo_norm, "📦")
+                            # Una sola tarjeta horizontal: cada tipo de activo es una columna.
+                            # Las categorías con muchos activos se distribuyen en dos subcolumnas.
                             items_tipo = "".join(
-                                f'''<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;padding:3px 0;border-bottom:1px solid #F5E7EF;">
-                                      <span style="font-size:10px;font-weight:400;color:#8F174F;line-height:1.2;overflow-wrap:anywhere;">{_html_escape_inv(str(fila_activo['Proyecto / activo']))}</span>
-                                      <span style="font-size:10px;font-weight:400;color:#526987;white-space:nowrap;flex-shrink:0;">{dinero_corto(float(fila_activo['Inversión histórica']))}</span>
+                                f'''<div style="display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0;padding:3px 0;border-bottom:1px solid #F5E7EF;">
+                                      <span style="font-size:9px;font-weight:400;color:#8F174F;line-height:1.15;overflow-wrap:anywhere;">{_html_escape_inv(str(fila_activo['Proyecto / activo']))}</span>
+                                      <span style="font-size:9px;font-weight:400;color:#526987;white-space:nowrap;flex-shrink:0;">{dinero_corto(float(fila_activo['Inversión histórica']))}</span>
                                     </div>'''
                                 for _, fila_activo in activos_tipo.iterrows()
                             )
                             tarjetas_portafolio.append(
-                                f'''<div style="border:1px solid #A30D59;border-radius:13px;padding:8px 10px 7px;background:#FFFFFF;min-width:0;align-self:start;">
-                                      <div style="display:flex;align-items:center;justify-content:flex-start;gap:5px;flex-wrap:wrap;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid #F0D7E4;">
-                                        <span style="font-size:13px;line-height:1;">{icono}</span>
-                                        <span style="font-size:10px;font-weight:750;letter-spacing:.025em;color:#A30D59;text-transform:uppercase;">{_html_escape_inv(str(tipo))}</span>
-                                        <span style="font-size:13px;font-weight:400;color:#A30D59;white-space:nowrap;margin-left:auto;">{dinero_corto(total_tipo)}</span>
+                                f'''<div style="min-width:0;padding:0 8px;border-right:1px solid #F0D7E4;">
+                                      <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid #F0D7E4;">
+                                        <span style="font-size:11px;line-height:1;">{icono}</span>
+                                        <span style="font-size:9px;font-weight:750;letter-spacing:.02em;color:#A30D59;text-transform:uppercase;">{_html_escape_inv(str(tipo))}</span>
+                                        <span style="font-size:10px;font-weight:400;color:#A30D59;white-space:nowrap;margin-left:auto;">{dinero_corto(total_tipo)}</span>
                                       </div>
-                                      <div style="display:grid;grid-template-columns:1fr;gap:0;align-items:start;">{items_tipo}</div>
+                                      <div style="display:grid;grid-template-columns:repeat({2 if len(activos_tipo) >= 5 else 1},minmax(0,1fr));column-gap:10px;align-items:start;">{items_tipo}</div>
                                     </div>'''
                             )
 
-                        tarjeta_total = f'''<div style="border-radius:13px;background:#F5E6EF;padding:10px 9px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;align-self:start;">
+                        tarjeta_total = f'''<div style="border-radius:13px;background:#F5E6EF;padding:10px 9px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:100%;">
                               <div style="font-size:10px;font-weight:750;letter-spacing:.025em;color:#8F174F;">INVERSIÓN TOTAL</div>
-                              <div style="font-size:23px;line-height:1.1;margin:7px 0;color:#4B1734;">👥</div>
+                              <div style="font-size:22px;line-height:1.1;margin:7px 0;color:#4B1734;">👥</div>
                               <div style="background:#D8A8C6;border-radius:8px;padding:7px 8px;color:#7D1248;">
                                 <div style="font-size:9px;font-weight:700;">TOTAL INVERSIONES</div>
                                 <div style="font-size:15px;font-weight:400;margin-top:3px;white-space:nowrap;">{dinero_corto(total_inversiones_activos)}</div>
                               </div>
                             </div>'''
                         st.markdown(
-                            f'''<div style="display:grid;grid-template-columns:minmax(125px,.55fr) repeat(auto-fit,minmax(185px,1fr));gap:8px;align-items:start;margin:4px 0 12px;">
-                                  {tarjeta_total}{''.join(tarjetas_portafolio)}
+                            f'''<div style="display:grid;grid-template-columns:minmax(145px,.55fr) minmax(0,5fr);gap:8px;align-items:stretch;margin:4px 0 12px;">
+                                  {tarjeta_total}
+                                  <div style="display:grid;grid-template-columns:repeat({max(1, len(tarjetas_portafolio))},minmax(0,1fr));gap:0;align-items:start;border:1px solid #A30D59;border-radius:13px;background:#FFFFFF;padding:10px 2px;min-width:0;">{''.join(tarjetas_portafolio)}</div>
                                 </div>''',
                             unsafe_allow_html=True
                         )
