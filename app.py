@@ -8342,8 +8342,58 @@ elif st.session_state.vista_airbnb == "Financiero":
                 )
                 # Las mismas tarjetas compactas se reutilizan en pestañas por clasificación.
                 nombres_secciones = ["Activos productivos", "Activos cerrados", "Vivienda", "Gastos", "Otros activos"]
-                tabs_finanzas = st.tabs(nombres_secciones)
-                for tab_fin, nombre_seccion in zip(tabs_finanzas, nombres_secciones):
+                tabs_finanzas = st.tabs(["Resumen financiero"] + nombres_secciones)
+
+                # Pestaña principal: composición de los seis indicadores consolidados.
+                with tabs_finanzas[0]:
+                    st.markdown("### Composición de los indicadores")
+                    st.caption("Consulta el origen de cada total por socio o por activo. Los valores se toman de las fuentes financieras existentes.")
+                    col_resumen_a, col_resumen_b = st.columns(2, gap="large")
+                    with col_resumen_a:
+                        st.markdown("#### Aportes por socio")
+                        if not balance_socios.empty:
+                            tabla_aportes = balance_socios[["Socio", "Total_Aportes"]].rename(columns={"Socio": "Socio", "Total_Aportes": "Aportes"}).copy()
+                            tabla_aportes["Aportes"] = tabla_aportes["Aportes"].map(dinero_corto)
+                            st.dataframe(tabla_aportes, use_container_width=True, hide_index=True)
+                        else:
+                            st.info("No hay datos de aportes por socio.")
+                        st.markdown("#### Utilidades entregadas por socio")
+                        if not balance_socios.empty:
+                            tabla_utilidades = balance_socios[["Socio", "Total_Utilidades_Entregadas"]].rename(columns={"Total_Utilidades_Entregadas": "Utilidades entregadas"}).copy()
+                            tabla_utilidades["Utilidades entregadas"] = tabla_utilidades["Utilidades entregadas"].map(dinero_corto)
+                            st.dataframe(tabla_utilidades, use_container_width=True, hide_index=True)
+                        st.markdown("#### Balance final por socio")
+                        if not balance_socios.empty:
+                            tabla_balance = balance_socios[["Socio", "Balance_Final"]].rename(columns={"Balance_Final": "Balance final"}).copy()
+                            tabla_balance["Balance final"] = tabla_balance["Balance final"].map(dinero_corto)
+                            st.dataframe(tabla_balance, use_container_width=True, hide_index=True)
+                    with col_resumen_b:
+                        st.markdown("#### Ingresos por socio")
+                        if not balance_socios.empty:
+                            tabla_ing_soc = balance_socios[["Socio", "Total_Ingresos"]].rename(columns={"Total_Ingresos": "Ingresos"}).copy()
+                            tabla_ing_soc["Ingresos"] = tabla_ing_soc["Ingresos"].map(dinero_corto)
+                            st.dataframe(tabla_ing_soc, use_container_width=True, hide_index=True)
+                        st.markdown("#### Inversiones por socio")
+                        if not balance_socios.empty:
+                            tabla_inv_soc = balance_socios[["Socio", "Total_Inversiones"]].rename(columns={"Total_Inversiones": "Inversiones"}).copy()
+                            tabla_inv_soc["Inversiones"] = tabla_inv_soc["Inversiones"].map(dinero_corto)
+                            st.dataframe(tabla_inv_soc, use_container_width=True, hide_index=True)
+                        st.markdown("#### Gastos por socio")
+                        if not balance_socios.empty:
+                            tabla_gastos_soc = balance_socios[["Socio", "Total_Gastos"]].rename(columns={"Total_Gastos": "Gastos"}).copy()
+                            tabla_gastos_soc["Gastos"] = tabla_gastos_soc["Gastos"].map(dinero_corto)
+                            st.dataframe(tabla_gastos_soc, use_container_width=True, hide_index=True)
+                    st.markdown("#### Composición por activo / proyecto")
+                    if not resumen_proyectos.empty:
+                        columnas_detalle = ["Proyecto / activo", "Entidad", "Inversión histórica", "Ingresos históricos", "Gastos operativos", "Flujo neto acumulado"]
+                        tabla_activos_detalle = resumen_proyectos[columnas_detalle].copy()
+                        for col_importe in columnas_detalle[2:]:
+                            tabla_activos_detalle[col_importe] = tabla_activos_detalle[col_importe].map(dinero_corto)
+                        st.dataframe(tabla_activos_detalle, use_container_width=True, hide_index=True)
+                    else:
+                        st.info("No hay detalle de activos para los filtros actuales.")
+
+                for tab_fin, nombre_seccion in zip(tabs_finanzas[1:], nombres_secciones):
                     with tab_fin:
                         resumen_seccion = resumen_proyectos[resumen_proyectos["Sección"] == nombre_seccion]
                         if resumen_seccion.empty:
