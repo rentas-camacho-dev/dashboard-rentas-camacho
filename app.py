@@ -7404,12 +7404,39 @@ if st.session_state.vista_airbnb == "Propiedades":
             ).fillna(0)
         )
 
-    promedio_anual["Airbnb_Comparable_Mensual"] = (
-        promedio_anual["Ingreso_Mensual_Medio_Anual"]
-        - promedio_anual["Aseo_Mensual_Medio_Anual"]
-        - promedio_anual["Internet_Mensual_Medio_Anual"]
-        - promedio_anual["Servicios_Mensual_Medio_Anual"]
+    # El comparable usa el mismo período completo para ingresos y gastos:
+    # (ingresos acumulados - aseo acumulado - internet acumulado
+    #  - servicios acumulados) / meses completos.
+    # Los meses sin registro de una categoría aportan cero al acumulado.
+    promedio_anual = promedio_anual.merge(
+        gastos_comparables[
+            [
+                "Nombre_Propiedad",
+                "Aseo_Anual_YTD",
+                "Internet_Anual_YTD",
+                "Servicios_Anual_YTD"
+            ]
+        ],
+        on="Nombre_Propiedad",
+        how="left"
     )
+
+    for columna in [
+        "Aseo_Anual_YTD",
+        "Internet_Anual_YTD",
+        "Servicios_Anual_YTD"
+    ]:
+        promedio_anual[columna] = pd.to_numeric(
+            promedio_anual[columna],
+            errors="coerce"
+        ).fillna(0)
+
+    promedio_anual["Airbnb_Comparable_Mensual"] = (
+        promedio_anual["Ingreso_Anual_YTD"]
+        - promedio_anual["Aseo_Anual_YTD"]
+        - promedio_anual["Internet_Anual_YTD"]
+        - promedio_anual["Servicios_Anual_YTD"]
+    ) / meses_promedio_anual
 
     # Limpieza de columnas auxiliares.
     df_anual_promedio = df_anual_promedio.drop(
