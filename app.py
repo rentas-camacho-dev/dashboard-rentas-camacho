@@ -7404,12 +7404,83 @@ if st.session_state.vista_airbnb == "Propiedades":
             ).fillna(0)
         )
 
-    # El comparable usa el mismo período completo para ingresos y gastos:
-    # (ingresos acumulados - aseo acumulado - internet acumulado
-    #  - servicios acumulados) / meses completos.
-    # Los meses sin registro de una categoría aportan cero al acumulado.
+    # El comparable se calcula únicamente sobre los meses en los que
+    # la propiedad tuvo ingresos. Los gastos de meses anteriores al inicio
+    # de la operación (o de meses sin ingresos) no reducen el comparable.
+    # Fórmula por propiedad:
+    # (ingresos de meses activos - gastos comparables de esos mismos meses)
+    # / cantidad de meses con ingresos.
+
+    # 1. Identificar los meses con ingresos positivos por propiedad.
+    df_anual_promedio["_Mes_Ingreso"] = (
+        df_anual_promedio["Fecha"].dt.to_period("M").astype(str)
+    )
+
+    ingresos_mensuales_propiedad = (
+        df_anual_promedio
+        .groupby(
+            ["Nombre_Propiedad", "_Mes_Ingreso"],
+            as_index=False
+        )["Ingreso"]
+        .sum()
+        .rename(columns={"Ingreso": "Ingreso_Mes", "_Mes_Ingreso": "_Mes_Gasto"})
+    )
+
+    ingresos_mensuales_propiedad = ingresos_mensuales_propiedad[
+        ingresos_mensuales_propiedad["Ingreso_Mes"] > 0
+    ].copy()
+
+    meses_con_ingresos = (
+        ingresos_mensuales_propiedad
+        .groupby("Nombre_Propiedad", as_index=False)
+        .agg(Meses_Con_Ingresos=("Ingreso_Mes", "size"))
+    )
+
+    # 2. Conservar únicamente gastos de meses en los que esa propiedad
+    #    tuvo ingresos. Los meses sin ingresos no generan castigo.
+    gastos_meses_activos = gastos_mensuales.merge(
+        ingresos_mensuales_propiedad[
+            ["Nombre_Propiedad", "_Mes_Gasto"]
+        ],
+        on=["Nombre_Propiedad", "_Mes_Gasto"],
+        how="inner"
+    )
+
+    gastos_comparables_meses_activos = (
+        gastos_meses_activos
+        .groupby(
+            ["Nombre_Propiedad", "_Categoria_Comparable"],
+            as_index=False
+        )["Gasto"]
+        .sum()
+        .pivot(
+            index="Nombre_Propiedad",
+            columns="_Categoria_Comparable",
+            values="Gasto"
+        )
+        .reset_index()
+    )
+
+    for columna in ["ASEO", "INTERNET", "SERVICIOS"]:
+        if columna not in gastos_comparables_meses_activos.columns:
+            gastos_comparables_meses_activos[columna] = 0
+
+    gastos_comparables_meses_activos = gastos_comparables_meses_activos.rename(
+        columns={
+            "ASEO": "Aseo_Anual_YTD",
+            "INTERNET": "Internet_Anual_YTD",
+            "SERVICIOS": "Servicios_Anual_YTD"
+        }
+    )
+
     promedio_anual = promedio_anual.merge(
-        gastos_comparables[
+        meses_con_ingresos,
+        on="Nombre_Propiedad",
+        how="left"
+    )
+
+    promedio_anual = promedio_anual.merge(
+        gastos_comparables_meses_activos[
             [
                 "Nombre_Propiedad",
                 "Aseo_Anual_YTD",
@@ -7431,12 +7502,22 @@ if st.session_state.vista_airbnb == "Propiedades":
             errors="coerce"
         ).fillna(0)
 
-    promedio_anual["Airbnb_Comparable_Mensual"] = (
-        promedio_anual["Ingreso_Anual_YTD"]
-        - promedio_anual["Aseo_Anual_YTD"]
-        - promedio_anual["Internet_Anual_YTD"]
-        - promedio_anual["Servicios_Anual_YTD"]
-    ) / meses_promedio_anual
+    promedio_anual["Meses_Con_Ingresos"] = pd.to_numeric(
+        promedio_anual["Meses_Con_Ingresos"],
+        errors="coerce"
+    ).fillna(0)
+
+    promedio_anual["Airbnb_Comparable_Mensual"] = pd.NA
+    mascara_con_ingresos = promedio_anual["Meses_Con_Ingresos"] > 0
+    promedio_anual.loc[
+        mascara_con_ingresos,
+        "Airbnb_Comparable_Mensual"
+    ] = (
+        promedio_anual.loc[mascara_con_ingresos, "Ingreso_Anual_YTD"]
+        - promedio_anual.loc[mascara_con_ingresos, "Aseo_Anual_YTD"]
+        - promedio_anual.loc[mascara_con_ingresos, "Internet_Anual_YTD"]
+        - promedio_anual.loc[mascara_con_ingresos, "Servicios_Anual_YTD"]
+    ) / promedio_anual.loc[mascara_con_ingresos, "Meses_Con_Ingresos"]
 
     # Limpieza de columnas auxiliares.
     df_anual_promedio = df_anual_promedio.drop(
