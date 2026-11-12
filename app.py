@@ -6760,6 +6760,23 @@ if st.session_state.vista_airbnb == "Propiedades":
         }
     ).copy()
 
+    # La tabla de análisis inmobiliario de esta vista debe mostrar
+    # exclusivamente activos que tengan movimientos clasificados
+    # como Airbnb en la fuente operativa (df).
+    propiedades_airbnb = set(
+        df["Nombre_Propiedad"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+    )
+    tabla = tabla[
+        tabla["Nombre_Propiedad"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .isin(propiedades_airbnb)
+    ].copy()
+
     # Estado del activo
     tabla["Estado"] = tabla["Nombre_Propiedad"].apply(
         lambda x: "En desarrollo"
