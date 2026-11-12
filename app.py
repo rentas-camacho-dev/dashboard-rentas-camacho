@@ -2816,6 +2816,109 @@ def cargar_creditos(fecha_calculo):
         )
     )
 
+    # ========================================================
+    # PRORRATEO DE VALOR ACTUAL Y DEUDA SEGÚN PARTICIPACIONES
+    # La tabla Participaciones contiene la participación individual
+    # de cada socio. Para este dashboard se suma la participación
+    # de los socios del grupo (registrados en Aportes_Socios).
+    # Así, si el grupo tiene el 50% de Lotus, se reconoce el 50%
+    # del valor del inmueble y de la deuda asociada.
+    # ========================================================
+    try:
+        query_participaciones = """
+        WITH socios_grupo AS (
+            SELECT DISTINCT LOWER(TRIM(Nombre_Socio)) AS socio_key
+            FROM `rentascamacho.rentas_cortas.Aportes_Socios`
+            WHERE Nombre_Socio IS NOT NULL
+              AND TRIM(Nombre_Socio) != ''
+        )
+        SELECT
+            TRIM(p.Nombre) AS Propiedad,
+            SUM(
+                SAFE_CAST(p.Participaci__n AS FLOAT64)
+            ) AS Participacion_Grupo
+        FROM `rentascamacho.rentas_cortas.Participaciones` p
+        INNER JOIN socios_grupo s
+            ON LOWER(TRIM(p.Nombre_Socio)) = s.socio_key
+        WHERE p.Nombre IS NOT NULL
+          AND TRIM(p.Nombre) != ''
+        GROUP BY TRIM(p.Nombre)
+        """
+        participaciones = client.query(
+            query_participaciones
+        ).to_dataframe()
+
+        if not participaciones.empty:
+            participaciones["Propiedad"] = (
+                participaciones["Propiedad"]
+                .fillna("")
+                .astype(str)
+                .str.strip()
+            )
+            participaciones["Participacion_Grupo"] = pd.to_numeric(
+                participaciones["Participacion_Grupo"],
+                errors="coerce"
+            )
+
+            # La fuente puede almacenar el porcentaje como 50 o 0.50.
+            participaciones["Factor_Participacion"] = (
+                participaciones["Participacion_Grupo"]
+                .apply(
+                    lambda x: (
+                        float(x) / 100
+                        if pd.notna(x) and float(x) > 1
+                        else float(x)
+                        if pd.notna(x)
+                        else pd.NA
+                    )
+                )
+            ).clip(lower=0, upper=1)
+
+            creditos_propiedad = creditos_propiedad.merge(
+                participaciones[
+                    ["Propiedad", "Factor_Participacion"]
+                ],
+                on="Propiedad",
+                how="left"
+            )
+
+            # Si un activo no tiene registro de participación, se conserva
+            # el valor original para no alterar activos sin información.
+            factor = creditos_propiedad[
+                "Factor_Participacion"
+            ].fillna(1.0)
+
+            for col in [
+                "Valor_Actual",
+                "Equipamiento",
+                "Valor_Total_Actual",
+                "Saldo_Usado",
+            ]:
+                if col in creditos_propiedad.columns:
+                    creditos_propiedad[col] = (
+                        pd.to_numeric(
+                            creditos_propiedad[col],
+                            errors="coerce"
+                        ) * factor
+                    )
+
+            creditos_propiedad["Patrimonio_Actual"] = (
+                creditos_propiedad["Valor_Total_Actual"].fillna(0)
+                - creditos_propiedad["Saldo_Usado"].fillna(0)
+            )
+
+            creditos_propiedad = creditos_propiedad.drop(
+                columns=["Factor_Participacion"],
+                errors="ignore"
+            )
+    except Exception as e:
+        # Ante una falla en la consulta de participaciones, se conserva
+        # la valoración original y no se bloquea el dashboard.
+        st.warning(
+            "No fue posible aplicar el prorrateo de Participaciones "
+            f"a valor actual y deuda: {e}"
+        )
+
     creditos_propiedad["Patrimonio_Actual"] = (
         creditos_propiedad[
             "Valor_Total_Actual"
