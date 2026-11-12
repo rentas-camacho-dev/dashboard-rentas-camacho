@@ -2831,36 +2831,57 @@ def cargar_creditos(fecha_calculo):
             FROM `rentascamacho.rentas_cortas.Aportes_Socios`
             WHERE Nombre_Socio IS NOT NULL
               AND TRIM(Nombre_Socio) != ''
+        ),
+        participaciones_limpias AS (
+            SELECT
+                TRIM(p.Nombre) AS Propiedad,
+                SAFE_CAST(
+                    REPLACE(
+                        REPLACE(
+                            TRIM(CAST(p.Participaci__n AS STRING)),
+                            '%',
+                            ''
+                        ),
+                        ',',
+                        '.'
+                    ) AS FLOAT64
+                ) AS Participacion_Valor
+            FROM `rentascamacho.rentas_cortas.Participaciones` p
+            INNER JOIN socios_grupo s
+                ON LOWER(TRIM(p.Nombre_Socio)) = s.socio_key
+            WHERE p.Nombre IS NOT NULL
+              AND TRIM(p.Nombre) != ''
         )
         SELECT
-            TRIM(p.Nombre) AS Propiedad,
-            SUM(
-                SAFE_CAST(p.Participaci__n AS FLOAT64)
-            ) AS Participacion_Grupo
-        FROM `rentascamacho.rentas_cortas.Participaciones` p
-        INNER JOIN socios_grupo s
-            ON LOWER(TRIM(p.Nombre_Socio)) = s.socio_key
-        WHERE p.Nombre IS NOT NULL
-          AND TRIM(p.Nombre) != ''
-        GROUP BY TRIM(p.Nombre)
+            Propiedad,
+            SUM(Participacion_Valor) AS Participacion_Grupo
+        FROM participaciones_limpias
+        GROUP BY Propiedad
         """
         participaciones = client.query(
             query_participaciones
         ).to_dataframe()
 
         if not participaciones.empty:
-            participaciones["Propiedad"] = (
-                participaciones["Propiedad"]
-                .fillna("")
-                .astype(str)
-                .str.strip()
+            # Normalizar nombres para evitar que diferencias de mayúsculas,
+            # espacios o tildes impidan el cruce con Creditos_Vista.
+            def _normalizar_propiedad(valor):
+                valor = str(valor or "").strip().lower()
+                valor = unicodedata.normalize("NFKD", valor)
+                return "".join(
+                    caracter for caracter in valor
+                    if not unicodedata.combining(caracter)
+                )
+
+            participaciones["Propiedad_Key"] = (
+                participaciones["Propiedad"].apply(_normalizar_propiedad)
             )
             participaciones["Participacion_Grupo"] = pd.to_numeric(
                 participaciones["Participacion_Grupo"],
                 errors="coerce"
             )
 
-            # La fuente puede almacenar el porcentaje como 50 o 0.50.
+            # La fuente puede guardar 50, 50% o 0.50.
             participaciones["Factor_Participacion"] = (
                 participaciones["Participacion_Grupo"]
                 .apply(
@@ -2873,6 +2894,51 @@ def cargar_creditos(fecha_calculo):
                     )
                 )
             ).clip(lower=0, upper=1)
+
+            creditos_propiedad["Propiedad_Key"] = (
+                creditos_propiedad["Propiedad"].apply(_normalizar_propiedad)
+            )
+            creditos_propiedad = creditos_propiedad.merge(
+                participaciones[
+                    ["Propiedad_Key", "Factor_Participacion"]
+                ],
+                on="Propiedad_Key",
+                how="left"
+            )
+            creditos_propiedad = creditos_propiedad.drop(
+                columns=["Propiedad_Key"],
+                errors="ignore"
+            )
+
+            # Si un activo no tiene participación registrada, se conserva
+            # el valor original para no alterar activos sin información.
+            factor = creditos_propiedad[
+                "Factor_Participacion"
+            ].fillna(1.0)
+
+            for col in [
+                "Valor_Actual",
+                "Equipamiento",
+                "Valor_Total_Actual",
+                "Saldo_Usado",
+            ]:
+                if col in creditos_propiedad.columns:
+                    creditos_propiedad[col] = (
+                        pd.to_numeric(
+                            creditos_propiedad[col],
+                            errors="coerce"
+                        ) * factor
+                    )
+
+            creditos_propiedad["Patrimonio_Actual"] = (
+                creditos_propiedad["Valor_Total_Actual"].fillna(0)
+                - creditos_propiedad["Saldo_Usado"].fillna(0)
+            )
+
+            creditos_propiedad = creditos_propiedad.drop(
+                columns=["Factor_Participacion"],
+                errors="ignore"
+            )
 
             creditos_propiedad = creditos_propiedad.merge(
                 participaciones[
